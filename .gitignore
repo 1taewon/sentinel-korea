@@ -71,7 +71,7 @@ docs/package-lock.json
 pdf_output.txt
 build-check/
 
-# Snapshots (keep latest processed data, exclude snapshots)
-backend/data/processed/snapshots/
+# Snapshots — committed so Railway has historical timeline data
+# backend/data/processed/snapshots/
 
 .vercel

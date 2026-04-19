@@ -1,0 +1,555 @@
+[
+  {
+    "region_id": "11",
+    "region_name_en": "Seoul",
+    "region_name_kr": "서울특별시",
+    "lat": 37.5665,
+    "lng": 126.978,
+    "date": "2026-04-07",
+    "score": 0.6497,
+    "level": "G2",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2556,
+      "influenza_like": 0.825,
+      "wastewater_pathogen": 1.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 2,
+    "confidence": "High Confidence",
+    "explanation": [
+      "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
+      "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
+      "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.7,
+      "level": "G2",
+      "reason": "네이버 트렌드의 독감/폐렴 검색량 상승과 하수 데이터의 독감 검출(G2)이 확인되며, 밀집도 높은 수도권 특성상 확산세가 뚜렷함."
+    }
+  },
+  {
+    "region_id": "26",
+    "region_name_en": "Busan",
+    "region_name_kr": "부산광역시",
+    "lat": 35.1796,
+    "lng": 129.0756,
+    "date": "2026-04-07",
+    "score": 0.3825,
+    "level": "G1",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.525,
+      "wastewater_pathogen": 0.75,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 2,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.65,
+      "level": "G2",
+      "reason": "전국적 독감 확산세의 영향권에 있으며, 하수 감시 기반에서도 꾸준히 인플루엔자 G2 수준의 경보가 유지됨."
+    }
+  },
+  {
+    "region_id": "27",
+    "region_name_en": "Daegu",
+    "region_name_kr": "대구광역시",
+    "lat": 35.8714,
+    "lng": 128.6014,
+    "date": "2026-04-07",
+    "score": 0.57,
+    "level": "G2",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.9,
+      "wastewater_pathogen": 1.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 2,
+    "confidence": "High Confidence",
+    "explanation": [
+      "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
+      "인플루엔자 유사질환 활동 상승 (ILI activity above baseline).",
+      "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
+      "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
+    ],
+    "news_trends_risk": {
+      "score": 0.4,
+      "level": "G1",
+      "reason": "달서구를 중심으로 수두 및 유행성이하선염 감염 주의보 발령 보도"
+    },
+    "total_risk": {
+      "score": 0.55,
+      "level": "G2",
+      "reason": "하수 데이터 상 바이러스 검출량은 G1 수준이나, 전국적인 아동/청소년 독감 유행 폭증으로 인해 위험도 격상."
+    }
+  },
+  {
+    "region_id": "28",
+    "region_name_en": "Incheon",
+    "region_name_kr": "인천광역시",
+    "lat": 37.4563,
+    "lng": 126.7052,
+    "date": "2026-04-07",
+    "score": 0.225,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.75,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 1,
+    "confidence": "High Confidence",
+    "explanation": [
+      "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
+      "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
+      "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.7,
+      "level": "G2",
+      "reason": "서울과 인접한 수도권으로 B형 독감 확산의 직접적 영향을 받고 있으며, 개학기 학령인구 중심 전파 위험 높음."
+    }
+  },
+  {
+    "region_id": "29",
+    "region_name_en": "Gwangju",
+    "region_name_kr": "광주광역시",
+    "lat": 35.1595,
+    "lng": 126.8526,
+    "date": "2026-04-07",
+    "score": 0.09,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.3,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.6,
+      "level": "G2",
+      "reason": "봄철 일교차 확대에 따른 폐렴구균 주의 및 전국적인 인플루엔자 유행 기준 초과(KDCA 52.6) 반영."
+    }
+  },
+  {
+    "region_id": "30",
+    "region_name_en": "Daejeon",
+    "region_name_kr": "대전광역시",
+    "lat": 36.3504,
+    "lng": 127.3845,
+    "date": "2026-04-07",
+    "score": 0.135,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.45,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.65,
+      "level": "G2",
+      "reason": "전국 평균을 웃도는 SARI(중증급성호흡기감염증) 증가세 및 네이버 독감 검색량 상승 트렌드의 영향을 받음."
+    }
+  },
+  {
+    "region_id": "31",
+    "region_name_en": "Ulsan",
+    "region_name_kr": "울산광역시",
+    "lat": 35.5384,
+    "lng": 129.3114,
+    "date": "2026-04-07",
+    "score": 0.099,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.33,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.6,
+      "level": "G2",
+      "reason": "전국 단위 감염병 경보 수준(G3)에 동기화되어 유행 중이며, 독감 및 급성 호흡기 감염증 확산 주의 단계."
+    }
+  },
+  {
+    "region_id": "36",
+    "region_name_en": "Sejong",
+    "region_name_kr": "세종특별자치시",
+    "lat": 36.48,
+    "lng": 127.289,
+    "date": "2026-04-07",
+    "score": 0.081,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.27,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.75,
+      "level": "G3",
+      "reason": "아동·청소년 인구 비율이 매우 높아 학교와 보육시설을 중심으로 한 B형 독감 및 RSV 폭증의 직격탄을 맞을 위험이 큼."
+    }
+  },
+  {
+    "region_id": "41",
+    "region_name_en": "Gyeonggi",
+    "region_name_kr": "경기도",
+    "lat": 37.4138,
+    "lng": 127.5183,
+    "date": "2026-04-07",
+    "score": 0.261,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.87,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 1,
+    "confidence": "High Confidence",
+    "explanation": [
+      "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
+      "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
+      "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.8,
+      "level": "G3",
+      "reason": "수도권 최대 학령인구 밀집 지역으로, KDCA 독감 환자 급증(52.6)과 뉴스에서 보도된 학생들 간 호흡기 감염 전파 위험이 매우 높음."
+    }
+  },
+  {
+    "region_id": "42",
+    "region_name_en": "Gangwon",
+    "region_name_kr": "강원특별자치도",
+    "lat": 37.8228,
+    "lng": 128.1555,
+    "date": "2026-04-07",
+    "score": 0.126,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.42,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.5,
+      "level": "G2",
+      "reason": "봄철 일교차로 인해 급성호흡기감염증(리노바이러스 등) 환자 증가 추세 보도"
+    },
+    "total_risk": {
+      "score": 0.85,
+      "level": "G3",
+      "reason": "최근 네이버 뉴스에서 도내 급성호흡기감염증(리노바이러스, RSV) 및 결막염 환자 급증이 명시적으로 보도되어 지역 내 실제 심각도 높음."
+    }
+  },
+  {
+    "region_id": "43",
+    "region_name_en": "Chungbuk",
+    "region_name_kr": "충청북도",
+    "lat": 36.6357,
+    "lng": 127.4917,
+    "date": "2026-04-07",
+    "score": 0.1125,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.375,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.6,
+      "level": "G2",
+      "reason": "전국 인플루엔자 의사환자 분율의 가파른 상승폭 및 봄철 미세먼지·일교차로 인한 호흡기 질환 증가 추세 반영."
+    }
+  },
+  {
+    "region_id": "44",
+    "region_name_en": "Chungnam",
+    "region_name_kr": "충청남도",
+    "lat": 36.5184,
+    "lng": 126.8,
+    "date": "2026-04-07",
+    "score": 0.126,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.42,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.6,
+      "level": "G2",
+      "reason": "폐렴 검색량(55, 상승세)과 일치하는 봄철 호흡기 면역력 저하 환자 증가 및 독감 유행 여파."
+    }
+  },
+  {
+    "region_id": "45",
+    "region_name_en": "Jeonbuk",
+    "region_name_kr": "전북특별자치도",
+    "lat": 35.7175,
+    "lng": 127.153,
+    "date": "2026-04-07",
+    "score": 0.099,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.33,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.55,
+      "level": "G2",
+      "reason": "전반적인 전국 독감 확산 기조를 따르고 있으나, 특이적인 지역적 감염 폭증 신호는 상대적으로 적음."
+    }
+  },
+  {
+    "region_id": "46",
+    "region_name_en": "Jeonnam",
+    "region_name_kr": "전라남도",
+    "lat": 34.8679,
+    "lng": 126.991,
+    "date": "2026-04-07",
+    "score": 0.09,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.3,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.55,
+      "level": "G2",
+      "reason": "농어촌 고령 인구의 봄철 폐렴구균 감염 우려가 크며, 전국 독감 확산의 기본 베이스라인에 속함."
+    }
+  },
+  {
+    "region_id": "47",
+    "region_name_en": "Gyeongbuk",
+    "region_name_kr": "경상북도",
+    "lat": 36.4919,
+    "lng": 128.8889,
+    "date": "2026-04-07",
+    "score": 0.18,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.6,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 1,
+    "confidence": "Low Confidence",
+    "explanation": [
+      "폐하수 병원체 농도 계절 평균 근접 (Wastewater pathogen near seasonal threshold)."
+    ],
+    "news_trends_risk": {
+      "score": 0.3,
+      "level": "G1",
+      "reason": "영천, 청도 등 일부 지역의 수두 및 감염병 예방수칙 관련 보도 존재"
+    },
+    "total_risk": {
+      "score": 0.6,
+      "level": "G2",
+      "reason": "개학 이후 학교를 매개로 한 독감 전파 확산이 진행 중이며, SARI 입원 환자 전국적 증가세의 영향권."
+    }
+  },
+  {
+    "region_id": "48",
+    "region_name_en": "Gyeongnam",
+    "region_name_kr": "경상남도",
+    "lat": 35.4606,
+    "lng": 128.2132,
+    "date": "2026-04-07",
+    "score": 0.153,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.51,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 1,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.65,
+      "level": "G2",
+      "reason": "RSV 검색량 상승(63)과 유행 기준치를 크게 넘은 국가 독감 지표의 직접적 영향을 받아 감염 사례 지속 발생."
+    }
+  },
+  {
+    "region_id": "50",
+    "region_name_en": "Jeju",
+    "region_name_kr": "제주특별자치도",
+    "lat": 33.4996,
+    "lng": 126.5312,
+    "date": "2026-04-07",
+    "score": 0.0675,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.0,
+      "influenza_like": 0.225,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련된 감염병 특이 뉴스나 유의미한 검색량 상승 없음"
+    },
+    "total_risk": {
+      "score": 0.5,
+      "level": "G2",
+      "reason": "봄철 관광객 유입 증가에 따라 타 지역에서 유행 중인 B형 독감 및 리노바이러스가 유입될 가능성이 커짐."
+    }
+  }
+]

@@ -1791,8 +1791,23 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 10px;
+  max-height: 260px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
-.kas-side-legend-title > * { margin: 0 !important; }
+.kas-side-legend-title > * {
+  margin: 0 !important;
+  flex: 1;
+  min-height: 0;
+}
+.kas-side-legend-title .timeline-container {
+  border: none;
+  padding: 4px 0;
+  background: transparent;
+  box-shadow: none;
+  max-height: 260px;
+}
 .kas-side-legend-items {
   display: flex;
   flex-direction: column;

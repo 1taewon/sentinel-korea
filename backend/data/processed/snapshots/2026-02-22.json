@@ -1,0 +1,708 @@
+[
+  {
+    "region_id": "11",
+    "region_name_en": "Seoul",
+    "region_name_kr": "서울특별시",
+    "lat": 37.5665,
+    "lng": 126.978,
+    "date": "2026-02-22",
+    "score": 0.35,
+    "level": "G1",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2503,
+      "influenza_like": 0.5248,
+      "wastewater_pathogen": 0.35,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 3,
+    "confidence": "High Confidence",
+    "explanation": [
+      "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
+      "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
+      "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G1",
+        "score": 0.35
+      },
+      "influenza": {
+        "level": "G1",
+        "score": 0.35
+      }
+    }
+  },
+  {
+    "region_id": "26",
+    "region_name_en": "Busan",
+    "region_name_kr": "부산광역시",
+    "lat": 35.1796,
+    "lng": 129.0756,
+    "date": "2026-02-22",
+    "score": 0.65,
+    "level": "G2",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2365,
+      "influenza_like": 0.6465,
+      "wastewater_pathogen": 0.65,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G1",
+        "score": 0.35
+      },
+      "influenza": {
+        "level": "G2",
+        "score": 0.65
+      }
+    }
+  },
+  {
+    "region_id": "27",
+    "region_name_en": "Daegu",
+    "region_name_kr": "대구광역시",
+    "lat": 35.8714,
+    "lng": 128.6014,
+    "date": "2026-02-22",
+    "score": 0.35,
+    "level": "G1",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2926,
+      "influenza_like": 0.5276,
+      "wastewater_pathogen": 0.35,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 3,
+    "confidence": "High Confidence",
+    "explanation": [
+      "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
+      "인플루엔자 유사질환 활동 상승 (ILI activity above baseline).",
+      "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
+      "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G0",
+        "score": 0.1
+      },
+      "influenza": {
+        "level": "G1",
+        "score": 0.35
+      }
+    }
+  },
+  {
+    "region_id": "28",
+    "region_name_en": "Incheon",
+    "region_name_kr": "인천광역시",
+    "lat": 37.4563,
+    "lng": 126.7052,
+    "date": "2026-02-22",
+    "score": 0.9,
+    "level": "G3",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2193,
+      "influenza_like": 0.5414,
+      "wastewater_pathogen": 0.9,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 3,
+    "confidence": "High Confidence",
+    "explanation": [
+      "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
+      "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
+      "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G1",
+        "score": 0.35
+      },
+      "influenza": {
+        "level": "G3",
+        "score": 0.9
+      }
+    }
+  },
+  {
+    "region_id": "29",
+    "region_name_en": "Gwangju",
+    "region_name_kr": "광주광역시",
+    "lat": 35.1595,
+    "lng": 126.8526,
+    "date": "2026-02-22",
+    "score": 0.9,
+    "level": "G3",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2193,
+      "influenza_like": 0.5366,
+      "wastewater_pathogen": 0.9,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G2",
+        "score": 0.65
+      },
+      "influenza": {
+        "level": "G3",
+        "score": 0.9
+      }
+    }
+  },
+  {
+    "region_id": "30",
+    "region_name_en": "Daejeon",
+    "region_name_kr": "대전광역시",
+    "lat": 36.3504,
+    "lng": 127.3845,
+    "date": "2026-02-22",
+    "score": 0.65,
+    "level": "G2",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2765,
+      "influenza_like": 0.615,
+      "wastewater_pathogen": 0.65,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G1",
+        "score": 0.35
+      },
+      "influenza": {
+        "level": "G2",
+        "score": 0.65
+      }
+    }
+  },
+  {
+    "region_id": "31",
+    "region_name_en": "Ulsan",
+    "region_name_kr": "울산광역시",
+    "lat": 35.5384,
+    "lng": 129.3114,
+    "date": "2026-02-22",
+    "score": 0.35,
+    "level": "G1",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2187,
+      "influenza_like": 0.5356,
+      "wastewater_pathogen": 0.35,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G1",
+        "score": 0.35
+      },
+      "influenza": {
+        "level": "G1",
+        "score": 0.35
+      }
+    }
+  },
+  {
+    "region_id": "36",
+    "region_name_en": "Sejong",
+    "region_name_kr": "세종특별자치시",
+    "lat": 36.48,
+    "lng": 127.289,
+    "date": "2026-02-22",
+    "score": 0.65,
+    "level": "G2",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2258,
+      "influenza_like": 0.6317,
+      "wastewater_pathogen": 0.65,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G1",
+        "score": 0.35
+      },
+      "influenza": {
+        "level": "G2",
+        "score": 0.65
+      }
+    }
+  },
+  {
+    "region_id": "41",
+    "region_name_en": "Gyeonggi",
+    "region_name_kr": "경기도",
+    "lat": 37.4138,
+    "lng": 127.5183,
+    "date": "2026-02-22",
+    "score": 0.1,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2894,
+      "influenza_like": 0.5171,
+      "wastewater_pathogen": 0.1,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 3,
+    "confidence": "High Confidence",
+    "explanation": [
+      "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
+      "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
+      "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G0",
+        "score": 0.1
+      },
+      "influenza": {
+        "level": "G0",
+        "score": 0.1
+      }
+    }
+  },
+  {
+    "region_id": "42",
+    "region_name_en": "Gangwon",
+    "region_name_kr": "강원특별자치도",
+    "lat": 37.8228,
+    "lng": 128.1555,
+    "date": "2026-02-22",
+    "score": 0.1,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2511,
+      "influenza_like": 0.6099,
+      "wastewater_pathogen": 0.1,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G0",
+        "score": 0.1
+      },
+      "influenza": {
+        "level": "G0",
+        "score": 0.1
+      }
+    }
+  },
+  {
+    "region_id": "43",
+    "region_name_en": "Chungbuk",
+    "region_name_kr": "충청북도",
+    "lat": 36.6357,
+    "lng": 127.4917,
+    "date": "2026-02-22",
+    "score": 0.1,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2458,
+      "influenza_like": 0.6717,
+      "wastewater_pathogen": 0.1,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G0",
+        "score": 0.1
+      },
+      "influenza": {
+        "level": "G0",
+        "score": 0.1
+      }
+    }
+  },
+  {
+    "region_id": "44",
+    "region_name_en": "Chungnam",
+    "region_name_kr": "충청남도",
+    "lat": 36.5184,
+    "lng": 126.8,
+    "date": "2026-02-22",
+    "score": 0.1,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2218,
+      "influenza_like": 0.5029,
+      "wastewater_pathogen": 0.1,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G0",
+        "score": 0.1
+      },
+      "influenza": {
+        "level": "G0",
+        "score": 0.1
+      }
+    }
+  },
+  {
+    "region_id": "45",
+    "region_name_en": "Jeonbuk",
+    "region_name_kr": "전북특별자치도",
+    "lat": 35.7175,
+    "lng": 127.153,
+    "date": "2026-02-22",
+    "score": 0.1,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2742,
+      "influenza_like": 0.5149,
+      "wastewater_pathogen": 0.1,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G0",
+        "score": 0.1
+      },
+      "influenza": {
+        "level": "G0",
+        "score": 0.1
+      }
+    }
+  },
+  {
+    "region_id": "46",
+    "region_name_en": "Jeonnam",
+    "region_name_kr": "전라남도",
+    "lat": 34.8679,
+    "lng": 126.991,
+    "date": "2026-02-22",
+    "score": 0.1,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2562,
+      "influenza_like": 0.557,
+      "wastewater_pathogen": 0.1,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G0",
+        "score": 0.1
+      },
+      "influenza": {
+        "level": "G0",
+        "score": 0.1
+      }
+    }
+  },
+  {
+    "region_id": "47",
+    "region_name_en": "Gyeongbuk",
+    "region_name_kr": "경상북도",
+    "lat": 36.4919,
+    "lng": 128.8889,
+    "date": "2026-02-22",
+    "score": 0.1,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2625,
+      "influenza_like": 0.5965,
+      "wastewater_pathogen": 0.1,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 1,
+    "confidence": "Low Confidence",
+    "explanation": [
+      "폐하수 병원체 농도 계절 평균 근접 (Wastewater pathogen near seasonal threshold)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G0",
+        "score": 0.1
+      },
+      "influenza": {
+        "level": "G0",
+        "score": 0.1
+      }
+    }
+  },
+  {
+    "region_id": "48",
+    "region_name_en": "Gyeongnam",
+    "region_name_kr": "경상남도",
+    "lat": 35.4606,
+    "lng": 128.2132,
+    "date": "2026-02-22",
+    "score": 0.1,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2449,
+      "influenza_like": 0.6361,
+      "wastewater_pathogen": 0.1,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G0",
+        "score": 0.1
+      },
+      "influenza": {
+        "level": "G0",
+        "score": 0.1
+      }
+    }
+  },
+  {
+    "region_id": "50",
+    "region_name_en": "Jeju",
+    "region_name_kr": "제주특별자치도",
+    "lat": 33.4996,
+    "lng": 126.5312,
+    "date": "2026-02-22",
+    "score": 0.1,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 0.2849,
+      "influenza_like": 0.5958,
+      "wastewater_pathogen": 0.1,
+      "clinical_cxr_aware": null
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "national_respiratory": {
+      "level": "G3",
+      "score": 0.9,
+      "details": {
+        "influenza_rate": 44.2,
+        "ari_cases": 912,
+        "sari_cases": 263.0
+      }
+    },
+    "regional_wastewater": {
+      "covid19": {
+        "level": "G0",
+        "score": 0.1
+      },
+      "influenza": {
+        "level": "G0",
+        "score": 0.1
+      }
+    }
+  }
+]
