@@ -227,7 +227,7 @@ export default function TrendsChart() {
           disabled={refreshing || loading}
           title="Refresh trends"
         >
-          {refreshing ? '...' : '↻'}
+          {refreshing ? <span>… Refreshing</span> : <span>↻ Refresh</span>}
         </button>
       </div>
 

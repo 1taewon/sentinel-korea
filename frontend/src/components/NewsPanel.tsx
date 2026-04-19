@@ -45,7 +45,12 @@ const DEFAULT_CONFIG = {
 
 type ConfigSection = 'korea' | 'global' | 'google_trends' | 'naver_trends';
 
-export default function NewsPanel() {
+interface NewsPanelProps {
+  // 우측 콘솔의 Keywords Editor로 중복되는 경우 내부 버튼을 숨깁니다.
+  hideKeywordsButton?: boolean;
+}
+
+export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps = {}) {
   const [koreaNews, setKoreaNews] = useState<NewsItem[]>([]);
   const [globalNews, setGlobalNews] = useState<NewsItem[]>([]);
   const [digest, setDigest] = useState<NewsDigest | null>(null);
@@ -356,7 +361,12 @@ export default function NewsPanel() {
         </>
       )}
 
-      <button id="news-panel-keywords-btn" className="apply-btn news-panel-keywords-btn-internal" style={{ margin: '10px', width: 'calc(100% - 20px)' }} onClick={() => { loadConfig(); setShowConfig(true); }}>
+      <button
+        id="news-panel-keywords-btn"
+        className="apply-btn news-panel-keywords-btn-internal"
+        style={{ margin: '10px', width: 'calc(100% - 20px)', display: hideKeywordsButton ? 'none' : undefined }}
+        onClick={() => { loadConfig(); setShowConfig(true); }}
+      >
         Keywords Settings
       </button>
 

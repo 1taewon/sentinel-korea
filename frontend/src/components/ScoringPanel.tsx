@@ -116,10 +116,10 @@ export default function ScoringPanel({ onApply }: Props) {
   return (
     <div className="sidebar-content">
       <section className="scoring-section">
-        <details className="scoring-details">
-          <summary className="scoring-section-title" style={{ cursor: 'pointer', userSelect: 'none' }}>
-            Scoring focus & advanced settings ▸
-          </summary>
+        <div className="scoring-details">
+          <div className="scoring-section-title" style={{ userSelect: 'none' }}>
+            Scoring focus & advanced settings
+          </div>
           <div className="formula-display" style={{ marginTop: '10px' }}>{formulaPreview || 'No signals enabled'}</div>
           <div className="formula-note" style={{ marginTop: '8px', marginBottom: '14px' }}>{config.convergence_note}</div>
 
@@ -175,7 +175,7 @@ export default function ScoringPanel({ onApply }: Props) {
               />
             </div>
           ))}
-        </details>
+        </div>
       </section>
 
       <section className="scoring-section">

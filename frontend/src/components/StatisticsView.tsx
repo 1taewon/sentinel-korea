@@ -1,19 +1,31 @@
+import { useState } from 'react';
 import type { KoreaAlert } from '../types';
 import ScoringPanel from './ScoringPanel';
+import RegionDetailInline from './RegionDetailInline';
 
 interface StatisticsViewProps {
   koreaAlerts: KoreaAlert[];
   onScoringApply: (config: any) => void;
-  onRegionClick: (alert: KoreaAlert) => void;
+  // `onRegionClick` is still exposed so the parent can observe selections,
+  // but by default Statistics now shows the detail inline instead of
+  // navigating to the map tab.
+  onRegionClick?: (alert: KoreaAlert) => void;
 }
 
 export default function StatisticsView({ koreaAlerts, onScoringApply, onRegionClick }: StatisticsViewProps) {
+  const [selected, setSelected] = useState<KoreaAlert | null>(null);
+
   const sorted = [...koreaAlerts].sort((a, b) => b.score - a.score);
   const elevatedCount = koreaAlerts.filter((a) => a.score >= 0.55).length;
   const criticalCount = koreaAlerts.filter((a) => a.score >= 0.75).length;
   const avgScore = koreaAlerts.length
     ? (koreaAlerts.reduce((sum, a) => sum + a.score, 0) / koreaAlerts.length).toFixed(2)
     : '0.00';
+
+  const handleRowClick = (alert: KoreaAlert) => {
+    setSelected(alert);
+    onRegionClick?.(alert);
+  };
 
   return (
     <div className="statistics-view">
@@ -47,8 +59,8 @@ export default function StatisticsView({ koreaAlerts, onScoringApply, onRegionCl
             {sorted.map((alert, i) => (
               <button
                 key={alert.region_code}
-                className={`stats-region-row stats-region-row--${alert.level}`}
-                onClick={() => onRegionClick(alert)}
+                className={`stats-region-row stats-region-row--${alert.level} ${selected?.region_code === alert.region_code ? 'stats-region-row--selected' : ''}`}
+                onClick={() => handleRowClick(alert)}
               >
                 <span className="stats-region-rank">{i + 1}</span>
                 <span className="stats-region-name">{alert.region_name_kr}</span>
@@ -66,6 +78,17 @@ export default function StatisticsView({ koreaAlerts, onScoringApply, onRegionCl
           <ScoringPanel onApply={onScoringApply} />
         </div>
       </div>
+
+      {selected && (
+        <div className="stats-detail-section">
+          <RegionDetailInline
+            alert={selected}
+            allAlerts={koreaAlerts}
+            onClose={() => setSelected(null)}
+            variant="inline"
+          />
+        </div>
+      )}
     </div>
   );
 }

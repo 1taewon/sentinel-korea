@@ -7,6 +7,7 @@ import LoginPage from './components/LoginPage';
 import MiniGlobe from './components/MiniGlobe';
 import NewsPanel from './components/NewsPanel';
 import RegionPanel from './components/RegionPanel';
+import RegionDetailInline from './components/RegionDetailInline';
 import ReportView from './components/ReportView';
 import StatisticsView from './components/StatisticsView';
 import Timeline from './components/Timeline';
@@ -329,6 +330,13 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
               <div className="kas-region-panel-meta">
                 {selectedKorea.epiweek} · 시그널 {selectedKorea.active_sources}/{Object.keys(selectedKorea.signals || {}).length}
               </div>
+              <div className="kas-region-panel-timeline">
+                <RegionDetailInline
+                  alert={selectedKorea}
+                  allAlerts={koreaAlerts}
+                  variant="floating"
+                />
+              </div>
             </aside>
           )}
 
@@ -439,7 +447,6 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
           <StatisticsView
             koreaAlerts={koreaAlerts}
             onScoringApply={handleScoringApply}
-            onRegionClick={(alert) => { setNavTab('map'); handleKoreaClick(alert); }}
           />
         </main>
       )}
@@ -452,7 +459,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
             <div className="kas-sources-main">
               <section className="kas-sources-card">
                 <h3>뉴스 파이프라인</h3>
-                <NewsPanel />
+                <NewsPanel hideKeywordsButton />
               </section>
               <section className="kas-sources-card">
                 <h3>트렌드 파이프라인</h3>
@@ -464,22 +471,47 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
               </section>
             </div>
 
-            {/* RIGHT — console: analyze triggers + data source controls */}
+            {/* RIGHT — console: grouped SETTINGS + AI ANALYZE */}
             <aside className="kas-sources-aside">
-              <section className="kas-sources-card kas-console-card">
-                <h3>ANALYZE</h3>
+              {/* ── SETTINGS (data source configuration) ── */}
+              <section className="kas-sources-card kas-console-group">
+                <h3 className="kas-console-group-title">SETTINGS</h3>
+                <p className="console-card-desc">Configure data sources and ingest new KDCA datasets.</p>
+
+                <div className="kas-console-subcard">
+                  <div className="kas-console-subcard-title">Keywords Editor</div>
+                  <p className="console-card-desc">Edit collection keywords for Naver / NewsAPI / Google Trends / Naver Trends.</p>
+                  <button className="console-action-btn console-neutral-btn" onClick={openKeywordsModal}>
+                    <span className="console-btn-title">Open Keywords Editor</span>
+                    <span className="console-btn-sub">Per-source query lists</span>
+                  </button>
+                </div>
+
+                <div className="kas-console-subcard">
+                  <div className="kas-console-subcard-title">KDCA Data Upload</div>
+                  <p className="console-card-desc">Upload raw KDCA data · Manage report recipients.</p>
+                  <KdcaUploadPanel view="console" />
+                </div>
+              </section>
+
+              {/* ── AI ANALYZE (trigger pipelines) ── */}
+              <section className="kas-sources-card kas-console-group">
+                <h3 className="kas-console-group-title">AI ANALYZE</h3>
+                <p className="console-card-desc">Run risk analysis pipelines — results populate the map & panels on the left.</p>
+
                 <button className="osint-analysis-btn console-action-btn" onClick={handleRunOsintAnalysis} disabled={analyzingOsint}>
                   <span className="console-btn-title">{analyzingOsint ? 'Running OSINT...' : 'OSINT ANALYZE'}</span>
                   <span className="console-btn-sub">Open Source Intelligence · News + Trends</span>
                 </button>
                 <button className="kdca-report-btn console-action-btn" onClick={handleGenerateKdcaReport} disabled={generatingKdcaReport}>
-                  <span className="console-btn-title">{generatingKdcaReport ? 'Generating...' : 'KDCA REPORT GENERATE'}</span>
-                  <span className="console-btn-sub">Generate Weekly AI Report</span>
+                  <span className="console-btn-title">{generatingKdcaReport ? 'Analyzing KDCA...' : 'KDCA DATA ANALYZE'}</span>
+                  <span className="console-btn-sub">KDCA surveillance · Weekly AI report</span>
                 </button>
                 <button className="sentinel-analysis-btn console-action-btn" onClick={handleRunFullAnalysis} disabled={analyzingFull}>
-                  <span className="console-btn-title">{analyzingFull ? 'Running Sentinel...' : 'SENTINEL ANALYZE'}</span>
-                  <span className="console-btn-sub">Surveillance Intelligence · OSINT + KDCA</span>
+                  <span className="console-btn-title">{analyzingFull ? 'Running Final...' : 'FINAL ANALYZE'}</span>
+                  <span className="console-btn-sub">Integrated · OSINT + KDCA (Sentinel)</span>
                 </button>
+
                 {osintResult?.summary && (
                   <div className="osint-analysis-result">
                     <div className="osint-result-header">OSINT REPORT</div>
@@ -494,25 +526,10 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 )}
                 {fullResult?.summary && (
                   <div className="sentinel-analysis-result">
-                    <div className="sentinel-result-header">SENTINEL REPORT</div>
+                    <div className="sentinel-result-header">FINAL REPORT</div>
                     <p className="sentinel-result-text">{fullResult.summary}</p>
                   </div>
                 )}
-              </section>
-
-              <section className="kas-sources-card kas-console-card">
-                <h3>KEYWORDS SETTINGS</h3>
-                <p className="console-card-desc">Configure collection keywords for each source (Naver / NewsAPI / Google Trends / Naver Trends).</p>
-                <button className="console-action-btn console-neutral-btn" onClick={openKeywordsModal}>
-                  <span className="console-btn-title">Open Keywords Editor</span>
-                  <span className="console-btn-sub">Edit per-source query lists</span>
-                </button>
-              </section>
-
-              <section className="kas-sources-card kas-console-card">
-                <h3>KDCA CONSOLE</h3>
-                <p className="console-card-desc">Upload KDCA data · Generate weekly AI reports · Manage recipients.</p>
-                <KdcaUploadPanel view="console" />
               </section>
             </aside>
           </div>
