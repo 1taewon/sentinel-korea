@@ -1809,21 +1809,88 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   background: var(--bg-overlay);
   backdrop-filter: blur(12px);
   border: 1px solid var(--border-strong);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   cursor: pointer;
-  font-size: 16px;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
+  transition: color 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
   box-shadow: var(--shadow-sm);
+  padding: 0;
 }
-.kas-toolbar-btn:hover { background: var(--accent-light); border-color: var(--accent); }
+.kas-toolbar-btn svg { display: block; }
+.kas-toolbar-btn:hover {
+  color: #00d4ff;
+  border-color: #00d4ff;
+  background: var(--bg-soft);
+  box-shadow: 0 0 0 1px rgba(0,212,255,0.25), var(--shadow-sm);
+}
 .kas-toolbar-btn--active {
-  background: rgba(0,212,255,0.15);
+  background: rgba(0,212,255,0.08);
   border-color: #00d4ff;
   color: #00d4ff;
   box-shadow: 0 0 0 1px rgba(0,212,255,0.4);
 }
 .kas-toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+@keyframes kas-spin { to { transform: rotate(360deg); } }
+.kas-toolbar-spin { animation: kas-spin 1s linear infinite; transform-origin: 50% 50%; }
+
+/* ── Header date picker ─────────────────────────── */
+.top-nav-date-wrap { position: relative; }
+.top-nav-date--button {
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: border-color 0.15s, color 0.15s;
+}
+.top-nav-date--button:hover { border-color: #00d4ff; color: var(--text-primary); }
+.top-nav-date--open { border-color: #00d4ff; color: var(--text-primary); }
+.top-nav-date-caret {
+  margin-left: 4px;
+  font-size: 9px;
+  color: var(--text-muted);
+}
+.top-nav-date-picker {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 220px;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg, 0 10px 30px rgba(0,0,0,0.12));
+  padding: 10px;
+  z-index: 100;
+}
+.top-nav-date-input {
+  width: 100%;
+  padding: 6px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.top-nav-date-input:focus { outline: none; border-color: #00d4ff; }
+.top-nav-date-list { margin-top: 8px; max-height: 220px; overflow-y: auto; }
+.top-nav-date-list-title {
+  font-size: 10px; color: var(--text-muted);
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 4px; padding-left: 2px;
+}
+.top-nav-date-list-item {
+  display: block; width: 100%;
+  text-align: left;
+  padding: 5px 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.top-nav-date-list-item:hover { background: var(--bg-soft); color: var(--text-primary); }
+.top-nav-date-list-item--active { color: #00d4ff; background: rgba(0,212,255,0.08); }
 
 /* ── Layer Selector Panel ─────────────────────────── */
 .kas-layer-panel {

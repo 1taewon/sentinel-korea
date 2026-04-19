@@ -282,6 +282,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
         theme={theme}
         onToggleTheme={toggleTheme}
         snapshotDate={meta?.snapshot_date || currentDate}
+        availableDates={availableDates}
+        onDateChange={setCurrentDate}
       />
 
       {/* === MAP TAB (default) === */}
@@ -361,15 +363,25 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 className={`kas-toolbar-btn ${isGlobeExpanded ? 'kas-toolbar-btn--active' : ''}`}
                 onClick={() => setIsGlobeExpanded(v => !v)}
                 title="글로벌 지구본"
+                type="button"
               >
-                🌐
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M3 12h18" />
+                  <path d="M12 3a14.5 14.5 0 0 1 0 18a14.5 14.5 0 0 1 0-18z" />
+                </svg>
               </button>
               <button
                 className={`kas-toolbar-btn ${showLayerPanel ? 'kas-toolbar-btn--active' : ''}`}
                 onClick={() => setShowLayerPanel(v => !v)}
                 title="레이어"
+                type="button"
               >
-                ⊞
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 3l9 5-9 5-9-5 9-5z" />
+                  <path d="M3 13l9 5 9-5" />
+                  <path d="M3 18l9 5 9-5" />
+                </svg>
               </button>
               <button
                 className="kas-toolbar-btn"
@@ -378,11 +390,28 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   if (btn) btn.click();
                 }}
                 title="AI Chat"
+                type="button"
               >
-                💬
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                </svg>
               </button>
-              <button className="kas-toolbar-btn" onClick={() => handleRunFullAnalysis()} title="Sentinel 분석" disabled={analyzingFull}>
-                {analyzingFull ? '◌' : '⚡'}
+              <button
+                className="kas-toolbar-btn"
+                onClick={() => handleRunFullAnalysis()}
+                title="Sentinel 분석"
+                disabled={analyzingFull}
+                type="button"
+              >
+                {analyzingFull ? (
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="kas-toolbar-spin">
+                    <path d="M21 12a9 9 0 1 1-6.2-8.55" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M13 2L4.09 12.97a.7.7 0 0 0 .56 1.13H11l-1 8 8.91-10.97A.7.7 0 0 0 18.35 10H13l1-8z" />
+                  </svg>
+                )}
               </button>
             </div>
 
