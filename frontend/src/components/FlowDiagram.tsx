@@ -32,20 +32,20 @@ const NODES: NodeDef[] = [
   { id: 'newsapi', label: 'NewsAPI', sublabel: 'English', type: 'source', x: 126, y: 35, w: 100, h: 38, color: '#38bdf8', description: 'NewsAPI에서 영어 호흡기 관련 뉴스를 수집합니다.' },
   { id: 'who_don', label: 'WHO DON', sublabel: 'Outbreaks', type: 'source', x: 234, y: 35, w: 100, h: 38, color: '#38bdf8', description: 'WHO Disease Outbreak News에서 글로벌 질병 발생 정보를 수집합니다.' },
   { id: 'news_refresh', label: 'NEWS Refresh', sublabel: 'Collect news', type: 'action', x: 95, y: 125, w: 160, h: 46, color: '#38bdf8', description: 'Naver News + NewsAPI + WHO DON 데이터를 수집하고 News Digest AI 분석을 실행합니다.' },
-  { id: 'news_digest', label: 'News Digest', sublabel: 'Gemini AI', type: 'ai', x: 75, y: 225, w: 200, h: 50, color: '#f97316', description: 'Gemini AI가 수집된 뉴스를 분석하여 Korea/Global 요약, 위험 평가, 핵심 알림을 생성합니다.' },
+  { id: 'news_digest', label: 'News AI Analysis', sublabel: 'Gemini AI', type: 'ai', x: 75, y: 225, w: 200, h: 50, color: '#f97316', description: 'Gemini AI가 수집된 뉴스를 분석하여 Korea/Global 요약, 위험 평가, 핵심 알림을 생성합니다.' },
   { id: 'news_panel', label: 'NEWS Panel', sublabel: 'AI Summary + Sources', type: 'display', x: 105, y: 325, w: 140, h: 40, color: '#475569', description: 'AI 요약을 기본 표시하고, "View Raw Sources" 토글로 원본 뉴스 목록을 확인할 수 있습니다.' },
 
   // ═══ Column 2: TRENDS ═══
   { id: 'google_trends', label: 'Google Trends', sublabel: 'EN keywords', type: 'source', x: 362, y: 35, w: 115, h: 38, color: '#a78bfa', description: 'Google Trends에서 영어 호흡기 키워드 검색량을 수집합니다.' },
   { id: 'naver_trends', label: 'Naver Trends', sublabel: 'KR keywords', type: 'source', x: 485, y: 35, w: 115, h: 38, color: '#a78bfa', description: 'Naver DataLab에서 한국어 호흡기 키워드 검색량을 수집합니다.' },
   { id: 'trends_refresh', label: 'TRENDS Refresh', sublabel: 'Collect trends', type: 'action', x: 370, y: 125, w: 160, h: 46, color: '#a78bfa', description: 'Google Trends + Naver Trends 데이터를 수집하고 Trends Digest AI 분석을 실행합니다.' },
-  { id: 'trends_digest', label: 'Trends Digest', sublabel: 'Gemini AI', type: 'ai', x: 350, y: 225, w: 200, h: 50, color: '#f97316', description: 'Gemini AI가 검색 트렌드를 분석하여 급상승 키워드, 트렌드 신호, 위험 평가를 생성합니다.' },
+  { id: 'trends_digest', label: 'Trends AI Analysis', sublabel: 'Gemini AI', type: 'ai', x: 350, y: 225, w: 200, h: 50, color: '#f97316', description: 'Gemini AI가 검색 트렌드를 분석하여 급상승 키워드, 트렌드 신호, 위험 평가를 생성합니다.' },
   { id: 'trends_panel', label: 'TRENDS Panel', sublabel: 'AI Summary + Charts', type: 'display', x: 380, y: 325, w: 140, h: 40, color: '#475569', description: 'AI 요약을 기본 표시하고, "View Raw Charts" 토글로 원본 차트를 확인할 수 있습니다.' },
 
   // ═══ Column 3: KDCA ═══
   { id: 'kdca', label: 'KDCA Data', sublabel: 'ILI/SARI/Wastewater', type: 'source', x: 650, y: 35, w: 140, h: 38, color: '#34d399', description: 'KDCA 공식 감시 데이터: 법정감염병, ILI/SARI 감시, 하수감시 데이터' },
   { id: 'data_upload', label: 'Data Upload', sublabel: 'Excel upload', type: 'action', x: 640, y: 125, w: 160, h: 46, color: '#34d399', description: 'KDCA Excel 파일을 업로드하여 감시 데이터를 시스템에 반영합니다.' },
-  { id: 'kdca_digest', label: 'KDCA Digest', sublabel: 'Gemini AI', type: 'ai', x: 620, y: 225, w: 200, h: 50, color: '#f97316', description: 'Gemini AI가 KDCA 감시 데이터를 분석하여 지역별 위험도, 핵심 지표, 위험 평가를 생성합니다.' },
+  { id: 'kdca_digest', label: 'KDCA AI Analysis', sublabel: 'Gemini AI', type: 'ai', x: 620, y: 225, w: 200, h: 50, color: '#f97316', description: 'Gemini AI가 KDCA 감시 데이터를 분석하여 지역별 위험도, 핵심 지표, 위험 평가를 생성합니다.' },
   { id: 'kdca_panel', label: 'KDCA Panel', sublabel: 'AI Summary + Data', type: 'display', x: 650, y: 325, w: 140, h: 40, color: '#475569', description: 'AI 요약을 기본 표시하고, "View Raw Data" 토글로 업로드 이력과 원본 데이터를 확인할 수 있습니다.' },
 
   // ═══ OSINT Analysis (NEWS + TRENDS merge) ═══
@@ -293,13 +293,6 @@ export default function FlowDiagram({ onClose, onDataRefreshed }: Props) {
               <text x="450" y="22" textAnchor="middle" fill="#a78bfa" fontSize="10" fontWeight="700" letterSpacing="1" opacity="0.5">TRENDS</text>
               <text x="720" y="22" textAnchor="middle" fill="#34d399" fontSize="10" fontWeight="700" letterSpacing="1" opacity="0.5">KDCA</text>
 
-              {/* Left-aligned layer labels */}
-              <text x="16" y="70" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 16, 70)">SOURCES</text>
-              <text x="16" y="160" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 16, 160)">REFRESH</text>
-              <text x="16" y="265" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 16, 265)">AI DIGEST</text>
-              <text x="16" y="355" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 16, 355)">DISPLAY</text>
-              <text x="16" y="465" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 16, 465)">ANALYSIS</text>
-              <text x="16" y="575" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 16, 575)">SENTINEL</text>
 
               {/* Edges */}
               {EDGES.map((e, i) => {

@@ -356,7 +356,7 @@ export default function NewsPanel() {
         </>
       )}
 
-      <button className="apply-btn" style={{ margin: '10px', width: 'calc(100% - 20px)' }} onClick={() => { loadConfig(); setShowConfig(true); }}>
+      <button id="news-panel-keywords-btn" className="apply-btn news-panel-keywords-btn-internal" style={{ margin: '10px', width: 'calc(100% - 20px)' }} onClick={() => { loadConfig(); setShowConfig(true); }}>
         Keywords Settings
       </button>
 
