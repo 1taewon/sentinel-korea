@@ -2027,10 +2027,32 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   text-transform: none;
   font-weight: 400;
 }
+.console-action-btn.osint-analysis-btn,
+.console-action-btn.kdca-report-btn,
+.console-action-btn.sentinel-analysis-btn {
+  width: 100%;
+  margin: 0 0 10px 0;
+  padding: 12px 14px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  letter-spacing: 0;
+}
 .console-action-btn.osint-analysis-btn { border-left: 3px solid #6b8aff; }
 .console-action-btn.kdca-report-btn { border-left: 3px solid #34d399; }
 .console-action-btn.sentinel-analysis-btn { border-left: 3px solid #38bdf8; }
 .console-action-btn.console-neutral-btn { border-left: 3px solid #94a3b8; }
+.console-action-btn.osint-analysis-btn:hover:not(:disabled),
+.console-action-btn.kdca-report-btn:hover:not(:disabled),
+.console-action-btn.sentinel-analysis-btn:hover:not(:disabled) {
+  border-color: #00d4ff;
+  background: var(--bg-soft);
+  box-shadow: none;
+}
 
 /* Grouped console cards (SETTINGS, AI ANALYZE) */
 .kas-console-group {
