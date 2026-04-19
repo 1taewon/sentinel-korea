@@ -12,7 +12,6 @@ import StatisticsView from './components/StatisticsView';
 import Timeline from './components/Timeline';
 import TopNav, { type NavTab } from './components/TopNav';
 import TrendsChart from './components/TrendsChart';
-import WidgetView from './components/WidgetView';
 import { useAuth } from './contexts/AuthContext';
 import type { CombinedData, GlobalSignal, IngestionStatus, KoreaAlert, ScoringConfig } from './types';
 import './index.css';
@@ -306,38 +305,50 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
             </aside>
           )}
 
-          {/* Bottom signal legend bar (Kaspersky-style) */}
-          <div className="kas-bottom-legend">
-            <div className="kas-bottom-legend-title">
-              <Timeline dates={availableDates.length ? availableDates : [currentDate]} currentDate={currentDate} onChange={setCurrentDate} />
+          {/* Right-side vertical stack: toolbar + legend */}
+          <div className="kas-right-stack">
+            <div className="kas-right-toolbar">
+              <button
+                className={`kas-toolbar-btn ${isGlobeExpanded ? 'kas-toolbar-btn--active' : ''}`}
+                onClick={() => setIsGlobeExpanded(v => !v)}
+                title="글로벌 지구본"
+              >
+                🌐
+              </button>
+              <button
+                className={`kas-toolbar-btn ${showLayerPanel ? 'kas-toolbar-btn--active' : ''}`}
+                onClick={() => setShowLayerPanel(v => !v)}
+                title="레이어"
+              >
+                ⊞
+              </button>
+              <button
+                className="kas-toolbar-btn"
+                onClick={() => {
+                  const btn = document.getElementById('chatbot-toggle-btn');
+                  if (btn) btn.click();
+                }}
+                title="AI Chat"
+              >
+                💬
+              </button>
+              <button className="kas-toolbar-btn" onClick={() => handleRunFullAnalysis()} title="Sentinel 분석" disabled={analyzingFull}>
+                {analyzingFull ? '◌' : '⚡'}
+              </button>
             </div>
-            <div className="kas-legend-items">
-              <div className="kas-legend-item"><span className="kas-legend-dot kas-level-critical" />G3 위험 <span className="kas-legend-count">{criticalCount}</span></div>
-              <div className="kas-legend-item"><span className="kas-legend-dot kas-level-high" />G2 경계 <span className="kas-legend-count">{elevatedCount - criticalCount}</span></div>
-              <div className="kas-legend-item"><span className="kas-legend-dot kas-level-moderate" />G1 주의 <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G1').length}</span></div>
-              <div className="kas-legend-item"><span className="kas-legend-dot kas-level-low" />G0 안정 <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G0').length}</span></div>
-            </div>
-          </div>
 
-          {/* Right-side vertical icon toolbar */}
-          <div className="kas-right-toolbar">
-            <button
-              className={`kas-toolbar-btn ${isGlobeExpanded ? 'kas-toolbar-btn--active' : ''}`}
-              onClick={() => setIsGlobeExpanded(v => !v)}
-              title="글로벌 지구본"
-            >
-              🌐
-            </button>
-            <button
-              className={`kas-toolbar-btn ${showLayerPanel ? 'kas-toolbar-btn--active' : ''}`}
-              onClick={() => setShowLayerPanel(v => !v)}
-              title="레이어"
-            >
-              ⊞
-            </button>
-            <button className="kas-toolbar-btn" onClick={() => handleRunFullAnalysis()} title="Sentinel 분석" disabled={analyzingFull}>
-              {analyzingFull ? '◌' : '⚡'}
-            </button>
+            {/* Right-side legend (vertical) */}
+            <div className="kas-side-legend">
+              <div className="kas-side-legend-title">
+                <Timeline dates={availableDates.length ? availableDates : [currentDate]} currentDate={currentDate} onChange={setCurrentDate} />
+              </div>
+              <div className="kas-side-legend-items">
+                <div className="kas-legend-item"><span className="kas-legend-dot kas-level-critical" />G3 위험 <span className="kas-legend-count">{criticalCount}</span></div>
+                <div className="kas-legend-item"><span className="kas-legend-dot kas-level-high" />G2 경계 <span className="kas-legend-count">{elevatedCount - criticalCount}</span></div>
+                <div className="kas-legend-item"><span className="kas-legend-dot kas-level-moderate" />G1 주의 <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G1').length}</span></div>
+                <div className="kas-legend-item"><span className="kas-legend-dot kas-level-low" />G0 안정 <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G0').length}</span></div>
+              </div>
+            </div>
           </div>
 
           {/* Layer selector panel (toggle-able) */}
@@ -455,13 +466,6 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
             onDataRefreshed={() => fetchAlerts()}
             embedded
           />
-        </main>
-      )}
-
-      {/* === WIDGET TAB === */}
-      {navTab === 'widget' && (
-        <main className="kas-tab-view">
-          <WidgetView />
         </main>
       )}
 

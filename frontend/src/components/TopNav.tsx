@@ -1,4 +1,4 @@
-export type NavTab = 'map' | 'statistics' | 'data_sources' | 'pathway' | 'widget' | 'report';
+export type NavTab = 'map' | 'statistics' | 'data_sources' | 'pathway' | 'report';
 
 interface TopNavProps {
   activeTab: NavTab;
@@ -15,7 +15,6 @@ const TABS: { key: NavTab; label: string; labelEn: string }[] = [
   { key: 'statistics', label: '통계', labelEn: 'STATISTICS' },
   { key: 'data_sources', label: '데이터 소스', labelEn: 'DATA SOURCES' },
   { key: 'pathway', label: '파이프라인', labelEn: 'PATHWAY' },
-  { key: 'widget', label: '위젯', labelEn: 'WIDGET' },
   { key: 'report', label: '리포트', labelEn: 'REPORT' },
 ];
 
