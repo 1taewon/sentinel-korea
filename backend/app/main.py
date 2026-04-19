@@ -52,9 +52,26 @@ app.include_router(trends_router)
 app.include_router(risk_analysis_router)
 app.include_router(config_router)
 
+ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:4173",
+    # Vercel production + preview
+    "https://sentinel-korea.vercel.app",
+    "https://sentinel-korea-git-master-1taewons-projects.vercel.app",
+]
+# Allow all Vercel preview URLs for this project
+ALLOWED_ORIGIN_REGEX = r"https://sentinel-korea.*\.vercel\.app"
+
+# Additional origins from env (e.g. custom domain)
+_extra = os.environ.get("EXTRA_CORS_ORIGINS", "")
+if _extra:
+    ALLOWED_ORIGINS.extend(o.strip() for o in _extra.split(",") if o.strip())
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=ALLOWED_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

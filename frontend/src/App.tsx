@@ -3,22 +3,44 @@ import FlowDiagram from './components/FlowDiagram';
 import GeminiChatbot from './components/GeminiChatbot';
 import KdcaUploadPanel from './components/KdcaUploadPanel';
 import KoreaMap from './components/KoreaMap';
+import LoginPage from './components/LoginPage';
 import MiniGlobe from './components/MiniGlobe';
 import NewsPanel from './components/NewsPanel';
 import RegionPanel from './components/RegionPanel';
 import ScoringPanel from './components/ScoringPanel';
 import Timeline from './components/Timeline';
 import TrendsChart from './components/TrendsChart';
+import { useAuth } from './contexts/AuthContext';
 import type { CombinedData, GlobalSignal, IngestionStatus, KoreaAlert, ScoringConfig } from './types';
 import './index.css';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Auth is only enforced when Supabase keys are configured
+const AUTH_ENABLED = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
 
 type SidebarTab = 'settings' | 'news_trends' | 'data_upload';
 type Layer = 'respiratory' | 'wastewater_covid' | 'wastewater_flu' | 'news_trends_risk' | 'total_risk';
 type AggregationMode = 'max' | 'weighted';
 
 export default function App() {
+  const { user, loading: authLoading, signOut } = useAuth();
+
+  // Auth gate — show login if auth is enabled and user is not signed in
+  if (AUTH_ENABLED && authLoading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0B1120', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: '#38BDF8', fontSize: '14px' }}>로딩 중...</div>
+      </div>
+    );
+  }
+  if (AUTH_ENABLED && !user) {
+    return <LoginPage />;
+  }
+
+  return <AppInner user={user} signOut={signOut} />;
+}
+
+function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').User | null; signOut: () => Promise<void> }) {
   const [koreaAlerts, setKoreaAlerts] = useState<KoreaAlert[]>([]);
   const [globalSignals, setGlobalSignals] = useState<GlobalSignal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -270,6 +292,24 @@ export default function App() {
             <div className="header-status-block">
               <span>{meta?.snapshot_date || currentDate}</span>
             </div>
+            {AUTH_ENABLED && user && (
+              <button
+                onClick={signOut}
+                title={`로그아웃 (${user.email})`}
+                style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '6px',
+                  color: '#94A3B8',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  padding: '4px 8px',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                ⏻ 로그아웃
+              </button>
+            )}
           </div>
         </header>
 
