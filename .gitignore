@@ -73,3 +73,5 @@ build-check/
 
 # Snapshots (keep latest processed data, exclude snapshots)
 backend/data/processed/snapshots/
+
+.vercel
