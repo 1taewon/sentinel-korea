@@ -169,7 +169,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     } catch { /* ignore */ }
   };
 
-  // OSINT analysis (News+Trends → map update)
+  // OSINT analysis (News+Trends → map update + save OSINT daily report)
   const handleRunOsintAnalysis = async () => {
     setAnalyzingOsint(true);
     setOsintResult(null);
@@ -185,6 +185,15 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
         await fetchAlerts(data.snapshot_date);
         await refreshIngestionStatus(data.snapshot_date);
       }
+      // Save OSINT daily report
+      try {
+        const rep = await fetch(`${API_BASE}/reports/generate-osint`, { method: 'POST' });
+        if (rep.ok) {
+          const repData = await rep.json();
+          data.summary = (data.summary || '') + `\n\n✅ OSINT 일간 리포트 저장됨: ${repData.report_filename}`;
+          setOsintResult({ ...data });
+        }
+      } catch { /* ignore — analysis still succeeded */ }
     } catch {
       setOsintResult({ summary: 'OSINT analysis failed. Check server connection.' });
     } finally {
@@ -207,13 +216,18 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       if (data.snapshot_date) {
         await fetchAlerts(data.snapshot_date);
         await refreshIngestionStatus(data.snapshot_date);
-        
-        // Auto-generate weekly report
+
+        // Save FINAL weekly integrated report
         try {
-          await fetch(`${API_BASE}/reports/generate?snapshot_date=${data.snapshot_date}`, { method: 'POST' });
-          data.summary = data.summary + '\n\n✅ 주간 보고서가 성공적으로 자동 생성되었습니다. (Settings 탭 또는 서버 내 확인 가능)';
-        } catch (e) {
-          data.summary = data.summary + '\n\n⚠️ 위험도 분석은 완료되었으나, 주간 보고서 생성에 실패했습니다.';
+          const rep = await fetch(`${API_BASE}/reports/generate-final?snapshot_date=${data.snapshot_date}`, { method: 'POST' });
+          if (rep.ok) {
+            const repData = await rep.json();
+            data.summary = (data.summary || '') + `\n\n✅ FINAL 통합 리포트 저장됨: ${repData.report_filename}`;
+            setFullResult({ ...data });
+          }
+        } catch {
+          data.summary = (data.summary || '') + '\n\n⚠️ 통합 리포트 저장 실패.';
+          setFullResult({ ...data });
         }
       }
     } catch {
@@ -223,16 +237,16 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     }
   };
 
-  // KDCA weekly AI report generation
+  // KDCA weekly AI report generation (uses /reports/generate-kdca)
   const handleGenerateKdcaReport = async () => {
     setGeneratingKdcaReport(true);
     setKdcaReportResult(null);
     try {
-      const res = await fetch(`${API_BASE}/reports/generate?snapshot_date=${currentDate}`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/reports/generate-kdca?snapshot_date=${currentDate}`, { method: 'POST' });
       const data = await res.json();
       setKdcaReportResult({
-        summary: data.summary || `주간 AI 보고서가 생성되었습니다${data.filename ? ` (${data.filename})` : ''}.`,
-        filename: data.filename,
+        summary: `KDCA 주간 리포트 저장됨 (${data.report_filename || data.epiweek || '완료'}).`,
+        filename: data.report_filename,
       });
     } catch {
       setKdcaReportResult({ summary: 'Weekly report generation failed. Check server connection.' });

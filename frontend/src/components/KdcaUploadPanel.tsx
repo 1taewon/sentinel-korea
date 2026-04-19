@@ -26,8 +26,6 @@ interface ReportItem {
   size_bytes: number;
 }
 
-interface Recipient { email: string; name: string; }
-
 interface KdcaDigest {
   status: string;
   kdca_summary?: string;
@@ -39,7 +37,7 @@ interface KdcaDigest {
   raw_summary?: string;
 }
 
-type TabType = 'upload' | 'reports' | 'recipients';
+type TabType = 'upload' | 'reports';
 
 interface KdcaUploadPanelProps {
   // 'summary'  → AI 분석 결과만 표시 (좌측 리포트 영역 용)
@@ -55,9 +53,6 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [reports, setReports] = useState<ReportItem[]>([]);
-  const [recipients, setRecipients] = useState<Recipient[]>([]);
-  const [newEmail, setNewEmail] = useState('');
-  const [newName, setNewName] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [reportContent, setReportContent] = useState('');
   const [statusMsg, setStatusMsg] = useState('');
@@ -97,14 +92,12 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
   };
 
   const fetchData = async () => {
-    const [histRes, repRes, recRes] = await Promise.all([
+    const [histRes, repRes] = await Promise.all([
       fetch(`${API_BASE}/ingestion/upload-history`),
       fetch(`${API_BASE}/reports/list`),
-      fetch(`${API_BASE}/reports/recipients/list`),
     ]);
     if (histRes.ok) setHistory(await histRes.json());
     if (repRes.ok) setReports(await repRes.json());
-    if (recRes.ok) setRecipients(await recRes.json());
   };
 
   useEffect(() => { fetchData(); fetchDigest(); }, []);
@@ -182,31 +175,7 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
     }
   };
 
-  const handleAddRecipient = async () => {
-    if (!newEmail.includes('@')) return;
-    try {
-      const res = await fetch(`${API_BASE}/reports/recipients/add`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: newEmail, name: newName }),
-      });
-      if (res.ok) {
-        setNewEmail(''); setNewName('');
-        fetchData();
-        setStatus(`${newEmail} added.`, 'ok');
-      } else {
-        const d = await res.json();
-        setStatus(d.detail, 'error');
-      }
-    } catch {
-      setStatus('Failed to add recipient.', 'error');
-    }
-  };
-
-  const handleRemoveRecipient = async (email: string) => {
-    await fetch(`${API_BASE}/reports/recipients/${encodeURIComponent(email)}`, { method: 'DELETE' });
-    fetchData();
-  };
+  // handleAddRecipient / handleRemoveRecipient removed — managed in REPORT tab.
 
   const handleLoadReport = async (filename: string) => {
     const res = await fetch(`${API_BASE}/reports/content/${filename}`);
@@ -312,7 +281,7 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
     <div className="kdca-panel" id="kdca-panel">
       {/* 탭 */}
       <div className="kdca-tabs">
-        {(['upload', 'reports', 'recipients'] as TabType[]).map(tab => (
+        {(['upload', 'reports'] as TabType[]).map(tab => (
           <button
             key={tab}
             className={`kdca-tab${activeTab === tab ? ' kdca-tab--active' : ''}`}
@@ -321,7 +290,6 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
           >
             {tab === 'upload' && 'Upload'}
             {tab === 'reports' && `Reports (${reports.length})`}
-            {tab === 'recipients' && `Recipients (${recipients.length})`}
           </button>
         ))}
       </div>
@@ -562,74 +530,7 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
         </div>
       )}
 
-      {/* 수신자 탭 */}
-      {activeTab === 'recipients' && (
-        <div className="kdca-content">
-          <div className="kdca-section-title">Email Recipients</div>
-
-          {/* 추가 폼 */}
-          <div className="kdca-recipient-form">
-            <input
-              className="kdca-input"
-              type="email"
-              placeholder="Email address"
-              value={newEmail}
-              onChange={e => setNewEmail(e.target.value)}
-              id="recipient-email-input"
-            />
-            <input
-              className="kdca-input"
-              type="text"
-              placeholder="Name (optional)"
-              value={newName}
-              onChange={e => setNewName(e.target.value)}
-              id="recipient-name-input"
-            />
-            <button
-              className="kdca-btn kdca-btn--primary"
-              onClick={handleAddRecipient}
-              disabled={!newEmail.includes('@')}
-              id="add-recipient-btn"
-            >
-              + Add
-            </button>
-          </div>
-
-          {/* 목록 */}
-          {recipients.length === 0 ? (
-            <div className="trends-empty">
-              <p>No recipients registered.</p>
-            </div>
-          ) : (
-            recipients.map((r, i) => (
-              <div key={i} className="kdca-recipient-item">
-                <div>
-                  <div className="kdca-recipient-email">{r.email}</div>
-                  {r.name && <div className="kdca-recipient-name">{r.name}</div>}
-                </div>
-                <button
-                  className="kdca-remove-btn"
-                  onClick={() => handleRemoveRecipient(r.email)}
-                >
-                  ×
-                </button>
-              </div>
-            ))
-          )}
-
-          {recipients.length > 0 && (
-            <button
-              className="kdca-btn kdca-btn--primary"
-              style={{ marginTop: 12, width: '100%' }}
-              onClick={handleSendReport}
-              disabled={sendingEmail || reports.length === 0}
-              id="send-all-btn"
-            >
-              {sendingEmail ? 'Sending...' : `Send latest report to ${recipients.length} recipients`}
-            </button>
-          )}
-        </div>
-      )}
+      {/* 수신자 탭 삭제 — Report 탭으로 이동 */}
     </div>
   );
 }

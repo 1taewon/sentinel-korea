@@ -2615,3 +2615,117 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   pointer-events: none !important;
 }
 
+/* Report tab — type tabs, recipients, email send */
+.report-type-tabs {
+  display: flex; gap: 4px; padding: 8px 12px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+.report-type-tab {
+  flex: 1; min-width: 54px;
+  padding: 6px 8px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+  font-family: var(--font-mono, inherit);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.report-type-tab:hover { border-color: #00d4ff; color: var(--text-primary); }
+.report-type-tab--active { color: var(--text-primary); border-color: #00d4ff; background: var(--bg-soft); }
+.report-type-tab-count {
+  font-size: 10px; color: var(--text-muted); font-weight: 400;
+  background: var(--bg-primary); padding: 1px 6px; border-radius: 8px;
+}
+.report-list-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 4px;
+}
+.report-list-badge {
+  font-family: var(--font-mono, inherit); font-size: 10px; font-weight: 700; letter-spacing: 1px;
+}
+.report-list-cadence {
+  font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+}
+.report-recipients {
+  margin-top: 12px; padding: 12px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+.report-recipients-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  color: var(--text-secondary); margin-bottom: 8px;
+  font-family: var(--font-mono, inherit);
+}
+.report-recipients-add {
+  display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;
+}
+.report-recipient-input {
+  padding: 6px 8px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 11px;
+}
+.report-recipient-input:focus { outline: none; border-color: #00d4ff; }
+.report-recipient-add-btn {
+  padding: 6px 10px;
+  background: var(--accent, #6366f1);
+  color: white; border: none;
+  border-radius: var(--radius-sm);
+  font-size: 11px; font-weight: 600; cursor: pointer;
+}
+.report-recipient-add-btn:hover { opacity: 0.9; }
+.report-recipient-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: 11px;
+}
+.report-recipient-email { flex: 1; color: var(--text-primary); word-break: break-all; }
+.report-recipient-name { color: var(--text-muted); font-size: 10px; }
+.report-recipient-remove {
+  background: transparent; border: none; color: #ef4444;
+  font-size: 14px; cursor: pointer; padding: 0 4px;
+}
+.report-detail-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid;
+  border-radius: 4px;
+  font-family: var(--font-mono, inherit);
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+}
+.report-detail-meta {
+  font-size: 10px; color: var(--text-muted); margin-top: 4px;
+  font-family: var(--font-mono, inherit);
+}
+.report-detail-actions { display: flex; gap: 8px; }
+.report-email-send-btn {
+  padding: 8px 14px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid #00d4ff;
+  border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-mono, inherit);
+  transition: background 0.15s;
+}
+.report-email-send-btn:hover:not(:disabled) { background: var(--bg-soft); }
+.report-email-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.report-status {
+  margin: 8px 0;
+  padding: 6px 10px;
+  background: var(--bg-secondary);
+  border-left: 3px solid #00d4ff;
+  font-size: 11px; color: var(--text-secondary);
+}
+.report-markdown-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 12px; flex-wrap: wrap;
+}
+
