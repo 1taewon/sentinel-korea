@@ -52,7 +52,9 @@ export default function KoreaMap({ koreaAlerts, onRegionClick, activeLayers, agg
   const [dimensions, setDimensions] = useState({ width: 1200, height: 840 });
 
   useEffect(() => {
-    fetch('/korea-sig.geojson')
+    // Use province-level (시도) geojson so clicks/fills align with the 17
+    // administrative regions rather than individual 시군구 polygons.
+    fetch('/korea.geojson')
       .then((response) => response.json())
       .then((data) => setGeoData(data))
       .catch(() => setGeoData(null));
@@ -114,14 +116,33 @@ export default function KoreaMap({ koreaAlerts, onRegionClick, activeLayers, agg
     return { score: aggregated, level };
   }, [activeLayers, aggregationMode]);
 
-  const handleMouseMove = useCallback((event: React.MouseEvent, feature: any) => {
+  const resolveAlertFromFeature = useCallback((feature: any): KoreaAlert | null => {
     const provinceCode = String(feature.properties.code || '').slice(0, 2);
     const regionCode = SIDO_CODE_TO_REGION_CODE[provinceCode];
     const alert = alertByRegionCode[regionCode];
+    if (alert) return alert;
+    // Fallback: if no alert snapshot exists for this province, synthesise a
+    // minimal KoreaAlert so clicks still open the region panel with the name.
+    const label = REGION_LABELS.find((r) => r.code === regionCode);
+    if (!label) return null;
+    return {
+      region_code: label.code,
+      region_name_kr: label.name_kr,
+      region_name_en: label.name_en,
+      epiweek: '',
+      score: 0,
+      level: 'G0',
+      signals: {},
+      active_sources: 0,
+    } as unknown as KoreaAlert;
+  }, [alertByRegionCode]);
+
+  const handleMouseMove = useCallback((event: React.MouseEvent, feature: any) => {
+    const alert = resolveAlertFromFeature(feature);
     if (!alert) return;
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const layer = getLayerScore(alert);
+    const layer = getLayerScore(alertByRegionCode[alert.region_code]);
     setTooltip({
       x: event.clientX - rect.left,
       y: event.clientY - rect.top,
@@ -130,14 +151,12 @@ export default function KoreaMap({ koreaAlerts, onRegionClick, activeLayers, agg
       score: layer.score,
       level: layer.level,
     });
-  }, [alertByRegionCode, getLayerScore]);
+  }, [alertByRegionCode, getLayerScore, resolveAlertFromFeature]);
 
   const handleClick = useCallback((feature: any) => {
-    const provinceCode = String(feature.properties.code || '').slice(0, 2);
-    const regionCode = SIDO_CODE_TO_REGION_CODE[provinceCode];
-    const alert = alertByRegionCode[regionCode];
+    const alert = resolveAlertFromFeature(feature);
     if (alert) onRegionClick(alert);
-  }, [alertByRegionCode, onRegionClick]);
+  }, [onRegionClick, resolveAlertFromFeature]);
 
   if (!geoData || !projection || !pathGenerator) {
     return (
@@ -156,13 +175,18 @@ export default function KoreaMap({ koreaAlerts, onRegionClick, activeLayers, agg
             const regionCode = SIDO_CODE_TO_REGION_CODE[provinceCode];
             const alert = alertByRegionCode[regionCode];
             const layer = getLayerScore(alert);
+            // Semi-transparent fill so the underlying map labels stay legible
+            // while the whole 시도 polygon still reads as a single risk zone.
+            const fillColor = alert
+              ? `${scoreToColor(layer.score)}4d` // ~30% alpha when data exists
+              : 'rgba(148, 163, 184, 0.10)';
             return (
               <path
                 key={`feature-${index}`}
                 d={pathGenerator(feature) || ''}
-                fill={alert ? `${scoreToColor(layer.score)}bb` : 'rgba(148, 163, 184, 0.08)'}
+                fill={fillColor}
                 stroke="var(--map-polygon-stroke)"
-                strokeWidth={0.6}
+                strokeWidth={0.9}
                 className="korea-map-polygon"
                 onMouseMove={(event) => handleMouseMove(event, feature)}
                 onMouseLeave={() => setTooltip(null)}
@@ -175,12 +199,9 @@ export default function KoreaMap({ koreaAlerts, onRegionClick, activeLayers, agg
           {REGION_LABELS.map((region) => {
             const coords = projection([region.lng, region.lat]);
             if (!coords) return null;
-            const alert = alertByRegionCode[region.code];
-            const layer = getLayerScore(alert);
             return (
-              <g key={region.code}>
-                <circle cx={coords[0]} cy={coords[1]} r={3} fill={scoreToColor(layer.score)} opacity={0.9} />
-                <text x={coords[0]} y={coords[1] - 8} textAnchor="middle" fill="var(--map-label-color)" fontSize={10} fontWeight={600}>
+              <g key={region.code} style={{ pointerEvents: 'none' }}>
+                <text x={coords[0]} y={coords[1]} textAnchor="middle" fill="var(--map-label-color)" fontSize={11} fontWeight={600}>
                   {region.name_en}
                 </text>
               </g>
