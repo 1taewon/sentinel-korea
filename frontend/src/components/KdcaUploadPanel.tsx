@@ -41,7 +41,14 @@ interface KdcaDigest {
 
 type TabType = 'upload' | 'reports' | 'recipients';
 
-export default function KdcaUploadPanel() {
+interface KdcaUploadPanelProps {
+  // 'summary'  → AI 분석 결과만 표시 (좌측 리포트 영역 용)
+  // 'console'  → 업로드/리포트/수신자 탭 + raw data 만 표시 (우측 콘솔 영역 용)
+  // 'full'(기본) → 기존과 동일하게 전부 표시
+  view?: 'summary' | 'console' | 'full';
+}
+
+export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps) {
   const [activeTab, setActiveTab] = useState<TabType>('upload');
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -228,6 +235,98 @@ export default function KdcaUploadPanel() {
     }
   };
 
+  // ─── SUMMARY-ONLY VIEW (좌측 리포트 영역) ───
+  if (view === 'summary') {
+    return (
+      <div className="kdca-panel kdca-panel--summary">
+        {digestLoading && (
+          <div className="news-loading">
+            <div className="news-spinner" />
+            <span>Analyzing KDCA data...</span>
+          </div>
+        )}
+
+        {!digestLoading && digest && digest.status === 'ok' && (
+          <div className="news-digest-section">
+            <div className="news-digest-content">
+              {digest.kdca_summary && (
+                <div className="digest-block" style={{ borderLeftColor: '#34d399' }}>
+                  <div className="digest-block-title" style={{ color: '#34d399' }}>KDCA Summary</div>
+                  <p className="digest-text">{digest.kdca_summary}</p>
+                </div>
+              )}
+              {digest.risk_assessment && (
+                <div className="digest-block digest-risk">
+                  <div className="digest-block-title">Risk Assessment</div>
+                  <p className="digest-text">{digest.risk_assessment}</p>
+                </div>
+              )}
+              {digest.regional_highlights && digest.regional_highlights.length > 0 && (
+                <div className="digest-alerts">
+                  <div className="digest-block-title" style={{ padding: '0 2px', color: '#94a3b8' }}>Regional Highlights</div>
+                  {digest.regional_highlights.map((r, i) => (
+                    <div key={i} className="digest-alert-item">
+                      <span className="digest-alert-dot" style={{ background: r.severity === 'high' ? '#ef4444' : r.severity === 'medium' ? '#f59e42' : '#22c55e' }} />
+                      <div>
+                        <strong>{r.region}</strong>
+                        <p className="digest-alert-detail">{r.finding}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {digest.key_indicators && digest.key_indicators.length > 0 && (
+                <div className="digest-alerts">
+                  <div className="digest-block-title" style={{ padding: '0 2px', color: '#94a3b8' }}>Key Indicators</div>
+                  {digest.key_indicators.map((k, i) => (
+                    <div key={i} className="digest-alert-item">
+                      <span className="digest-alert-dot" style={{
+                        background: k.trend === '상승' ? '#ef4444' : k.trend === '하락' ? '#22c55e' : '#f59e42',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: 16, height: 16, fontSize: 10, color: '#fff', borderRadius: '50%'
+                      }}>
+                        {k.trend === '상승' ? '↑' : k.trend === '하락' ? '↓' : '→'}
+                      </span>
+                      <div>
+                        <strong>{k.indicator}</strong>
+                        <p className="digest-alert-detail">{k.detail}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {digest.generated_at && (
+                <div className="digest-source-count">
+                  Generated: {new Date(digest.generated_at).toLocaleString('ko-KR')}
+                  {digest.sources_used && ` · Sources: ${digest.sources_used.join(', ')}`}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {!digestLoading && digest && digest.status === 'partial' && (
+          <div className="news-digest-section">
+            <div className="digest-block">
+              <p className="digest-text">{digest.raw_summary}</p>
+            </div>
+          </div>
+        )}
+
+        {!digestLoading && (!digest || digest.status === 'empty') && (
+          <div className="trends-empty">
+            <p>No KDCA AI analysis available.</p>
+            <p className="news-empty-hint">Upload KDCA data from the right console to generate an AI analysis.</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ─── CONSOLE VIEW (우측 데이터 소스 콘솔) ───
+  // view === 'console' 이면 업로드 탭에서 AI summary 블록을 건너뛰고 항상 raw data 를 보여줍니다.
+  const forceRawData = view === 'console' ? true : showRawData;
+
   return (
     <div className="kdca-panel" id="kdca-panel">
       {/* 탭 */}
@@ -256,15 +355,15 @@ export default function KdcaUploadPanel() {
       {/* 업로드 탭 */}
       {activeTab === 'upload' && (
         <div className="kdca-content">
-          {/* AI Digest Section */}
-          {digestLoading && (
+          {/* AI Digest Section — console 모드에서는 좌측 summary 패널이 대신 담당하므로 숨깁니다 */}
+          {view !== 'console' && digestLoading && (
             <div className="news-loading">
               <div className="news-spinner" />
               <span>Analyzing KDCA data...</span>
             </div>
           )}
 
-          {!digestLoading && digest && digest.status === 'ok' && !showRawData && (
+          {view !== 'console' && !digestLoading && digest && digest.status === 'ok' && !showRawData && (
             <div className="news-digest-section">
               <div className="news-digest-content">
                 {digest.kdca_summary && (
@@ -323,7 +422,7 @@ export default function KdcaUploadPanel() {
             </div>
           )}
 
-          {!digestLoading && digest && digest.status === 'partial' && !showRawData && (
+          {view !== 'console' && !digestLoading && digest && digest.status === 'partial' && !showRawData && (
             <div className="news-digest-section">
               <div className="digest-block">
                 <p className="digest-text">{digest.raw_summary}</p>
@@ -331,36 +430,50 @@ export default function KdcaUploadPanel() {
             </div>
           )}
 
-          {!digestLoading && (!digest || digest.status === 'empty') && !showRawData && (
+          {view !== 'console' && !digestLoading && (!digest || digest.status === 'empty') && !showRawData && (
             <div className="trends-empty">
               <p>No KDCA AI digest available.</p>
               <p className="news-empty-hint">Upload KDCA data to generate an AI analysis.</p>
             </div>
           )}
 
-          {/* Toggle: AI Digest ↔ Raw Data */}
-          <div style={{ display: 'flex', gap: 8, margin: '6px 10px' }}>
-            <button
-              className="news-sources-toggle"
-              style={{ flex: 1, width: 'auto', margin: 0 }}
-              onClick={() => setShowRawData(!showRawData)}
-            >
-              {showRawData ? 'View AI Summary' : 'View Raw Data'}
-            </button>
-            {!showRawData && (
+          {/* Toggle: AI Digest ↔ Raw Data — console 모드에서는 Refresh 만 노출 */}
+          {view !== 'console' && (
+            <div style={{ display: 'flex', gap: 8, margin: '6px 10px' }}>
               <button
                 className="news-sources-toggle"
-                style={{ flex: 1, width: 'auto', margin: 0, opacity: digestLoading ? 0.5 : 1 }}
+                style={{ flex: 1, width: 'auto', margin: 0 }}
+                onClick={() => setShowRawData(!showRawData)}
+              >
+                {showRawData ? 'View AI Summary' : 'View Raw Data'}
+              </button>
+              {!showRawData && (
+                <button
+                  className="news-sources-toggle"
+                  style={{ flex: 1, width: 'auto', margin: 0, opacity: digestLoading ? 0.5 : 1 }}
+                  onClick={generateDigest}
+                  disabled={digestLoading}
+                >
+                  {digestLoading ? 'Analyzing...' : 'Refresh Digest'}
+                </button>
+              )}
+            </div>
+          )}
+          {view === 'console' && (
+            <div style={{ margin: '6px 10px' }}>
+              <button
+                className="news-sources-toggle"
+                style={{ width: '100%', margin: 0, opacity: digestLoading ? 0.5 : 1 }}
                 onClick={generateDigest}
                 disabled={digestLoading}
               >
-                {digestLoading ? 'Analyzing...' : 'Refresh Digest'}
+                {digestLoading ? 'Analyzing...' : 'Refresh AI Analysis'}
               </button>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Raw Data View */}
-          {showRawData && (
+          {forceRawData && (
             <>
               {/* 드래그앤드롭 존 */}
               <div

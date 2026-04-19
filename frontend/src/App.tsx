@@ -458,6 +458,10 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 <h3>트렌드 파이프라인</h3>
                 <TrendsChart />
               </section>
+              <section className="kas-sources-card">
+                <h3>KDCA AI Analysis</h3>
+                <KdcaUploadPanel view="summary" />
+              </section>
             </div>
 
             {/* RIGHT — console: analyze triggers + data source controls */}
@@ -506,8 +510,9 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
               </section>
 
               <section className="kas-sources-card kas-console-card">
-                <h3>KDCA UPLOAD</h3>
-                <KdcaUploadPanel />
+                <h3>KDCA CONSOLE</h3>
+                <p className="console-card-desc">Upload KDCA data · Generate weekly AI reports · Manage recipients.</p>
+                <KdcaUploadPanel view="console" />
               </section>
             </aside>
           </div>
