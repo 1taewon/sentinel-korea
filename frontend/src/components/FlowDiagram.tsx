@@ -57,8 +57,6 @@ const NODES: NodeDef[] = [
   // ═══ Output ═══
   { id: 'output', label: 'Final Report', sublabel: 'Scores + Signals + Visualization', type: 'output', x: 315, y: 640, w: 210, h: 40, color: '#38bdf8', description: '최종 위험도 보고서. 각 분석(OSINT/KDCA/Sentinel) 결과를 Korea Map에 시각화할 수 있습니다.' },
 
-  // ═══ Chat (side) ═══
-  { id: 'chat', label: 'Sentinel Chat', sublabel: 'Interactive Q&A', type: 'display', x: 665, y: 548, w: 130, h: 40, color: '#475569', description: 'Gemini AI 기반 대화형 분석 도우미. 대시보드 해석, 보고서 작성 등을 지원합니다.' },
 ];
 
 const EDGES: EdgeDef[] = [
@@ -85,8 +83,6 @@ const EDGES: EdgeDef[] = [
   { from: 'kdca_panel', to: 'sentinel' },
   // Sentinel → Output
   { from: 'sentinel', to: 'output' },
-  // Chat (side)
-  { from: 'sentinel', to: 'chat', dashed: true },
 ];
 
 const nodeMap = Object.fromEntries(NODES.map(n => [n.id, n]));
@@ -298,12 +294,12 @@ export default function FlowDiagram({ onClose, onDataRefreshed }: Props) {
               <text x="720" y="22" textAnchor="middle" fill="#34d399" fontSize="10" fontWeight="700" letterSpacing="1" opacity="0.5">KDCA</text>
 
               {/* Left-aligned layer labels */}
-              <text x="4" y="52" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 4, 52)">SOURCES</text>
-              <text x="4" y="145" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 4, 145)">REFRESH</text>
-              <text x="4" y="248" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 4, 248)">AI DIGEST</text>
-              <text x="4" y="340" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 4, 340)">DISPLAY</text>
-              <text x="4" y="448" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 4, 448)">ANALYSIS</text>
-              <text x="4" y="560" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 4, 560)">SENTINEL</text>
+              <text x="16" y="70" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 16, 70)">SOURCES</text>
+              <text x="16" y="160" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 16, 160)">REFRESH</text>
+              <text x="16" y="265" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 16, 265)">AI DIGEST</text>
+              <text x="16" y="355" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 16, 355)">DISPLAY</text>
+              <text x="16" y="465" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 16, 465)">ANALYSIS</text>
+              <text x="16" y="575" textAnchor="start" fill="#334155" fontSize="8" fontWeight="600" letterSpacing="1.5" transform="rotate(-90, 16, 575)">SENTINEL</text>
 
               {/* Edges */}
               {EDGES.map((e, i) => {
