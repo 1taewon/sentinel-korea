@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import FlowDiagram from './components/FlowDiagram';
 import GeminiChatbot from './components/GeminiChatbot';
 import KdcaUploadPanel from './components/KdcaUploadPanel';
@@ -7,9 +7,12 @@ import LoginPage from './components/LoginPage';
 import MiniGlobe from './components/MiniGlobe';
 import NewsPanel from './components/NewsPanel';
 import RegionPanel from './components/RegionPanel';
-import ScoringPanel from './components/ScoringPanel';
+import ReportView from './components/ReportView';
+import StatisticsView from './components/StatisticsView';
 import Timeline from './components/Timeline';
+import TopNav, { type NavTab } from './components/TopNav';
 import TrendsChart from './components/TrendsChart';
+import WidgetView from './components/WidgetView';
 import { useAuth } from './contexts/AuthContext';
 import type { CombinedData, GlobalSignal, IngestionStatus, KoreaAlert, ScoringConfig } from './types';
 import './index.css';
@@ -18,7 +21,6 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 // Auth is only enforced when Supabase keys are configured
 const AUTH_ENABLED = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
 
-type SidebarTab = 'settings' | 'news_trends' | 'data_upload';
 type Layer = 'respiratory' | 'wastewater_covid' | 'wastewater_flu' | 'news_trends_risk' | 'total_risk';
 type AggregationMode = 'max' | 'weighted';
 
@@ -44,50 +46,13 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   const [koreaAlerts, setKoreaAlerts] = useState<KoreaAlert[]>([]);
   const [globalSignals, setGlobalSignals] = useState<GlobalSignal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth > 900);
   const [selectedKorea, setSelectedKorea] = useState<KoreaAlert | null>(null);
   const [selectedGlobal, setSelectedGlobal] = useState<GlobalSignal | null>(null);
   const [isGlobeExpanded, setIsGlobeExpanded] = useState(false);
   const [showFlowDiagram, setShowFlowDiagram] = useState(false);
   const [activeLayers, setActiveLayers] = useState<Layer[]>(['respiratory']);
   const [aggregationMode, setAggregationMode] = useState<AggregationMode>('max');
-
-  // Resizable sidebar
-  const [sidebarWidth, setSidebarWidth] = useState(() => {
-    const saved = localStorage.getItem('sentinel-sidebar-width');
-    return saved ? parseInt(saved, 10) : 370;
-  });
-  const isDragging = useRef(false);
-  const dragStartX = useRef(0);
-  const dragStartWidth = useRef(370);
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
-      const delta = e.clientX - dragStartX.current;
-      const newWidth = Math.max(320, Math.min(700, dragStartWidth.current + delta));
-      setSidebarWidth(newWidth);
-    };
-    const onMouseUp = () => {
-      if (isDragging.current) {
-        isDragging.current = false;
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-        localStorage.setItem('sentinel-sidebar-width', String(sidebarWidth));
-      }
-    };
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-    return () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); };
-  }, [sidebarWidth]);
-
-  const handleDragStart = (e: React.MouseEvent) => {
-    isDragging.current = true;
-    dragStartX.current = e.clientX;
-    dragStartWidth.current = sidebarWidth;
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-  };
+  const [showLayerPanel, setShowLayerPanel] = useState(false);
 
   const toggleLayer = (layer: Layer) => {
     setActiveLayers(prev => {
@@ -100,11 +65,11 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   };
   const [availableDates, setAvailableDates] = useState<string[]>([]);
   const [currentDate, setCurrentDate] = useState('2026-03-15');
-  const [ingestionStatus, setIngestionStatus] = useState<IngestionStatus | null>(null);
+  const [, setIngestionStatus] = useState<IngestionStatus | null>(null);
   const [meta, setMeta] = useState<CombinedData['meta']>();
 
-  // Sidebar tab state (3 tabs)
-  const [sidebarTab, setSidebarTab] = useState<SidebarTab>('settings');
+  // Top navigation tab
+  const [navTab, setNavTab] = useState<NavTab>('map');
 
   // Theme state
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -267,304 +232,247 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   }
 
   return (
-    <div className="app-layout">
-      <aside className={`sidebar-left ${isSidebarOpen ? '' : 'closed'}`} style={isSidebarOpen ? { width: sidebarWidth } : undefined}>
-        <header className="app-header panelized-header">
-          <div className="header-left">
-            <div className="header-title">Sentinel</div>
+    <div className="kas-app">
+      <TopNav
+        activeTab={navTab}
+        onTabChange={setNavTab}
+        userEmail={user?.email}
+        onSignOut={signOut}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        snapshotDate={meta?.snapshot_date || currentDate}
+      />
+
+      {/* === MAP TAB (default) === */}
+      {navTab === 'map' && (
+        <main className="kas-map-view">
+          <div className="kas-map-container">
+            <KoreaMap
+              koreaAlerts={koreaAlerts}
+              onRegionClick={handleKoreaClick}
+              activeLayers={activeLayers}
+              aggregationMode={aggregationMode}
+            />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <button
-              className="flow-pipeline-btn"
-              onClick={() => setShowFlowDiagram(true)}
-              title="Open Pipeline Control"
-            >
-              &#9881;
-            </button>
-            <button
-              className="theme-toggle-btn"
-              onClick={toggleTheme}
-              title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-              id="theme-toggle-btn"
-            >
-              {theme === 'light' ? '◐' : '◑'}
-            </button>
-            <div className="header-status-block">
-              <span>{meta?.snapshot_date || currentDate}</span>
-            </div>
-            {AUTH_ENABLED && user && (
-              <button
-                onClick={signOut}
-                title={`로그아웃 (${user.email})`}
-                style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '6px',
-                  color: '#94A3B8',
-                  cursor: 'pointer',
-                  fontSize: '11px',
-                  padding: '4px 8px',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                ⏻ 로그아웃
-              </button>
-            )}
-          </div>
-        </header>
 
-        {/* 3-Tab Navigation */}
-        <div className="sidebar-tabs">
-          <button
-            className={`sidebar-tab${sidebarTab === 'settings' ? ' sidebar-tab--active' : ''}`}
-            onClick={() => setSidebarTab('settings')}
-            id="sidebar-tab-settings"
-          >
-            Settings
-          </button>
-          <button
-            className={`sidebar-tab${sidebarTab === 'news_trends' ? ' sidebar-tab--active' : ''}`}
-            onClick={() => setSidebarTab('news_trends')}
-            id="sidebar-tab-news-trends"
-            title="Open-Source Intelligence using News and Keyword Trends"
-          >
-            OSINT
-          </button>
-          <button
-            className={`sidebar-tab${sidebarTab === 'data_upload' ? ' sidebar-tab--active' : ''}`}
-            onClick={() => setSidebarTab('data_upload')}
-            id="sidebar-tab-data-upload"
-          >
-            Data Upload
-          </button>
-        </div>
-
-        {/* Tab Content */}
-        <div className="sidebar-tab-content">
-          {sidebarTab === 'settings' && (
-            <ScoringPanel onApply={handleScoringApply} />
-          )}
-
-          {sidebarTab === 'news_trends' && (
-            <div>
-              <NewsPanel />
-              <div className="sidebar-trends-wrapper">
-                <TrendsChart />
-              </div>
-              {/* OSINT Analysis — News+Trends → Map */}
-              <div className="risk-analysis-section" id="osint-analysis-section">
-                <button
-                  className="osint-analysis-btn"
-                  onClick={handleRunOsintAnalysis}
-                  disabled={analyzingOsint}
-                  id="run-osint-analysis-btn"
-                >
-                  {analyzingOsint ? (
-                    <>
-                      <div className="news-spinner" style={{ width: 14, height: 14 }} />
-                      Analyzing OSINT...
-                    </>
-                  ) : (
-                    <>OSINT Analysis (NEWS + TRENDS)</>
-                  )}
-                </button>
-                <div className="osint-analysis-desc">
-                  Combine news and trends data to generate regional risk scores on the map
+          {/* Floating left region panel (Kaspersky-style) */}
+          {selectedKorea && (
+            <aside className="kas-region-panel">
+              <div className="kas-region-panel-header">
+                <div className="kas-region-panel-title">
+                  <span className="kas-region-panel-indicator" />
+                  {selectedKorea.region_name_kr.toUpperCase()}
                 </div>
-                {osintResult && osintResult.summary && (
-                  <div className="osint-analysis-result">
-                    <div className="osint-result-header">OSINT Report</div>
-                    <p className="osint-result-text">{osintResult.summary}</p>
-                    {osintResult.key_signals && osintResult.key_signals.length > 0 && (
-                      <ul className="risk-signals-list">
-                        {osintResult.key_signals.map((sig, i) => (
-                          <li key={i}>{sig}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
+                <button className="kas-region-panel-close" onClick={handleClosePanel}>×</button>
               </div>
-            </div>
+              <div className="kas-region-panel-subtitle">
+                {(() => {
+                  const rank = [...koreaAlerts].sort((a, b) => b.score - a.score).findIndex(a => a.region_code === selectedKorea.region_code) + 1;
+                  return `# ${rank} 위험도 순위 지역`;
+                })()}
+              </div>
+              <div className="kas-region-panel-stats">
+                {Object.entries(selectedKorea.signals || {}).map(([key, value]) => {
+                  const label = key === 'notifiable_disease' ? '법정감염'
+                    : key === 'influenza_like' ? 'ILI/SARI'
+                    : key === 'wastewater_pathogen' ? '폐수'
+                    : key === 'clinical_cxr_aware' ? 'CXR'
+                    : key === 'news_trends_ai' ? 'OSINT'
+                    : key;
+                  const colorClass = key === 'notifiable_disease' ? 'kas-stat-oas'
+                    : key === 'influenza_like' ? 'kas-stat-ods'
+                    : key === 'wastewater_pathogen' ? 'kas-stat-wav'
+                    : key === 'clinical_cxr_aware' ? 'kas-stat-mav'
+                    : key === 'news_trends_ai' ? 'kas-stat-ids'
+                    : 'kas-stat-default';
+                  return (
+                    <div key={key} className="kas-region-panel-stat">
+                      <span className={`kas-stat-label ${colorClass}`}>{label}</span>
+                      <span className="kas-stat-value">{value == null ? '—' : (Number(value) * 1000).toFixed(0)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="kas-region-panel-score">
+                <div className="kas-region-score-label">종합 위험 점수</div>
+                <div className={`kas-region-score-value kas-level-${selectedKorea.level}`}>
+                  {selectedKorea.score.toFixed(2)}
+                </div>
+                <div className="kas-region-score-level">{selectedKorea.level.toUpperCase()}</div>
+              </div>
+              <div className="kas-region-panel-meta">
+                {selectedKorea.epiweek} · 시그널 {selectedKorea.active_sources}/{Object.keys(selectedKorea.signals || {}).length}
+              </div>
+            </aside>
           )}
 
-          {sidebarTab === 'data_upload' && (
-            <div className="sidebar-kdca-wrapper">
-              <p className="sidebar-tab-description">
-                Upload KDCA data to update signal sources (notifiable disease, ILI/SARI, wastewater pathogen).
-              </p>
-              <KdcaUploadPanel />
+          {/* Bottom signal legend bar (Kaspersky-style) */}
+          <div className="kas-bottom-legend">
+            <div className="kas-bottom-legend-title">
+              <Timeline dates={availableDates.length ? availableDates : [currentDate]} currentDate={currentDate} onChange={setCurrentDate} />
             </div>
-          )}
-        </div>
-
-        <div className="sidebar-footer">
-          <div className="layer-controller sidebar-layer-controller">
-            <div className="layer-controller-title">Primary views</div>
-            <label className={`layer-item ${activeLayers.includes('respiratory') ? 'active' : ''}`}>
-              <input type="checkbox" checked={activeLayers.includes('respiratory')} onChange={() => toggleLayer('respiratory')} />
-              <span className="layer-label">Composite respiratory</span>
-            </label>
-            <label className={`layer-item ${activeLayers.includes('wastewater_covid') ? 'active' : ''}`}>
-              <input type="checkbox" checked={activeLayers.includes('wastewater_covid')} onChange={() => toggleLayer('wastewater_covid')} />
-              <span className="layer-label">Wastewater (COVID)</span>
-            </label>
-            <label className={`layer-item ${activeLayers.includes('wastewater_flu') ? 'active' : ''}`}>
-              <input type="checkbox" checked={activeLayers.includes('wastewater_flu')} onChange={() => toggleLayer('wastewater_flu')} />
-              <span className="layer-label">Wastewater (Influenza)</span>
-            </label>
-            <label className={`layer-item ${activeLayers.includes('news_trends_risk') ? 'active' : ''}`}>
-              <input type="checkbox" checked={activeLayers.includes('news_trends_risk')} onChange={() => toggleLayer('news_trends_risk')} />
-              <span className="layer-label">OSINT risk</span>
-            </label>
-            <label className={`layer-item ${activeLayers.includes('total_risk') ? 'active' : ''}`}>
-              <input type="checkbox" checked={activeLayers.includes('total_risk')} onChange={() => toggleLayer('total_risk')} />
-              <span className="layer-label">Total risk stratification</span>
-            </label>
-            {activeLayers.length > 1 && (
-              <div className="aggregation-toggle">
-                <span className="aggregation-label">Aggregation:</span>
-                <button
-                  className={`aggregation-btn ${aggregationMode === 'max' ? 'aggregation-btn--active' : ''}`}
-                  onClick={() => setAggregationMode('max')}
-                >MAX</button>
-                <button
-                  className={`aggregation-btn ${aggregationMode === 'weighted' ? 'aggregation-btn--active' : ''}`}
-                  onClick={() => setAggregationMode('weighted')}
-                >Weighted</button>
-              </div>
-            )}
+            <div className="kas-legend-items">
+              <div className="kas-legend-item"><span className="kas-legend-dot kas-level-critical" />G3 위험 <span className="kas-legend-count">{criticalCount}</span></div>
+              <div className="kas-legend-item"><span className="kas-legend-dot kas-level-high" />G2 경계 <span className="kas-legend-count">{elevatedCount - criticalCount}</span></div>
+              <div className="kas-legend-item"><span className="kas-legend-dot kas-level-moderate" />G1 주의 <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G1').length}</span></div>
+              <div className="kas-legend-item"><span className="kas-legend-dot kas-level-low" />G0 안정 <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G0').length}</span></div>
+            </div>
           </div>
-          
-          {/* Sentinel Analysis — comprehensive final analysis */}
-          <div className="sentinel-analysis-section" id="sentinel-analysis-section">
+
+          {/* Right-side vertical icon toolbar */}
+          <div className="kas-right-toolbar">
             <button
-              className="sentinel-analysis-btn"
-              onClick={handleRunFullAnalysis}
-              disabled={analyzingFull}
-              id="run-sentinel-analysis-btn"
+              className={`kas-toolbar-btn ${isGlobeExpanded ? 'kas-toolbar-btn--active' : ''}`}
+              onClick={() => setIsGlobeExpanded(v => !v)}
+              title="글로벌 지구본"
             >
-              {analyzingFull ? (
-                <>
-                  <span className="sentinel-analysis-icon">
-                    <div className="news-spinner" style={{ width: 14, height: 14 }} />
-                  </span>
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <span className="sentinel-analysis-icon">&#9878;</span>
-                  Sentinel Analysis
-                </>
-              )}
+              🌐
             </button>
-            <div className="sentinel-analysis-desc">
-              OSINT (NEWS+TRENDS) + KDCA data integrated final risk stratification
-            </div>
-            {fullResult && fullResult.summary && (
-              <div className="sentinel-analysis-result">
-                <div className="sentinel-result-header">Final Report</div>
-                <p className="sentinel-result-text">{fullResult.summary}</p>
-                {fullResult.key_signals && fullResult.key_signals.length > 0 && (
-                  <ul className="risk-signals-list">
-                    {fullResult.key_signals.map((sig, i) => (
-                      <li key={i}>{sig}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
+            <button
+              className={`kas-toolbar-btn ${showLayerPanel ? 'kas-toolbar-btn--active' : ''}`}
+              onClick={() => setShowLayerPanel(v => !v)}
+              title="레이어"
+            >
+              ⊞
+            </button>
+            <button className="kas-toolbar-btn" onClick={() => handleRunFullAnalysis()} title="Sentinel 분석" disabled={analyzingFull}>
+              {analyzingFull ? '◌' : '⚡'}
+            </button>
           </div>
 
-          <GeminiChatbot snapshotDate={currentDate} inSidebar={true} />
-        </div>
-      </aside>
+          {/* Layer selector panel (toggle-able) */}
+          {showLayerPanel && (
+            <div className="kas-layer-panel">
+              <div className="kas-layer-panel-title">레이어 선택</div>
+              <label className={`kas-layer-item ${activeLayers.includes('respiratory') ? 'active' : ''}`}>
+                <input type="checkbox" checked={activeLayers.includes('respiratory')} onChange={() => toggleLayer('respiratory')} />
+                <span>종합 호흡기</span>
+              </label>
+              <label className={`kas-layer-item ${activeLayers.includes('wastewater_covid') ? 'active' : ''}`}>
+                <input type="checkbox" checked={activeLayers.includes('wastewater_covid')} onChange={() => toggleLayer('wastewater_covid')} />
+                <span>폐수 (COVID)</span>
+              </label>
+              <label className={`kas-layer-item ${activeLayers.includes('wastewater_flu') ? 'active' : ''}`}>
+                <input type="checkbox" checked={activeLayers.includes('wastewater_flu')} onChange={() => toggleLayer('wastewater_flu')} />
+                <span>폐수 (독감)</span>
+              </label>
+              <label className={`kas-layer-item ${activeLayers.includes('news_trends_risk') ? 'active' : ''}`}>
+                <input type="checkbox" checked={activeLayers.includes('news_trends_risk')} onChange={() => toggleLayer('news_trends_risk')} />
+                <span>OSINT 위험도</span>
+              </label>
+              <label className={`kas-layer-item ${activeLayers.includes('total_risk') ? 'active' : ''}`}>
+                <input type="checkbox" checked={activeLayers.includes('total_risk')} onChange={() => toggleLayer('total_risk')} />
+                <span>총 위험도</span>
+              </label>
+              {activeLayers.length > 1 && (
+                <div className="kas-aggregation">
+                  <span className="kas-aggregation-label">집계:</span>
+                  <button className={`kas-agg-btn ${aggregationMode === 'max' ? 'kas-agg-btn--active' : ''}`} onClick={() => setAggregationMode('max')}>MAX</button>
+                  <button className={`kas-agg-btn ${aggregationMode === 'weighted' ? 'kas-agg-btn--active' : ''}`} onClick={() => setAggregationMode('weighted')}>Weighted</button>
+                </div>
+              )}
+            </div>
+          )}
 
-      {/* Sidebar resize drag handle */}
-      {isSidebarOpen && (
-        <div className="sidebar-resize-handle" style={{ left: sidebarWidth - 2 }} onMouseDown={handleDragStart} />
+          {/* Expanded globe overlay */}
+          {isGlobeExpanded && (
+            <div className="expanded-globe-overlay">
+              <div className="expanded-globe-header">
+                <div>
+                  <h3>글로벌 컨텍스트 레이어</h3>
+                  <p>외부 유입 위험 감시 · 지역 벤치마킹 · 국제 신호 보완</p>
+                </div>
+                <button className="panel-close" onClick={() => setIsGlobeExpanded(false)}>×</button>
+              </div>
+              <div className="expanded-globe-container">
+                <MiniGlobe isExpanded={true} signals={globalSignals} koreaAlerts={koreaAlerts} activeLayers={activeLayers} aggregationMode={aggregationMode} />
+              </div>
+            </div>
+          )}
+
+          <RegionPanel selectedKorea={null} selectedGlobal={selectedGlobal} onClose={handleClosePanel} />
+          <GeminiChatbot snapshotDate={currentDate} inSidebar={false} />
+        </main>
       )}
 
-      <button
-        className={`sidebar-toggle-btn ${isSidebarOpen ? '' : 'closed'}`}
-        onClick={() => setIsSidebarOpen((prev) => !prev)}
-        title={isSidebarOpen ? 'Close panel' : 'Open panel'}
-        style={isSidebarOpen ? { left: sidebarWidth + 6 } : undefined}
-      >
-        {isSidebarOpen ? '<' : '>'}
-      </button>
+      {/* === STATISTICS TAB === */}
+      {navTab === 'statistics' && (
+        <main className="kas-tab-view">
+          <StatisticsView
+            koreaAlerts={koreaAlerts}
+            onScoringApply={handleScoringApply}
+            onRegionClick={(alert) => { setNavTab('map'); handleKoreaClick(alert); }}
+          />
+        </main>
+      )}
 
-      <main className="main-content" style={isSidebarOpen ? { marginLeft: sidebarWidth } : undefined}>
-        <div className="page-banner" style={{ justifyContent: 'flex-end', background: 'transparent', border: 'none', boxShadow: 'none', backdropFilter: 'none' }}>
-          <div className="banner-metrics" style={{ background: 'var(--bg-overlay)', padding: '10px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
-            <div>
-              <strong>{koreaAlerts.length}</strong>
-              <span>regions</span>
-            </div>
-            <div>
-              <strong>{elevatedCount}</strong>
-              <span>elevated</span>
-            </div>
-            <div>
-              <strong>{criticalCount}</strong>
-              <span>critical</span>
-            </div>
+      {/* === DATA SOURCES TAB === */}
+      {navTab === 'data_sources' && (
+        <main className="kas-tab-view">
+          <div className="kas-sources-grid">
+            <section className="kas-sources-card">
+              <h3>뉴스 파이프라인</h3>
+              <NewsPanel />
+            </section>
+            <section className="kas-sources-card">
+              <h3>트렌드 파이프라인</h3>
+              <TrendsChart />
+            </section>
+            <section className="kas-sources-card">
+              <h3>KDCA 업로드</h3>
+              <KdcaUploadPanel />
+            </section>
+            <section className="kas-sources-card">
+              <h3>AI 분석</h3>
+              <button className="osint-analysis-btn" onClick={handleRunOsintAnalysis} disabled={analyzingOsint}>
+                {analyzingOsint ? 'OSINT 분석 중...' : 'OSINT 분석 (뉴스 + 트렌드)'}
+              </button>
+              <button className="sentinel-analysis-btn" onClick={handleRunFullAnalysis} disabled={analyzingFull} style={{ marginTop: 12 }}>
+                {analyzingFull ? 'Sentinel 분석 중...' : 'Sentinel 종합 분석'}
+              </button>
+              {osintResult?.summary && (
+                <div className="osint-analysis-result">
+                  <div className="osint-result-header">OSINT 리포트</div>
+                  <p className="osint-result-text">{osintResult.summary}</p>
+                </div>
+              )}
+              {fullResult?.summary && (
+                <div className="sentinel-analysis-result">
+                  <div className="sentinel-result-header">최종 리포트</div>
+                  <p className="sentinel-result-text">{fullResult.summary}</p>
+                </div>
+              )}
+            </section>
           </div>
-        </div>
+        </main>
+      )}
 
-        <KoreaMap koreaAlerts={koreaAlerts} onRegionClick={handleKoreaClick} activeLayers={activeLayers} aggregationMode={aggregationMode} />
+      {/* === PATHWAY TAB === */}
+      {navTab === 'pathway' && (
+        <main className="kas-tab-view kas-tab-view--pathway">
+          <FlowDiagram
+            onClose={() => setNavTab('map')}
+            onDataRefreshed={() => fetchAlerts()}
+            embedded
+          />
+        </main>
+      )}
 
-        {!isGlobeExpanded && (
-          <div className="mini-globe-wrapper" onClick={() => setIsGlobeExpanded(true)}>
-            <div className="mini-globe-hint">Global context</div>
-            <MiniGlobe signals={globalSignals} koreaAlerts={koreaAlerts} activeLayers={activeLayers} aggregationMode={aggregationMode} />
-          </div>
-        )}
+      {/* === WIDGET TAB === */}
+      {navTab === 'widget' && (
+        <main className="kas-tab-view">
+          <WidgetView />
+        </main>
+      )}
 
-        {isGlobeExpanded && (
-          <div className="expanded-globe-overlay">
-            <div className="expanded-globe-header">
-              <div>
-                <h3>Global context layer</h3>
-                <p>Imported-risk watch, regional benchmarking, and external corroboration.</p>
-              </div>
-              <button className="panel-close" onClick={() => setIsGlobeExpanded(false)}>×</button>
-            </div>
-            <div className="expanded-globe-container">
-              <MiniGlobe isExpanded={true} signals={globalSignals} koreaAlerts={koreaAlerts} activeLayers={activeLayers} aggregationMode={aggregationMode} />
-            </div>
-            <div className="expanded-globe-footer">
-              <div className="global-legend">
-                <span><span className="dot healthmap" />HealthMap</span>
-                <span><span className="dot promed" />ProMED</span>
-                <span><span className="dot gtrends" />Google Trends</span>
-              </div>
-            </div>
-          </div>
-        )}
+      {/* === REPORT TAB === */}
+      {navTab === 'report' && (
+        <main className="kas-tab-view">
+          <ReportView />
+        </main>
+      )}
 
-        <div className="vertical-controls-panel">
-          <Timeline dates={availableDates.length ? availableDates : [currentDate]} currentDate={currentDate} onChange={setCurrentDate} />
-
-          <div className="bottom-bar">
-            <div className="legend">
-              <div className="legend-item"><span className="legend-dot g3" />G3 Critical</div>
-              <div className="legend-item"><span className="legend-dot g2" />G2 Elevated</div>
-              <div className="legend-item"><span className="legend-dot g1" />G1 Guarded</div>
-              <div className="legend-item"><span className="legend-dot g0" />G0 Low</div>
-            </div>
-            <div className="stats">
-              <span>snapshot <span className="stat-value">{meta?.snapshot_date || currentDate}</span></span>
-              <span>global <span className="stat-value">{globalSignals.length}</span></span>
-              <span>sources <span className="stat-value">{ingestionStatus?.sources.length || 0}</span></span>
-            </div>
-          </div>
-        </div>
-
-        <RegionPanel selectedKorea={selectedKorea} selectedGlobal={selectedGlobal} onClose={handleClosePanel} />
-      </main>
-
-      {/* Flow Diagram Overlay */}
+      {/* Legacy overlay (kept for backward compat) */}
       {showFlowDiagram && (
         <FlowDiagram
           onClose={() => setShowFlowDiagram(false)}

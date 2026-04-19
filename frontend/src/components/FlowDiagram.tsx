@@ -19,6 +19,7 @@ interface EdgeDef { from: string; to: string; dashed?: boolean; }
 interface Props {
   onClose: () => void;
   onDataRefreshed: () => void;
+  embedded?: boolean;
 }
 
 /* ── 3-Column Layout: NEWS (left) | TRENDS (center) | KDCA (right) ── */
