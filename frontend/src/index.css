@@ -736,14 +736,24 @@ button, input, textarea, select { font: inherit; }
 .news-panel-title { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text-primary); }
 .news-last-updated { font-size: 9px; color: var(--text-muted); font-weight: 400; }
 .news-panel-actions { display: flex; align-items: center; gap: 5px; }
-.news-refresh-btn {
-  padding: 3px 8px; background: var(--accent-light);
-  border: 1px solid var(--border); border-radius: 12px;
-  color: var(--accent); font-size: 10px;
-  cursor: pointer; transition: all 0.15s;
+.news-refresh-btn,
+.trends-refresh-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 8px;
+  font-family: var(--font-mono, inherit);
+  letter-spacing: 0.3px;
+  transition: color 0.2s;
 }
-.news-refresh-btn:hover:not(:disabled) { background: var(--accent); color: #fff; border-color: var(--accent); }
-.news-refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.news-refresh-btn:hover:not(:disabled),
+.trends-refresh-btn:hover:not(:disabled) {
+  color: var(--accent);
+}
+.news-refresh-btn:disabled,
+.trends-refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .news-close-btn {
   background: var(--bg-soft); border: none; color: var(--text-muted);
   width: 24px; height: 24px; border-radius: 50%;
@@ -933,12 +943,7 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .trends-header { display: flex; align-items: center; justify-content: space-between; }
 .trends-title { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--text-primary); }
 .trends-badge { background: var(--accent-light); color: var(--accent); padding: 1px 6px; border-radius: 8px; font-size: 9px; }
-.trends-refresh-btn {
-  background: transparent; border: none; color: var(--text-muted);
-  cursor: pointer; font-size: 13px; padding: 2px; transition: all 0.2s;
-}
-.trends-refresh-btn:hover:not(:disabled) { color: var(--accent); transform: rotate(180deg); }
-.trends-refresh-btn:disabled { opacity: 0.3; }
+/* .trends-refresh-btn styles merged with .news-refresh-btn above */
 .trends-legend { display: flex; flex-wrap: wrap; gap: 6px; }
 .trends-legend-item { display: flex; align-items: center; gap: 4px; }
 .trends-legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
