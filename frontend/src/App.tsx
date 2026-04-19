@@ -420,40 +420,44 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       {/* === DATA SOURCES TAB === */}
       {navTab === 'data_sources' && (
         <main className="kas-tab-view">
-          <div className="kas-sources-grid">
-            <section className="kas-sources-card">
-              <h3>뉴스 파이프라인</h3>
-              <NewsPanel />
-            </section>
-            <section className="kas-sources-card">
-              <h3>트렌드 파이프라인</h3>
-              <TrendsChart />
-            </section>
-            <section className="kas-sources-card">
-              <h3>KDCA 업로드</h3>
-              <KdcaUploadPanel />
-            </section>
-            <section className="kas-sources-card">
-              <h3>AI 분석</h3>
-              <button className="osint-analysis-btn" onClick={handleRunOsintAnalysis} disabled={analyzingOsint}>
-                {analyzingOsint ? 'OSINT 분석 중...' : 'OSINT 분석 (뉴스 + 트렌드)'}
-              </button>
-              <button className="sentinel-analysis-btn" onClick={handleRunFullAnalysis} disabled={analyzingFull} style={{ marginTop: 12 }}>
-                {analyzingFull ? 'Sentinel 분석 중...' : 'Sentinel 종합 분석'}
-              </button>
-              {osintResult?.summary && (
-                <div className="osint-analysis-result">
-                  <div className="osint-result-header">OSINT 리포트</div>
-                  <p className="osint-result-text">{osintResult.summary}</p>
-                </div>
-              )}
-              {fullResult?.summary && (
-                <div className="sentinel-analysis-result">
-                  <div className="sentinel-result-header">최종 리포트</div>
-                  <p className="sentinel-result-text">{fullResult.summary}</p>
-                </div>
-              )}
-            </section>
+          <div className="kas-sources-layout">
+            <div className="kas-sources-main">
+              <section className="kas-sources-card">
+                <h3>뉴스 파이프라인</h3>
+                <NewsPanel />
+              </section>
+              <section className="kas-sources-card">
+                <h3>트렌드 파이프라인</h3>
+                <TrendsChart />
+              </section>
+              <section className="kas-sources-card">
+                <h3>KDCA 업로드</h3>
+                <KdcaUploadPanel />
+              </section>
+            </div>
+            <aside className="kas-sources-aside">
+              <section className="kas-sources-card">
+                <h3>AI 분석</h3>
+                <button className="osint-analysis-btn" onClick={handleRunOsintAnalysis} disabled={analyzingOsint}>
+                  {analyzingOsint ? 'OSINT 분석 중...' : 'OSINT 분석 (뉴스 + 트렌드)'}
+                </button>
+                <button className="sentinel-analysis-btn" onClick={handleRunFullAnalysis} disabled={analyzingFull} style={{ marginTop: 12 }}>
+                  {analyzingFull ? 'Sentinel 분석 중...' : 'Sentinel 종합 분석'}
+                </button>
+                {osintResult?.summary && (
+                  <div className="osint-analysis-result">
+                    <div className="osint-result-header">OSINT 리포트</div>
+                    <p className="osint-result-text">{osintResult.summary}</p>
+                  </div>
+                )}
+                {fullResult?.summary && (
+                  <div className="sentinel-analysis-result">
+                    <div className="sentinel-result-header">최종 리포트</div>
+                    <p className="sentinel-result-text">{fullResult.summary}</p>
+                  </div>
+                )}
+              </section>
+            </aside>
           </div>
         </main>
       )}
