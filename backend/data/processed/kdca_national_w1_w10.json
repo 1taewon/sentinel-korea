@@ -1,0 +1,82 @@
+{
+  "2026-01-04": {
+    "alert_level": "G3",
+    "details": {
+      "influenza_rate": 36.6,
+      "ari_cases": 859,
+      "sari_cases": 267.0
+    }
+  },
+  "2026-01-11": {
+    "alert_level": "G3",
+    "details": {
+      "influenza_rate": 40.9,
+      "ari_cases": 895,
+      "sari_cases": 314.0
+    }
+  },
+  "2026-01-18": {
+    "alert_level": "G3",
+    "details": {
+      "influenza_rate": 44.9,
+      "ari_cases": 1017,
+      "sari_cases": 277.0
+    }
+  },
+  "2026-01-25": {
+    "alert_level": "G3",
+    "details": {
+      "influenza_rate": 47.7,
+      "ari_cases": 1065,
+      "sari_cases": 278.0
+    }
+  },
+  "2026-02-01": {
+    "alert_level": "G3",
+    "details": {
+      "influenza_rate": 47.5,
+      "ari_cases": 1030,
+      "sari_cases": 277.0
+    }
+  },
+  "2026-02-08": {
+    "alert_level": "G3",
+    "details": {
+      "influenza_rate": 52.6,
+      "ari_cases": 1034,
+      "sari_cases": 304.0
+    }
+  },
+  "2026-02-15": {
+    "alert_level": "G3",
+    "details": {
+      "influenza_rate": 45.9,
+      "ari_cases": 1014,
+      "sari_cases": 249.0
+    }
+  },
+  "2026-02-22": {
+    "alert_level": "G3",
+    "details": {
+      "influenza_rate": 44.2,
+      "ari_cases": 912,
+      "sari_cases": 263.0
+    }
+  },
+  "2026-03-01": {
+    "alert_level": "G3",
+    "details": {
+      "influenza_rate": 22.3,
+      "ari_cases": 949,
+      "sari_cases": 242.0
+    }
+  },
+  "2026-03-08": {
+    "alert_level": "G3",
+    "details": {
+      "influenza_rate": 17.4,
+      "ari_cases": 899,
+      "sari_cases": 217.0
+    }
+  }
+}

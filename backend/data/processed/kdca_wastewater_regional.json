@@ -1,0 +1,702 @@
+{
+  "2026-01-04": {
+    "Seoul": {
+      "covid19": "G2",
+      "influenza": "G1"
+    },
+    "Busan": {
+      "covid19": "G2",
+      "influenza": "G2"
+    },
+    "Daegu": {
+      "covid19": "G3",
+      "influenza": "G1"
+    },
+    "Incheon": {
+      "covid19": "G2",
+      "influenza": "G2"
+    },
+    "Gwangju": {
+      "covid19": "G2",
+      "influenza": "G1"
+    },
+    "Daejeon": {
+      "covid19": "G2",
+      "influenza": "G2"
+    },
+    "Ulsan": {
+      "covid19": "G2",
+      "influenza": "G1"
+    },
+    "Sejong": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Gyeonggi-do": {
+      "covid19": "G2",
+      "influenza": "G1"
+    },
+    "Gangwon-do": {
+      "covid19": "G2",
+      "influenza": "G1"
+    },
+    "Chungcheongbuk-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Chungcheongnam-do": {
+      "covid19": "G2",
+      "influenza": "G2"
+    },
+    "Jeollabuk-do": {
+      "covid19": "G2",
+      "influenza": "G0"
+    },
+    "Jeollanam-do": {
+      "covid19": "G2",
+      "influenza": "G0"
+    },
+    "Gyeongsangbuk-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Gyeongsangnam-do": {
+      "covid19": "G3",
+      "influenza": "G0"
+    },
+    "Jeju-do": {
+      "covid19": "G2",
+      "influenza": "G1"
+    }
+  },
+  "2026-01-11": {
+    "Seoul": {
+      "covid19": "G2",
+      "influenza": "G1"
+    },
+    "Busan": {
+      "covid19": "G2",
+      "influenza": "G3"
+    },
+    "Daegu": {
+      "covid19": "G2",
+      "influenza": "G1"
+    },
+    "Incheon": {
+      "covid19": "G2",
+      "influenza": "G2"
+    },
+    "Gwangju": {
+      "covid19": "G2",
+      "influenza": "G1"
+    },
+    "Daejeon": {
+      "covid19": "G2",
+      "influenza": "G2"
+    },
+    "Ulsan": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Sejong": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Gyeonggi-do": {
+      "covid19": "G2",
+      "influenza": "G1"
+    },
+    "Gangwon-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Chungcheongbuk-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Chungcheongnam-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Jeollabuk-do": {
+      "covid19": "G2",
+      "influenza": "G0"
+    },
+    "Jeollanam-do": {
+      "covid19": "G2",
+      "influenza": "G0"
+    },
+    "Gyeongsangbuk-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Gyeongsangnam-do": {
+      "covid19": "G2",
+      "influenza": "G0"
+    },
+    "Jeju-do": {
+      "covid19": "G2",
+      "influenza": "G1"
+    }
+  },
+  "2026-01-18": {
+    "Seoul": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Busan": {
+      "covid19": "G2",
+      "influenza": "G3"
+    },
+    "Daegu": {
+      "covid19": "G2",
+      "influenza": "G1"
+    },
+    "Incheon": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Gwangju": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Daejeon": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Ulsan": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Sejong": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Gyeonggi-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Gangwon-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Chungcheongbuk-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Chungcheongnam-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Jeollabuk-do": {
+      "covid19": "G2",
+      "influenza": "G0"
+    },
+    "Jeollanam-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Gyeongsangbuk-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Gyeongsangnam-do": {
+      "covid19": "G2",
+      "influenza": "G1"
+    },
+    "Jeju-do": {
+      "covid19": "G2",
+      "influenza": "G2"
+    }
+  },
+  "2026-01-25": {
+    "Seoul": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Busan": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Daegu": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Incheon": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Gwangju": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Daejeon": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Ulsan": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Sejong": {
+      "covid19": "G2",
+      "influenza": "G3"
+    },
+    "Gyeonggi-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Gangwon-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Chungcheongbuk-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Chungcheongnam-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Jeollabuk-do": {
+      "covid19": "G1",
+      "influenza": "G0"
+    },
+    "Jeollanam-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Gyeongsangbuk-do": {
+      "covid19": "G2",
+      "influenza": "G2"
+    },
+    "Gyeongsangnam-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Jeju-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    }
+  },
+  "2026-02-01": {
+    "Seoul": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Busan": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Daegu": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Incheon": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Gwangju": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Daejeon": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Ulsan": {
+      "covid19": "G0",
+      "influenza": "G3"
+    },
+    "Sejong": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Gyeonggi-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Gangwon-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Chungcheongbuk-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Chungcheongnam-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Jeollabuk-do": {
+      "covid19": "G1",
+      "influenza": "G0"
+    },
+    "Jeollanam-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Gyeongsangbuk-do": {
+      "covid19": "G2",
+      "influenza": "G2"
+    },
+    "Gyeongsangnam-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Jeju-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    }
+  },
+  "2026-02-08": {
+    "Seoul": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Busan": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Daegu": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Incheon": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Gwangju": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Daejeon": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Ulsan": {
+      "covid19": "G0",
+      "influenza": "G2"
+    },
+    "Sejong": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Gyeonggi-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Gangwon-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Chungcheongbuk-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Chungcheongnam-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Jeollabuk-do": {
+      "covid19": "G1",
+      "influenza": "G0"
+    },
+    "Jeollanam-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Gyeongsangbuk-do": {
+      "covid19": "G2",
+      "influenza": "G2"
+    },
+    "Gyeongsangnam-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Jeju-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    }
+  },
+  "2026-02-15": {
+    "Seoul": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Busan": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Daegu": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Incheon": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Gwangju": {
+      "covid19": "G2",
+      "influenza": "G3"
+    },
+    "Daejeon": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Ulsan": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Sejong": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Gyeonggi-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Gangwon-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Chungcheongbuk-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Chungcheongnam-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Jeollabuk-do": {
+      "covid19": "G1",
+      "influenza": "G0"
+    },
+    "Jeollanam-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Gyeongsangbuk-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Gyeongsangnam-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Jeju-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    }
+  },
+  "2026-02-22": {
+    "Seoul": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Busan": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Daegu": {
+      "covid19": "G0",
+      "influenza": "G1"
+    },
+    "Incheon": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Gwangju": {
+      "covid19": "G2",
+      "influenza": "G3"
+    },
+    "Daejeon": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Ulsan": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Sejong": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Gyeonggi-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Gangwon-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Chungcheongbuk-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Chungcheongnam-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Jeollabuk-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Jeollanam-do": {
+      "covid19": "G1",
+      "influenza": "G0"
+    },
+    "Gyeongsangbuk-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Gyeongsangnam-do": {
+      "covid19": "G1",
+      "influenza": "G3"
+    },
+    "Jeju-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    }
+  },
+  "2026-03-01": {
+    "Seoul": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Busan": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Daegu": {
+      "covid19": "G0",
+      "influenza": "G1"
+    },
+    "Incheon": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Gwangju": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Daejeon": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Ulsan": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Sejong": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Gyeonggi-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Gangwon-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Chungcheongbuk-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Chungcheongnam-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Jeollabuk-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Jeollanam-do": {
+      "covid19": "G1",
+      "influenza": "G0"
+    },
+    "Gyeongsangbuk-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Gyeongsangnam-do": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Jeju-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    }
+  },
+  "2026-03-08": {
+    "Seoul": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Busan": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Daegu": {
+      "covid19": "G0",
+      "influenza": "G1"
+    },
+    "Incheon": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Gwangju": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Daejeon": {
+      "covid19": "G1",
+      "influenza": "G2"
+    },
+    "Ulsan": {
+      "covid19": "G0",
+      "influenza": "G2"
+    },
+    "Sejong": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Gyeonggi-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Gangwon-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Chungcheongbuk-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Chungcheongnam-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Jeollabuk-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Jeollanam-do": {
+      "covid19": "G1",
+      "influenza": "G0"
+    },
+    "Gyeongsangbuk-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Gyeongsangnam-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    },
+    "Jeju-do": {
+      "covid19": "G1",
+      "influenza": "G1"
+    }
+  }
+}

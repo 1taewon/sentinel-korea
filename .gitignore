@@ -1,0 +1,75 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+venv/
+env/
+.venv/
+*.egg
+.pytest_cache/
+.mypy_cache/
+
+# Environment variables (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Frontend build
+frontend/dist/
+frontend/build/
+.vite/
+.vite-cache/
+
+# Large/raw data files
+backend/data/raw/
+backend/data/mock/
+
+# KDCA uploaded PDFs (user-uploaded)
+backend/data/uploads/
+backend/uploads/
+
+# Logs
+run-logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Claude
+.claude/
+
+# PPT build artifacts (keep script, not binaries)
+docs/*.pptx
+docs/node_modules/
+docs/package-lock.json
+
+# Test / temp
+*.tmp
+*.bak
+pdf_output.txt
+build-check/
+
+# Snapshots (keep latest processed data, exclude snapshots)
+backend/data/processed/snapshots/

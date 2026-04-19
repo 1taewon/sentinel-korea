@@ -1,0 +1,58 @@
+[
+  {
+    "id": "kr-news-50b55362ca",
+    "source": "news_korea",
+    "language": "en",
+    "title": "The Masters has become the biggest event of the year for private jet companies",
+    "snippet": "Private jet companies are competing for high-spending customers with lavish on-the-ground experiences near the golf course.",
+    "url": "https://www.cnbc.com/2026/04/10/masters-tournament-golf-luxury-private-jet.html",
+    "date": "2026-04-10",
+    "publisher": "CNBC",
+    "severity": "low",
+    "is_respiratory": true,
+    "lat": 36.5,
+    "lng": 127.5
+  },
+  {
+    "id": "kr-news-6e3db34a34",
+    "source": "news_korea",
+    "language": "en",
+    "title": "North Korea and China agree to deepen cooperation in talks between foreign ministers",
+    "snippet": "The foreign ministers of North Korea and China have agreed to further deepen cooperation and exchanges at their “in-depth” talks on international issues",
+    "url": "https://abcnews.com/International/wireStory/north-korea-china-agree-deepen-cooperation-talks-foreign-131901523",
+    "date": "2026-04-10",
+    "publisher": "Abcnews.com",
+    "severity": "low",
+    "is_respiratory": true,
+    "lat": 36.5,
+    "lng": 127.5
+  },
+  {
+    "id": "kr-news-71861ee2d9",
+    "source": "news_korea",
+    "language": "en",
+    "title": "China's top diplomat Wang Yi slams US pressure on North Korea on trip to Pyongyang",
+    "snippet": "SEOUL: China's top diplomat criticised US pressure on North Korea, Pyongyang state media reported on Friday (Apr 10), after he vowed to deepen ties with the diplomatically isolated nuclear state during a visit.The United States has for decades led efforts to …",
+    "url": "https://www.channelnewsasia.com/east-asia/chinas-top-diplomat-wang-yi-slams-us-pressure-north-korea-trip-pyongyang-6048521",
+    "date": "2026-04-10",
+    "publisher": "CNA",
+    "severity": "medium",
+    "is_respiratory": true,
+    "lat": 36.5,
+    "lng": 127.5
+  },
+  {
+    "id": "kr-news-8b0594a662",
+    "source": "news_korea",
+    "language": "en",
+    "title": "The national problem we should take personally",
+    "snippet": "What we learned, and forgot, from COVID.\nThe post The national problem we should take personally appeared first on The Motley Fool Australia.",
+    "url": "https://www.fool.com.au/2026/04/09/the-national-problem-we-should-take-personally/",
+    "date": "2026-04-09",
+    "publisher": "Motley Fool Australia",
+    "severity": "low",
+    "is_respiratory": true,
+    "lat": 36.5,
+    "lng": 127.5
+  }
+]

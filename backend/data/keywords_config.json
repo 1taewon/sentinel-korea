@@ -1,0 +1,61 @@
+{
+  "korea_news": {
+    "queries_ko": [
+      "폐렴 유행",
+      "마이코플라스마 폐렴",
+      "호흡기 감염병",
+      "독감 유행",
+      "코로나 확산",
+      "RSV 유행",
+      "호흡기질환 증가"
+    ],
+    "queries_en": [
+      "pneumonia Korea",
+      "respiratory outbreak South Korea",
+      "influenza Korea",
+      "COVID Korea",
+      "KDCA warning",
+      "mycoplasma Korea",
+      "RSV Korea"
+    ],
+    "exclude_ko": "",
+    "exclude_en": "-journal -study -nature.com -plos -lancet -review -editorial -cureus -\"market size\" -\"market research\" -forecast -CAGR"
+  },
+  "global_news": {
+    "queries": [
+      "respiratory virus outbreak",
+      "pneumonia cluster",
+      "influenza surge global",
+      "MERS outbreak",
+      "avian influenza H5N1",
+      "RSV wave",
+      "COVID new variant",
+      "mycoplasma pneumonia outbreak",
+      "WHO respiratory emergency"
+    ],
+    "exclude": "-journal -study -nature.com -plos -lancet -cureus -review -editorial"
+  },
+  "trends": {
+    "queries": [
+      "pneumonia",
+      "respiratory symptoms",
+      "flu",
+      "influenza",
+      "cough",
+      "fever",
+      "dyspnea"
+    ],
+    "exclude": null
+  },
+  "naver_trends": {
+    "queries": [
+      {"groupName": "폐렴", "keywords": ["폐렴", "폐렴 증상", "폐렴 원인"]},
+      {"groupName": "독감", "keywords": ["독감", "인플루엔자", "독감 증상"]},
+      {"groupName": "기침", "keywords": ["기침", "마른기침", "가래"]},
+      {"groupName": "호흡곤란", "keywords": ["호흡곤란", "숨가쁨", "호흡 어려움"]},
+      {"groupName": "발열", "keywords": ["발열", "고열", "열나요"]},
+      {"groupName": "마이코플라스마", "keywords": ["마이코플라스마", "마이코플라스마 폐렴"]},
+      {"groupName": "RSV", "keywords": ["RSV", "RSV 바이러스", "세기관지염"]}
+    ]
+  }
+}

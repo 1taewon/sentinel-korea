@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentinel Korea — Analysis Flow</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0f1520;
+    color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+  .container { max-width: 940px; width: 100%; }
+  h1 { text-align: center; font-size: 24px; margin-bottom: 8px; color: #6b8aff; }
+  .subtitle { text-align: center; font-size: 13px; color: #667a8f; margin-bottom: 40px; }
+  svg { width: 100%; height: auto; display: block; }
+  .node { cursor: default; }
+  .node rect { transition: filter 0.2s; }
+  .node:hover rect { filter: brightness(1.2); }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Sentinel Korea Analysis Flow</h1>
+  <p class="subtitle">3-column parallel pipeline: NEWS | TRENDS | KDCA. Each has its own AI Digest. All feed into SENTINEL ANALYSIS.</p>
+
+  <svg viewBox="0 0 860 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="8" markerHeight="6" orient="auto-start-auto">
+        <path d="M0,0 L10,4 L0,8 Z" fill="#475569"/>
+      </marker>
+      <marker id="arrow-blue" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="8" markerHeight="6" orient="auto-start-auto">
+        <path d="M0,0 L10,4 L0,8 Z" fill="#38bdf8"/>
+      </marker>
+      <marker id="arrow-green" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="8" markerHeight="6" orient="auto-start-auto">
+        <path d="M0,0 L10,4 L0,8 Z" fill="#34d399"/>
+      </marker>
+      <marker id="arrow-purple" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="8" markerHeight="6" orient="auto-start-auto">
+        <path d="M0,0 L10,4 L0,8 Z" fill="#a78bfa"/>
+      </marker>
+      <linearGradient id="gn" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#0f172a"/>
+      </linearGradient>
+      <linearGradient id="gt" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2d1b4e"/><stop offset="100%" stop-color="#0f172a"/>
+      </linearGradient>
+      <linearGradient id="gk" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1b3d2e"/><stop offset="100%" stop-color="#0f172a"/>
+      </linearGradient>
+      <linearGradient id="gs" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#0f172a"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Column Headers -->
+    <text x="175" y="22" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="700" letter-spacing="1" opacity="0.6">NEWS</text>
+    <text x="450" y="22" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="700" letter-spacing="1" opacity="0.6">TRENDS</text>
+    <text x="720" y="22" text-anchor="middle" fill="#34d399" font-size="11" font-weight="700" letter-spacing="1" opacity="0.6">KDCA</text>
+
+    <!-- Left-aligned layer labels (rotated) -->
+    <text x="6" y="55" text-anchor="start" fill="#334155" font-size="8" font-weight="600" letter-spacing="1.5" transform="rotate(-90, 6, 55)">SOURCES</text>
+    <text x="6" y="150" text-anchor="start" fill="#334155" font-size="8" font-weight="600" letter-spacing="1.5" transform="rotate(-90, 6, 150)">REFRESH</text>
+    <text x="6" y="248" text-anchor="start" fill="#334155" font-size="8" font-weight="600" letter-spacing="1.5" transform="rotate(-90, 6, 248)">AI DIGEST</text>
+    <text x="6" y="340" text-anchor="start" fill="#334155" font-size="8" font-weight="600" letter-spacing="1.5" transform="rotate(-90, 6, 340)">DISPLAY</text>
+    <text x="6" y="445" text-anchor="start" fill="#334155" font-size="8" font-weight="600" letter-spacing="1.5" transform="rotate(-90, 6, 445)">ANALYSIS</text>
+    <text x="6" y="555" text-anchor="start" fill="#334155" font-size="8" font-weight="600" letter-spacing="1.5" transform="rotate(-90, 6, 555)">SENTINEL</text>
+
+    <!-- ═══ Column 1: NEWS ═══ -->
+    <!-- Sources -->
+    <g class="node" transform="translate(18,35)">
+      <rect width="100" height="38" rx="8" fill="url(#gn)" stroke="#38bdf8" stroke-width="1"/>
+      <text x="50" y="17" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="600">Naver News</text>
+      <text x="50" y="31" text-anchor="middle" fill="#667a8f" font-size="8">Korean</text>
+    </g>
+    <g class="node" transform="translate(126,35)">
+      <rect width="100" height="38" rx="8" fill="url(#gn)" stroke="#38bdf8" stroke-width="1"/>
+      <text x="50" y="17" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="600">NewsAPI</text>
+      <text x="50" y="31" text-anchor="middle" fill="#667a8f" font-size="8">English</text>
+    </g>
+    <g class="node" transform="translate(234,35)">
+      <rect width="100" height="38" rx="8" fill="url(#gn)" stroke="#38bdf8" stroke-width="1"/>
+      <text x="50" y="17" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="600">WHO DON</text>
+      <text x="50" y="31" text-anchor="middle" fill="#667a8f" font-size="8">Outbreaks</text>
+    </g>
+    <!-- Arrows: sources → refresh -->
+    <line x1="68" y1="73" x2="175" y2="125" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+    <line x1="176" y1="73" x2="175" y2="125" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+    <line x1="284" y1="73" x2="175" y2="125" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+
+    <!-- Refresh -->
+    <g class="node" transform="translate(95,125)">
+      <rect width="160" height="46" rx="10" fill="#1c2435" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="80" y="20" text-anchor="middle" fill="#f0f2f5" font-size="11" font-weight="700">NEWS Refresh</text>
+      <text x="80" y="35" text-anchor="middle" fill="#667a8f" font-size="9">Collect news</text>
+    </g>
+    <line x1="175" y1="171" x2="175" y2="225" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-blue)" stroke-dasharray="4,3"/>
+
+    <!-- AI Digest -->
+    <g class="node" transform="translate(75,225)">
+      <rect width="200" height="50" rx="10" fill="#1c2435" stroke="#f97316" stroke-width="1.5"/>
+      <text x="100" y="20" text-anchor="middle" fill="#f97316" font-size="9" font-weight="700" letter-spacing="1">GEMINI AI</text>
+      <text x="100" y="36" text-anchor="middle" fill="#f0f2f5" font-size="11" font-weight="600">News Digest</text>
+    </g>
+    <line x1="175" y1="275" x2="175" y2="325" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+
+    <!-- Display -->
+    <g class="node" transform="translate(105,325)">
+      <rect width="140" height="40" rx="8" fill="#1c2435" stroke="#475569" stroke-width="1"/>
+      <text x="70" y="17" text-anchor="middle" fill="#f0f2f5" font-size="10" font-weight="600">NEWS Panel</text>
+      <text x="70" y="31" text-anchor="middle" fill="#667a8f" font-size="8">AI Summary + Sources</text>
+    </g>
+
+    <!-- ═══ Column 2: TRENDS ═══ -->
+    <!-- Sources -->
+    <g class="node" transform="translate(362,35)">
+      <rect width="115" height="38" rx="8" fill="url(#gt)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="57" y="17" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Google Trends</text>
+      <text x="57" y="31" text-anchor="middle" fill="#667a8f" font-size="8">EN keywords</text>
+    </g>
+    <g class="node" transform="translate(485,35)">
+      <rect width="115" height="38" rx="8" fill="url(#gt)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="57" y="17" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">Naver Trends</text>
+      <text x="57" y="31" text-anchor="middle" fill="#667a8f" font-size="8">KR keywords</text>
+    </g>
+    <line x1="419" y1="73" x2="450" y2="125" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+    <line x1="542" y1="73" x2="450" y2="125" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+
+    <!-- Refresh -->
+    <g class="node" transform="translate(370,125)">
+      <rect width="160" height="46" rx="10" fill="#1c2435" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="80" y="20" text-anchor="middle" fill="#f0f2f5" font-size="11" font-weight="700">TRENDS Refresh</text>
+      <text x="80" y="35" text-anchor="middle" fill="#667a8f" font-size="9">Collect trends</text>
+    </g>
+    <line x1="450" y1="171" x2="450" y2="225" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow-purple)" stroke-dasharray="4,3"/>
+
+    <!-- AI Digest -->
+    <g class="node" transform="translate(350,225)">
+      <rect width="200" height="50" rx="10" fill="#1c2435" stroke="#f97316" stroke-width="1.5"/>
+      <text x="100" y="20" text-anchor="middle" fill="#f97316" font-size="9" font-weight="700" letter-spacing="1">GEMINI AI</text>
+      <text x="100" y="36" text-anchor="middle" fill="#f0f2f5" font-size="11" font-weight="600">Trends Digest</text>
+    </g>
+    <line x1="450" y1="275" x2="450" y2="325" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+
+    <!-- Display -->
+    <g class="node" transform="translate(380,325)">
+      <rect width="140" height="40" rx="8" fill="#1c2435" stroke="#475569" stroke-width="1"/>
+      <text x="70" y="17" text-anchor="middle" fill="#f0f2f5" font-size="10" font-weight="600">TRENDS Panel</text>
+      <text x="70" y="31" text-anchor="middle" fill="#667a8f" font-size="8">AI Summary + Charts</text>
+    </g>
+
+    <!-- ═══ Column 3: KDCA ═══ -->
+    <!-- Source -->
+    <g class="node" transform="translate(650,35)">
+      <rect width="140" height="38" rx="8" fill="url(#gk)" stroke="#34d399" stroke-width="1"/>
+      <text x="70" y="17" text-anchor="middle" fill="#34d399" font-size="10" font-weight="600">KDCA Data</text>
+      <text x="70" y="31" text-anchor="middle" fill="#667a8f" font-size="8">ILI/SARI/Wastewater</text>
+    </g>
+    <line x1="720" y1="73" x2="720" y2="125" stroke="#34d399" stroke-width="1" marker-end="url(#arrow-green)"/>
+
+    <!-- Refresh (Upload) -->
+    <g class="node" transform="translate(640,125)">
+      <rect width="160" height="46" rx="10" fill="#1c2435" stroke="#34d399" stroke-width="1.5"/>
+      <text x="80" y="20" text-anchor="middle" fill="#f0f2f5" font-size="11" font-weight="700">Data Upload</text>
+      <text x="80" y="35" text-anchor="middle" fill="#667a8f" font-size="9">Excel upload</text>
+    </g>
+    <line x1="720" y1="171" x2="720" y2="225" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-green)" stroke-dasharray="4,3"/>
+
+    <!-- AI Digest -->
+    <g class="node" transform="translate(620,225)">
+      <rect width="200" height="50" rx="10" fill="#1c2435" stroke="#f97316" stroke-width="1.5"/>
+      <text x="100" y="20" text-anchor="middle" fill="#f97316" font-size="9" font-weight="700" letter-spacing="1">GEMINI AI</text>
+      <text x="100" y="36" text-anchor="middle" fill="#f0f2f5" font-size="11" font-weight="600">KDCA Digest</text>
+    </g>
+    <line x1="720" y1="275" x2="720" y2="325" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+
+    <!-- Display -->
+    <g class="node" transform="translate(650,325)">
+      <rect width="140" height="40" rx="8" fill="#1c2435" stroke="#475569" stroke-width="1"/>
+      <text x="70" y="17" text-anchor="middle" fill="#f0f2f5" font-size="10" font-weight="600">KDCA Panel</text>
+      <text x="70" y="31" text-anchor="middle" fill="#667a8f" font-size="8">AI Summary + Data</text>
+    </g>
+
+    <!-- ═══ OSINT Analysis ═══ -->
+    <!-- NEWS + TRENDS → OSINT -->
+    <line x1="175" y1="365" x2="300" y2="430" stroke="#6b8aff" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+    <line x1="450" y1="365" x2="400" y2="430" stroke="#6b8aff" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+
+    <g class="node" transform="translate(175,430)">
+      <rect width="250" height="52" rx="12" fill="#1c2435" stroke="#6b8aff" stroke-width="2"/>
+      <text x="125" y="22" text-anchor="middle" fill="#6b8aff" font-size="12" font-weight="800" letter-spacing="0.5">OSINT Analysis</text>
+      <text x="125" y="38" text-anchor="middle" fill="#667a8f" font-size="9">NEWS + TRENDS combined</text>
+    </g>
+
+    <!-- ═══ SENTINEL ANALYSIS ═══ -->
+    <!-- OSINT + KDCA → Sentinel -->
+    <line x1="300" y1="482" x2="370" y2="540" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+    <line x1="720" y1="365" x2="530" y2="540" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+
+    <g class="node" transform="translate(250,540)">
+      <rect width="340" height="58" rx="12" fill="url(#gs)" stroke="#38bdf8" stroke-width="2"/>
+      <text x="170" y="24" text-anchor="middle" fill="#38bdf8" font-size="14" font-weight="800" letter-spacing="1">SENTINEL ANALYSIS</text>
+      <text x="170" y="42" text-anchor="middle" fill="#f0f2f5" font-size="10">OSINT + KDCA integrated</text>
+    </g>
+
+    <!-- Sentinel → Output -->
+    <line x1="420" y1="598" x2="420" y2="640" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+
+    <g class="node" transform="translate(315,640)">
+      <rect width="210" height="40" rx="8" fill="#1c2435" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="105" y="17" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="700">Final Report</text>
+      <text x="105" y="31" text-anchor="middle" fill="#667a8f" font-size="8">Scores + Signals + Visualization</text>
+    </g>
+
+    <!-- Sentinel Chat (side) -->
+    <g class="node" transform="translate(665,548)">
+      <rect width="130" height="40" rx="8" fill="#1c2435" stroke="#667a8f" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="65" y="17" text-anchor="middle" fill="#667a8f" font-size="10" font-weight="600">Sentinel Chat</text>
+      <text x="65" y="31" text-anchor="middle" fill="#475569" font-size="8">Interactive Q&A</text>
+    </g>
+    <line x1="590" y1="568" x2="665" y2="568" stroke="#475569" stroke-width="1" stroke-dasharray="4,3"/>
+
+  </svg>
+</div>
+</body>
+</html>

@@ -1,0 +1,563 @@
+import { useEffect, useRef, useState } from 'react';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+interface UploadResult {
+  success: boolean;
+  filename?: string;
+  file_type?: string;
+  records_parsed?: number;
+  snapshots_updated?: number;
+  updated_dates?: string[];
+  error?: string;
+}
+
+interface HistoryItem {
+  filename: string;
+  file_type: string;
+  uploaded_at: string;
+  snapshot_count: number;
+}
+
+interface ReportItem {
+  filename: string;
+  epiweek: string;
+  generated_at: string;
+  size_bytes: number;
+}
+
+interface Recipient { email: string; name: string; }
+
+interface KdcaDigest {
+  status: string;
+  kdca_summary?: string;
+  regional_highlights?: { region: string; finding: string; severity: string }[];
+  risk_assessment?: string;
+  key_indicators?: { indicator: string; trend: string; detail: string }[];
+  sources_used?: string[];
+  generated_at?: string;
+  raw_summary?: string;
+}
+
+type TabType = 'upload' | 'reports' | 'recipients';
+
+export default function KdcaUploadPanel() {
+  const [activeTab, setActiveTab] = useState<TabType>('upload');
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [reports, setReports] = useState<ReportItem[]>([]);
+  const [recipients, setRecipients] = useState<Recipient[]>([]);
+  const [newEmail, setNewEmail] = useState('');
+  const [newName, setNewName] = useState('');
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [reportContent, setReportContent] = useState('');
+  const [statusMsg, setStatusMsg] = useState('');
+  const [statusType, setStatusType] = useState<'ok' | 'error' | 'pending'>('ok');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // AI Digest state
+  const [digest, setDigest] = useState<KdcaDigest | null>(null);
+  const [digestLoading, setDigestLoading] = useState(false);
+  const [showRawData, setShowRawData] = useState(false);
+
+  const setStatus = (msg: string, type: 'ok' | 'error' | 'pending') => {
+    setStatusMsg(msg);
+    setStatusType(type);
+  };
+
+  const fetchDigest = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/risk-analysis/kdca-digest`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === 'ok' || data.status === 'partial') setDigest(data);
+      }
+    } catch { /* ignore */ }
+  };
+
+  const generateDigest = async () => {
+    setDigestLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/risk-analysis/kdca-digest`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setDigest(data);
+      }
+    } catch { /* ignore */ }
+    setDigestLoading(false);
+  };
+
+  const fetchData = async () => {
+    const [histRes, repRes, recRes] = await Promise.all([
+      fetch(`${API_BASE}/ingestion/upload-history`),
+      fetch(`${API_BASE}/reports/list`),
+      fetch(`${API_BASE}/reports/recipients/list`),
+    ]);
+    if (histRes.ok) setHistory(await histRes.json());
+    if (repRes.ok) setReports(await repRes.json());
+    if (recRes.ok) setRecipients(await recRes.json());
+  };
+
+  useEffect(() => { fetchData(); fetchDigest(); }, []);
+
+  const handleFile = async (file: File) => {
+    setUploading(true);
+    setUploadResult(null);
+    setStatusMsg('');
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const res = await fetch(`${API_BASE}/ingestion/upload-kdca`, { method: 'POST', body: form });
+      const data = await res.json();
+      setUploadResult(data);
+      if (data.success) {
+        setStatus(`${data.snapshots_updated} snapshots updated. Generating AI digest...`, 'pending');
+        fetchData();
+        generateDigest().then(() => setStatus('Upload complete. AI digest generated.', 'ok'));
+      } else {
+        setStatus(data.error || 'Processing failed', 'error');
+      }
+    } catch {
+      setStatus('Upload failed — check server connection.', 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  };
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFile(file);
+    e.target.value = '';
+  };
+
+  const handleScanFolder = async () => {
+    setUploading(true);
+    setStatus('Scanning folder...', 'pending');
+    try {
+      const res = await fetch(`${API_BASE}/ingestion/process-folder`, { method: 'POST' });
+      const data = await res.json();
+      setStatus(`${data.files_processed} files processed successfully.`, 'ok');
+      fetchData();
+    } catch {
+      setStatus('Folder scan failed.', 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleGenerateReport = async () => {
+    setGeneratingReport(true);
+    setStatus('Generating AI report... (~30s)', 'pending');
+    try {
+      const res = await fetch(`${API_BASE}/reports/generate`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setReportContent(data.report_content);
+        setStatus(`Report generated (${data.epiweek})`, 'ok');
+        setActiveTab('reports');
+        fetchData();
+      } else {
+        setStatus(data.detail || 'Generation failed', 'error');
+      }
+    } catch {
+      setStatus('Report generation failed.', 'error');
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
+  const handleSendReport = async () => {
+    setSendingEmail(true);
+    setStatus('Sending email...', 'pending');
+    try {
+      const res = await fetch(`${API_BASE}/reports/send`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setStatus(`Sent to ${data.recipients?.length} recipients.`, 'ok');
+      } else {
+        setStatus(data.detail, 'error');
+      }
+    } catch {
+      setStatus('Email sending failed.', 'error');
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  const handleAddRecipient = async () => {
+    if (!newEmail.includes('@')) return;
+    try {
+      const res = await fetch(`${API_BASE}/reports/recipients/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newEmail, name: newName }),
+      });
+      if (res.ok) {
+        setNewEmail(''); setNewName('');
+        fetchData();
+        setStatus(`${newEmail} added.`, 'ok');
+      } else {
+        const d = await res.json();
+        setStatus(d.detail, 'error');
+      }
+    } catch {
+      setStatus('Failed to add recipient.', 'error');
+    }
+  };
+
+  const handleRemoveRecipient = async (email: string) => {
+    await fetch(`${API_BASE}/reports/recipients/${encodeURIComponent(email)}`, { method: 'DELETE' });
+    fetchData();
+  };
+
+  const handleLoadReport = async (filename: string) => {
+    const res = await fetch(`${API_BASE}/reports/content/${filename}`);
+    if (res.ok) {
+      const d = await res.json();
+      setReportContent(d.content);
+    }
+  };
+
+  return (
+    <div className="kdca-panel" id="kdca-panel">
+      {/* 탭 */}
+      <div className="kdca-tabs">
+        {(['upload', 'reports', 'recipients'] as TabType[]).map(tab => (
+          <button
+            key={tab}
+            className={`kdca-tab${activeTab === tab ? ' kdca-tab--active' : ''}`}
+            onClick={() => setActiveTab(tab)}
+            id={`tab-${tab}`}
+          >
+            {tab === 'upload' && 'Upload'}
+            {tab === 'reports' && `Reports (${reports.length})`}
+            {tab === 'recipients' && `Recipients (${recipients.length})`}
+          </button>
+        ))}
+      </div>
+
+      {/* 상태 메시지 */}
+      {statusMsg && (
+        <div className={`kdca-status kdca-status--${statusType}`}>
+          {statusMsg}
+        </div>
+      )}
+
+      {/* 업로드 탭 */}
+      {activeTab === 'upload' && (
+        <div className="kdca-content">
+          {/* AI Digest Section */}
+          {digestLoading && (
+            <div className="news-loading">
+              <div className="news-spinner" />
+              <span>Analyzing KDCA data...</span>
+            </div>
+          )}
+
+          {!digestLoading && digest && digest.status === 'ok' && !showRawData && (
+            <div className="news-digest-section">
+              <div className="news-digest-content">
+                {digest.kdca_summary && (
+                  <div className="digest-block" style={{ borderLeftColor: '#34d399' }}>
+                    <div className="digest-block-title" style={{ color: '#34d399' }}>KDCA Summary</div>
+                    <p className="digest-text">{digest.kdca_summary}</p>
+                  </div>
+                )}
+                {digest.risk_assessment && (
+                  <div className="digest-block digest-risk">
+                    <div className="digest-block-title">Risk Assessment</div>
+                    <p className="digest-text">{digest.risk_assessment}</p>
+                  </div>
+                )}
+                {digest.regional_highlights && digest.regional_highlights.length > 0 && (
+                  <div className="digest-alerts">
+                    <div className="digest-block-title" style={{ padding: '0 2px', color: '#94a3b8' }}>Regional Highlights</div>
+                    {digest.regional_highlights.map((r, i) => (
+                      <div key={i} className="digest-alert-item">
+                        <span className="digest-alert-dot" style={{ background: r.severity === 'high' ? '#ef4444' : r.severity === 'medium' ? '#f59e42' : '#22c55e' }} />
+                        <div>
+                          <strong>{r.region}</strong>
+                          <p className="digest-alert-detail">{r.finding}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {digest.key_indicators && digest.key_indicators.length > 0 && (
+                  <div className="digest-alerts">
+                    <div className="digest-block-title" style={{ padding: '0 2px', color: '#94a3b8' }}>Key Indicators</div>
+                    {digest.key_indicators.map((k, i) => (
+                      <div key={i} className="digest-alert-item">
+                        <span className="digest-alert-dot" style={{
+                          background: k.trend === '상승' ? '#ef4444' : k.trend === '하락' ? '#22c55e' : '#f59e42',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          width: 16, height: 16, fontSize: 10, color: '#fff', borderRadius: '50%'
+                        }}>
+                          {k.trend === '상승' ? '↑' : k.trend === '하락' ? '↓' : '→'}
+                        </span>
+                        <div>
+                          <strong>{k.indicator}</strong>
+                          <p className="digest-alert-detail">{k.detail}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {digest.generated_at && (
+                  <div className="digest-source-count">
+                    Generated: {new Date(digest.generated_at).toLocaleString('ko-KR')}
+                    {digest.sources_used && ` · Sources: ${digest.sources_used.join(', ')}`}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {!digestLoading && digest && digest.status === 'partial' && !showRawData && (
+            <div className="news-digest-section">
+              <div className="digest-block">
+                <p className="digest-text">{digest.raw_summary}</p>
+              </div>
+            </div>
+          )}
+
+          {!digestLoading && (!digest || digest.status === 'empty') && !showRawData && (
+            <div className="trends-empty">
+              <p>No KDCA AI digest available.</p>
+              <p className="news-empty-hint">Upload KDCA data to generate an AI analysis.</p>
+            </div>
+          )}
+
+          {/* Toggle: AI Digest ↔ Raw Data */}
+          <div style={{ display: 'flex', gap: 8, margin: '6px 10px' }}>
+            <button
+              className="news-sources-toggle"
+              style={{ flex: 1, width: 'auto', margin: 0 }}
+              onClick={() => setShowRawData(!showRawData)}
+            >
+              {showRawData ? 'View AI Summary' : 'View Raw Data'}
+            </button>
+            {!showRawData && (
+              <button
+                className="news-sources-toggle"
+                style={{ flex: 1, width: 'auto', margin: 0, opacity: digestLoading ? 0.5 : 1 }}
+                onClick={generateDigest}
+                disabled={digestLoading}
+              >
+                {digestLoading ? 'Analyzing...' : 'Refresh Digest'}
+              </button>
+            )}
+          </div>
+
+          {/* Raw Data View */}
+          {showRawData && (
+            <>
+              {/* 드래그앤드롭 존 */}
+              <div
+                className={`kdca-dropzone${dragging ? ' kdca-dropzone--active' : ''}`}
+                onDragOver={e => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={onDrop}
+                onClick={() => fileInputRef.current?.click()}
+                id="kdca-dropzone"
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.xlsx,.xls"
+                  onChange={onFileChange}
+                  style={{ display: 'none' }}
+                  id="kdca-file-input"
+                />
+                {uploading ? (
+                  <div className="kdca-uploading">
+                    <div className="news-spinner" />
+                    <span>Processing...</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="kdca-dropzone-text">
+                      Drop KDCA file here or click to upload
+                    </div>
+                    <div className="kdca-dropzone-hint">CSV, XLSX supported</div>
+                    <div className="kdca-dropzone-hint" style={{ marginTop: 4, color: '#6366f1' }}>
+                      Filename must contain: 급성호흡기, 인플루엔자, or 중증급성
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* 폴더 스캔 */}
+              <button className="kdca-btn kdca-btn--secondary" onClick={handleScanFolder} disabled={uploading}>
+                Scan Sentinel_data folder
+              </button>
+
+              {/* 업로드 결과 */}
+              {uploadResult && uploadResult.success && (
+                <div className="kdca-result">
+                  <div className="kdca-result-row">
+                    <span>File type</span>
+                    <span className="kdca-result-value">{uploadResult.file_type}</span>
+                  </div>
+                  <div className="kdca-result-row">
+                    <span>Records parsed</span>
+                    <span className="kdca-result-value">{uploadResult.records_parsed}</span>
+                  </div>
+                  <div className="kdca-result-row">
+                    <span>Snapshots updated</span>
+                    <span className="kdca-result-value">{uploadResult.snapshots_updated}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* 업로드 이력 */}
+              {history.length > 0 && (
+                <div className="kdca-history">
+                  <div className="kdca-section-title">Upload History</div>
+                  {history.slice(-5).reverse().map((h, i) => (
+                    <div key={i} className="kdca-history-item">
+                      <span className="kdca-history-name">{h.filename}</span>
+                      <span className="kdca-history-meta">{h.file_type} · {h.snapshot_count} snapshots</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* AI 보고서 생성 */}
+              <div className="kdca-report-section">
+                <div className="kdca-section-title">AI Report</div>
+                <button
+                  className="kdca-btn kdca-btn--primary"
+                  onClick={handleGenerateReport}
+                  disabled={generatingReport}
+                  id="generate-report-btn"
+                >
+                  {generatingReport ? 'Generating...' : 'Generate Weekly AI Report'}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* 보고서 탭 */}
+      {activeTab === 'reports' && (
+        <div className="kdca-content">
+          {reportContent && (
+            <div className="kdca-report-preview">
+              <div className="kdca-section-title">
+                Latest Report Preview
+                <button
+                  className="kdca-send-btn"
+                  onClick={handleSendReport}
+                  disabled={sendingEmail}
+                  id="send-report-btn"
+                >
+                  {sendingEmail ? 'Sending...' : 'Send Email'}
+                </button>
+              </div>
+              <pre className="kdca-report-text">{reportContent}</pre>
+            </div>
+          )}
+
+          <div className="kdca-section-title">Saved Reports</div>
+          {reports.length === 0 ? (
+            <div className="trends-empty">
+              <p>No reports generated yet.</p>
+              <p className="news-empty-hint">Generate an AI report from the Upload tab.</p>
+            </div>
+          ) : (
+            reports.map((r, i) => (
+              <div key={i} className="kdca-report-item" onClick={() => handleLoadReport(r.filename)}>
+                <div className="kdca-report-name">{r.epiweek}</div>
+                <div className="kdca-report-meta">
+                  {new Date(r.generated_at).toLocaleDateString('ko-KR')} ·&nbsp;
+                  {(r.size_bytes / 1024).toFixed(1)}KB
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* 수신자 탭 */}
+      {activeTab === 'recipients' && (
+        <div className="kdca-content">
+          <div className="kdca-section-title">Email Recipients</div>
+
+          {/* 추가 폼 */}
+          <div className="kdca-recipient-form">
+            <input
+              className="kdca-input"
+              type="email"
+              placeholder="Email address"
+              value={newEmail}
+              onChange={e => setNewEmail(e.target.value)}
+              id="recipient-email-input"
+            />
+            <input
+              className="kdca-input"
+              type="text"
+              placeholder="Name (optional)"
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              id="recipient-name-input"
+            />
+            <button
+              className="kdca-btn kdca-btn--primary"
+              onClick={handleAddRecipient}
+              disabled={!newEmail.includes('@')}
+              id="add-recipient-btn"
+            >
+              + Add
+            </button>
+          </div>
+
+          {/* 목록 */}
+          {recipients.length === 0 ? (
+            <div className="trends-empty">
+              <p>No recipients registered.</p>
+            </div>
+          ) : (
+            recipients.map((r, i) => (
+              <div key={i} className="kdca-recipient-item">
+                <div>
+                  <div className="kdca-recipient-email">{r.email}</div>
+                  {r.name && <div className="kdca-recipient-name">{r.name}</div>}
+                </div>
+                <button
+                  className="kdca-remove-btn"
+                  onClick={() => handleRemoveRecipient(r.email)}
+                >
+                  ×
+                </button>
+              </div>
+            ))
+          )}
+
+          {recipients.length > 0 && (
+            <button
+              className="kdca-btn kdca-btn--primary"
+              style={{ marginTop: 12, width: '100%' }}
+              onClick={handleSendReport}
+              disabled={sendingEmail || reports.length === 0}
+              id="send-all-btn"
+            >
+              {sendingEmail ? 'Sending...' : `Send latest report to ${recipients.length} recipients`}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
