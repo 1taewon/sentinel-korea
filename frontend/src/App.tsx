@@ -359,57 +359,64 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
           {/* Right-side vertical stack: toolbar + legend */}
           <div className="kas-right-stack">
             <div className="kas-right-toolbar">
+              {/* Globe — wireframe meridian/parallel grid */}
               <button
                 className={`kas-toolbar-btn ${isGlobeExpanded ? 'kas-toolbar-btn--active' : ''}`}
                 onClick={() => setIsGlobeExpanded(v => !v)}
-                title="글로벌 지구본"
+                title="Global view"
                 type="button"
               >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="square">
                   <circle cx="12" cy="12" r="9" />
-                  <path d="M3 12h18" />
-                  <path d="M12 3a14.5 14.5 0 0 1 0 18a14.5 14.5 0 0 1 0-18z" />
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="12" y1="3" x2="12" y2="21" />
+                  <ellipse cx="12" cy="12" rx="4.5" ry="9" />
+                  <ellipse cx="12" cy="12" rx="9" ry="4.5" />
                 </svg>
               </button>
+              {/* Layers — orthographic stacked planes */}
               <button
                 className={`kas-toolbar-btn ${showLayerPanel ? 'kas-toolbar-btn--active' : ''}`}
                 onClick={() => setShowLayerPanel(v => !v)}
-                title="레이어"
+                title="Layers"
                 type="button"
               >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 3l9 5-9 5-9-5 9-5z" />
-                  <path d="M3 13l9 5 9-5" />
-                  <path d="M3 18l9 5 9-5" />
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter">
+                  <rect x="4" y="4" width="12" height="12" />
+                  <rect x="8" y="8" width="12" height="12" />
                 </svg>
               </button>
+              {/* Console / terminal prompt */}
               <button
                 className="kas-toolbar-btn"
                 onClick={() => {
                   const btn = document.getElementById('chatbot-toggle-btn');
                   if (btn) btn.click();
                 }}
-                title="AI Chat"
+                title="Query console"
                 type="button"
               >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter">
+                  <rect x="3" y="5" width="18" height="14" />
+                  <polyline points="7,10 10,12 7,14" />
+                  <line x1="12" y1="15" x2="17" y2="15" />
                 </svg>
               </button>
+              {/* Waveform — signal / analysis */}
               <button
                 className="kas-toolbar-btn"
                 onClick={() => handleRunFullAnalysis()}
-                title="Sentinel 분석"
+                title="Run analysis"
                 disabled={analyzingFull}
                 type="button"
               >
                 {analyzingFull ? (
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="kas-toolbar-spin">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="square" className="kas-toolbar-spin">
                     <path d="M21 12a9 9 0 1 1-6.2-8.55" />
                   </svg>
                 ) : (
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M13 2L4.09 12.97a.7.7 0 0 0 .56 1.13H11l-1 8 8.91-10.97A.7.7 0 0 0 18.35 10H13l1-8z" />
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter">
+                    <polyline points="2,12 5,12 7,6 10,18 13,9 15,15 17,12 22,12" />
                   </svg>
                 )}
               </button>
