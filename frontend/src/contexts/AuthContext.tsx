@@ -42,7 +42,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        // 이메일 확인 후 앱으로 리다이렉트
+        emailRedirectTo: window.location.origin,
+      },
+    });
     return { error: error?.message ?? null };
   };
 

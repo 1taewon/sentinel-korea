@@ -24,7 +24,7 @@ export default function LoginPage() {
     } else {
       const { error } = await signUp(email, password);
       if (error) setError(error);
-      else setMessage('가입 확인 이메일을 보냈습니다. 메일함을 확인해주세요.');
+      else setMessage('가입 확인 이메일을 발송했습니다. 메일함에서 링크를 클릭하면 로그인할 수 있어요.');
     }
     setLoading(false);
   };
