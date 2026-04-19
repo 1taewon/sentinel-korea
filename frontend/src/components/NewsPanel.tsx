@@ -228,7 +228,7 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
             disabled={refreshing}
             title="Collect news and generate AI digest"
           >
-            {refreshing ? 'Analyzing...' : 'Refresh'}
+            {refreshing ? '… Refreshing' : '↻ Refresh'}
           </button>
         </div>
       </div>

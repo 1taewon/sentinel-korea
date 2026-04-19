@@ -58,7 +58,6 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [newEmail, setNewEmail] = useState('');
   const [newName, setNewName] = useState('');
-  const [generatingReport, setGeneratingReport] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [reportContent, setReportContent] = useState('');
   const [statusMsg, setStatusMsg] = useState('');
@@ -162,26 +161,8 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
     }
   };
 
-  const handleGenerateReport = async () => {
-    setGeneratingReport(true);
-    setStatus('Generating AI report... (~30s)', 'pending');
-    try {
-      const res = await fetch(`${API_BASE}/reports/generate`, { method: 'POST' });
-      const data = await res.json();
-      if (res.ok) {
-        setReportContent(data.report_content);
-        setStatus(`Report generated (${data.epiweek})`, 'ok');
-        setActiveTab('reports');
-        fetchData();
-      } else {
-        setStatus(data.detail || 'Generation failed', 'error');
-      }
-    } catch {
-      setStatus('Report generation failed.', 'error');
-    } finally {
-      setGeneratingReport(false);
-    }
-  };
+  // handleGenerateReport removed — report generation is now triggered from
+  // AI ANALYZE > KDCA DATA ANALYZE button in the right console (App.tsx).
 
   const handleSendReport = async () => {
     setSendingEmail(true);
@@ -459,18 +440,7 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
               )}
             </div>
           )}
-          {view === 'console' && (
-            <div style={{ margin: '6px 10px' }}>
-              <button
-                className="news-sources-toggle"
-                style={{ width: '100%', margin: 0, opacity: digestLoading ? 0.5 : 1 }}
-                onClick={generateDigest}
-                disabled={digestLoading}
-              >
-                {digestLoading ? 'Analyzing...' : 'Refresh AI Analysis'}
-              </button>
-            </div>
-          )}
+          {/* "Refresh AI Analysis" removed — consolidated into AI ANALYZE > KDCA DATA ANALYZE */}
 
           {/* Raw Data View */}
           {forceRawData && (
@@ -546,18 +516,7 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
                 </div>
               )}
 
-              {/* AI 보고서 생성 */}
-              <div className="kdca-report-section">
-                <div className="kdca-section-title">AI Report</div>
-                <button
-                  className="kdca-btn kdca-btn--primary"
-                  onClick={handleGenerateReport}
-                  disabled={generatingReport}
-                  id="generate-report-btn"
-                >
-                  {generatingReport ? 'Generating...' : 'Generate Weekly AI Report'}
-                </button>
-              </div>
+              {/* "Generate Weekly AI Report" removed — consolidated into AI ANALYZE > KDCA DATA ANALYZE */}
             </>
           )}
         </div>
