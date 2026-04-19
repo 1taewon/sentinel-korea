@@ -592,6 +592,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
           <FlowDiagram
             onClose={() => setNavTab('map')}
             onDataRefreshed={() => fetchAlerts()}
+            snapshotDate={currentDate}
             embedded
           />
         </main>
@@ -609,6 +610,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
         <FlowDiagram
           onClose={() => setShowFlowDiagram(false)}
           onDataRefreshed={() => fetchAlerts()}
+          snapshotDate={currentDate}
         />
       )}
     </div>

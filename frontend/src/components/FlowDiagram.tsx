@@ -19,6 +19,7 @@ interface EdgeDef { from: string; to: string; dashed?: boolean; }
 interface Props {
   onClose: () => void;
   onDataRefreshed: () => void;
+  snapshotDate?: string;
   embedded?: boolean;
 }
 
@@ -104,7 +105,7 @@ const STATUS_COLORS: Record<NodeStatus, string> = {
   error: '#ef4444',
 };
 
-export default function FlowDiagram({ onClose, onDataRefreshed }: Props) {
+export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate }: Props) {
   const [statuses, setStatuses] = useState<Record<string, NodeStatus>>({});
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [detailResult, setDetailResult] = useState<string>('');
@@ -201,7 +202,11 @@ export default function FlowDiagram({ onClose, onDataRefreshed }: Props) {
       });
       const data = await res.json();
       setNodeStatus('osint', 'done');
-      setDetailResult(data.summary || 'OSINT analysis complete.');
+      // Save OSINT report (daily)
+      try {
+        await fetch(`${API_BASE}/reports/generate-osint`, { method: 'POST' });
+      } catch { /* ignore report save failure */ }
+      setDetailResult(`${data.summary || 'OSINT analysis complete.'}\n\n→ OSINT report saved to Report tab.`);
       onDataRefreshed();
     } catch {
       setNodeStatus('osint', 'error');
@@ -215,7 +220,12 @@ export default function FlowDiagram({ onClose, onDataRefreshed }: Props) {
       if (res.ok) {
         setNodeStatus('kdca_digest', 'done');
         setNodeStatus('kdca_panel', 'done');
-        setDetailResult('KDCA Digest generated successfully.');
+        // Save KDCA report (weekly)
+        try {
+          const qs = snapshotDate ? `?snapshot_date=${snapshotDate}` : '';
+          await fetch(`${API_BASE}/reports/generate-kdca${qs}`, { method: 'POST' });
+        } catch { /* ignore report save failure */ }
+        setDetailResult('KDCA Digest generated successfully.\n\n→ KDCA report saved to Report tab.');
       } else {
         setNodeStatus('kdca_digest', 'error');
         setDetailResult('KDCA Digest failed. Upload KDCA data first.');
@@ -225,9 +235,103 @@ export default function FlowDiagram({ onClose, onDataRefreshed }: Props) {
     }
   };
 
+  /** Ensure a prerequisite analysis has run. Returns true on success/already-done. */
+  const ensureNewsDigest = async (): Promise<boolean> => {
+    if (statuses.news_digest === 'done') return true;
+    setNodeStatus('news_refresh', 'running');
+    try {
+      await fetch(`${API_BASE}/ingestion/refresh-korea`, { method: 'POST' });
+      await fetch(`${API_BASE}/ingestion/refresh-global`, { method: 'POST' });
+      setNodeStatus('news_refresh', 'done');
+      setNodeStatus('naver_news', 'done');
+      setNodeStatus('newsapi', 'done');
+      setNodeStatus('who_don', 'done');
+      setNodeStatus('news_digest', 'running');
+      const r = await fetch(`${API_BASE}/risk-analysis/news-digest`, { method: 'POST' });
+      if (!r.ok) { setNodeStatus('news_digest', 'error'); return false; }
+      setNodeStatus('news_digest', 'done');
+      setNodeStatus('news_panel', 'done');
+      return true;
+    } catch {
+      setNodeStatus('news_digest', 'error');
+      return false;
+    }
+  };
+
+  const ensureTrendsDigest = async (): Promise<boolean> => {
+    if (statuses.trends_digest === 'done') return true;
+    setNodeStatus('trends_refresh', 'running');
+    try {
+      await fetch(`${API_BASE}/ingestion/refresh-trends`, { method: 'POST' });
+      setNodeStatus('trends_refresh', 'done');
+      setNodeStatus('google_trends', 'done');
+      setNodeStatus('naver_trends', 'done');
+      setNodeStatus('trends_digest', 'running');
+      const r = await fetch(`${API_BASE}/risk-analysis/trends-digest`, { method: 'POST' });
+      if (!r.ok) { setNodeStatus('trends_digest', 'error'); return false; }
+      setNodeStatus('trends_digest', 'done');
+      setNodeStatus('trends_panel', 'done');
+      return true;
+    } catch {
+      setNodeStatus('trends_digest', 'error');
+      return false;
+    }
+  };
+
+  const ensureKdcaDigest = async (): Promise<boolean> => {
+    if (statuses.kdca_digest === 'done') return true;
+    setNodeStatus('kdca_digest', 'running');
+    try {
+      const r = await fetch(`${API_BASE}/risk-analysis/kdca-digest`, { method: 'POST' });
+      if (!r.ok) { setNodeStatus('kdca_digest', 'error'); return false; }
+      setNodeStatus('kdca_digest', 'done');
+      setNodeStatus('kdca_panel', 'done');
+      return true;
+    } catch {
+      setNodeStatus('kdca_digest', 'error');
+      return false;
+    }
+  };
+
+  const ensureOsint = async (): Promise<boolean> => {
+    if (statuses.osint === 'done') return true;
+    setNodeStatus('osint', 'running');
+    try {
+      await fetch(`${API_BASE}/risk-analysis/analyze-news-trends`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+      });
+      setNodeStatus('osint', 'done');
+      return true;
+    } catch {
+      setNodeStatus('osint', 'error');
+      return false;
+    }
+  };
+
   const runSentinelAnalysis = async () => {
     setNodeStatus('sentinel', 'running');
+    setDetailResult('Checking prerequisites...');
     try {
+      // Chain: ensure prereqs first
+      const steps: { label: string; fn: () => Promise<boolean> }[] = [
+        { label: 'News digest', fn: ensureNewsDigest },
+        { label: 'Trends digest', fn: ensureTrendsDigest },
+        { label: 'KDCA digest', fn: ensureKdcaDigest },
+        { label: 'OSINT analysis', fn: ensureOsint },
+      ];
+      const ran: string[] = [];
+      for (const step of steps) {
+        const ok = await step.fn();
+        if (!ok) {
+          setNodeStatus('sentinel', 'error');
+          setDetailResult(`Sentinel aborted: ${step.label} failed. Fix that step first.`);
+          return;
+        }
+        ran.push(step.label);
+        setDetailResult(`Completed: ${ran.join(' → ')}\nNow running Sentinel...`);
+      }
+
+      // Run the integrated Sentinel analysis
       const res = await fetch(`${API_BASE}/risk-analysis/analyze`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ include_kdca: true }),
@@ -235,7 +339,14 @@ export default function FlowDiagram({ onClose, onDataRefreshed }: Props) {
       const data = await res.json();
       setNodeStatus('sentinel', 'done');
       setNodeStatus('output', 'done');
-      setDetailResult(data.summary || 'Sentinel analysis complete.');
+
+      // Save FINAL report (weekly, OSINT + KDCA integrated)
+      try {
+        const qs = snapshotDate ? `?snapshot_date=${snapshotDate}` : '';
+        await fetch(`${API_BASE}/reports/generate-final${qs}`, { method: 'POST' });
+      } catch { /* ignore report save failure */ }
+
+      setDetailResult(`${data.summary || 'Sentinel analysis complete.'}\n\n→ FINAL report saved to Report tab.`);
       onDataRefreshed();
     } catch {
       setNodeStatus('sentinel', 'error');
