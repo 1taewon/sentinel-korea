@@ -65,8 +65,136 @@ def _get_epiweek(dt: date | None = None) -> str:
     return f"{iso_year}-W{iso_week:02d}"
 
 
+def _get_epiweek_for(value: str | None = None) -> str:
+    if value:
+        try:
+            return _get_epiweek(date.fromisoformat(value[:10]))
+        except ValueError:
+            pass
+    return _get_epiweek()
+
+
+def _level_rank(level: str) -> int:
+    return {"G0": 0, "G1": 1, "G2": 2, "G3": 3}.get(level, 0)
+
+
+def _region_name(row: dict) -> str:
+    return row.get("region_name_kr") or row.get("region_name_en") or row.get("region_code") or "미상 지역"
+
+
+def _build_contract_sections(
+    snapshot: list[dict],
+    prev_snapshot: list[dict],
+    korea_news: list[dict],
+    global_signals: list[dict],
+    trends: dict,
+    report_kind: str,
+) -> str:
+    prev_map = {
+        r.get("region_code") or r.get("region_name_en", ""): r.get("level", "G0")
+        for r in prev_snapshot
+    }
+    watch_rows = sorted(
+        snapshot,
+        key=lambda row: (_level_rank(row.get("level", "G0")), float(row.get("score", 0) or 0)),
+        reverse=True,
+    )
+    elevated = [row for row in watch_rows if row.get("level") in {"G3", "G2", "G1"}]
+    top_watch = elevated[:5] or watch_rows[:3]
+
+    changed = []
+    for row in top_watch:
+        key = row.get("region_code") or row.get("region_name_en", "")
+        level = row.get("level", "G0")
+        prev = prev_map.get(key, level)
+        score = float(row.get("score", 0) or 0)
+        delta = f", {prev}->{level}" if prev != level else ""
+        changed.append(f"{_region_name(row)} {level} ({score:.2f}{delta})")
+
+    trend_lines = []
+    for series in (trends.get("korea", {}).get("series") or [])[:3]:
+        pts = series.get("points", [])
+        if len(pts) >= 2:
+            diff = pts[-1].get("value", 0) - pts[-2].get("value", 0)
+            trend_lines.append(f"{series.get('keyword', 'trend')} {'+' if diff >= 0 else ''}{diff}")
+
+    quality_scores = [
+        float((row.get("data_quality") or {}).get("score", 0))
+        for row in snapshot
+        if isinstance(row.get("data_quality"), dict)
+    ]
+    avg_quality = sum(quality_scores) / len(quality_scores) if quality_scores else 0
+    independent_sources = [
+        int(row.get("independent_sources", row.get("active_sources", 0)) or 0)
+        for row in snapshot
+    ]
+    avg_independent = sum(independent_sources) / len(independent_sources) if independent_sources else 0
+    confidence_label = "moderate"
+    if avg_quality >= 0.75 and avg_independent >= 2:
+        confidence_label = "high"
+    elif avg_quality < 0.45 or avg_independent < 1:
+        confidence_label = "low"
+
+    report_scope = (
+        "KDCA 공식 감시 baseline"
+        if report_kind == "kdca"
+        else "KDCA, 국내 OSINT, 검색 트렌드, 보조 corroboration을 결합한 Sentinel synthesis"
+    )
+
+    return f"""## What changed
+- 이번 snapshot에서 관찰 우선순위가 높은 지역은 {', '.join(changed) if changed else '특이 상승 지역 없음'}입니다.
+- 국내 OSINT 입력은 뉴스 {len(korea_news)}건, 검색 트렌드 {len(trend_lines)}개 키워드를 보조 신호로 확인했습니다.
+- WHO/국제 뉴스 {len(global_signals)}건은 국내 경보를 대체하지 않고, 해외 유입 가능성 및 외부 corroboration 맥락으로만 분리했습니다.
+
+## Why it matters
+- 이 보고서는 {report_scope}입니다.
+- Sentinel의 목적은 질병청 자료를 단순 재표시하는 것이 아니라, 어떤 시도(region)가 평소보다 이상한지와 그 근거를 빠르게 설명하는 것입니다.
+- 국내 뉴스/검색 신호는 증상탐색행동(OSINT 신호)으로 해석하며, 공식 감시자료와 수렴할 때 경보 설명력이 올라갑니다.
+
+## Confidence
+- 현재 confidence는 {confidence_label}입니다. 평균 data quality proxy는 {avg_quality:.2f}, 평균 independent source proxy는 {avg_independent:.1f}입니다.
+- confidence는 source count 자체가 아니라 freshness, coverage, data quality, independent corroboration을 함께 반영해야 합니다.
+- 폐하수 PDF와 CXR 계열 신호는 개인자료가 아니라 집계형 corroboration layer로만 해석합니다.
+
+## Recommended watch actions
+- G2/G3 또는 상승 전환 지역은 다음 epiweek까지 신호 breakdown과 원천자료 freshness를 우선 확인합니다.
+- 국내 뉴스/검색 trend가 공식 감시자료와 같은 방향으로 움직이는지 retrospective timeline에서 검토합니다.
+- 국제 신호는 globe 패널에서 Korea relevance와 raw data를 확인하되, 독립적인 글로벌 경보 점수로 해석하지 않습니다."""
+
+
+def _strip_leading_report_title(markdown: str) -> str:
+    lines = markdown.strip().splitlines()
+    while lines and (
+        lines[0].startswith("# Sentinel Korea")
+        or lines[0].startswith("## Period:")
+        or not lines[0].strip()
+    ):
+        lines.pop(0)
+    return "\n".join(lines).strip()
+
+
+def _ensure_report_contract(
+    report_text: str,
+    title: str,
+    epiweek: str,
+    target_date: str,
+    contract_sections: str,
+) -> str:
+    required = ["## What changed", "## Why it matters", "## Confidence", "## Recommended watch actions"]
+    if all(section in report_text for section in required):
+        return report_text
+    appendix = _strip_leading_report_title(report_text)
+    return f"""# {title}
+## Period: {epiweek} ({target_date})
+
+{contract_sections}
+
+## Evidence appendix
+{appendix}""".strip()
+
+
 def _build_prompt(snapshot, prev_snapshot, korea_news, global_signals, trends, target_date) -> str:
-    epiweek = _get_epiweek()
+    epiweek = _get_epiweek_for(target_date)
     level_map: dict[str, list[str]] = {"G3": [], "G2": [], "G1": [], "G0": []}
     prev_map = {r.get("region_name_en", ""): r.get("level", "G0") for r in prev_snapshot}
 
@@ -105,17 +233,21 @@ def _build_prompt(snapshot, prev_snapshot, korea_news, global_signals, trends, t
 ### Google Trends
 {chr(10).join(trend_lines) if trend_lines else '없음'}
 
-다음 구조로 한국어 보고서를 작성하세요:
+다음 구조를 반드시 지켜 한국어 보고서를 작성하세요. 첫 네 섹션 제목은 영어 그대로 사용하세요:
 
 # Sentinel Korea 주간 호흡기 감시 보고서
 ## Period: {epiweek} ({target_date})
 
-## 1. 주요 요약
-## 2. 지역별 경보 현황
-## 3. 신호 해석
-## 4. 글로벌 맥락
-## 5. 검색 트렌드 분석
-## 6. 권고사항
+## What changed
+## Why it matters
+## Confidence
+## Recommended watch actions
+## Evidence appendix
+### 1. 지역별 경보 현황
+### 2. 신호 해석
+### 3. 글로벌 맥락
+### 4. 검색 트렌드 분석
+### 5. 세부 권고사항
 
 보고서:"""
 
@@ -171,7 +303,7 @@ def _build_osint_prompt(korea_news, global_signals, trends, target_date) -> str:
 
 
 def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, trends, kdca_data, target_date) -> str:
-    epiweek = _get_epiweek()
+    epiweek = _get_epiweek_for(target_date)
     level_map: dict[str, list[str]] = {"G3": [], "G2": [], "G1": [], "G0": []}
     prev_map = {r.get("region_name_en", ""): r.get("level", "G0") for r in prev_snapshot}
     for r in snapshot:
@@ -214,16 +346,20 @@ def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, tre
 ### KDCA 감시 데이터 (공식)
 {kdca_section}
 
-다음 구조로 한국어 **통합 리포트**를 작성하세요 — OSINT와 KDCA 신호가 수렴하는지/충돌하는지 명시하세요:
+다음 구조를 반드시 지켜 한국어 **통합 리포트**를 작성하세요. 첫 네 섹션 제목은 영어 그대로 사용하고, OSINT와 KDCA 신호가 수렴하는지/충돌하는지 명시하세요:
 
 # Sentinel Korea — 통합 최종 리포트 (FINAL)
 ## Period: {epiweek} ({target_date})
 
-## 1. 경영진 요약 (Executive Summary)
-## 2. OSINT vs KDCA 신호 수렴도
-## 3. 지역별 경보 현황
-## 4. 통합 위험 해석
-## 5. 권고사항 (방역/의료/커뮤니케이션)
+## What changed
+## Why it matters
+## Confidence
+## Recommended watch actions
+## Evidence appendix
+### 1. OSINT vs KDCA 신호 수렴도
+### 2. 지역별 경보 현황
+### 3. 통합 위험 해석
+### 4. 방역/의료/커뮤니케이션 세부 권고
 
 리포트:"""
 
@@ -300,7 +436,22 @@ def generate_kdca_report(target_date: str | None = None) -> dict[str, Any]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gemini API 오류: {str(e)}")
 
-    epiweek = _get_epiweek()
+    epiweek = _get_epiweek_for(actual_date)
+    contract_sections = _build_contract_sections(
+        snapshot=snapshot,
+        prev_snapshot=prev_snapshot,
+        korea_news=korea_news,
+        global_signals=global_signals,
+        trends=trends,
+        report_kind="kdca",
+    )
+    report_text = _ensure_report_contract(
+        report_text=report_text,
+        title="Sentinel Korea 주간 호흡기 감시 보고서",
+        epiweek=epiweek,
+        target_date=actual_date,
+        contract_sections=contract_sections,
+    )
     stem = epiweek.replace("/", "-")
     path = _save_report("kdca", stem, report_text)
     return {
@@ -359,7 +510,22 @@ def generate_final_report(target_date: str | None = None) -> dict[str, Any]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gemini API 오류: {str(e)}")
 
-    epiweek = _get_epiweek()
+    epiweek = _get_epiweek_for(actual_date)
+    contract_sections = _build_contract_sections(
+        snapshot=snapshot,
+        prev_snapshot=prev_snapshot,
+        korea_news=korea_news,
+        global_signals=global_signals,
+        trends=trends,
+        report_kind="final",
+    )
+    report_text = _ensure_report_contract(
+        report_text=report_text,
+        title="Sentinel Korea — 통합 최종 리포트 (FINAL)",
+        epiweek=epiweek,
+        target_date=actual_date,
+        contract_sections=contract_sections,
+    )
     stem = epiweek.replace("/", "-")
     path = _save_report("final", stem, report_text)
     return {

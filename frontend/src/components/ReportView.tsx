@@ -76,10 +76,27 @@ function lineContaining(markdown: string, terms: string[]) {
   return lines.find((line) => terms.some((term) => line.toLowerCase().includes(term))) || '';
 }
 
+function sectionBody(markdown: string, heading: string) {
+  const lines = markdown.split(/\r?\n/);
+  const start = lines.findIndex((line) => line.trim().toLowerCase() === `## ${heading}`.toLowerCase());
+  if (start < 0) return '';
+  const body: string[] = [];
+  for (const line of lines.slice(start + 1)) {
+    if (/^##\s+/.test(line.trim())) break;
+    const cleaned = cleanLine(line);
+    if (cleaned) body.push(cleaned);
+  }
+  return body.join(' ');
+}
+
 function buildReportBrief(item: ReportItem | null, markdown: string): IntelligenceSection[] {
   if (!item) return [];
 
   const firstLine = firstMeaningfulLine(markdown);
+  const changedSection = sectionBody(markdown, 'What changed');
+  const mattersSection = sectionBody(markdown, 'Why it matters');
+  const confidenceSection = sectionBody(markdown, 'Confidence');
+  const actionsSection = sectionBody(markdown, 'Recommended watch actions');
   const confidenceLine = lineContaining(markdown, ['confidence', 'freshness', 'coverage', 'quality']);
   const actionLine = lineContaining(markdown, ['recommend', 'action', 'watch', 'monitor', 'next']);
   const typeMeta = TYPE_META[item.type];
@@ -103,19 +120,20 @@ function buildReportBrief(item: ReportItem | null, markdown: string): Intelligen
       key: 'changed',
       label: '01',
       title: 'What changed',
-      body: firstLine || changedFallback,
+      body: changedSection || firstLine || changedFallback,
     },
     {
       key: 'matters',
       label: '02',
       title: 'Why it matters',
-      body: mattersFallback,
+      body: mattersSection || mattersFallback,
     },
     {
       key: 'confidence',
       label: '03',
       title: 'Confidence',
       body:
+        confidenceSection ||
         confidenceLine ||
         'Confidence should reflect freshness, coverage, data quality, and independent corroboration. Source count alone is not treated as confidence.',
     },
@@ -124,6 +142,7 @@ function buildReportBrief(item: ReportItem | null, markdown: string): Intelligen
       label: '04',
       title: 'Recommended watch actions',
       body:
+        actionsSection ||
         actionLine ||
         `Use this ${typeMeta.label} report to inspect top regions, review the signal breakdown, and keep global context limited to imported-risk watch.`,
     },
