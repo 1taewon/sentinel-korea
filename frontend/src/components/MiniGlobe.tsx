@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import Globe, { GlobeMethods } from 'react-globe.gl';
 import type { KoreaAlert, GlobalSignal } from '../types';
 
@@ -45,6 +45,13 @@ export default function MiniGlobe({ isExpanded = false, signals = [], koreaAlert
     return '#ffffff';
   };
 
+  const sourceLabel = (src: string) => {
+    if (src === 'healthmap') return 'HealthMap';
+    if (src === 'promed') return 'ProMED';
+    if (src === 'google_trends') return 'Google Trends';
+    return src;
+  };
+
   const koreaColor = (score: number) => {
     if (score >= 0.75) return '#ff5258';
     if (score >= 0.55) return '#f59e42';
@@ -82,6 +89,48 @@ export default function MiniGlobe({ isExpanded = false, signals = [], koreaAlert
     }))
   ];
 
+  const arcsData = useMemo(() => {
+    if (!isExpanded) return [];
+    const koreaTargets = [
+      { lat: 37.5665, lng: 126.9780 },
+      { lat: 35.1796, lng: 129.0756 },
+      { lat: 35.1595, lng: 126.8526 },
+      { lat: 36.3504, lng: 127.3845 },
+      { lat: 33.4996, lng: 126.5312 },
+    ];
+    return signals.slice(0, 80).map((signal, index) => {
+      const target = koreaTargets[index % koreaTargets.length];
+      return {
+        ...signal,
+        startLat: signal.lat,
+        startLng: signal.lng,
+        endLat: target.lat,
+        endLng: target.lng,
+        color: sourceColor(signal.source),
+        stroke: signal.severity === 'high' ? 0.8 : signal.severity === 'medium' ? 0.55 : 0.35,
+        altitude: 0.18 + (index % 5) * 0.045,
+        dashGap: index * 0.12,
+        speed: signal.severity === 'high' ? 1800 : 2600,
+      };
+    });
+  }, [isExpanded, signals]);
+
+  const labelsData = useMemo(() => {
+    if (!isExpanded) return [];
+    const globalLabels = signals.slice(0, 18).map((signal) => ({
+      lat: signal.lat,
+      lng: signal.lng,
+      text: signal.country || sourceLabel(signal.source),
+      color: sourceColor(signal.source),
+      size: 0.42,
+      altitude: 0.045,
+    }));
+    return [
+      { lat: 37.5665, lng: 126.9780, text: 'SOUTH KOREA', color: '#c9f4d6', size: 0.75, altitude: 0.06 },
+      ...globalLabels,
+    ];
+  }, [isExpanded, signals]);
+
   return (
     <div className={isExpanded ? "expanded-globe-inner" : "mini-globe-container"}>
       <Globe
@@ -94,19 +143,49 @@ export default function MiniGlobe({ isExpanded = false, signals = [], koreaAlert
         showAtmosphere={true}
         atmosphereColor="#38bdf8"
         atmosphereAltitude={isExpanded ? 0.25 : 0.15}
+
+        arcsData={arcsData}
+        arcStartLat="startLat"
+        arcStartLng="startLng"
+        arcEndLat="endLat"
+        arcEndLng="endLng"
+        arcColor={(d: any) => [`${d.color}22`, d.color]}
+        arcAltitude={(d: any) => d.altitude}
+        arcStroke={(d: any) => d.stroke}
+        arcDashLength={0.38}
+        arcDashGap={1.6}
+        arcDashInitialGap={(d: any) => d.dashGap}
+        arcDashAnimateTime={(d: any) => d.speed}
+        arcLabel={(d: any) => `
+          <div style="background: rgba(4, 12, 8, 0.94); padding: 8px 10px; border: 1px solid ${d.color}; color: #d8f5e1; font-family: monospace">
+            <b style="color: ${d.color}">${sourceLabel(d.source)}</b><br/>
+            ${d.country || d.disease || 'International support signal'} -> South Korea
+          </div>
+        `}
         
         pointsData={pointsData}
         pointLat="lat"
         pointLng="lng"
         pointColor="color"
-        pointRadius="size"
-        pointAltitude={0.01}
+        pointRadius={(d: any) => d.size}
+        pointAltitude={(d: any) => (d.type === 'global' && isExpanded ? 0.045 : 0.012)}
+        pointResolution={isExpanded ? 18 : 10}
         pointLabel={(d: any) => `
-          <div style="background: rgba(15,23,42,0.9); padding: 8px; border-radius: 4px; border: 1px solid ${d.color}">
-            <b style="color: ${d.color}">${d.type.toUpperCase()}</b><br/>
+          <div style="background: rgba(4,12,8,0.94); padding: 8px; border-radius: 2px; border: 1px solid ${d.color}; color: #d8f5e1; font-family: monospace">
+            <b style="color: ${d.color}">${d.type === 'global' ? sourceLabel(d.source) : 'KOREA REGION'}</b><br/>
             ${d.title || d.region_name_en || d.keyword}
           </div>
         `}
+
+        labelsData={labelsData}
+        labelLat="lat"
+        labelLng="lng"
+        labelText="text"
+        labelColor="color"
+        labelSize="size"
+        labelAltitude="altitude"
+        labelDotRadius={0.22}
+        labelResolution={2}
 
         ringsData={isExpanded ? signals : []}
         ringLat="lat"

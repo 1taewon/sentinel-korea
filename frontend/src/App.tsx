@@ -263,6 +263,10 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
 
   const elevatedCount = koreaAlerts.filter((alert) => alert.score >= 0.55).length;
   const criticalCount = koreaAlerts.filter((alert) => alert.score >= 0.75).length;
+  const topKoreaAlert = useMemo(
+    () => [...koreaAlerts].sort((a, b) => b.score - a.score)[0] || null,
+    [koreaAlerts],
+  );
   const internationalSummary = useMemo(() => {
     const sourceLabels: Record<string, string> = {
       healthmap: 'HealthMap',
@@ -291,6 +295,15 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       .slice(0, 5);
     return { bySource, bySeverity, topCountries, recentSignals };
   }, [globalSignals]);
+  const globeLaneSummary = [
+    { key: 'KDCA', label: '공식 감시', value: koreaAlerts.length || 17, tone: 'green' },
+    { key: 'ILI', label: 'ILI/SARI', value: koreaAlerts.filter((alert) => alert.signals?.influenza_like != null).length, tone: 'red' },
+    { key: 'WASTE', label: '폐하수', value: koreaAlerts.filter((alert) => alert.regional_wastewater).length, tone: 'amber' },
+    { key: 'NEWS', label: '국내 뉴스', value: koreaAlerts.filter((alert) => alert.news_trends_risk).length, tone: 'blue' },
+    { key: 'TRENDS', label: '국내 검색', value: koreaAlerts.filter((alert) => alert.signals?.news_trends_ai != null).length, tone: 'violet' },
+    { key: 'WHO', label: '국제 보조', value: globalSignals.length, tone: 'cyan' },
+    { key: 'ALERT', label: '주의 이상', value: elevatedCount, tone: 'red' },
+  ];
   const sourceOverviewCards = [
     {
       label: 'OFFICIAL',
@@ -556,6 +569,31 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 <button className="panel-close" onClick={() => setIsGlobeExpanded(false)}>×</button>
               </div>
               <div className="expanded-globe-body">
+                <aside className="globe-korea-hud">
+                  <div className="globe-hud-top">
+                    <span className="globe-hud-orbit" />
+                    <button className="globe-hud-close" onClick={() => setIsGlobeExpanded(false)} type="button">x</button>
+                  </div>
+                  <h4>SOUTH KOREA</h4>
+                  <p className="globe-hud-rank">
+                    {topKoreaAlert
+                      ? `#1 watch region: ${topKoreaAlert.region_name_kr}`
+                      : '17개 시도 호흡기 감시 대기'}
+                  </p>
+                  <div className="globe-hud-divider" />
+                  <div className="globe-hud-stats">
+                    <div><span>KDCA</span><strong>{koreaAlerts.length || 17}</strong></div>
+                    <div><span>G3</span><strong>{criticalCount}</strong></div>
+                    <div><span>G2+</span><strong>{elevatedCount}</strong></div>
+                    <div><span>WHO</span><strong>{globalSignals.length}</strong></div>
+                    <div><span>TOP</span><strong>{topKoreaAlert ? topKoreaAlert.score.toFixed(2) : '--'}</strong></div>
+                    <div><span>CONF</span><strong>{topKoreaAlert?.confidence || 'n/a'}</strong></div>
+                  </div>
+                  <p className="globe-hud-note">
+                    International arcs are displayed as external support signals flowing toward Korea.
+                    They do not replace Korea-focused surveillance, news, or search trends.
+                  </p>
+                </aside>
                 <div className="expanded-globe-container">
                   <MiniGlobe isExpanded={true} signals={globalSignals} koreaAlerts={koreaAlerts} activeLayers={activeLayers} aggregationMode={aggregationMode} />
                 </div>
@@ -631,6 +669,15 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                     )}
                   </div>
                 </aside>
+              </div>
+              <div className="globe-bottom-lanes">
+                {globeLaneSummary.map((lane) => (
+                  <div className={`globe-lane-tile tone-${lane.tone}`} key={lane.key}>
+                    <span>{lane.value}</span>
+                    <strong>{lane.key}</strong>
+                    <em>{lane.label}</em>
+                  </div>
+                ))}
               </div>
             </div>
           )}
