@@ -1,20 +1,33 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 type NodeStatus = 'idle' | 'running' | 'done' | 'error';
+type StageTone = 'blue' | 'green' | 'amber' | 'red' | 'slate';
 
-interface NodeDef {
+type PipelineStage = {
+  id: string;
+  title: string;
+  subtitle: string;
+  artifact: string;
+  tone: StageTone;
+  lanes: string[];
+  actionLabel?: string;
+};
+
+type OntologyNode = {
   id: string;
   label: string;
-  sublabel: string;
-  type: 'source' | 'action' | 'ai' | 'display' | 'analysis' | 'output';
-  x: number; y: number; w: number; h: number;
-  color: string;
-  description: string;
-}
+  x: number;
+  y: number;
+  kind: 'source' | 'concept' | 'output';
+};
 
-interface EdgeDef { from: string; to: string; dashed?: boolean; }
+type OntologyEdge = {
+  from: string;
+  to: string;
+  strength: number;
+};
 
 interface Props {
   onClose: () => void;
@@ -23,518 +36,322 @@ interface Props {
   embedded?: boolean;
 }
 
-/* ── 3-Column Layout: NEWS (left) | TRENDS (center) | KDCA (right) ── */
-// Column centers: NEWS=160, TRENDS=430, KDCA=700
-// Layer Y positions: Sources=35, Refresh=125, AI Digest=225, Display=325, Analysis=430, Sentinel=540, Output=640
-
-const NODES: NodeDef[] = [
-  // ═══ Column 1: NEWS ═══
-  { id: 'naver_news', label: 'Naver News', sublabel: 'Korean', type: 'source', x: 18, y: 35, w: 100, h: 38, color: '#38bdf8', description: 'Naver Search API를 통해 한국어 호흡기 관련 뉴스를 수집합니다.' },
-  { id: 'newsapi', label: 'NewsAPI', sublabel: 'English', type: 'source', x: 126, y: 35, w: 100, h: 38, color: '#38bdf8', description: 'NewsAPI에서 영어 호흡기 관련 뉴스를 수집합니다.' },
-  { id: 'who_don', label: 'WHO DON', sublabel: 'Outbreaks', type: 'source', x: 234, y: 35, w: 100, h: 38, color: '#38bdf8', description: 'WHO Disease Outbreak News에서 글로벌 질병 발생 정보를 수집합니다.' },
-  { id: 'news_refresh', label: 'NEWS Refresh', sublabel: 'Collect news', type: 'action', x: 95, y: 125, w: 160, h: 46, color: '#38bdf8', description: 'Naver News + NewsAPI + WHO DON 데이터를 수집하고 News Digest AI 분석을 실행합니다.' },
-  { id: 'news_digest', label: 'News AI Analysis', sublabel: 'Gemini AI', type: 'ai', x: 75, y: 225, w: 200, h: 50, color: '#f97316', description: 'Gemini AI가 수집된 뉴스를 분석하여 Korea/Global 요약, 위험 평가, 핵심 알림을 생성합니다.' },
-  { id: 'news_panel', label: 'NEWS Panel', sublabel: 'AI Summary + Sources', type: 'display', x: 105, y: 325, w: 140, h: 40, color: '#475569', description: 'AI 요약을 기본 표시하고, "View Raw Sources" 토글로 원본 뉴스 목록을 확인할 수 있습니다.' },
-
-  // ═══ Column 2: TRENDS ═══
-  { id: 'google_trends', label: 'Google Trends', sublabel: 'EN keywords', type: 'source', x: 362, y: 35, w: 115, h: 38, color: '#a78bfa', description: 'Google Trends에서 영어 호흡기 키워드 검색량을 수집합니다.' },
-  { id: 'naver_trends', label: 'Naver Trends', sublabel: 'KR keywords', type: 'source', x: 485, y: 35, w: 115, h: 38, color: '#a78bfa', description: 'Naver DataLab에서 한국어 호흡기 키워드 검색량을 수집합니다.' },
-  { id: 'trends_refresh', label: 'TRENDS Refresh', sublabel: 'Collect trends', type: 'action', x: 370, y: 125, w: 160, h: 46, color: '#a78bfa', description: 'Google Trends + Naver Trends 데이터를 수집하고 Trends Digest AI 분석을 실행합니다.' },
-  { id: 'trends_digest', label: 'Trends AI Analysis', sublabel: 'Gemini AI', type: 'ai', x: 350, y: 225, w: 200, h: 50, color: '#f97316', description: 'Gemini AI가 검색 트렌드를 분석하여 급상승 키워드, 트렌드 신호, 위험 평가를 생성합니다.' },
-  { id: 'trends_panel', label: 'TRENDS Panel', sublabel: 'AI Summary + Charts', type: 'display', x: 380, y: 325, w: 140, h: 40, color: '#475569', description: 'AI 요약을 기본 표시하고, "View Raw Charts" 토글로 원본 차트를 확인할 수 있습니다.' },
-
-  // ═══ Column 3: KDCA ═══
-  { id: 'kdca', label: 'KDCA Data', sublabel: 'ILI/SARI/Wastewater', type: 'source', x: 650, y: 35, w: 140, h: 38, color: '#34d399', description: 'KDCA 공식 감시 데이터: 법정감염병, ILI/SARI 감시, 하수감시 데이터' },
-  { id: 'data_upload', label: 'Data Upload', sublabel: 'Excel upload', type: 'action', x: 640, y: 125, w: 160, h: 46, color: '#34d399', description: 'KDCA Excel 파일을 업로드하여 감시 데이터를 시스템에 반영합니다.' },
-  { id: 'kdca_digest', label: 'KDCA AI Analysis', sublabel: 'Gemini AI', type: 'ai', x: 620, y: 225, w: 200, h: 50, color: '#f97316', description: 'Gemini AI가 KDCA 감시 데이터를 분석하여 지역별 위험도, 핵심 지표, 위험 평가를 생성합니다.' },
-  { id: 'kdca_panel', label: 'KDCA Panel', sublabel: 'AI Summary + Data', type: 'display', x: 650, y: 325, w: 140, h: 40, color: '#475569', description: 'AI 요약을 기본 표시하고, "View Raw Data" 토글로 업로드 이력과 원본 데이터를 확인할 수 있습니다.' },
-
-  // ═══ OSINT Analysis (NEWS + TRENDS merge) ═══
-  { id: 'osint', label: 'OSINT Analysis', sublabel: 'NEWS + TRENDS combined', type: 'analysis', x: 175, y: 430, w: 250, h: 52, color: '#6b8aff', description: 'NEWS와 TRENDS를 결합하여 17개 시도별 위험도 점수를 산출합니다. 결과를 Korea Map에 시각화할 수 있습니다.' },
-
-  // ═══ SENTINEL ANALYSIS (OSINT + KDCA) ═══
-  { id: 'sentinel', label: 'SENTINEL ANALYSIS', sublabel: 'OSINT + KDCA integrated', type: 'analysis', x: 250, y: 540, w: 340, h: 58, color: '#38bdf8', description: 'OSINT(NEWS+TRENDS)와 KDCA 데이터를 통합 분석하여 최종 위험도 계층화 및 보고서를 생성합니다. Korea Map에 시각화 가능.' },
-
-  // ═══ Output ═══
-  { id: 'output', label: 'Final Report', sublabel: 'Scores + Signals + Visualization', type: 'output', x: 315, y: 640, w: 210, h: 40, color: '#38bdf8', description: '최종 위험도 보고서. 각 분석(OSINT/KDCA/Sentinel) 결과를 Korea Map에 시각화할 수 있습니다.' },
-
+const PIPELINE_STAGES: PipelineStage[] = [
+  {
+    id: 'ingest',
+    title: 'Source ingest',
+    subtitle: 'Collect raw evidence from official, open, and document-only sources.',
+    artifact: 'raw_signal',
+    tone: 'blue',
+    lanes: ['KDCA ILI/SARI tables', 'Wastewater PDF bulletin', 'News feeds', 'Search trends'],
+    actionLabel: 'Refresh sources',
+  },
+  {
+    id: 'qa',
+    title: 'Quality control',
+    subtitle: 'Align epiweeks, check freshness, parse PDF tables, and tag missing coverage.',
+    artifact: 'source_catalog',
+    tone: 'green',
+    lanes: ['Epiweek resolver', 'Freshness score', 'PDF extraction review', 'Coverage flag'],
+  },
+  {
+    id: 'digest',
+    title: 'AI digest',
+    subtitle: 'Summarize each evidence lane before fusion so weak signals stay visible.',
+    artifact: 'evidence_digest',
+    tone: 'amber',
+    lanes: ['News digest', 'Trend digest', 'KDCA digest', 'Wastewater note'],
+    actionLabel: 'Generate digests',
+  },
+  {
+    id: 'fusion',
+    title: 'Sentinel fusion',
+    subtitle: 'Combine independent evidence groups into a quality-adjusted alert snapshot.',
+    artifact: 'alert_snapshot',
+    tone: 'red',
+    lanes: ['Composite score', 'Confidence', 'Explanation', 'Region ranking'],
+    actionLabel: 'Run Sentinel',
+  },
+  {
+    id: 'report',
+    title: 'Report output',
+    subtitle: 'Publish the integrated narrative, ontology figure, and next-action queue.',
+    artifact: 'sentinel_report',
+    tone: 'slate',
+    lanes: ['Ontology map', 'Narrative report', 'Figure export', 'Vercel dashboard'],
+    actionLabel: 'Generate report',
+  },
 ];
 
-const EDGES: EdgeDef[] = [
-  // NEWS column
-  { from: 'naver_news', to: 'news_refresh' },
-  { from: 'newsapi', to: 'news_refresh' },
-  { from: 'who_don', to: 'news_refresh' },
-  { from: 'news_refresh', to: 'news_digest' },
-  { from: 'news_digest', to: 'news_panel' },
-  // TRENDS column
-  { from: 'google_trends', to: 'trends_refresh' },
-  { from: 'naver_trends', to: 'trends_refresh' },
-  { from: 'trends_refresh', to: 'trends_digest' },
-  { from: 'trends_digest', to: 'trends_panel' },
-  // KDCA column
-  { from: 'kdca', to: 'data_upload' },
-  { from: 'data_upload', to: 'kdca_digest' },
-  { from: 'kdca_digest', to: 'kdca_panel' },
-  // NEWS + TRENDS → OSINT
-  { from: 'news_panel', to: 'osint' },
-  { from: 'trends_panel', to: 'osint' },
-  // OSINT + KDCA → Sentinel
-  { from: 'osint', to: 'sentinel' },
-  { from: 'kdca_panel', to: 'sentinel' },
-  // Sentinel → Output
-  { from: 'sentinel', to: 'output' },
+const ONTOLOGY_NODES: OntologyNode[] = [
+  { id: 'kdca', label: 'KDCA surveillance', x: 84, y: 72, kind: 'source' },
+  { id: 'wastewater', label: 'Wastewater PDF', x: 86, y: 158, kind: 'source' },
+  { id: 'news', label: 'News signals', x: 86, y: 248, kind: 'source' },
+  { id: 'trends', label: 'Search trends', x: 86, y: 334, kind: 'source' },
+  { id: 'respiratory', label: 'Respiratory activity', x: 322, y: 100, kind: 'concept' },
+  { id: 'environment', label: 'Environmental corroboration', x: 330, y: 205, kind: 'concept' },
+  { id: 'behavior', label: 'Symptom-seeking behavior', x: 342, y: 318, kind: 'concept' },
+  { id: 'imported', label: 'Imported-risk context', x: 548, y: 292, kind: 'concept' },
+  { id: 'burden', label: 'Pneumonia burden hypothesis', x: 548, y: 142, kind: 'concept' },
+  { id: 'report', label: 'Sentinel analysis report', x: 720, y: 220, kind: 'output' },
 ];
 
-const nodeMap = Object.fromEntries(NODES.map(n => [n.id, n]));
+const ONTOLOGY_EDGES: OntologyEdge[] = [
+  { from: 'kdca', to: 'respiratory', strength: 0.86 },
+  { from: 'wastewater', to: 'environment', strength: 0.72 },
+  { from: 'news', to: 'imported', strength: 0.66 },
+  { from: 'trends', to: 'behavior', strength: 0.58 },
+  { from: 'respiratory', to: 'burden', strength: 0.82 },
+  { from: 'environment', to: 'burden', strength: 0.64 },
+  { from: 'behavior', to: 'imported', strength: 0.38 },
+  { from: 'imported', to: 'report', strength: 0.62 },
+  { from: 'burden', to: 'report', strength: 0.9 },
+];
 
-function getEdgePath(from: NodeDef, to: NodeDef): string {
-  const fx = from.x + from.w / 2;
-  const fy = from.y + from.h;
-  const tx = to.x + to.w / 2;
-  const ty = to.y;
-  const cy1 = fy + (ty - fy) * 0.4;
-  const cy2 = fy + (ty - fy) * 0.6;
-  return `M${fx},${fy} C${fx},${cy1} ${tx},${cy2} ${tx},${ty}`;
-}
-
-const STATUS_COLORS: Record<NodeStatus, string> = {
-  idle: '#475569',
-  running: '#f59e42',
-  done: '#22c55e',
-  error: '#ef4444',
+const STATUS_LABELS: Record<NodeStatus, string> = {
+  idle: 'Ready',
+  running: 'Running',
+  done: 'Complete',
+  error: 'Error',
 };
 
-export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate }: Props) {
+function nodeById(id: string) {
+  return ONTOLOGY_NODES.find((node) => node.id === id);
+}
+
+export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, embedded }: Props) {
   const [statuses, setStatuses] = useState<Record<string, NodeStatus>>({});
-  const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const [detailResult, setDetailResult] = useState<string>('');
+  const [selectedStage, setSelectedStage] = useState<string>('ingest');
+  const [detailResult, setDetailResult] = useState('Pipeline ready. Select a stage or run a control action.');
 
-  const setNodeStatus = (id: string, s: NodeStatus) =>
-    setStatuses(prev => ({ ...prev, [id]: s }));
+  const setStageStatus = (id: string, status: NodeStatus) => {
+    setStatuses((prev) => ({ ...prev, [id]: status }));
+  };
 
-  // Check initial data availability
   const checkStatuses = useCallback(async () => {
     try {
       const [newsK, trendsK, newsD, trendsD, kdcaD] = await Promise.allSettled([
-        fetch(`${API_BASE}/news/korea?limit=1`).then(r => r.json()),
-        fetch(`${API_BASE}/trends/korea`).then(r => r.json()),
-        fetch(`${API_BASE}/risk-analysis/news-digest`).then(r => r.json()),
-        fetch(`${API_BASE}/risk-analysis/trends-digest`).then(r => r.json()),
-        fetch(`${API_BASE}/risk-analysis/kdca-digest`).then(r => r.json()),
+        fetch(`${API_BASE}/news/korea?limit=1`).then((res) => res.json()),
+        fetch(`${API_BASE}/trends/korea`).then((res) => res.json()),
+        fetch(`${API_BASE}/risk-analysis/news-digest`).then((res) => res.json()),
+        fetch(`${API_BASE}/risk-analysis/trends-digest`).then((res) => res.json()),
+        fetch(`${API_BASE}/risk-analysis/kdca-digest`).then((res) => res.json()),
       ]);
-      const s: Record<string, NodeStatus> = {};
-      if (newsK.status === 'fulfilled' && Array.isArray(newsK.value) && newsK.value.length > 0) {
-        s.naver_news = 'done'; s.newsapi = 'done'; s.who_don = 'done'; s.news_refresh = 'done';
-      }
-      if (trendsK.status === 'fulfilled' && trendsK.value?.series?.length > 0) {
-        s.google_trends = 'done'; s.naver_trends = 'done'; s.trends_refresh = 'done';
-      }
-      if (newsD.status === 'fulfilled' && newsD.value?.status === 'ok') {
-        s.news_digest = 'done'; s.news_panel = 'done';
-      }
-      if (trendsD.status === 'fulfilled' && trendsD.value?.status === 'ok') {
-        s.trends_digest = 'done'; s.trends_panel = 'done';
-      }
-      if (kdcaD.status === 'fulfilled' && kdcaD.value?.status === 'ok') {
-        s.kdca = 'done'; s.data_upload = 'done'; s.kdca_digest = 'done'; s.kdca_panel = 'done';
-      }
-      setStatuses(s);
-    } catch { /* ignore */ }
+      const next: Record<string, NodeStatus> = {};
+      if (newsK.status === 'fulfilled' && Array.isArray(newsK.value) && newsK.value.length > 0) next.ingest = 'done';
+      if (trendsK.status === 'fulfilled' && trendsK.value?.series?.length > 0) next.ingest = 'done';
+      if (newsD.status === 'fulfilled' && newsD.value?.status === 'ok') next.digest = 'done';
+      if (trendsD.status === 'fulfilled' && trendsD.value?.status === 'ok') next.digest = 'done';
+      if (kdcaD.status === 'fulfilled' && kdcaD.value?.status === 'ok') next.qa = 'done';
+      setStatuses(next);
+    } catch {
+      setDetailResult('Status check skipped because the backend is not reachable.');
+    }
   }, []);
 
-  useEffect(() => { checkStatuses(); }, [checkStatuses]);
+  useEffect(() => {
+    checkStatuses();
+  }, [checkStatuses]);
 
-  /* ── Action handlers ── */
-  const runNewsRefresh = async () => {
-    setNodeStatus('news_refresh', 'running');
-    setNodeStatus('news_digest', 'idle');
+  const selected = useMemo(
+    () => PIPELINE_STAGES.find((stage) => stage.id === selectedStage) ?? PIPELINE_STAGES[0],
+    [selectedStage],
+  );
+
+  const runSourceRefresh = async () => {
+    setStageStatus('ingest', 'running');
+    setDetailResult('Refreshing news, global context, and trend feeds...');
     try {
       await fetch(`${API_BASE}/ingestion/refresh-korea`, { method: 'POST' });
       await fetch(`${API_BASE}/ingestion/refresh-global`, { method: 'POST' });
-      setNodeStatus('news_refresh', 'done');
-      setNodeStatus('naver_news', 'done');
-      setNodeStatus('newsapi', 'done');
-      setNodeStatus('who_don', 'done');
-      // Auto-trigger News Digest
-      setNodeStatus('news_digest', 'running');
-      const res = await fetch(`${API_BASE}/risk-analysis/news-digest`, { method: 'POST' });
-      if (res.ok) {
-        setNodeStatus('news_digest', 'done');
-        setNodeStatus('news_panel', 'done');
-        setDetailResult('News Digest generated successfully.');
-      } else {
-        setNodeStatus('news_digest', 'error');
-      }
-    } catch {
-      setNodeStatus('news_refresh', 'error');
-    }
-  };
-
-  const runTrendsRefresh = async () => {
-    setNodeStatus('trends_refresh', 'running');
-    setNodeStatus('trends_digest', 'idle');
-    try {
       await fetch(`${API_BASE}/ingestion/refresh-trends`, { method: 'POST' });
-      setNodeStatus('trends_refresh', 'done');
-      setNodeStatus('google_trends', 'done');
-      setNodeStatus('naver_trends', 'done');
-      // Auto-trigger Trends Digest
-      setNodeStatus('trends_digest', 'running');
-      const res = await fetch(`${API_BASE}/risk-analysis/trends-digest`, { method: 'POST' });
-      if (res.ok) {
-        setNodeStatus('trends_digest', 'done');
-        setNodeStatus('trends_panel', 'done');
-        setDetailResult('Trends Digest generated successfully.');
-      } else {
-        setNodeStatus('trends_digest', 'error');
-      }
-    } catch {
-      setNodeStatus('trends_refresh', 'error');
-    }
-  };
-
-  const runOsintAnalysis = async () => {
-    setNodeStatus('osint', 'running');
-    try {
-      const res = await fetch(`${API_BASE}/risk-analysis/analyze-news-trends`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
-      });
-      const data = await res.json();
-      setNodeStatus('osint', 'done');
-      // Save OSINT report (daily)
-      try {
-        await fetch(`${API_BASE}/reports/generate-osint`, { method: 'POST' });
-      } catch { /* ignore report save failure */ }
-      setDetailResult(`${data.summary || 'OSINT analysis complete.'}\n\n→ OSINT report saved to Report tab.`);
+      setStageStatus('ingest', 'done');
+      setDetailResult('Source refresh complete. Wastewater remains a PDF-only lane and should be parsed from the weekly bulletin.');
       onDataRefreshed();
     } catch {
-      setNodeStatus('osint', 'error');
+      setStageStatus('ingest', 'error');
+      setDetailResult('Source refresh failed. Check backend connectivity and external API keys.');
     }
   };
 
-  const runKdcaDigest = async () => {
-    setNodeStatus('kdca_digest', 'running');
+  const runDigests = async () => {
+    setStageStatus('digest', 'running');
+    setDetailResult('Generating evidence-lane digests...');
     try {
-      const res = await fetch(`${API_BASE}/risk-analysis/kdca-digest`, { method: 'POST' });
-      if (res.ok) {
-        setNodeStatus('kdca_digest', 'done');
-        setNodeStatus('kdca_panel', 'done');
-        // Save KDCA report (weekly)
-        try {
-          const qs = snapshotDate ? `?snapshot_date=${snapshotDate}` : '';
-          await fetch(`${API_BASE}/reports/generate-kdca${qs}`, { method: 'POST' });
-        } catch { /* ignore report save failure */ }
-        setDetailResult('KDCA Digest generated successfully.\n\n→ KDCA report saved to Report tab.');
-      } else {
-        setNodeStatus('kdca_digest', 'error');
-        setDetailResult('KDCA Digest failed. Upload KDCA data first.');
-      }
+      await fetch(`${API_BASE}/risk-analysis/news-digest`, { method: 'POST' });
+      await fetch(`${API_BASE}/risk-analysis/trends-digest`, { method: 'POST' });
+      await fetch(`${API_BASE}/risk-analysis/kdca-digest`, { method: 'POST' });
+      setStageStatus('digest', 'done');
+      setDetailResult('Evidence digests complete: news, trends, and KDCA lanes are ready for Sentinel fusion.');
     } catch {
-      setNodeStatus('kdca_digest', 'error');
+      setStageStatus('digest', 'error');
+      setDetailResult('Digest generation failed. Run each evidence lane separately to isolate the failing source.');
     }
   };
 
-  /** Ensure a prerequisite analysis has run. Returns true on success/already-done. */
-  const ensureNewsDigest = async (): Promise<boolean> => {
-    if (statuses.news_digest === 'done') return true;
-    setNodeStatus('news_refresh', 'running');
+  const runSentinelFusion = async () => {
+    setStageStatus('fusion', 'running');
+    setDetailResult('Running Sentinel fusion across OSINT and KDCA evidence...');
     try {
-      await fetch(`${API_BASE}/ingestion/refresh-korea`, { method: 'POST' });
-      await fetch(`${API_BASE}/ingestion/refresh-global`, { method: 'POST' });
-      setNodeStatus('news_refresh', 'done');
-      setNodeStatus('naver_news', 'done');
-      setNodeStatus('newsapi', 'done');
-      setNodeStatus('who_don', 'done');
-      setNodeStatus('news_digest', 'running');
-      const r = await fetch(`${API_BASE}/risk-analysis/news-digest`, { method: 'POST' });
-      if (!r.ok) { setNodeStatus('news_digest', 'error'); return false; }
-      setNodeStatus('news_digest', 'done');
-      setNodeStatus('news_panel', 'done');
-      return true;
-    } catch {
-      setNodeStatus('news_digest', 'error');
-      return false;
-    }
-  };
-
-  const ensureTrendsDigest = async (): Promise<boolean> => {
-    if (statuses.trends_digest === 'done') return true;
-    setNodeStatus('trends_refresh', 'running');
-    try {
-      await fetch(`${API_BASE}/ingestion/refresh-trends`, { method: 'POST' });
-      setNodeStatus('trends_refresh', 'done');
-      setNodeStatus('google_trends', 'done');
-      setNodeStatus('naver_trends', 'done');
-      setNodeStatus('trends_digest', 'running');
-      const r = await fetch(`${API_BASE}/risk-analysis/trends-digest`, { method: 'POST' });
-      if (!r.ok) { setNodeStatus('trends_digest', 'error'); return false; }
-      setNodeStatus('trends_digest', 'done');
-      setNodeStatus('trends_panel', 'done');
-      return true;
-    } catch {
-      setNodeStatus('trends_digest', 'error');
-      return false;
-    }
-  };
-
-  const ensureKdcaDigest = async (): Promise<boolean> => {
-    if (statuses.kdca_digest === 'done') return true;
-    setNodeStatus('kdca_digest', 'running');
-    try {
-      const r = await fetch(`${API_BASE}/risk-analysis/kdca-digest`, { method: 'POST' });
-      if (!r.ok) { setNodeStatus('kdca_digest', 'error'); return false; }
-      setNodeStatus('kdca_digest', 'done');
-      setNodeStatus('kdca_panel', 'done');
-      return true;
-    } catch {
-      setNodeStatus('kdca_digest', 'error');
-      return false;
-    }
-  };
-
-  const ensureOsint = async (): Promise<boolean> => {
-    if (statuses.osint === 'done') return true;
-    setNodeStatus('osint', 'running');
-    try {
-      await fetch(`${API_BASE}/risk-analysis/analyze-news-trends`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
-      });
-      setNodeStatus('osint', 'done');
-      return true;
-    } catch {
-      setNodeStatus('osint', 'error');
-      return false;
-    }
-  };
-
-  const runSentinelAnalysis = async () => {
-    setNodeStatus('sentinel', 'running');
-    setDetailResult('Checking prerequisites...');
-    try {
-      // Chain: ensure prereqs first
-      const steps: { label: string; fn: () => Promise<boolean> }[] = [
-        { label: 'News digest', fn: ensureNewsDigest },
-        { label: 'Trends digest', fn: ensureTrendsDigest },
-        { label: 'KDCA digest', fn: ensureKdcaDigest },
-        { label: 'OSINT analysis', fn: ensureOsint },
-      ];
-      const ran: string[] = [];
-      for (const step of steps) {
-        const ok = await step.fn();
-        if (!ok) {
-          setNodeStatus('sentinel', 'error');
-          setDetailResult(`Sentinel aborted: ${step.label} failed. Fix that step first.`);
-          return;
-        }
-        ran.push(step.label);
-        setDetailResult(`Completed: ${ran.join(' → ')}\nNow running Sentinel...`);
-      }
-
-      // Run the integrated Sentinel analysis
-      const res = await fetch(`${API_BASE}/risk-analysis/analyze`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const response = await fetch(`${API_BASE}/risk-analysis/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ include_kdca: true }),
       });
-      const data = await res.json();
-      setNodeStatus('sentinel', 'done');
-      setNodeStatus('output', 'done');
-
-      // Save FINAL report (weekly, OSINT + KDCA integrated)
-      try {
-        const qs = snapshotDate ? `?snapshot_date=${snapshotDate}` : '';
-        await fetch(`${API_BASE}/reports/generate-final${qs}`, { method: 'POST' });
-      } catch { /* ignore report save failure */ }
-
-      setDetailResult(`${data.summary || 'Sentinel analysis complete.'}\n\n→ FINAL report saved to Report tab.`);
+      const data = await response.json();
+      setStageStatus('fusion', 'done');
+      setStageStatus('report', 'done');
+      setDetailResult(data.summary || 'Sentinel fusion complete. The alert snapshot and report output are available.');
       onDataRefreshed();
     } catch {
-      setNodeStatus('sentinel', 'error');
+      setStageStatus('fusion', 'error');
+      setDetailResult('Sentinel fusion failed. Check AI provider settings and snapshot availability.');
     }
   };
 
-  const handleNodeClick = (nodeId: string) => {
-    setSelectedNode(prev => prev === nodeId ? null : nodeId);
-    setDetailResult('');
-  };
-
-  const handleAction = (nodeId: string) => {
-    switch (nodeId) {
-      case 'news_refresh': return runNewsRefresh();
-      case 'trends_refresh': return runTrendsRefresh();
-      case 'data_upload':
-        onClose();
-        return;
-      case 'kdca_digest': return runKdcaDigest();
-      case 'osint': return runOsintAnalysis();
-      case 'sentinel': return runSentinelAnalysis();
+  const runReport = async () => {
+    setStageStatus('report', 'running');
+    setDetailResult('Generating final integrated report...');
+    try {
+      const qs = snapshotDate ? `?snapshot_date=${snapshotDate}` : '';
+      const response = await fetch(`${API_BASE}/reports/generate-final${qs}`, { method: 'POST' });
+      const data = await response.json();
+      setStageStatus('report', 'done');
+      setDetailResult(`Report generated: ${data.report_filename || data.epiweek || 'latest snapshot'}.`);
+    } catch {
+      setStageStatus('report', 'error');
+      setDetailResult('Report generation failed. Verify report storage and backend logs.');
     }
   };
 
-  const isActionNode = (type: string) => type === 'action' || type === 'analysis' || type === 'ai';
-  const sel = selectedNode ? nodeMap[selectedNode] : null;
+  const handleRunStage = (stageId: string) => {
+    if (stageId === 'ingest') return runSourceRefresh();
+    if (stageId === 'digest') return runDigests();
+    if (stageId === 'fusion') return runSentinelFusion();
+    if (stageId === 'report') return runReport();
+    setSelectedStage(stageId);
+    setDetailResult('This stage is monitored here. Run the adjacent actionable stage to update it.');
+  };
+
+  const shellClass = embedded ? 'flow-embedded' : 'flow-overlay';
 
   return (
-    <div className="flow-overlay" onClick={onClose}>
-      <div className="flow-container" onClick={e => e.stopPropagation()}>
+    <div className={shellClass} onClick={embedded ? undefined : onClose}>
+      <div className="flow-container flow-container--control" onClick={(event) => event.stopPropagation()}>
         <div className="flow-header">
           <div>
             <h3 className="flow-title">Pipeline Control</h3>
-            <span className="flow-subtitle">Click nodes to view details. Click action buttons to execute.</span>
+            <span className="flow-subtitle">Left-to-right control surface for Sentinel evidence, fusion, and reporting.</span>
           </div>
-          <button className="flow-close-btn" onClick={onClose}>×</button>
+          {!embedded && <button className="flow-close-btn" onClick={onClose}>x</button>}
         </div>
 
-        <div className="flow-body">
-          {/* SVG Diagram */}
-          <div className="flow-svg-wrap">
-            <svg viewBox="0 0 860 700" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <marker id="fa" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="7" markerHeight="5" orient="auto">
-                  <path d="M0,0 L10,4 L0,8 Z" fill="#334155"/>
-                </marker>
-                <filter id="glow">
-                  <feGaussianBlur stdDeviation="3" result="blur"/>
-                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-              </defs>
-
-              {/* Column headers */}
-              <text x="175" y="22" textAnchor="middle" fill="#38bdf8" fontSize="10" fontWeight="700" letterSpacing="1" opacity="0.5">NEWS</text>
-              <text x="450" y="22" textAnchor="middle" fill="#a78bfa" fontSize="10" fontWeight="700" letterSpacing="1" opacity="0.5">TRENDS</text>
-              <text x="720" y="22" textAnchor="middle" fill="#34d399" fontSize="10" fontWeight="700" letterSpacing="1" opacity="0.5">KDCA</text>
-
-
-              {/* Edges */}
-              {EDGES.map((e, i) => {
-                const from = nodeMap[e.from];
-                const to = nodeMap[e.to];
-                if (!from || !to) return null;
-                const d = getEdgePath(from, to);
-                const isRunning = statuses[e.to] === 'running';
+        <div className="pipeline-control-body">
+          <section className="pipeline-control-panel">
+            <div className="pipeline-control-strip">
+              {PIPELINE_STAGES.map((stage, index) => {
+                const status = statuses[stage.id] ?? 'idle';
                 return (
-                  <path key={i} d={d} fill="none"
-                    stroke={isRunning ? '#f59e42' : '#1e293b'}
-                    strokeWidth={isRunning ? 2 : 1.2}
-                    strokeDasharray={e.dashed ? '6,4' : isRunning ? '8,4' : 'none'}
-                    markerEnd="url(#fa)"
-                    className={isRunning ? 'flow-edge-running' : ''}
+                  <div className="pipeline-stage-shell" key={stage.id}>
+                    <button
+                      className={`pipeline-stage-card tone-${stage.tone} ${selectedStage === stage.id ? 'is-selected' : ''}`}
+                      onClick={() => setSelectedStage(stage.id)}
+                      type="button"
+                    >
+                      <div className="pipeline-stage-topline">
+                        <span>{String(index + 1).padStart(2, '0')}</span>
+                        <span className={`pipeline-status status-${status}`}>{STATUS_LABELS[status]}</span>
+                      </div>
+                      <h4>{stage.title}</h4>
+                      <p>{stage.subtitle}</p>
+                      <div className="pipeline-artifact">{stage.artifact}</div>
+                      <div className="pipeline-lanes">
+                        {stage.lanes.map((lane) => (
+                          <span key={lane}>{lane}</span>
+                        ))}
+                      </div>
+                    </button>
+                    {index < PIPELINE_STAGES.length - 1 && <div className="pipeline-stage-arrow">-&gt;</div>}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="pipeline-stage-detail">
+              <div>
+                <span className="pipeline-detail-kicker">Selected control</span>
+                <h4>{selected.title}</h4>
+                <p>{selected.subtitle}</p>
+              </div>
+              <div className="pipeline-detail-meta">
+                <span>Snapshot {snapshotDate || 'latest'}</span>
+                <span>Artifact {selected.artifact}</span>
+                <span>Status {STATUS_LABELS[statuses[selected.id] ?? 'idle']}</span>
+              </div>
+              {selected.actionLabel && (
+                <button
+                  className="pipeline-run-btn"
+                  onClick={() => handleRunStage(selected.id)}
+                  disabled={statuses[selected.id] === 'running'}
+                  type="button"
+                >
+                  {statuses[selected.id] === 'running' ? 'Running...' : selected.actionLabel}
+                </button>
+              )}
+              <div className="pipeline-result-box">{detailResult}</div>
+            </div>
+          </section>
+
+          <section className="ontology-control-panel">
+            <div className="ontology-header">
+              <div>
+                <span className="pipeline-detail-kicker">Sentinel ontology figure</span>
+                <h4>Evidence relationship map</h4>
+              </div>
+              <span className="ontology-badge">AI synthesis figure</span>
+            </div>
+
+            <svg className="ontology-map-svg" viewBox="0 0 820 420" role="img" aria-label="Sentinel evidence ontology map">
+              {ONTOLOGY_EDGES.map((edge) => {
+                const from = nodeById(edge.from);
+                const to = nodeById(edge.to);
+                if (!from || !to) return null;
+                const midX = (from.x + to.x) / 2;
+                return (
+                  <path
+                    key={`${edge.from}-${edge.to}`}
+                    className="ontology-link"
+                    d={`M ${from.x} ${from.y} C ${midX} ${from.y}, ${midX} ${to.y}, ${to.x} ${to.y}`}
+                    style={{ strokeWidth: 1 + edge.strength * 4, opacity: 0.22 + edge.strength * 0.58 }}
                   />
                 );
               })}
-
-              {/* Nodes */}
-              {NODES.map(n => {
-                const status = statuses[n.id] || 'idle';
-                const isSelected = selectedNode === n.id;
-                const isAction = isActionNode(n.type);
-                const isAnalysis = n.type === 'analysis';
-
-                return (
-                  <g key={n.id}
-                    className={`flow-node ${isAction ? 'flow-node--action' : ''} ${isSelected ? 'flow-node--selected' : ''}`}
-                    onClick={() => handleNodeClick(n.id)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <rect x={n.x} y={n.y} width={n.w} height={n.h}
-                      rx={isAnalysis ? 12 : 8}
-                      fill={isSelected ? 'rgba(255,255,255,0.08)' : '#0f1520'}
-                      stroke={isSelected ? n.color : `${n.color}88`}
-                      strokeWidth={isSelected ? 2 : isAction ? 1.5 : 1}
-                      filter={status === 'running' ? 'url(#glow)' : undefined}
-                    />
-
-                    {/* Label */}
-                    <text x={n.x + n.w / 2} y={n.y + (n.sublabel ? n.h * 0.42 : n.h * 0.58)}
-                      textAnchor="middle" fill={isAction || isAnalysis ? n.color : '#e2e8f0'}
-                      fontSize={isAnalysis ? 12 : 10} fontWeight={isAction ? 700 : 500}
-                    >{n.label}</text>
-
-                    {n.sublabel && (
-                      <text x={n.x + n.w / 2} y={n.y + n.h * 0.72}
-                        textAnchor="middle" fill="#475569" fontSize={8}
-                      >{n.sublabel}</text>
-                    )}
-
-                    {/* Status indicator */}
-                    <circle cx={n.x + n.w - 8} cy={n.y + 8} r={4}
-                      fill={STATUS_COLORS[status]}
-                      className={status === 'running' ? 'flow-status-pulse' : ''}
-                    />
-
-                    {/* Action play icon for action nodes */}
-                    {isAction && status !== 'running' && (
-                      <g className="flow-play-icon" opacity={0.4}>
-                        <polygon
-                          points={`${n.x + 10},${n.y + n.h / 2 - 5} ${n.x + 10},${n.y + n.h / 2 + 5} ${n.x + 18},${n.y + n.h / 2}`}
-                          fill={n.color}
-                        />
-                      </g>
-                    )}
-
-                    {status === 'running' && (
-                      <foreignObject x={n.x + 6} y={n.y + n.h / 2 - 6} width={12} height={12}>
-                        <div className="news-spinner" style={{ width: 10, height: 10, borderWidth: 1.5 }} />
-                      </foreignObject>
-                    )}
-                  </g>
-                );
-              })}
+              {ONTOLOGY_NODES.map((node) => (
+                <g className={`ontology-map-node node-${node.kind}`} key={node.id} transform={`translate(${node.x}, ${node.y})`}>
+                  <circle r={node.kind === 'output' ? 34 : node.kind === 'concept' ? 27 : 22} />
+                  <text y={node.kind === 'output' ? 52 : 42}>{node.label}</text>
+                </g>
+              ))}
             </svg>
-          </div>
 
-          {/* Detail Panel (right side) */}
-          <div className={`flow-detail ${sel ? 'flow-detail--open' : ''}`}>
-            {sel ? (
-              <>
-                <div className="flow-detail-header" style={{ borderColor: sel.color }}>
-                  <span className="flow-detail-type" style={{ color: sel.color }}>
-                    {sel.type.toUpperCase()}
-                  </span>
-                  <h4 className="flow-detail-name">{sel.label}</h4>
-                </div>
-
-                <div className="flow-detail-status">
-                  <span className="flow-detail-dot" style={{ background: STATUS_COLORS[statuses[sel.id] || 'idle'] }} />
-                  <span>{statuses[sel.id] === 'running' ? 'Running...' : statuses[sel.id] === 'done' ? 'Complete' : statuses[sel.id] === 'error' ? 'Error' : 'Ready'}</span>
-                </div>
-
-                <p className="flow-detail-desc">{sel.description}</p>
-
-                {detailResult && selectedNode && (statuses[selectedNode] === 'done' || statuses[selectedNode] === 'error') && (
-                  <div className="flow-detail-result">
-                    <div className="flow-detail-result-title">Result</div>
-                    <p>{detailResult.substring(0, 300)}{detailResult.length > 300 ? '...' : ''}</p>
-                  </div>
-                )}
-
-                {isActionNode(sel.type) && (
-                  <button
-                    className="flow-detail-action"
-                    style={{ borderColor: sel.color, color: sel.color }}
-                    onClick={() => handleAction(sel.id)}
-                    disabled={statuses[sel.id] === 'running'}
-                  >
-                    {statuses[sel.id] === 'running' ? 'Running...' :
-                     sel.id === 'data_upload' ? 'Go to Upload Tab' :
-                     sel.id === 'kdca_digest' ? 'Generate KDCA Digest' :
-                     `Run ${sel.label}`}
-                  </button>
-                )}
-              </>
-            ) : (
-              <div className="flow-detail-placeholder">
-                <div className="flow-detail-placeholder-icon">&#9878;</div>
-                <p>Click any node to view details and run actions</p>
-                <div className="flow-detail-legend">
-                  <div><span className="flow-detail-dot" style={{ background: '#475569' }} /> Idle</div>
-                  <div><span className="flow-detail-dot" style={{ background: '#f59e42' }} /> Running</div>
-                  <div><span className="flow-detail-dot" style={{ background: '#22c55e' }} /> Done</div>
-                  <div><span className="flow-detail-dot" style={{ background: '#ef4444' }} /> Error</div>
-                </div>
+            <div className="ontology-report-grid">
+              <div>
+                <span>Wastewater lane</span>
+                <strong>PDF bulletin source</strong>
+                <p>Best handled as a weekly document watcher plus table extraction review.</p>
               </div>
-            )}
-          </div>
+              <div>
+                <span>Recommended additions</span>
+                <strong>Watcher, NLP, backtests</strong>
+                <p>Add PDF auto-discovery, Korean news entity extraction, trend baselines, and lead-time validation.</p>
+              </div>
+              <div>
+                <span>Report figure</span>
+                <strong>Ontology + map + timeline</strong>
+                <p>Use this figure in the Sentinel report to show why signals were grouped together.</p>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </div>

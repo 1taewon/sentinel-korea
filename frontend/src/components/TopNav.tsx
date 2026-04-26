@@ -18,7 +18,7 @@ const TABS: { key: NavTab; label: string; labelEn: string }[] = [
   { key: 'map', label: '지도', labelEn: 'MAP' },
   { key: 'statistics', label: '통계', labelEn: 'STATISTICS' },
   { key: 'data_sources', label: '데이터 소스', labelEn: 'DATA SOURCES' },
-  { key: 'pathway', label: '파이프라인', labelEn: 'PATHWAY' },
+  { key: 'pathway', label: 'Control', labelEn: 'PIPELINE' },
   { key: 'report', label: '리포트', labelEn: 'REPORT' },
 ];
 
