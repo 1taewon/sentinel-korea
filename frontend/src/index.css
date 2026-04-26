@@ -552,7 +552,7 @@ button, input, textarea, select { font: inherit; }
 }
 .globe-context-metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin: 14px 0;
 }
@@ -623,6 +623,11 @@ button, input, textarea, select { font: inherit; }
   border-color: #38bdf8;
   background: var(--bg-soft);
 }
+.globe-signal-item.is-selected {
+  border-color: #38d8ff;
+  box-shadow: 0 0 0 1px rgba(56, 216, 255, 0.22), 0 0 20px rgba(56, 216, 255, 0.08);
+  background: linear-gradient(135deg, rgba(56, 216, 255, 0.1), var(--bg-secondary));
+}
 .globe-signal-item strong {
   display: block;
   margin: 5px 0;
@@ -630,10 +635,159 @@ button, input, textarea, select { font: inherit; }
   font-size: 12px;
   line-height: 1.35;
 }
+.globe-signal-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
 .globe-signal-item em {
   color: var(--text-secondary);
   font-size: 11px;
   font-style: normal;
+}
+.globe-signal-item small {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+.relevance-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 2px 7px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+.relevance-pill.level-critical { color: #ff4d4f; background: rgba(255, 77, 79, 0.1); }
+.relevance-pill.level-high { color: #f59e42; background: rgba(245, 158, 66, 0.1); }
+.relevance-pill.level-watch { color: #38d8ff; background: rgba(56, 216, 255, 0.1); }
+.relevance-pill.level-context { color: #8b8cff; background: rgba(139, 140, 255, 0.1); }
+.globe-raw-card {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(56, 216, 255, 0.08), transparent 48%),
+    var(--bg-secondary);
+}
+.globe-raw-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.globe-raw-card-top strong {
+  color: var(--text-primary);
+  font-family: var(--font-mono, monospace);
+  font-size: 18px;
+}
+.globe-raw-card h6 {
+  margin: 0 0 10px;
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.globe-raw-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.globe-raw-grid div {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+}
+.globe-raw-grid span {
+  display: block;
+  color: var(--text-muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  text-transform: uppercase;
+}
+.globe-raw-grid strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-primary);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.globe-factor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 10px 0 12px;
+}
+.globe-factor-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 8px;
+}
+.globe-factor-row span,
+.globe-factor-row strong {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+.globe-factor-row strong {
+  color: var(--text-primary);
+  font-family: var(--font-mono, monospace);
+  text-align: right;
+}
+.globe-factor-bar {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--bg-soft);
+}
+.globe-factor-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+.globe-raw-link {
+  display: inline-flex;
+  margin-bottom: 10px;
+  color: #38d8ff;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.globe-raw-link:hover {
+  text-decoration: underline;
+}
+.globe-raw-json {
+  max-height: 190px;
+  margin: 0;
+  padding: 10px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--text-secondary);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+.globe-click-hint {
+  padding: 12px;
+  border: 1px dashed rgba(56, 216, 255, 0.36);
+  border-radius: 10px;
+  background: rgba(56, 216, 255, 0.06);
 }
 .globe-bottom-lanes {
   position: relative;

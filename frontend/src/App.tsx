@@ -14,6 +14,7 @@ import Timeline from './components/Timeline';
 import TopNav, { type NavTab } from './components/TopNav';
 import TrendsChart from './components/TrendsChart';
 import { useAuth } from './contexts/AuthContext';
+import { relevanceLabel, scoreInternationalRelevance } from './lib/internationalRelevance';
 import type { CombinedData, GlobalSignal, IngestionStatus, KoreaAlert, ScoringConfig } from './types';
 import './index.css';
 
@@ -23,6 +24,18 @@ const AUTH_ENABLED = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VIT
 
 type Layer = 'respiratory' | 'wastewater_covid' | 'wastewater_flu' | 'news_trends_risk' | 'total_risk';
 type AggregationMode = 'max' | 'weighted';
+
+const relevanceFactorLabels: Record<string, string> = {
+  severity: '질병 심각도',
+  diseaseRisk: '호흡기/신종 위험',
+  trafficProxy: '한국 이동량 proxy',
+  proximity: '거리/인접성',
+  unexpectedness: '예상 밖 이벤트',
+  sourceReliability: '소스 신뢰도',
+};
+
+const formatPercent = (value: number) => `${Math.round(value * 100)}%`;
+const formatDistance = (value: number) => `${Math.round(value).toLocaleString()} km`;
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -282,6 +295,11 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       acc[signal.severity] = (acc[signal.severity] || 0) + 1;
       return acc;
     }, {});
+    const byRelevance = globalSignals.reduce<Record<string, number>>((acc, signal) => {
+      const relevance = scoreInternationalRelevance(signal);
+      acc[relevance.level] = (acc[relevance.level] || 0) + 1;
+      return acc;
+    }, {});
     const countries = globalSignals.reduce<Record<string, number>>((acc, signal) => {
       const key = signal.country || 'Unspecified';
       acc[key] = (acc[key] || 0) + 1;
@@ -291,9 +309,16 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5);
     const recentSignals = [...globalSignals]
-      .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-      .slice(0, 5);
-    return { bySource, bySeverity, topCountries, recentSignals };
+      .sort((a, b) => {
+        const scoreDelta = scoreInternationalRelevance(b).score - scoreInternationalRelevance(a).score;
+        if (Math.abs(scoreDelta) > 0.01) return scoreDelta;
+        return (b.date || '').localeCompare(a.date || '');
+      })
+      .slice(0, 6);
+    const averageRelevance = globalSignals.length
+      ? globalSignals.reduce((sum, signal) => sum + scoreInternationalRelevance(signal).score, 0) / globalSignals.length
+      : 0;
+    return { bySource, bySeverity, byRelevance, topCountries, recentSignals, averageRelevance };
   }, [globalSignals]);
   const globeLaneSummary = [
     { key: 'KDCA', label: '공식 감시', value: koreaAlerts.length || 17, tone: 'green' },
@@ -590,20 +615,28 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                     <div><span>CONF</span><strong>{topKoreaAlert?.confidence || 'n/a'}</strong></div>
                   </div>
                   <p className="globe-hud-note">
-                    International arcs are displayed as external support signals flowing toward Korea.
-                    They do not replace Korea-focused surveillance, news, or search trends.
+                    국제 arc는 한국 관련성 점수에 따라 빈도, 색상, 속도가 달라집니다.
+                    국내 감시/뉴스/검색을 대체하지 않고, 한국에 영향을 줄 수 있는 외부 맥락을 보조 설명합니다.
                   </p>
                 </aside>
                 <div className="expanded-globe-container">
-                  <MiniGlobe isExpanded={true} signals={globalSignals} koreaAlerts={koreaAlerts} activeLayers={activeLayers} aggregationMode={aggregationMode} />
+                  <MiniGlobe
+                    isExpanded={true}
+                    signals={globalSignals}
+                    koreaAlerts={koreaAlerts}
+                    activeLayers={activeLayers}
+                    aggregationMode={aggregationMode}
+                    onGlobalSignalClick={setSelectedGlobal}
+                    selectedGlobalId={selectedGlobal?.id}
+                  />
                 </div>
                 <aside className="globe-context-panel">
-                  <span className="globe-context-kicker">국제 보조 감시</span>
-                  <h4>국제 신호는 무엇을 의미하나?</h4>
+                  <span className="globe-context-kicker">한국 관련성 기반 국제 감시</span>
+                  <h4>어떤 국제 신호가 한국에 가까운가?</h4>
                   <p>
-                    이 패널은 WHO/국제 뉴스/국제 이벤트 신호를 따로 보여줍니다.
-                    국내 뉴스와 국내 검색 트렌드가 주 경보 재료이고, 국제 신호는 외부 발생 상황,
-                    인접국 동향, 국내 신호의 보조 확인에 사용합니다.
+                    국제 신호는 질병 심각도, 한국 이동량 proxy, 거리, 예상 밖 이벤트, 소스 신뢰도를
+                    함께 보아 Korea relevance를 계산합니다. 점수가 높을수록 globe에서 한국으로 향하는
+                    arc가 더 자주, 더 진하게 나타납니다.
                   </p>
 
                   <div className="globe-context-metrics">
@@ -612,17 +645,21 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                       <strong>{globalSignals.length}</strong>
                     </div>
                     <div>
-                      <span>High</span>
-                      <strong>{internationalSummary.bySeverity.high || 0}</strong>
+                      <span>Critical</span>
+                      <strong>{internationalSummary.byRelevance.critical || 0}</strong>
                     </div>
                     <div>
-                      <span>Medium</span>
-                      <strong>{internationalSummary.bySeverity.medium || 0}</strong>
+                      <span>High+</span>
+                      <strong>{(internationalSummary.byRelevance.critical || 0) + (internationalSummary.byRelevance.high || 0)}</strong>
+                    </div>
+                    <div>
+                      <span>Avg relevance</span>
+                      <strong>{formatPercent(internationalSummary.averageRelevance)}</strong>
                     </div>
                   </div>
 
                   <div className="globe-context-section">
-                    <h5>Source composition</h5>
+                    <h5>소스 구성</h5>
                     {Object.entries(internationalSummary.bySource).length ? (
                       Object.entries(internationalSummary.bySource).map(([source, count]) => (
                         <div className="globe-context-row" key={source}>
@@ -636,7 +673,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   </div>
 
                   <div className="globe-context-section">
-                    <h5>Top countries</h5>
+                    <h5>관련 국가</h5>
                     {internationalSummary.topCountries.length ? (
                       internationalSummary.topCountries.map(([country, count]) => (
                         <div className="globe-context-row" key={country}>
@@ -650,22 +687,77 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   </div>
 
                   <div className="globe-context-section">
-                    <h5>Recent international signals</h5>
+                    <h5>한국 관련성 상위 국제 신호</h5>
                     {internationalSummary.recentSignals.length ? (
-                      internationalSummary.recentSignals.map((signal) => (
-                        <button
-                          className="globe-signal-item"
-                          key={`${signal.id}-${signal.date}`}
-                          onClick={() => setSelectedGlobal(signal)}
-                          type="button"
-                        >
-                          <span>{signal.date} / {signal.source.replace('_', ' ')}</span>
-                          <strong>{signal.title || signal.keyword || signal.disease || 'International signal'}</strong>
-                          <em>{signal.country || signal.severity}</em>
-                        </button>
-                      ))
+                      internationalSummary.recentSignals.map((signal) => {
+                        const relevance = scoreInternationalRelevance(signal);
+                        return (
+                          <button
+                            className={`globe-signal-item is-${relevance.level} ${selectedGlobal?.id === signal.id ? 'is-selected' : ''}`}
+                            style={{ borderLeftColor: relevance.color }}
+                            key={`${signal.id}-${signal.date}`}
+                            onClick={() => setSelectedGlobal(signal)}
+                            type="button"
+                          >
+                            <span>{signal.date} / {signal.source.replace('_', ' ')}</span>
+                            <strong>{signal.title || signal.keyword || signal.disease || 'International signal'}</strong>
+                            <div className="globe-signal-meta">
+                              <em>{signal.country || signal.severity}</em>
+                              <b className={`relevance-pill level-${relevance.level}`}>
+                                {formatPercent(relevance.score)}
+                              </b>
+                            </div>
+                            <small>
+                              {relevanceLabel(relevance.score)} · 거리 {formatDistance(relevance.distanceKm)}
+                            </small>
+                          </button>
+                        );
+                      })
                     ) : (
                       <p className="globe-context-empty">표시할 국제 신호가 없습니다.</p>
+                    )}
+                  </div>
+
+                  <div className="globe-context-section">
+                    <h5>선택 신호 RAW DATA</h5>
+                    {selectedGlobal ? (() => {
+                      const relevance = scoreInternationalRelevance(selectedGlobal);
+                      return (
+                        <div className="globe-raw-card">
+                          <div className="globe-raw-card-top">
+                            <span className={`relevance-pill level-${relevance.level}`}>{relevanceLabel(relevance.score)}</span>
+                            <strong>{formatPercent(relevance.score)}</strong>
+                          </div>
+                          <h6>{selectedGlobal.title || selectedGlobal.keyword || selectedGlobal.disease || 'International signal'}</h6>
+                          <div className="globe-raw-grid">
+                            <div><span>source</span><strong>{selectedGlobal.source.replace('_', ' ')}</strong></div>
+                            <div><span>country</span><strong>{selectedGlobal.country || 'n/a'}</strong></div>
+                            <div><span>severity</span><strong>{selectedGlobal.severity}</strong></div>
+                            <div><span>distance</span><strong>{formatDistance(relevance.distanceKm)}</strong></div>
+                          </div>
+                          <div className="globe-factor-list">
+                            {Object.entries(relevance.factors).map(([key, value]) => (
+                              <div className="globe-factor-row" key={key}>
+                                <span>{relevanceFactorLabels[key] || key}</span>
+                                <div className="globe-factor-bar">
+                                  <i className="globe-factor-fill" style={{ width: formatPercent(value), background: relevance.color }} />
+                                </div>
+                                <strong>{formatPercent(value)}</strong>
+                              </div>
+                            ))}
+                          </div>
+                          {selectedGlobal.url && (
+                            <a className="globe-raw-link" href={selectedGlobal.url} target="_blank" rel="noreferrer">
+                              원문 링크 열기
+                            </a>
+                          )}
+                          <pre className="globe-raw-json">{JSON.stringify(selectedGlobal, null, 2)}</pre>
+                        </div>
+                      );
+                    })() : (
+                      <p className="globe-click-hint">
+                        Globe의 arc/node 또는 위 목록을 클릭하면 AI relevance factor와 원천 RAW DATA를 여기서 확인할 수 있습니다.
+                      </p>
                     )}
                   </div>
                 </aside>
