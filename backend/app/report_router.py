@@ -159,7 +159,12 @@ def _build_contract_sections(
 ## Recommended watch actions
 - G2/G3 또는 상승 전환 지역은 다음 epiweek까지 신호 breakdown과 원천자료 freshness를 우선 확인합니다.
 - 국내 뉴스/검색 trend가 공식 감시자료와 같은 방향으로 움직이는지 retrospective timeline에서 검토합니다.
-- 국제 신호는 globe 패널에서 Korea relevance와 raw data를 확인하되, 독립적인 글로벌 경보 점수로 해석하지 않습니다."""
+- 국제 신호는 globe 패널에서 Korea relevance와 raw data를 확인하되, 독립적인 글로벌 경보 점수로 해석하지 않습니다.
+
+## Signal relationship figure
+- Report 화면의 relationship figure는 이 raw artifact에서 지역, 신호원, 질병/키워드, action 용어를 추출해 구성합니다.
+- 중심 노드는 이번 report이며, 주변 노드는 What changed, Why it matters, Confidence, Watch actions로 연결됩니다.
+- 이 figure는 pipeline control이 아니라 이번 보고서 텍스트 안에서 signal들이 어떻게 의미적으로 묶였는지 보여주는 설명용 map입니다."""
 
 
 def _strip_leading_report_title(markdown: str) -> str:
@@ -242,6 +247,7 @@ def _build_prompt(snapshot, prev_snapshot, korea_news, global_signals, trends, t
 ## Why it matters
 ## Confidence
 ## Recommended watch actions
+## Signal relationship figure
 ## Evidence appendix
 ### 1. 지역별 경보 현황
 ### 2. 신호 해석
@@ -355,6 +361,7 @@ def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, tre
 ## Why it matters
 ## Confidence
 ## Recommended watch actions
+## Signal relationship figure
 ## Evidence appendix
 ### 1. OSINT vs KDCA 신호 수렴도
 ### 2. 지역별 경보 현황
