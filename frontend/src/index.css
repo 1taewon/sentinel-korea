@@ -3979,6 +3979,12 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.42));
 }
 
+.ontology-link.is-osint-report-link {
+  stroke: #21d10f;
+  stroke-dasharray: 4 12;
+  filter: drop-shadow(0 0 8px rgba(33, 209, 15, 0.48));
+}
+
 .ontology-pulse {
   fill: #00d4ff;
   opacity: 0.18;
@@ -3988,6 +3994,12 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   fill: #f59e42;
   opacity: 0.9;
   filter: drop-shadow(0 0 8px rgba(245, 158, 66, 0.68));
+}
+
+.ontology-pulse.is-osint-report-link {
+  fill: #21d10f;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 8px rgba(33, 209, 15, 0.66));
 }
 
 @keyframes ontology-dash-flow {

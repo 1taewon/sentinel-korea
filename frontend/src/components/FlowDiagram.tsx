@@ -214,7 +214,7 @@ const ONTOLOGY_NODES: OntologyNode[] = [
   { id: 'trends', label: { ko: '국내 검색 트렌드', en: 'Korea search trends' }, x: 86, y: 292, kind: 'source' },
   { id: 'respiratory', label: { ko: '호흡기 활동성', en: 'Respiratory activity' }, x: 322, y: 100, kind: 'concept' },
   { id: 'environment', label: { ko: '환경 보조근거', en: 'Environmental corroboration' }, x: 330, y: 205, kind: 'concept' },
-  { id: 'behavior', label: { ko: '증상 탐색 행동', en: 'Symptom-seeking behavior' }, x: 342, y: 318, kind: 'concept' },
+  { id: 'behavior', label: { ko: '증상탐색행동(OSINT 신호)', en: 'Symptom-seeking behavior (OSINT signal)' }, x: 342, y: 318, kind: 'concept' },
   { id: 'burden', label: { ko: '폐렴 부담 가설', en: 'Pneumonia burden hypothesis' }, x: 548, y: 142, kind: 'concept' },
   { id: 'report', label: { ko: 'Sentinel 종합보고서', en: 'Sentinel analysis report' }, x: 720, y: 220, kind: 'output' },
 ];
@@ -227,6 +227,7 @@ const ONTOLOGY_EDGES: OntologyEdge[] = [
   { from: 'respiratory', to: 'burden', strength: 0.82, phase: 'fusion' },
   { from: 'environment', to: 'burden', strength: 0.64, phase: 'fusion' },
   { from: 'burden', to: 'report', strength: 0.9, phase: 'report' },
+  { from: 'behavior', to: 'report', strength: 0.78, phase: 'report' },
 ];
 
 const STATUS_LABELS: Record<Lang, Record<NodeStatus, string>> = {
@@ -263,6 +264,18 @@ function edgePath(edge: OntologyEdge) {
   if (!from || !to) return '';
   const midX = (from.x + to.x) / 2;
   return `M ${from.x} ${from.y} C ${midX} ${from.y}, ${midX} ${to.y}, ${to.x} ${to.y}`;
+}
+
+function nodeLabelLines(node: OntologyNode, lang: Lang) {
+  const label = copy(node.label, lang);
+  if (lang === 'ko' && label.includes('(')) {
+    const [main, detail] = label.split('(');
+    return [main, `(${detail}`];
+  }
+  if (lang === 'en' && label.length > 26) {
+    return label.replace(' (', '\n(').split('\n');
+  }
+  return [label];
 }
 
 export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, embedded }: Props) {
@@ -485,11 +498,11 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
                 return (
                   <g key={`${edge.from}-${edge.to}`}>
                     <path
-                      className={`ontology-link ${active ? 'is-active' : ''}`}
+                      className={`ontology-link ${edge.from === 'behavior' && edge.to === 'report' ? 'is-osint-report-link' : ''} ${active ? 'is-active' : ''}`}
                       d={d}
                       style={{ strokeWidth: 1 + edge.strength * 4, opacity: active ? 0.88 : 0.22 + edge.strength * 0.3 }}
                     />
-                    <circle className={`ontology-pulse ${active ? 'is-active' : ''}`} r={active ? 4.3 : 2.8}>
+                    <circle className={`ontology-pulse ${edge.from === 'behavior' && edge.to === 'report' ? 'is-osint-report-link' : ''} ${active ? 'is-active' : ''}`} r={active ? 4.3 : 2.8}>
                       <animateMotion
                         dur={`${5.2 - edge.strength * 1.8}s`}
                         repeatCount="indefinite"
@@ -503,7 +516,11 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
               {ONTOLOGY_NODES.map((node) => (
                 <g className={`ontology-map-node node-${node.kind}`} key={node.id} transform={`translate(${node.x}, ${node.y})`}>
                   <circle r={node.kind === 'output' ? 34 : node.kind === 'concept' ? 27 : 22} />
-                  <text y={node.kind === 'output' ? 52 : 42}>{copy(node.label, lang)}</text>
+                  <text y={node.kind === 'output' ? 52 : 42}>
+                    {nodeLabelLines(node, lang).map((line, index) => (
+                      <tspan key={line} x="0" dy={index === 0 ? 0 : 14}>{line}</tspan>
+                    ))}
+                  </text>
                 </g>
               ))}
             </svg>
@@ -512,29 +529,6 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
               <span><i className="legend-dot source" /> {lang === 'ko' ? '원천 신호' : 'Source signal'}</span>
               <span><i className="legend-dot concept" /> {lang === 'ko' ? 'AI 개념 묶음' : 'AI concept group'}</span>
               <span><i className="legend-dot output" /> {lang === 'ko' ? '보고서 산출물' : 'Report output'}</span>
-            </div>
-
-            <div className="ontology-report-grid">
-              <div>
-                <span>{lang === 'ko' ? 'Figure 역할' : 'Figure role'}</span>
-                <strong>{lang === 'ko' ? '장식이 아닌 설명 근거' : 'Not decoration'}</strong>
-                <p>{lang === 'ko' ? 'Sentinel이 raw signal을 어떻게 묶고 해석했는지 보여줍니다.' : 'Shows how Sentinel groups raw signals into concepts before creating a regional alert explanation.'}</p>
-              </div>
-              <div>
-                <span>{lang === 'ko' ? '보고서 계약' : 'Report contract'}</span>
-                <strong>{lang === 'ko' ? '변화, 의미, 신뢰도, 조치' : 'Changed, matters, confidence, actions'}</strong>
-                <p>{lang === 'ko' ? '모든 보고서는 같은 네 섹션으로 작성해 경보 논리를 빠르게 검토하게 합니다.' : 'Every Sentinel report should use these four sections so the user can audit the alert logic quickly.'}</p>
-              </div>
-              <div>
-                <span>{lang === 'ko' ? 'Globe 참고' : 'Globe reference'}</span>
-                <strong>{lang === 'ko' ? 'WHO/국제 뉴스는 이 그림 밖에서 확인' : 'WHO/international news lives outside this figure'}</strong>
-                <p>{lang === 'ko' ? '이 ontology map은 국내 경보 산출 흐름만 보여주고, 국제 발생 상황과 WHO 알림은 globe 패널에서 따로 봅니다.' : 'This ontology map shows the Korea alert flow only. WHO and international events are reviewed separately in the Globe panel.'}</p>
-              </div>
-              <div>
-                <span>{lang === 'ko' ? '보류 lane' : 'Deferred lane'}</span>
-                <strong>{lang === 'ko' ? '폐하수 PDF 자동화는 추후' : 'Wastewater PDF automation later'}</strong>
-                <p>{lang === 'ko' ? '현재는 문서-only 보조 신호로 표시하고, 표 자동 추출/검수는 다음 단계로 둡니다.' : 'For now, wastewater stays visible as a document-only corroboration lane until extraction review is added.'}</p>
-              </div>
             </div>
           </section>
         </div>
