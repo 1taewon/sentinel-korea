@@ -57,7 +57,7 @@ const PIPELINE_STAGES: PipelineStage[] = [
     id: 'ingest',
     title: { ko: '소스 수집', en: 'Source ingest' },
     subtitle: {
-      ko: '질병청 중심 감시자료와 국내 뉴스/검색 트렌드를 우선 수집하고, 국제 신호는 별도 보조 레이어로 둡니다.',
+      ko: '질병청 중심 감시자료와 국내 뉴스/검색 트렌드를 우선 수집하고, WHO/국제 뉴스는 Globe 참고 패널로 분리합니다.',
       en: 'Prioritize KDCA surveillance plus Korea news/trends; keep international signals as a separate support layer.',
     },
     artifact: 'raw_signal',
@@ -67,7 +67,6 @@ const PIPELINE_STAGES: PipelineStage[] = [
       { ko: '폐하수 PDF 공보', en: 'Wastewater PDF bulletin' },
       { ko: '국내 뉴스', en: 'Korea news feeds' },
       { ko: '국내 검색 트렌드', en: 'Korea search trends' },
-      { ko: 'WHO/국제 뉴스 보조', en: 'WHO/international support' },
     ],
     controls: [
       {
@@ -80,14 +79,14 @@ const PIPELINE_STAGES: PipelineStage[] = [
       {
         id: 'refresh-osint',
         label: { ko: '뉴스/트렌드 갱신', en: 'Refresh OSINT lanes' },
-        description: { ko: '국내 뉴스/검색 트렌드를 갱신하고, 국제 뉴스/WHO 신호는 별도 보조 레이어로 갱신합니다.', en: 'Refresh Korea news/trends and the separate WHO/international support lane.' },
-        endpoints: ['/ingestion/refresh-global', '/ingestion/refresh-trends'],
+        description: { ko: '국내 뉴스/검색 트렌드를 갱신합니다. WHO/국제 뉴스는 Globe 패널에서 별도로 확인합니다.', en: 'Refresh Korea news/trends. WHO/international news is reviewed separately in the Globe panel.' },
+        endpoints: ['/ingestion/refresh-trends'],
         result: { ko: '뉴스/트렌드 신호 갱신 완료.', en: 'News and trend lanes refreshed.' },
       },
     ],
     checklist: [
       { ko: '폐하수는 현재 문서-only 보조 신호입니다.', en: 'Wastewater remains a document-only corroboration lane.' },
-      { ko: '국제 신호는 국내 OSINT와 섞지 않고 globe 보조 패널에서 별도로 설명합니다.', en: 'International signals are shown separately in the globe support panel.' },
+      { ko: 'WHO/국제 뉴스는 국내 OSINT와 섞지 않고 Globe 패널에서 별도로 설명합니다.', en: 'WHO/international news is shown separately in the Globe panel.' },
     ],
   },
   {
@@ -190,7 +189,7 @@ const PIPELINE_STAGES: PipelineStage[] = [
     lanes: [
       { ko: 'Ontology figure', en: 'Ontology figure' },
       { ko: '4-part brief', en: '4-part brief' },
-      { ko: '국제 보조 신호', en: 'International support note' },
+      { ko: 'Globe 참고 패널', en: 'Globe reference panel' },
       { ko: 'Vercel dashboard', en: 'Vercel dashboard' },
     ],
     controls: [
@@ -213,11 +212,9 @@ const ONTOLOGY_NODES: OntologyNode[] = [
   { id: 'wastewater', label: { ko: '폐하수 PDF', en: 'Wastewater PDF' }, x: 86, y: 134, kind: 'source' },
   { id: 'news', label: { ko: '국내 뉴스', en: 'Korea news' }, x: 86, y: 214, kind: 'source' },
   { id: 'trends', label: { ko: '국내 검색 트렌드', en: 'Korea search trends' }, x: 86, y: 292, kind: 'source' },
-  { id: 'intl', label: { ko: 'WHO/국제 뉴스', en: 'WHO/international news' }, x: 86, y: 368, kind: 'source' },
   { id: 'respiratory', label: { ko: '호흡기 활동성', en: 'Respiratory activity' }, x: 322, y: 100, kind: 'concept' },
   { id: 'environment', label: { ko: '환경 보조근거', en: 'Environmental corroboration' }, x: 330, y: 205, kind: 'concept' },
   { id: 'behavior', label: { ko: '증상 탐색 행동', en: 'Symptom-seeking behavior' }, x: 342, y: 318, kind: 'concept' },
-  { id: 'imported', label: { ko: '국제 보조 신호', en: 'International support signals' }, x: 548, y: 292, kind: 'concept' },
   { id: 'burden', label: { ko: '폐렴 부담 가설', en: 'Pneumonia burden hypothesis' }, x: 548, y: 142, kind: 'concept' },
   { id: 'report', label: { ko: 'Sentinel 종합보고서', en: 'Sentinel analysis report' }, x: 720, y: 220, kind: 'output' },
 ];
@@ -227,11 +224,8 @@ const ONTOLOGY_EDGES: OntologyEdge[] = [
   { from: 'wastewater', to: 'environment', strength: 0.72, phase: 'ingest' },
   { from: 'news', to: 'behavior', strength: 0.48, phase: 'digest' },
   { from: 'trends', to: 'behavior', strength: 0.58, phase: 'digest' },
-  { from: 'intl', to: 'imported', strength: 0.66, phase: 'ingest' },
   { from: 'respiratory', to: 'burden', strength: 0.82, phase: 'fusion' },
   { from: 'environment', to: 'burden', strength: 0.64, phase: 'fusion' },
-  { from: 'behavior', to: 'imported', strength: 0.38, phase: 'digest' },
-  { from: 'imported', to: 'report', strength: 0.62, phase: 'report' },
   { from: 'burden', to: 'report', strength: 0.9, phase: 'report' },
 ];
 
@@ -532,9 +526,9 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
                 <p>{lang === 'ko' ? '모든 보고서는 같은 네 섹션으로 작성해 경보 논리를 빠르게 검토하게 합니다.' : 'Every Sentinel report should use these four sections so the user can audit the alert logic quickly.'}</p>
               </div>
               <div>
-                <span>{lang === 'ko' ? 'Global layer' : 'Global layer'}</span>
-                <strong>{lang === 'ko' ? 'WHO/국제 뉴스는 별도 보조 레이어' : 'WHO/international news is separate'}</strong>
-                <p>{lang === 'ko' ? '국내 뉴스/트렌드와 섞지 않고 globe에서 국제 발생 상황, WHO 신호, 외부 corroboration을 따로 설명합니다.' : 'International signals are not merged with Korea news/trends; the globe explains WHO signals, international events, and external corroboration separately.'}</p>
+                <span>{lang === 'ko' ? 'Globe 참고' : 'Globe reference'}</span>
+                <strong>{lang === 'ko' ? 'WHO/국제 뉴스는 이 그림 밖에서 확인' : 'WHO/international news lives outside this figure'}</strong>
+                <p>{lang === 'ko' ? '이 ontology map은 국내 경보 산출 흐름만 보여주고, 국제 발생 상황과 WHO 알림은 globe 패널에서 따로 봅니다.' : 'This ontology map shows the Korea alert flow only. WHO and international events are reviewed separately in the Globe panel.'}</p>
               </div>
               <div>
                 <span>{lang === 'ko' ? '보류 lane' : 'Deferred lane'}</span>
