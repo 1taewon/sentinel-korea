@@ -163,8 +163,8 @@ function GlobalDetail({ signal }: { signal: GlobalSignal }) {
       {signal.title && <p className="global-description">{signal.title}</p>}
       {signal.keyword && <p className="global-description">Keyword: {signal.keyword}</p>}
       <div className="governance-card">
-        <div className="section-title">Global context role</div>
-        <p>This layer supports imported-risk watch, regional benchmarking, and external corroboration. It does not replace Korea deep scoring.</p>
+        <div className="section-title">International support role</div>
+        <p>WHO and international news signals are reviewed as a separate support layer for external corroboration and international situational awareness. They do not replace Korea-focused news, trends, or regional scoring.</p>
       </div>
     </>
   );

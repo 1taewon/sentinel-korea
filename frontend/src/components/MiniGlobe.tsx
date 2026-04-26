@@ -14,6 +14,8 @@ type Props = {
 
 export default function MiniGlobe({ isExpanded = false, signals = [], koreaAlerts = [], activeLayers = ['respiratory'], aggregationMode = 'max' }: Props) {
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
+  const expandedWidth = typeof window !== 'undefined' ? Math.max(560, window.innerWidth - 440) : 900;
+  const expandedHeight = typeof window !== 'undefined' ? Math.max(520, window.innerHeight - 180) : 720;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -84,8 +86,8 @@ export default function MiniGlobe({ isExpanded = false, signals = [], koreaAlert
     <div className={isExpanded ? "expanded-globe-inner" : "mini-globe-container"}>
       <Globe
         ref={globeRef}
-        width={isExpanded ? window.innerWidth : 180}
-        height={isExpanded ? window.innerHeight - 160 : 180}
+        width={isExpanded ? expandedWidth : 180}
+        height={isExpanded ? expandedHeight : 180}
         backgroundColor="rgba(0,0,0,0)"
         globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
         bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"

@@ -221,9 +221,9 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
       tone: 'blue',
     },
     {
-      label: '해외 유입 맥락',
+      label: 'WHO/국제 뉴스',
       count: globalNews.length,
-      desc: 'WHO/해외 뉴스는 보조 context',
+      desc: '국제 발생 상황은 별도 보조 레이어',
       tone: 'slate',
     },
     {
@@ -285,7 +285,7 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
             )}
             {digest.global_summary && (
               <div className="digest-block">
-                <div className="digest-block-title">해외 유입 맥락 / Imported-risk</div>
+                <div className="digest-block-title">WHO/국제 뉴스 보조 신호</div>
                 <p className="digest-text">{digest.global_summary}</p>
               </div>
             )}
@@ -316,7 +316,7 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
             )}
             {digest.source_count && (
               <div className="digest-source-count">
-                Source ledger: Naver {digest.source_count.naver_news || 0} | EN {digest.source_count.english_news || 0} | Imported-risk {digest.source_count.global_news || 0} | WHO {digest.source_count.who_don || 0}
+                Source ledger: Naver {digest.source_count.naver_news || 0} | EN {digest.source_count.english_news || 0} | International news {digest.source_count.global_news || 0} | WHO {digest.source_count.who_don || 0}
               </div>
             )}
           </div>
@@ -354,7 +354,7 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
               className={`news-tab${activeTab === 'global' ? ' news-tab--active' : ''}`}
               onClick={() => setActiveTab('global')}
             >
-              해외 유입 맥락
+              WHO/국제 뉴스
               <span className="news-tab-count">{globalNews.length}</span>
             </button>
           </div>
@@ -409,8 +409,8 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
             </div>
             <div className="news-tabs" style={{ padding: '0 16px', background: 'var(--bg-soft)' }}>
               {([
-                ['korea', 'Korea News'],
-                ['global', 'Global News'],
+                ['korea', '국내 뉴스'],
+                ['global', 'WHO/국제 뉴스'],
                 ['google_trends', 'Google Trends'],
                 ['naver_trends', 'Naver Trends'],
               ] as [ConfigSection, string][]).map(([key, label]) => (
@@ -454,7 +454,7 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
               )}
               {configSection === 'global' && (
                 <div>
-                  <label className="meta-label">Global Keywords (line-separated)</label>
+                  <label className="meta-label">WHO/International Keywords (line-separated)</label>
                   <textarea className="keyword-textarea" value={configParams.global_queries}
                     onChange={e => setConfigParams({ ...configParams, global_queries: e.target.value })} />
                   <label className="meta-label" style={{ marginTop: '8px', display: 'block' }}>Exclusions</label>

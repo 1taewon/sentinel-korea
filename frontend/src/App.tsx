@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import FlowDiagram from './components/FlowDiagram';
 import GeminiChatbot from './components/GeminiChatbot';
 import KdcaUploadPanel from './components/KdcaUploadPanel';
@@ -263,6 +263,34 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
 
   const elevatedCount = koreaAlerts.filter((alert) => alert.score >= 0.55).length;
   const criticalCount = koreaAlerts.filter((alert) => alert.score >= 0.75).length;
+  const internationalSummary = useMemo(() => {
+    const sourceLabels: Record<string, string> = {
+      healthmap: 'HealthMap',
+      promed: 'ProMED',
+      google_trends: 'Google Trends',
+    };
+    const bySource = globalSignals.reduce<Record<string, number>>((acc, signal) => {
+      const key = sourceLabels[signal.source] || signal.source;
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    const bySeverity = globalSignals.reduce<Record<string, number>>((acc, signal) => {
+      acc[signal.severity] = (acc[signal.severity] || 0) + 1;
+      return acc;
+    }, {});
+    const countries = globalSignals.reduce<Record<string, number>>((acc, signal) => {
+      const key = signal.country || 'Unspecified';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    const topCountries = Object.entries(countries)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+    const recentSignals = [...globalSignals]
+      .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+      .slice(0, 5);
+    return { bySource, bySeverity, topCountries, recentSignals };
+  }, [globalSignals]);
   const sourceOverviewCards = [
     {
       label: 'OFFICIAL',
@@ -292,11 +320,11 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       tone: 'blue',
     },
     {
-      label: 'CONTEXT',
-      title: '해외 유입 맥락',
-      description: '인접국/해외 신호는 imported-risk watch와 외부 corroboration 용도로만 사용합니다.',
-      cadence: '보조 맥락',
-      output: 'context layer',
+      label: 'GLOBAL',
+      title: 'WHO/국제 뉴스 보조 신호',
+      description: '국내 뉴스/트렌드와 분리된 보조 레이어입니다. 국제 발생 상황, WHO 알림, 외부 corroboration을 globe에서 설명합니다.',
+      cadence: '별도 보조 레이어',
+      output: 'globe context panel',
       metric: `${globalSignals.length} signals`,
       tone: 'slate',
     },
@@ -410,7 +438,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
               <button
                 className={`kas-toolbar-btn ${isGlobeExpanded ? 'kas-toolbar-btn--active' : ''}`}
                 onClick={() => setIsGlobeExpanded(v => !v)}
-                title="Global view"
+                title="WHO/국제 뉴스 보조 레이어"
                 type="button"
               >
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="square">
@@ -522,13 +550,87 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
             <div className="expanded-globe-overlay">
               <div className="expanded-globe-header">
                 <div>
-                  <h3>Imported-risk context layer</h3>
-                  <p>Overseas and neighbor-country signals are used only for corroboration, benchmarking, and watch context.</p>
+                  <h3>WHO/국제 뉴스 보조 레이어</h3>
+                  <p>국내 뉴스/국내 트렌드와 분리해서 보는 국제 발생 상황, WHO 알림, 외부 corroboration 패널입니다.</p>
                 </div>
                 <button className="panel-close" onClick={() => setIsGlobeExpanded(false)}>×</button>
               </div>
-              <div className="expanded-globe-container">
-                <MiniGlobe isExpanded={true} signals={globalSignals} koreaAlerts={koreaAlerts} activeLayers={activeLayers} aggregationMode={aggregationMode} />
+              <div className="expanded-globe-body">
+                <div className="expanded-globe-container">
+                  <MiniGlobe isExpanded={true} signals={globalSignals} koreaAlerts={koreaAlerts} activeLayers={activeLayers} aggregationMode={aggregationMode} />
+                </div>
+                <aside className="globe-context-panel">
+                  <span className="globe-context-kicker">국제 보조 감시</span>
+                  <h4>국제 신호는 무엇을 의미하나?</h4>
+                  <p>
+                    이 패널은 WHO/국제 뉴스/국제 이벤트 신호를 따로 보여줍니다.
+                    국내 뉴스와 국내 검색 트렌드가 주 경보 재료이고, 국제 신호는 외부 발생 상황,
+                    인접국 동향, 국내 신호의 보조 확인에 사용합니다.
+                  </p>
+
+                  <div className="globe-context-metrics">
+                    <div>
+                      <span>Total</span>
+                      <strong>{globalSignals.length}</strong>
+                    </div>
+                    <div>
+                      <span>High</span>
+                      <strong>{internationalSummary.bySeverity.high || 0}</strong>
+                    </div>
+                    <div>
+                      <span>Medium</span>
+                      <strong>{internationalSummary.bySeverity.medium || 0}</strong>
+                    </div>
+                  </div>
+
+                  <div className="globe-context-section">
+                    <h5>Source composition</h5>
+                    {Object.entries(internationalSummary.bySource).length ? (
+                      Object.entries(internationalSummary.bySource).map(([source, count]) => (
+                        <div className="globe-context-row" key={source}>
+                          <span>{source}</span>
+                          <strong>{count}</strong>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="globe-context-empty">국제 신호가 아직 없습니다.</p>
+                    )}
+                  </div>
+
+                  <div className="globe-context-section">
+                    <h5>Top countries</h5>
+                    {internationalSummary.topCountries.length ? (
+                      internationalSummary.topCountries.map(([country, count]) => (
+                        <div className="globe-context-row" key={country}>
+                          <span>{country}</span>
+                          <strong>{count}</strong>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="globe-context-empty">국가 정보가 없습니다.</p>
+                    )}
+                  </div>
+
+                  <div className="globe-context-section">
+                    <h5>Recent international signals</h5>
+                    {internationalSummary.recentSignals.length ? (
+                      internationalSummary.recentSignals.map((signal) => (
+                        <button
+                          className="globe-signal-item"
+                          key={`${signal.id}-${signal.date}`}
+                          onClick={() => setSelectedGlobal(signal)}
+                          type="button"
+                        >
+                          <span>{signal.date} / {signal.source.replace('_', ' ')}</span>
+                          <strong>{signal.title || signal.keyword || signal.disease || 'International signal'}</strong>
+                          <em>{signal.country || signal.severity}</em>
+                        </button>
+                      ))
+                    ) : (
+                      <p className="globe-context-empty">표시할 국제 신호가 없습니다.</p>
+                    )}
+                  </div>
+                </aside>
               </div>
             </div>
           )}
