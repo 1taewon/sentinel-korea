@@ -324,7 +324,7 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
               className={`news-tab${activeTab === 'global' ? ' news-tab--active' : ''}`}
               onClick={() => setActiveTab('global')}
             >
-              Global
+              Imported-risk
               <span className="news-tab-count">{globalNews.length}</span>
             </button>
           </div>

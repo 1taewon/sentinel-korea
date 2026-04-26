@@ -40,19 +40,19 @@ const PIPELINE_STAGES: PipelineStage[] = [
   {
     id: 'ingest',
     title: 'Source ingest',
-    subtitle: 'Collect raw evidence from official, open, and document-only sources.',
+    subtitle: 'Collect Korea respiratory evidence plus supporting imported-risk context.',
     artifact: 'raw_signal',
     tone: 'blue',
-    lanes: ['KDCA ILI/SARI tables', 'Wastewater PDF bulletin', 'News feeds', 'Search trends'],
+    lanes: ['KDCA ILI/SARI tables', 'Wastewater PDF bulletin', 'News feeds', 'Search trends', 'Imported-risk watch'],
     actionLabel: 'Refresh sources',
   },
   {
     id: 'qa',
     title: 'Quality control',
-    subtitle: 'Align epiweeks, check freshness, parse PDF tables, and tag missing coverage.',
+    subtitle: 'Align epiweeks, check freshness, and mark coverage gaps before any scoring.',
     artifact: 'source_catalog',
     tone: 'green',
-    lanes: ['Epiweek resolver', 'Freshness score', 'PDF extraction review', 'Coverage flag'],
+    lanes: ['Epiweek resolver', 'Freshness score', 'Document-only flag', 'Coverage flag'],
   },
   {
     id: 'digest',
@@ -66,7 +66,7 @@ const PIPELINE_STAGES: PipelineStage[] = [
   {
     id: 'fusion',
     title: 'Sentinel fusion',
-    subtitle: 'Combine independent evidence groups into a quality-adjusted alert snapshot.',
+    subtitle: 'Combine independent evidence groups into a Korea region alert explanation.',
     artifact: 'alert_snapshot',
     tone: 'red',
     lanes: ['Composite score', 'Confidence', 'Explanation', 'Region ranking'],
@@ -75,10 +75,10 @@ const PIPELINE_STAGES: PipelineStage[] = [
   {
     id: 'report',
     title: 'Report output',
-    subtitle: 'Publish the integrated narrative, ontology figure, and next-action queue.',
+    subtitle: 'Publish what changed, why it matters, confidence, and watch actions.',
     artifact: 'sentinel_report',
     tone: 'slate',
-    lanes: ['Ontology map', 'Narrative report', 'Figure export', 'Vercel dashboard'],
+    lanes: ['Ontology figure', '4-part brief', 'Imported-risk note', 'Vercel dashboard'],
     actionLabel: 'Generate report',
   },
 ];
@@ -160,13 +160,13 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
 
   const runSourceRefresh = async () => {
     setStageStatus('ingest', 'running');
-    setDetailResult('Refreshing news, global context, and trend feeds...');
+    setDetailResult('Refreshing Korea news, trend feeds, and imported-risk context...');
     try {
       await fetch(`${API_BASE}/ingestion/refresh-korea`, { method: 'POST' });
       await fetch(`${API_BASE}/ingestion/refresh-global`, { method: 'POST' });
       await fetch(`${API_BASE}/ingestion/refresh-trends`, { method: 'POST' });
       setStageStatus('ingest', 'done');
-      setDetailResult('Source refresh complete. Wastewater remains a PDF-only lane and should be parsed from the weekly bulletin.');
+      setDetailResult('Source refresh complete. Wastewater remains a document-only lane for now; automatic PDF extraction is deferred.');
       onDataRefreshed();
     } catch {
       setStageStatus('ingest', 'error');
@@ -191,7 +191,7 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
 
   const runSentinelFusion = async () => {
     setStageStatus('fusion', 'running');
-    setDetailResult('Running Sentinel fusion across OSINT and KDCA evidence...');
+    setDetailResult('Running Sentinel fusion across Korea surveillance, OSINT, trends, and corroboration lanes...');
     try {
       const response = await fetch(`${API_BASE}/risk-analysis/analyze`, {
         method: 'POST',
@@ -241,7 +241,7 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
         <div className="flow-header">
           <div>
             <h3 className="flow-title">Pipeline Control</h3>
-            <span className="flow-subtitle">Left-to-right control surface for Sentinel evidence, fusion, and reporting.</span>
+            <span className="flow-subtitle">Korea-first respiratory intelligence control room: evidence, fusion, explanation, and report.</span>
           </div>
           {!embedded && <button className="flow-close-btn" onClick={onClose}>x</button>}
         </div>
@@ -306,9 +306,9 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
             <div className="ontology-header">
               <div>
                 <span className="pipeline-detail-kicker">Sentinel ontology figure</span>
-                <h4>Evidence relationship map</h4>
+                <h4>AI interpretation of signal relationships</h4>
               </div>
-              <span className="ontology-badge">AI synthesis figure</span>
+              <span className="ontology-badge">explainable figure</span>
             </div>
 
             <svg className="ontology-map-svg" viewBox="0 0 820 420" role="img" aria-label="Sentinel evidence ontology map">
@@ -336,19 +336,24 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
 
             <div className="ontology-report-grid">
               <div>
-                <span>Wastewater lane</span>
-                <strong>PDF bulletin source</strong>
-                <p>Best handled as a weekly document watcher plus table extraction review.</p>
+                <span>Figure role</span>
+                <strong>Not decoration</strong>
+                <p>Shows how Sentinel groups raw signals into concepts before creating a regional alert explanation.</p>
               </div>
               <div>
-                <span>Recommended additions</span>
-                <strong>Watcher, NLP, backtests</strong>
-                <p>Add PDF auto-discovery, Korean news entity extraction, trend baselines, and lead-time validation.</p>
+                <span>Report contract</span>
+                <strong>Changed, matters, confidence, actions</strong>
+                <p>Every Sentinel report should use these four sections so the user can audit the alert logic quickly.</p>
               </div>
               <div>
-                <span>Report figure</span>
-                <strong>Ontology + map + timeline</strong>
-                <p>Use this figure in the Sentinel report to show why signals were grouped together.</p>
+                <span>Global layer</span>
+                <strong>Imported-risk context only</strong>
+                <p>Overseas news and neighbor-country activity corroborate risk; they do not replace Korea regional scoring.</p>
+              </div>
+              <div>
+                <span>Deferred lane</span>
+                <strong>Wastewater PDF automation later</strong>
+                <p>For now, wastewater stays visible as a document-only corroboration lane until extraction review is added.</p>
               </div>
             </div>
           </section>

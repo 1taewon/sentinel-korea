@@ -475,8 +475,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
             <div className="expanded-globe-overlay">
               <div className="expanded-globe-header">
                 <div>
-                  <h3>글로벌 컨텍스트 레이어</h3>
-                  <p>외부 유입 위험 감시 · 지역 벤치마킹 · 국제 신호 보완</p>
+                  <h3>Imported-risk context layer</h3>
+                  <p>Overseas and neighbor-country signals are used only for corroboration, benchmarking, and watch context.</p>
                 </div>
                 <button className="panel-close" onClick={() => setIsGlobeExpanded(false)}>×</button>
               </div>
