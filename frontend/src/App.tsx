@@ -263,6 +263,53 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
 
   const elevatedCount = koreaAlerts.filter((alert) => alert.score >= 0.55).length;
   const criticalCount = koreaAlerts.filter((alert) => alert.score >= 0.75).length;
+  const sourceOverviewCards = [
+    {
+      label: 'OFFICIAL',
+      title: '질병청 감시자료',
+      description: 'ILI/SARI, 법정감염병, 지역 단위 기준선을 만드는 핵심 소스입니다.',
+      cadence: '주간 / epiweek',
+      output: 'normalized_signal',
+      metric: `${koreaAlerts.length || 17} 시도`,
+      tone: 'green',
+    },
+    {
+      label: 'DOCUMENT',
+      title: '폐하수 PDF 공보',
+      description: '현재는 문서-only 보조 신호입니다. 자동 표 추출과 검수 모드는 다음 단계로 둡니다.',
+      cadence: '주간 PDF',
+      output: 'corroboration lane',
+      metric: 'deferred',
+      tone: 'amber',
+    },
+    {
+      label: 'OSINT',
+      title: '국내 뉴스 + 검색 트렌드',
+      description: '국내 호흡기 이상 징후를 빠르게 포착하되, 공식 감시자료를 대체하지 않습니다.',
+      cadence: '수동/일간 refresh',
+      output: 'evidence_digest',
+      metric: 'AI digest',
+      tone: 'blue',
+    },
+    {
+      label: 'CONTEXT',
+      title: '해외 유입 맥락',
+      description: '인접국/해외 신호는 imported-risk watch와 외부 corroboration 용도로만 사용합니다.',
+      cadence: '보조 맥락',
+      output: 'context layer',
+      metric: `${globalSignals.length} signals`,
+      tone: 'slate',
+    },
+    {
+      label: 'FUSION',
+      title: 'Sentinel scoring',
+      description: '소스 독립성, freshness, coverage를 반영해 지역별 경보와 confidence를 계산합니다.',
+      cadence: meta?.snapshot_date || currentDate,
+      output: 'alert_snapshot',
+      metric: meta?.algorithm_version || 'latest',
+      tone: 'red',
+    },
+  ];
 
   if (loading) {
     return (
@@ -504,19 +551,47 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       {/* === DATA SOURCES TAB === */}
       {navTab === 'data_sources' && (
         <main className="kas-tab-view">
+          <section className="data-source-command-board">
+            <div>
+              <span className="data-source-kicker">데이터 소스 운영 현황</span>
+              <h2>Korea-first respiratory intelligence inputs</h2>
+              <p>
+                질병청 직원이 볼 때 중요한 것은 데이터가 어디서 왔고, 어떤 역할이며,
+                최종 경보의 어느 부분에 쓰이는가입니다. 아래 보드는 각 source lane의
+                목적, 갱신 주기, 산출물을 먼저 보여줍니다.
+              </p>
+            </div>
+            <div className="source-visibility-grid">
+              {sourceOverviewCards.map((source) => (
+                <article className={`source-visibility-card tone-${source.tone}`} key={source.label}>
+                  <div className="source-card-topline">
+                    <span>{source.label}</span>
+                    <strong>{source.metric}</strong>
+                  </div>
+                  <h3>{source.title}</h3>
+                  <p>{source.description}</p>
+                  <div className="source-card-meta">
+                    <span>{source.cadence}</span>
+                    <span>{source.output}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+
           <div className="kas-sources-layout">
             {/* LEFT — analysis result displays */}
             <div className="kas-sources-main">
               <section className="kas-sources-card">
-                <h3>뉴스 파이프라인</h3>
+                <h3>뉴스/OSINT 파이프라인</h3>
                 <NewsPanel hideKeywordsButton />
               </section>
               <section className="kas-sources-card">
-                <h3>트렌드 파이프라인</h3>
+                <h3>검색 트렌드 파이프라인</h3>
                 <TrendsChart />
               </section>
               <section className="kas-sources-card">
-                <h3>KDCA AI Analysis</h3>
+                <h3>KDCA 감시자료 분석</h3>
                 <KdcaUploadPanel view="summary" />
               </section>
             </div>
@@ -525,41 +600,41 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
             <aside className="kas-sources-aside">
               {/* ── SETTINGS (data source configuration) ── */}
               <section className="kas-sources-card kas-console-group">
-                <h3 className="kas-console-group-title">SETTINGS</h3>
-                <p className="console-card-desc">Configure data sources and ingest new KDCA datasets.</p>
+                <h3 className="kas-console-group-title">설정 / SETTINGS</h3>
+                <p className="console-card-desc">데이터 수집 키워드와 KDCA 원천자료 입력 흐름을 관리합니다.</p>
 
                 <div className="kas-console-subcard">
-                  <div className="kas-console-subcard-title">Keywords Editor</div>
-                  <p className="console-card-desc">Edit collection keywords for Naver / NewsAPI / Google Trends / Naver Trends.</p>
+                  <div className="kas-console-subcard-title">키워드 편집기</div>
+                  <p className="console-card-desc">Naver / NewsAPI / Google Trends / Naver Trends 수집 키워드를 조정합니다.</p>
                   <button className="console-action-btn console-neutral-btn" onClick={openKeywordsModal}>
-                    <span className="console-btn-title">Open Keywords Editor</span>
-                    <span className="console-btn-sub">Per-source query lists</span>
+                    <span className="console-btn-title">키워드 설정 열기</span>
+                    <span className="console-btn-sub">소스별 query list 관리</span>
                   </button>
                 </div>
 
                 <div className="kas-console-subcard">
-                  <div className="kas-console-subcard-title">KDCA Data Upload</div>
-                  <p className="console-card-desc">Upload raw KDCA data · Manage report recipients.</p>
+                  <div className="kas-console-subcard-title">KDCA 데이터 입력</div>
+                  <p className="console-card-desc">질병청 원천자료 업로드와 보고서 수신자 관리를 담당합니다.</p>
                   <KdcaUploadPanel view="console" />
                 </div>
               </section>
 
               {/* ── AI ANALYZE (trigger pipelines) ── */}
               <section className="kas-sources-card kas-console-group">
-                <h3 className="kas-console-group-title">AI ANALYZE</h3>
-                <p className="console-card-desc">Run risk analysis pipelines — results populate the map & panels on the left.</p>
+                <h3 className="kas-console-group-title">분석 실행 / AI ANALYZE</h3>
+                <p className="console-card-desc">각 분석 버튼은 map, report, pipeline control의 산출물을 갱신합니다.</p>
 
                 <button className="osint-analysis-btn console-action-btn" onClick={handleRunOsintAnalysis} disabled={analyzingOsint}>
-                  <span className="console-btn-title">{analyzingOsint ? 'Running OSINT...' : 'OSINT ANALYZE'}</span>
-                  <span className="console-btn-sub">Open Source Intelligence · News + Trends</span>
+                  <span className="console-btn-title">{analyzingOsint ? 'OSINT 실행 중...' : 'OSINT 분석'}</span>
+                  <span className="console-btn-sub">국내 뉴스 + 검색 트렌드 보조 신호 요약</span>
                 </button>
                 <button className="kdca-report-btn console-action-btn" onClick={handleGenerateKdcaReport} disabled={generatingKdcaReport}>
-                  <span className="console-btn-title">{generatingKdcaReport ? 'Analyzing KDCA...' : 'KDCA DATA ANALYZE'}</span>
-                  <span className="console-btn-sub">KDCA surveillance · Weekly AI report</span>
+                  <span className="console-btn-title">{generatingKdcaReport ? 'KDCA 분석 중...' : 'KDCA 감시자료 분석'}</span>
+                  <span className="console-btn-sub">공식 감시자료 기반 주간 AI report</span>
                 </button>
                 <button className="sentinel-analysis-btn console-action-btn" onClick={handleRunFullAnalysis} disabled={analyzingFull}>
-                  <span className="console-btn-title">{analyzingFull ? 'Running Final...' : 'FINAL ANALYZE'}</span>
-                  <span className="console-btn-sub">Integrated · OSINT + KDCA (Sentinel)</span>
+                  <span className="console-btn-title">{analyzingFull ? 'Sentinel 실행 중...' : 'Sentinel 통합 분석'}</span>
+                  <span className="console-btn-sub">KDCA + OSINT + trend를 결합해 alert snapshot 계산</span>
                 </button>
 
                 {osintResult?.summary && (

@@ -213,6 +213,26 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
   const totalSources = (digest?.source_count
     ? Object.values(digest.source_count).reduce((a, b) => a + b, 0)
     : koreaNews.length + globalNews.length);
+  const sourceTiles = [
+    {
+      label: '국내 뉴스',
+      count: koreaNews.length,
+      desc: 'Naver/국내 기사 기반 OSINT',
+      tone: 'blue',
+    },
+    {
+      label: '해외 유입 맥락',
+      count: globalNews.length,
+      desc: 'WHO/해외 뉴스는 보조 context',
+      tone: 'slate',
+    },
+    {
+      label: 'AI digest',
+      count: digest?.status === 'ok' ? 'ready' : 'pending',
+      desc: '근거 요약과 risk interpretation',
+      tone: 'green',
+    },
+  ];
 
   return (
     <div className="sidebar-news-panel" id="news-panel">
@@ -228,9 +248,19 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
             disabled={refreshing}
             title="Collect news and generate AI digest"
           >
-            {refreshing ? '… Refreshing' : '↻ Refresh'}
+            {refreshing ? '갱신 중...' : '소스 갱신'}
           </button>
         </div>
+      </div>
+
+      <div className="news-source-overview">
+        {sourceTiles.map((tile) => (
+          <div className={`news-source-tile tone-${tile.tone}`} key={tile.label}>
+            <span>{tile.label}</span>
+            <strong>{tile.count}</strong>
+            <small>{tile.desc}</small>
+          </div>
+        ))}
       </div>
 
       {/* AI Digest View */}
@@ -249,25 +279,25 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
           <div className="news-digest-content">
             {digest.korea_summary && (
               <div className="digest-block">
-                <div className="digest-block-title">Korea</div>
+                <div className="digest-block-title">국내 신호 요약 / Korea</div>
                 <p className="digest-text">{digest.korea_summary}</p>
               </div>
             )}
             {digest.global_summary && (
               <div className="digest-block">
-                <div className="digest-block-title">Global</div>
+                <div className="digest-block-title">해외 유입 맥락 / Imported-risk</div>
                 <p className="digest-text">{digest.global_summary}</p>
               </div>
             )}
             {digest.trends_insight && (
               <div className="digest-block">
-                <div className="digest-block-title">Trends Insight</div>
+                <div className="digest-block-title">검색 트렌드 인사이트</div>
                 <p className="digest-text">{digest.trends_insight}</p>
               </div>
             )}
             {digest.risk_assessment && (
               <div className="digest-block digest-risk">
-                <div className="digest-block-title">Risk Assessment</div>
+                <div className="digest-block-title">AI 위험 해석</div>
                 <p className="digest-text">{digest.risk_assessment}</p>
               </div>
             )}
@@ -286,7 +316,7 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
             )}
             {digest.source_count && (
               <div className="digest-source-count">
-                Sources: Naver {digest.source_count.naver_news || 0} | EN {digest.source_count.english_news || 0} | Global {digest.source_count.global_news || 0} | WHO {digest.source_count.who_don || 0}
+                Source ledger: Naver {digest.source_count.naver_news || 0} | EN {digest.source_count.english_news || 0} | Imported-risk {digest.source_count.global_news || 0} | WHO {digest.source_count.who_don || 0}
               </div>
             )}
           </div>
@@ -296,8 +326,8 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
           </div>
         ) : (
           <div className="news-empty">
-            <p>No AI digest available</p>
-            <p className="news-empty-hint">Click Refresh to collect news and generate AI summary.</p>
+            <p>AI digest가 아직 없습니다</p>
+            <p className="news-empty-hint">소스 갱신을 누르면 뉴스 수집과 AI 요약을 실행합니다.</p>
           </div>
         )}
       </div>
@@ -307,7 +337,7 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
         className="news-sources-toggle"
         onClick={() => setShowRawSources(!showRawSources)}
       >
-        {showRawSources ? 'Hide Raw Sources' : `View Raw Sources (${totalSources})`}
+        {showRawSources ? '원천 기사 숨기기' : `원천 기사 보기 (${totalSources})`}
       </button>
 
       {showRawSources && (
@@ -317,14 +347,14 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
               className={`news-tab${activeTab === 'korea' ? ' news-tab--active' : ''}`}
               onClick={() => setActiveTab('korea')}
             >
-              Korea
+              국내 뉴스
               <span className="news-tab-count">{koreaNews.length}</span>
             </button>
             <button
               className={`news-tab${activeTab === 'global' ? ' news-tab--active' : ''}`}
               onClick={() => setActiveTab('global')}
             >
-              Imported-risk
+              해외 유입 맥락
               <span className="news-tab-count">{globalNews.length}</span>
             </button>
           </div>
@@ -332,7 +362,7 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
           <div className="news-list">
             {items.length === 0 ? (
               <div className="news-empty">
-                <p>No collected news</p>
+                <p>수집된 뉴스가 없습니다</p>
               </div>
             ) : (
               items.map((item, i) => (
@@ -367,14 +397,14 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
         style={{ margin: '10px', width: 'calc(100% - 20px)', display: hideKeywordsButton ? 'none' : undefined }}
         onClick={() => { loadConfig(); setShowConfig(true); }}
       >
-        Keywords Settings
+        키워드 설정
       </button>
 
       {showConfig && (
         <div className="modal-overlay">
           <div className="modal-content" style={{ width: '600px' }}>
             <div className="modal-header">
-              <h3 className="modal-title">Configure Keywords</h3>
+              <h3 className="modal-title">키워드 설정</h3>
               <button className="modal-close-btn" onClick={() => setShowConfig(false)}>x</button>
             </div>
             <div className="news-tabs" style={{ padding: '0 16px', background: 'var(--bg-soft)' }}>

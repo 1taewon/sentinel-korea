@@ -2,22 +2,37 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+type Lang = 'ko' | 'en';
 type NodeStatus = 'idle' | 'running' | 'done' | 'error';
 type StageTone = 'blue' | 'green' | 'amber' | 'red' | 'slate';
 
+type Copy = {
+  ko: string;
+  en: string;
+};
+
+type PipelineControl = {
+  id: string;
+  label: Copy;
+  description: Copy;
+  endpoints?: string[];
+  result: Copy;
+};
+
 type PipelineStage = {
   id: string;
-  title: string;
-  subtitle: string;
+  title: Copy;
+  subtitle: Copy;
   artifact: string;
   tone: StageTone;
-  lanes: string[];
-  actionLabel?: string;
+  lanes: Copy[];
+  controls: PipelineControl[];
+  checklist: Copy[];
 };
 
 type OntologyNode = {
   id: string;
-  label: string;
+  label: Copy;
   x: number;
   y: number;
   kind: 'source' | 'concept' | 'output';
@@ -27,6 +42,7 @@ type OntologyEdge = {
   from: string;
   to: string;
   strength: number;
+  phase: 'ingest' | 'digest' | 'fusion' | 'report';
 };
 
 interface Props {
@@ -39,93 +55,233 @@ interface Props {
 const PIPELINE_STAGES: PipelineStage[] = [
   {
     id: 'ingest',
-    title: 'Source ingest',
-    subtitle: 'Collect Korea respiratory evidence plus supporting imported-risk context.',
+    title: { ko: '소스 수집', en: 'Source ingest' },
+    subtitle: {
+      ko: '질병청 중심의 국내 호흡기 신호와 보조적인 해외 유입 맥락을 수집합니다.',
+      en: 'Collect Korea respiratory evidence plus supporting imported-risk context.',
+    },
     artifact: 'raw_signal',
     tone: 'blue',
-    lanes: ['KDCA ILI/SARI tables', 'Wastewater PDF bulletin', 'News feeds', 'Search trends', 'Imported-risk watch'],
-    actionLabel: 'Refresh sources',
+    lanes: [
+      { ko: '질병청 ILI/SARI 표', en: 'KDCA ILI/SARI tables' },
+      { ko: '폐하수 PDF 공보', en: 'Wastewater PDF bulletin' },
+      { ko: '국내 뉴스', en: 'Korea news feeds' },
+      { ko: '검색 트렌드', en: 'Search trends' },
+      { ko: '해외 유입 맥락', en: 'Imported-risk watch' },
+    ],
+    controls: [
+      {
+        id: 'refresh-official',
+        label: { ko: '공식 감시 갱신', en: 'Refresh official lane' },
+        description: { ko: '질병청/국내 감시 신호를 다시 불러옵니다.', en: 'Reload the Korea surveillance lane.' },
+        endpoints: ['/ingestion/refresh-korea'],
+        result: { ko: '공식 감시 신호 갱신 완료.', en: 'Official surveillance lane refreshed.' },
+      },
+      {
+        id: 'refresh-osint',
+        label: { ko: '뉴스/트렌드 갱신', en: 'Refresh OSINT lanes' },
+        description: { ko: '국내 뉴스, 해외 유입 맥락, 검색 트렌드를 갱신합니다.', en: 'Refresh news, imported-risk context, and trend feeds.' },
+        endpoints: ['/ingestion/refresh-global', '/ingestion/refresh-trends'],
+        result: { ko: '뉴스/트렌드 신호 갱신 완료.', en: 'News and trend lanes refreshed.' },
+      },
+    ],
+    checklist: [
+      { ko: '폐하수는 현재 문서-only 보조 신호입니다.', en: 'Wastewater remains a document-only corroboration lane.' },
+      { ko: '해외 신호는 글로벌 점수가 아니라 유입 위험 맥락입니다.', en: 'Overseas signals remain context, not a global score.' },
+    ],
   },
   {
     id: 'qa',
-    title: 'Quality control',
-    subtitle: 'Align epiweeks, check freshness, and mark coverage gaps before any scoring.',
+    title: { ko: '품질 확인', en: 'Quality control' },
+    subtitle: {
+      ko: 'epiweek, freshness, coverage, document-only 여부를 점수화 전에 확인합니다.',
+      en: 'Align epiweeks, freshness, coverage, and document-only flags before scoring.',
+    },
     artifact: 'source_catalog',
     tone: 'green',
-    lanes: ['Epiweek resolver', 'Freshness score', 'Document-only flag', 'Coverage flag'],
+    lanes: [
+      { ko: '역학주 정렬', en: 'Epiweek resolver' },
+      { ko: '최신성 점검', en: 'Freshness score' },
+      { ko: '문서-only 표시', en: 'Document-only flag' },
+      { ko: '지역 커버리지', en: 'Coverage flag' },
+    ],
+    controls: [
+      {
+        id: 'qa-status',
+        label: { ko: '품질 상태 확인', en: 'Check source quality' },
+        description: { ko: '각 소스가 점수에 들어갈 준비가 되었는지 확인합니다.', en: 'Review whether each lane is ready for scoring.' },
+        result: {
+          ko: '품질 확인 단계는 현재 모니터링 단계입니다. freshness/coverage 저하는 confidence에 반영해야 합니다.',
+          en: 'Quality control is monitored here. Freshness and coverage degradation should lower confidence.',
+        },
+      },
+    ],
+    checklist: [
+      { ko: 'source count보다 source independence를 우선합니다.', en: 'Source independence matters more than raw source count.' },
+      { ko: '자동 PDF 추출은 아직 보류 상태로 표시합니다.', en: 'Automatic PDF extraction is explicitly deferred.' },
+    ],
   },
   {
     id: 'digest',
-    title: 'AI digest',
-    subtitle: 'Summarize each evidence lane before fusion so weak signals stay visible.',
+    title: { ko: 'AI 요약', en: 'AI digest' },
+    subtitle: {
+      ko: '각 evidence lane을 먼저 요약해 약한 신호가 합성 과정에서 사라지지 않게 합니다.',
+      en: 'Summarize each evidence lane before fusion so weak signals stay visible.',
+    },
     artifact: 'evidence_digest',
     tone: 'amber',
-    lanes: ['News digest', 'Trend digest', 'KDCA digest', 'Wastewater note'],
-    actionLabel: 'Generate digests',
+    lanes: [
+      { ko: '뉴스 요약', en: 'News digest' },
+      { ko: '트렌드 요약', en: 'Trend digest' },
+      { ko: 'KDCA 요약', en: 'KDCA digest' },
+      { ko: '폐하수 메모', en: 'Wastewater note' },
+    ],
+    controls: [
+      {
+        id: 'generate-digests',
+        label: { ko: 'Evidence 요약 생성', en: 'Generate evidence digests' },
+        description: { ko: '뉴스, 트렌드, KDCA lane의 AI digest를 생성합니다.', en: 'Generate news, trends, and KDCA AI digests.' },
+        endpoints: ['/risk-analysis/news-digest', '/risk-analysis/trends-digest', '/risk-analysis/kdca-digest'],
+        result: { ko: 'Evidence digest 생성 완료.', en: 'Evidence digests generated.' },
+      },
+    ],
+    checklist: [
+      { ko: '요약은 경보 점수의 근거 설명에 사용됩니다.', en: 'Digests feed the alert explanation layer.' },
+      { ko: '뉴스/트렌드는 보조 corroboration으로 취급합니다.', en: 'News and trends remain corroborating signals.' },
+    ],
   },
   {
     id: 'fusion',
-    title: 'Sentinel fusion',
-    subtitle: 'Combine independent evidence groups into a Korea region alert explanation.',
+    title: { ko: 'Sentinel 합성', en: 'Sentinel fusion' },
+    subtitle: {
+      ko: '독립 evidence group을 결합해 지역별 경보, 신뢰도, 설명을 만듭니다.',
+      en: 'Combine independent evidence groups into region-level alert explanations.',
+    },
     artifact: 'alert_snapshot',
     tone: 'red',
-    lanes: ['Composite score', 'Confidence', 'Explanation', 'Region ranking'],
-    actionLabel: 'Run Sentinel',
+    lanes: [
+      { ko: 'Composite score', en: 'Composite score' },
+      { ko: 'Confidence', en: 'Confidence' },
+      { ko: '자연어 설명', en: 'Explanation' },
+      { ko: '지역 순위', en: 'Region ranking' },
+    ],
+    controls: [
+      {
+        id: 'sentinel-fusion',
+        label: { ko: 'Sentinel 분석 실행', en: 'Run Sentinel fusion' },
+        description: { ko: 'OSINT와 KDCA 근거를 결합해 최신 alert snapshot을 계산합니다.', en: 'Fuse OSINT and KDCA evidence into the latest alert snapshot.' },
+        result: { ko: 'Sentinel 합성 완료.', en: 'Sentinel fusion complete.' },
+      },
+    ],
+    checklist: [
+      { ko: '점수와 confidence를 분리해 설명합니다.', en: 'Score and confidence are explained separately.' },
+      { ko: '왜 특정 시도에서 alert가 떴는지 설명 가능해야 합니다.', en: 'Each region alert should be explainable.' },
+    ],
   },
   {
     id: 'report',
-    title: 'Report output',
-    subtitle: 'Publish what changed, why it matters, confidence, and watch actions.',
+    title: { ko: '보고서 출력', en: 'Report output' },
+    subtitle: {
+      ko: 'What changed, Why it matters, Confidence, Watch actions 구조로 보고서를 만듭니다.',
+      en: 'Publish what changed, why it matters, confidence, and watch actions.',
+    },
     artifact: 'sentinel_report',
     tone: 'slate',
-    lanes: ['Ontology figure', '4-part brief', 'Imported-risk note', 'Vercel dashboard'],
-    actionLabel: 'Generate report',
+    lanes: [
+      { ko: 'Ontology figure', en: 'Ontology figure' },
+      { ko: '4-part brief', en: '4-part brief' },
+      { ko: '해외 유입 맥락', en: 'Imported-risk note' },
+      { ko: 'Vercel dashboard', en: 'Vercel dashboard' },
+    ],
+    controls: [
+      {
+        id: 'generate-report',
+        label: { ko: 'Sentinel 보고서 생성', en: 'Generate Sentinel report' },
+        description: { ko: '최신 snapshot 기준 통합 보고서를 생성합니다.', en: 'Generate the integrated report for the selected snapshot.' },
+        result: { ko: '보고서 생성 완료.', en: 'Report generated.' },
+      },
+    ],
+    checklist: [
+      { ko: 'Ontology figure는 AI 해석 근거를 시각화합니다.', en: 'The ontology figure visualizes how AI grouped the evidence.' },
+      { ko: '보고서 원문 artifact는 audit trail로 보존합니다.', en: 'The raw report artifact remains as an audit trail.' },
+    ],
   },
 ];
 
 const ONTOLOGY_NODES: OntologyNode[] = [
-  { id: 'kdca', label: 'KDCA surveillance', x: 84, y: 72, kind: 'source' },
-  { id: 'wastewater', label: 'Wastewater PDF', x: 86, y: 158, kind: 'source' },
-  { id: 'news', label: 'News signals', x: 86, y: 248, kind: 'source' },
-  { id: 'trends', label: 'Search trends', x: 86, y: 334, kind: 'source' },
-  { id: 'respiratory', label: 'Respiratory activity', x: 322, y: 100, kind: 'concept' },
-  { id: 'environment', label: 'Environmental corroboration', x: 330, y: 205, kind: 'concept' },
-  { id: 'behavior', label: 'Symptom-seeking behavior', x: 342, y: 318, kind: 'concept' },
-  { id: 'imported', label: 'Imported-risk context', x: 548, y: 292, kind: 'concept' },
-  { id: 'burden', label: 'Pneumonia burden hypothesis', x: 548, y: 142, kind: 'concept' },
-  { id: 'report', label: 'Sentinel analysis report', x: 720, y: 220, kind: 'output' },
+  { id: 'kdca', label: { ko: '질병청 감시', en: 'KDCA surveillance' }, x: 84, y: 72, kind: 'source' },
+  { id: 'wastewater', label: { ko: '폐하수 PDF', en: 'Wastewater PDF' }, x: 86, y: 158, kind: 'source' },
+  { id: 'news', label: { ko: '뉴스 신호', en: 'News signals' }, x: 86, y: 248, kind: 'source' },
+  { id: 'trends', label: { ko: '검색 트렌드', en: 'Search trends' }, x: 86, y: 334, kind: 'source' },
+  { id: 'respiratory', label: { ko: '호흡기 활동성', en: 'Respiratory activity' }, x: 322, y: 100, kind: 'concept' },
+  { id: 'environment', label: { ko: '환경 보조근거', en: 'Environmental corroboration' }, x: 330, y: 205, kind: 'concept' },
+  { id: 'behavior', label: { ko: '증상 탐색 행동', en: 'Symptom-seeking behavior' }, x: 342, y: 318, kind: 'concept' },
+  { id: 'imported', label: { ko: '해외 유입 맥락', en: 'Imported-risk context' }, x: 548, y: 292, kind: 'concept' },
+  { id: 'burden', label: { ko: '폐렴 부담 가설', en: 'Pneumonia burden hypothesis' }, x: 548, y: 142, kind: 'concept' },
+  { id: 'report', label: { ko: 'Sentinel 종합보고서', en: 'Sentinel analysis report' }, x: 720, y: 220, kind: 'output' },
 ];
 
 const ONTOLOGY_EDGES: OntologyEdge[] = [
-  { from: 'kdca', to: 'respiratory', strength: 0.86 },
-  { from: 'wastewater', to: 'environment', strength: 0.72 },
-  { from: 'news', to: 'imported', strength: 0.66 },
-  { from: 'trends', to: 'behavior', strength: 0.58 },
-  { from: 'respiratory', to: 'burden', strength: 0.82 },
-  { from: 'environment', to: 'burden', strength: 0.64 },
-  { from: 'behavior', to: 'imported', strength: 0.38 },
-  { from: 'imported', to: 'report', strength: 0.62 },
-  { from: 'burden', to: 'report', strength: 0.9 },
+  { from: 'kdca', to: 'respiratory', strength: 0.86, phase: 'ingest' },
+  { from: 'wastewater', to: 'environment', strength: 0.72, phase: 'ingest' },
+  { from: 'news', to: 'imported', strength: 0.66, phase: 'ingest' },
+  { from: 'trends', to: 'behavior', strength: 0.58, phase: 'digest' },
+  { from: 'respiratory', to: 'burden', strength: 0.82, phase: 'fusion' },
+  { from: 'environment', to: 'burden', strength: 0.64, phase: 'fusion' },
+  { from: 'behavior', to: 'imported', strength: 0.38, phase: 'digest' },
+  { from: 'imported', to: 'report', strength: 0.62, phase: 'report' },
+  { from: 'burden', to: 'report', strength: 0.9, phase: 'report' },
 ];
 
-const STATUS_LABELS: Record<NodeStatus, string> = {
-  idle: 'Ready',
-  running: 'Running',
-  done: 'Complete',
-  error: 'Error',
+const STATUS_LABELS: Record<Lang, Record<NodeStatus, string>> = {
+  ko: {
+    idle: '대기',
+    running: '실행 중',
+    done: '완료',
+    error: '오류',
+  },
+  en: {
+    idle: 'Ready',
+    running: 'Running',
+    done: 'Complete',
+    error: 'Error',
+  },
 };
+
+const INITIAL_DETAIL: Copy = {
+  ko: 'Pipeline ready. 단계를 선택하거나 하위 컨트롤을 실행하세요.',
+  en: 'Pipeline ready. Select a stage or run a sub-control action.',
+};
+
+function copy(text: Copy, lang: Lang) {
+  return text[lang];
+}
 
 function nodeById(id: string) {
   return ONTOLOGY_NODES.find((node) => node.id === id);
 }
 
+function edgePath(edge: OntologyEdge) {
+  const from = nodeById(edge.from);
+  const to = nodeById(edge.to);
+  if (!from || !to) return '';
+  const midX = (from.x + to.x) / 2;
+  return `M ${from.x} ${from.y} C ${midX} ${from.y}, ${midX} ${to.y}, ${to.x} ${to.y}`;
+}
+
 export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, embedded }: Props) {
+  const [lang, setLang] = useState<Lang>('ko');
   const [statuses, setStatuses] = useState<Record<string, NodeStatus>>({});
+  const [controlStatuses, setControlStatuses] = useState<Record<string, NodeStatus>>({});
   const [selectedStage, setSelectedStage] = useState<string>('ingest');
-  const [detailResult, setDetailResult] = useState('Pipeline ready. Select a stage or run a control action.');
+  const [detailResult, setDetailResult] = useState(INITIAL_DETAIL.ko);
 
   const setStageStatus = (id: string, status: NodeStatus) => {
     setStatuses((prev) => ({ ...prev, [id]: status }));
+  };
+
+  const setControlStatus = (id: string, status: NodeStatus) => {
+    setControlStatuses((prev) => ({ ...prev, [id]: status }));
   };
 
   const checkStatuses = useCallback(async () => {
@@ -145,9 +301,9 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
       if (kdcaD.status === 'fulfilled' && kdcaD.value?.status === 'ok') next.qa = 'done';
       setStatuses(next);
     } catch {
-      setDetailResult('Status check skipped because the backend is not reachable.');
+      setDetailResult(lang === 'ko' ? '백엔드 연결이 없어 상태 확인을 건너뛰었습니다.' : 'Status check skipped because the backend is not reachable.');
     }
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     checkStatuses();
@@ -158,79 +314,61 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
     [selectedStage],
   );
 
-  const runSourceRefresh = async () => {
-    setStageStatus('ingest', 'running');
-    setDetailResult('Refreshing Korea news, trend feeds, and imported-risk context...');
-    try {
-      await fetch(`${API_BASE}/ingestion/refresh-korea`, { method: 'POST' });
-      await fetch(`${API_BASE}/ingestion/refresh-global`, { method: 'POST' });
-      await fetch(`${API_BASE}/ingestion/refresh-trends`, { method: 'POST' });
-      setStageStatus('ingest', 'done');
-      setDetailResult('Source refresh complete. Wastewater remains a document-only lane for now; automatic PDF extraction is deferred.');
-      onDataRefreshed();
-    } catch {
-      setStageStatus('ingest', 'error');
-      setDetailResult('Source refresh failed. Check backend connectivity and external API keys.');
-    }
-  };
+  const activePhases = useMemo(() => {
+    if (selectedStage === 'ingest' || selectedStage === 'qa') return new Set(['ingest']);
+    if (selectedStage === 'digest') return new Set(['digest', 'ingest']);
+    if (selectedStage === 'fusion') return new Set(['fusion', 'digest']);
+    return new Set(['report', 'fusion']);
+  }, [selectedStage]);
 
-  const runDigests = async () => {
-    setStageStatus('digest', 'running');
-    setDetailResult('Generating evidence-lane digests...');
-    try {
-      await fetch(`${API_BASE}/risk-analysis/news-digest`, { method: 'POST' });
-      await fetch(`${API_BASE}/risk-analysis/trends-digest`, { method: 'POST' });
-      await fetch(`${API_BASE}/risk-analysis/kdca-digest`, { method: 'POST' });
-      setStageStatus('digest', 'done');
-      setDetailResult('Evidence digests complete: news, trends, and KDCA lanes are ready for Sentinel fusion.');
-    } catch {
-      setStageStatus('digest', 'error');
-      setDetailResult('Digest generation failed. Run each evidence lane separately to isolate the failing source.');
-    }
-  };
+  const runControl = async (stage: PipelineStage, control: PipelineControl) => {
+    setControlStatus(control.id, 'running');
+    setStageStatus(stage.id, 'running');
+    setDetailResult(`${copy(control.label, lang)}...`);
 
-  const runSentinelFusion = async () => {
-    setStageStatus('fusion', 'running');
-    setDetailResult('Running Sentinel fusion across Korea surveillance, OSINT, trends, and corroboration lanes...');
     try {
-      const response = await fetch(`${API_BASE}/risk-analysis/analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ include_kdca: true }),
-      });
-      const data = await response.json();
-      setStageStatus('fusion', 'done');
-      setStageStatus('report', 'done');
-      setDetailResult(data.summary || 'Sentinel fusion complete. The alert snapshot and report output are available.');
-      onDataRefreshed();
-    } catch {
-      setStageStatus('fusion', 'error');
-      setDetailResult('Sentinel fusion failed. Check AI provider settings and snapshot availability.');
-    }
-  };
+      if (control.id === 'sentinel-fusion') {
+        const response = await fetch(`${API_BASE}/risk-analysis/analyze`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ include_kdca: true }),
+        });
+        const data = await response.json();
+        setStageStatus('fusion', 'done');
+        setStageStatus('report', 'done');
+        setControlStatus(control.id, 'done');
+        setDetailResult(data.summary || copy(control.result, lang));
+        onDataRefreshed();
+        return;
+      }
 
-  const runReport = async () => {
-    setStageStatus('report', 'running');
-    setDetailResult('Generating final integrated report...');
-    try {
-      const qs = snapshotDate ? `?snapshot_date=${snapshotDate}` : '';
-      const response = await fetch(`${API_BASE}/reports/generate-final${qs}`, { method: 'POST' });
-      const data = await response.json();
-      setStageStatus('report', 'done');
-      setDetailResult(`Report generated: ${data.report_filename || data.epiweek || 'latest snapshot'}.`);
-    } catch {
-      setStageStatus('report', 'error');
-      setDetailResult('Report generation failed. Verify report storage and backend logs.');
-    }
-  };
+      if (control.id === 'generate-report') {
+        const qs = snapshotDate ? `?snapshot_date=${snapshotDate}` : '';
+        const response = await fetch(`${API_BASE}/reports/generate-final${qs}`, { method: 'POST' });
+        const data = await response.json();
+        setStageStatus(stage.id, 'done');
+        setControlStatus(control.id, 'done');
+        setDetailResult(`${copy(control.result, lang)} ${data.report_filename || data.epiweek || snapshotDate || ''}`.trim());
+        return;
+      }
 
-  const handleRunStage = (stageId: string) => {
-    if (stageId === 'ingest') return runSourceRefresh();
-    if (stageId === 'digest') return runDigests();
-    if (stageId === 'fusion') return runSentinelFusion();
-    if (stageId === 'report') return runReport();
-    setSelectedStage(stageId);
-    setDetailResult('This stage is monitored here. Run the adjacent actionable stage to update it.');
+      if (control.endpoints?.length) {
+        await Promise.all(control.endpoints.map((endpoint) => fetch(`${API_BASE}${endpoint}`, { method: 'POST' })));
+        setStageStatus(stage.id, 'done');
+        setControlStatus(control.id, 'done');
+        setDetailResult(copy(control.result, lang));
+        onDataRefreshed();
+        return;
+      }
+
+      setStageStatus(stage.id, 'done');
+      setControlStatus(control.id, 'done');
+      setDetailResult(copy(control.result, lang));
+    } catch {
+      setStageStatus(stage.id, 'error');
+      setControlStatus(control.id, 'error');
+      setDetailResult(lang === 'ko' ? '실행 실패: 백엔드 연결, API key, snapshot 상태를 확인하세요.' : 'Run failed. Check backend connectivity, API keys, and snapshot availability.');
+    }
   };
 
   const shellClass = embedded ? 'flow-embedded' : 'flow-overlay';
@@ -238,12 +376,22 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
   return (
     <div className={shellClass} onClick={embedded ? undefined : onClose}>
       <div className="flow-container flow-container--control" onClick={(event) => event.stopPropagation()}>
-        <div className="flow-header">
+        <div className="flow-header flow-header--control">
           <div>
-            <h3 className="flow-title">Pipeline Control</h3>
-            <span className="flow-subtitle">Korea-first respiratory intelligence control room: evidence, fusion, explanation, and report.</span>
+            <h3 className="flow-title">{lang === 'ko' ? '파이프라인 컨트롤' : 'Pipeline Control'}</h3>
+            <span className="flow-subtitle">
+              {lang === 'ko'
+                ? '한국형 호흡기 감염 인텔리전스: evidence, fusion, explanation, report를 한 화면에서 제어합니다.'
+                : 'Korea-first respiratory intelligence control room: evidence, fusion, explanation, and report.'}
+            </span>
           </div>
-          {!embedded && <button className="flow-close-btn" onClick={onClose}>x</button>}
+          <div className="flow-header-actions">
+            <div className="pipeline-lang-toggle" aria-label="language switch">
+              <button className={lang === 'ko' ? 'active' : ''} onClick={() => setLang('ko')} type="button">KO</button>
+              <button className={lang === 'en' ? 'active' : ''} onClick={() => setLang('en')} type="button">EN</button>
+            </div>
+            {!embedded && <button className="flow-close-btn" onClick={onClose}>x</button>}
+          </div>
         </div>
 
         <div className="pipeline-control-body">
@@ -260,14 +408,15 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
                     >
                       <div className="pipeline-stage-topline">
                         <span>{String(index + 1).padStart(2, '0')}</span>
-                        <span className={`pipeline-status status-${status}`}>{STATUS_LABELS[status]}</span>
+                        <span className={`pipeline-status status-${status}`}>{STATUS_LABELS[lang][status]}</span>
                       </div>
-                      <h4>{stage.title}</h4>
-                      <p>{stage.subtitle}</p>
+                      <h4>{copy(stage.title, lang)}</h4>
+                      {lang === 'ko' && <span className="pipeline-title-en">{stage.title.en}</span>}
+                      <p>{copy(stage.subtitle, lang)}</p>
                       <div className="pipeline-artifact">{stage.artifact}</div>
                       <div className="pipeline-lanes">
                         {stage.lanes.map((lane) => (
-                          <span key={lane}>{lane}</span>
+                          <span key={lane.en}>{copy(lane, lang)}</span>
                         ))}
                       </div>
                     </button>
@@ -279,25 +428,41 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
 
             <div className="pipeline-stage-detail">
               <div>
-                <span className="pipeline-detail-kicker">Selected control</span>
-                <h4>{selected.title}</h4>
-                <p>{selected.subtitle}</p>
+                <span className="pipeline-detail-kicker">{lang === 'ko' ? '선택된 운영 단계' : 'Selected control stage'}</span>
+                <h4>{copy(selected.title, lang)}</h4>
+                <p>{copy(selected.subtitle, lang)}</p>
               </div>
               <div className="pipeline-detail-meta">
                 <span>Snapshot {snapshotDate || 'latest'}</span>
                 <span>Artifact {selected.artifact}</span>
-                <span>Status {STATUS_LABELS[statuses[selected.id] ?? 'idle']}</span>
+                <span>Status {STATUS_LABELS[lang][statuses[selected.id] ?? 'idle']}</span>
               </div>
-              {selected.actionLabel && (
-                <button
-                  className="pipeline-run-btn"
-                  onClick={() => handleRunStage(selected.id)}
-                  disabled={statuses[selected.id] === 'running'}
-                  type="button"
-                >
-                  {statuses[selected.id] === 'running' ? 'Running...' : selected.actionLabel}
-                </button>
-              )}
+
+              <div className="pipeline-control-actions">
+                {selected.controls.map((control) => {
+                  const status = controlStatuses[control.id] ?? 'idle';
+                  return (
+                    <button
+                      className={`pipeline-subcontrol-btn status-${status}`}
+                      key={control.id}
+                      onClick={() => runControl(selected, control)}
+                      disabled={status === 'running'}
+                      type="button"
+                    >
+                      <span>{status === 'running' ? (lang === 'ko' ? '실행 중...' : 'Running...') : copy(control.label, lang)}</span>
+                      <small>{copy(control.description, lang)}</small>
+                      <em>{STATUS_LABELS[lang][status]}</em>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="pipeline-checklist">
+                {selected.checklist.map((item) => (
+                  <span key={item.en}>{copy(item, lang)}</span>
+                ))}
+              </div>
+
               <div className="pipeline-result-box">{detailResult}</div>
             </div>
           </section>
@@ -306,54 +471,73 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
             <div className="ontology-header">
               <div>
                 <span className="pipeline-detail-kicker">Sentinel ontology figure</span>
-                <h4>AI interpretation of signal relationships</h4>
+                <h4>{lang === 'ko' ? 'AI가 해석한 신호 관계도' : 'AI interpretation of signal relationships'}</h4>
+                <p className="ontology-header-copy">
+                  {lang === 'ko'
+                    ? '점선과 pulse는 raw signal이 개념 노드로 묶이고, 최종 보고서로 흘러가는 과정을 보여줍니다.'
+                    : 'Dashed pulses show raw signals being grouped into concept nodes and routed into the report.'}
+                </p>
               </div>
-              <span className="ontology-badge">explainable figure</span>
+              <span className="ontology-badge">{lang === 'ko' ? '설명 가능한 figure' : 'explainable figure'}</span>
             </div>
 
             <svg className="ontology-map-svg" viewBox="0 0 820 420" role="img" aria-label="Sentinel evidence ontology map">
-              {ONTOLOGY_EDGES.map((edge) => {
-                const from = nodeById(edge.from);
-                const to = nodeById(edge.to);
-                if (!from || !to) return null;
-                const midX = (from.x + to.x) / 2;
+              {ONTOLOGY_EDGES.map((edge, index) => {
+                const d = edgePath(edge);
+                if (!d) return null;
+                const active = activePhases.has(edge.phase);
                 return (
-                  <path
-                    key={`${edge.from}-${edge.to}`}
-                    className="ontology-link"
-                    d={`M ${from.x} ${from.y} C ${midX} ${from.y}, ${midX} ${to.y}, ${to.x} ${to.y}`}
-                    style={{ strokeWidth: 1 + edge.strength * 4, opacity: 0.22 + edge.strength * 0.58 }}
-                  />
+                  <g key={`${edge.from}-${edge.to}`}>
+                    <path
+                      className={`ontology-link ${active ? 'is-active' : ''}`}
+                      d={d}
+                      style={{ strokeWidth: 1 + edge.strength * 4, opacity: active ? 0.88 : 0.22 + edge.strength * 0.3 }}
+                    />
+                    <circle className={`ontology-pulse ${active ? 'is-active' : ''}`} r={active ? 4.3 : 2.8}>
+                      <animateMotion
+                        dur={`${5.2 - edge.strength * 1.8}s`}
+                        repeatCount="indefinite"
+                        path={d}
+                        begin={`${index * 0.22}s`}
+                      />
+                    </circle>
+                  </g>
                 );
               })}
               {ONTOLOGY_NODES.map((node) => (
                 <g className={`ontology-map-node node-${node.kind}`} key={node.id} transform={`translate(${node.x}, ${node.y})`}>
                   <circle r={node.kind === 'output' ? 34 : node.kind === 'concept' ? 27 : 22} />
-                  <text y={node.kind === 'output' ? 52 : 42}>{node.label}</text>
+                  <text y={node.kind === 'output' ? 52 : 42}>{copy(node.label, lang)}</text>
                 </g>
               ))}
             </svg>
 
+            <div className="ontology-legend">
+              <span><i className="legend-dot source" /> {lang === 'ko' ? '원천 신호' : 'Source signal'}</span>
+              <span><i className="legend-dot concept" /> {lang === 'ko' ? 'AI 개념 묶음' : 'AI concept group'}</span>
+              <span><i className="legend-dot output" /> {lang === 'ko' ? '보고서 산출물' : 'Report output'}</span>
+            </div>
+
             <div className="ontology-report-grid">
               <div>
-                <span>Figure role</span>
-                <strong>Not decoration</strong>
-                <p>Shows how Sentinel groups raw signals into concepts before creating a regional alert explanation.</p>
+                <span>{lang === 'ko' ? 'Figure 역할' : 'Figure role'}</span>
+                <strong>{lang === 'ko' ? '장식이 아닌 설명 근거' : 'Not decoration'}</strong>
+                <p>{lang === 'ko' ? 'Sentinel이 raw signal을 어떻게 묶고 해석했는지 보여줍니다.' : 'Shows how Sentinel groups raw signals into concepts before creating a regional alert explanation.'}</p>
               </div>
               <div>
-                <span>Report contract</span>
-                <strong>Changed, matters, confidence, actions</strong>
-                <p>Every Sentinel report should use these four sections so the user can audit the alert logic quickly.</p>
+                <span>{lang === 'ko' ? '보고서 계약' : 'Report contract'}</span>
+                <strong>{lang === 'ko' ? '변화, 의미, 신뢰도, 조치' : 'Changed, matters, confidence, actions'}</strong>
+                <p>{lang === 'ko' ? '모든 보고서는 같은 네 섹션으로 작성해 경보 논리를 빠르게 검토하게 합니다.' : 'Every Sentinel report should use these four sections so the user can audit the alert logic quickly.'}</p>
               </div>
               <div>
-                <span>Global layer</span>
-                <strong>Imported-risk context only</strong>
-                <p>Overseas news and neighbor-country activity corroborate risk; they do not replace Korea regional scoring.</p>
+                <span>{lang === 'ko' ? 'Global layer' : 'Global layer'}</span>
+                <strong>{lang === 'ko' ? '해외 유입 맥락만' : 'Imported-risk context only'}</strong>
+                <p>{lang === 'ko' ? '해외 뉴스와 인접국 활동은 보조 근거이며 한국 지역 점수를 대체하지 않습니다.' : 'Overseas news and neighbor-country activity corroborate risk; they do not replace Korea regional scoring.'}</p>
               </div>
               <div>
-                <span>Deferred lane</span>
-                <strong>Wastewater PDF automation later</strong>
-                <p>For now, wastewater stays visible as a document-only corroboration lane until extraction review is added.</p>
+                <span>{lang === 'ko' ? '보류 lane' : 'Deferred lane'}</span>
+                <strong>{lang === 'ko' ? '폐하수 PDF 자동화는 추후' : 'Wastewater PDF automation later'}</strong>
+                <p>{lang === 'ko' ? '현재는 문서-only 보조 신호로 표시하고, 표 자동 추출/검수는 다음 단계로 둡니다.' : 'For now, wastewater stays visible as a document-only corroboration lane until extraction review is added.'}</p>
               </div>
             </div>
           </section>
