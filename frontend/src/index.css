@@ -3151,6 +3151,36 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 }
 .run-control-panel { position: relative; }
 .run-control-header { padding-right: 36px; /* leave room for close button */ }
+
+/* Inline pipeline flow (used in PIPELINE tab — same content as the modal but full-page) */
+.pipeline-flow-inline {
+  width: min(1200px, 96vw);
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+}
+.pipeline-flow-modal-header--inline {
+  padding: 6px 6px 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.pipeline-flow-inline .pipeline-flow-modal-svg-wrap {
+  padding: 14px 6px;
+}
+.pipeline-flow-inline .pipeline-flow-modal-svg-wrap svg {
+  max-height: 60vh;
+}
+.pipeline-flow-inline .pipeline-flow-modal-detail {
+  border-top: 1px solid var(--border);
+  background: transparent;
+  padding: 14px 6px 6px;
+  max-height: none;
+}
 .run-control-flow svg {
   width: 100%;
   height: auto;
@@ -3475,28 +3505,66 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   margin-top: 1px;
 }
 
-/* ── Bottom alert legend (G3-G0) — bottom-center, slightly above viewport edge so Jeju stays visible ─ */
-.kas-bottom-legend {
+/* ── Bottom-LEFT alert legend (G3-G0) — fixed at bottom-left corner so it never covers Jeju.
+     Region detail panel is also left-aligned (top-left) and uses max-height so they stack without overlap. ─ */
+.kas-bottom-left-legend {
   position: absolute;
-  left: 320px; /* clear of left region panel */
-  right: 260px; /* clear of right tool guide column */
-  bottom: 12px;
+  left: 20px;
+  bottom: 20px;
+  width: 280px;
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
+  flex-direction: column;
   gap: 4px;
-  padding: 6px 10px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--bg-overlay);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow: var(--shadow-lg);
-  z-index: 20;
-  pointer-events: auto;
-  justify-content: space-between;
-  /* keep low profile so it doesn't cover Jeju */
-  max-height: 56px;
+  z-index: 18;
+}
+.kas-bottom-left-legend .kas-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+}
+.kas-bottom-left-legend .kas-legend-item:last-child { border-bottom: none; }
+.kas-bottom-left-legend .kas-legend-item > div {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  line-height: 1.2;
+  min-width: 0;
+}
+.kas-bottom-left-legend .kas-legend-item strong {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.kas-bottom-left-legend .kas-legend-item small {
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kas-bottom-left-legend .kas-legend-dot {
+  width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+}
+.kas-bottom-left-legend .kas-legend-count {
+  margin-left: auto;
+  padding: 2px 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  min-width: 22px;
+  text-align: center;
 }
 .kas-bottom-legend .kas-legend-item {
   display: flex;

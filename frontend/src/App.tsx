@@ -1007,29 +1007,30 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   </button>
                 ))}
               </div>
-              {/* G-level legend back inside right column so it stays off the map (Jeju) */}
-              <div className="kas-side-legend-items">
-                <div className="kas-legend-item">
-                  <span className="kas-legend-dot kas-level-critical" />
-                  <div><strong>G3 위험</strong><small>즉시 원인 확인과 대응 검토</small></div>
-                  <span className="kas-legend-count">{criticalCount}</span>
-                </div>
-                <div className="kas-legend-item">
-                  <span className="kas-legend-dot kas-level-high" />
-                  <div><strong>G2 경계</strong><small>복수 신호 상승, 집중 모니터링</small></div>
-                  <span className="kas-legend-count">{elevatedCount - criticalCount}</span>
-                </div>
-                <div className="kas-legend-item">
-                  <span className="kas-legend-dot kas-level-moderate" />
-                  <div><strong>G1 주의</strong><small>초기 변화 가능성, 추세 확인</small></div>
-                  <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G1').length}</span>
-                </div>
-                <div className="kas-legend-item">
-                  <span className="kas-legend-dot kas-level-low" />
-                  <div><strong>G0 안정</strong><small>기준선 범위, 정기 감시 유지</small></div>
-                  <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G0').length}</span>
-                </div>
-              </div>
+            </div>
+          </div>
+
+          {/* G-level legend pinned to BOTTOM-LEFT — region panel (top-left) will overlay it on click */}
+          <div className="kas-bottom-left-legend">
+            <div className="kas-legend-item">
+              <span className="kas-legend-dot kas-level-critical" />
+              <div><strong>G3 위험</strong><small>즉시 원인 확인과 대응 검토</small></div>
+              <span className="kas-legend-count">{criticalCount}</span>
+            </div>
+            <div className="kas-legend-item">
+              <span className="kas-legend-dot kas-level-high" />
+              <div><strong>G2 경계</strong><small>복수 신호 상승, 집중 모니터링</small></div>
+              <span className="kas-legend-count">{elevatedCount - criticalCount}</span>
+            </div>
+            <div className="kas-legend-item">
+              <span className="kas-legend-dot kas-level-moderate" />
+              <div><strong>G1 주의</strong><small>초기 변화 가능성, 추세 확인</small></div>
+              <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G1').length}</span>
+            </div>
+            <div className="kas-legend-item">
+              <span className="kas-legend-dot kas-level-low" />
+              <div><strong>G0 안정</strong><small>기준선 범위, 정기 감시 유지</small></div>
+              <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G0').length}</span>
             </div>
           </div>
 
@@ -1386,15 +1387,117 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
         </main>
       )}
 
-      {/* === PATHWAY TAB === */}
+      {/* === PATHWAY TAB === unified with the Run analyze big modal content */}
       {navTab === 'pathway' && (
         <main className="kas-tab-view kas-tab-view--pathway">
-          <FlowDiagram
-            onClose={() => setNavTab('map')}
-            onDataRefreshed={() => fetchAlerts()}
-            snapshotDate={currentDate}
-            embedded
-          />
+          <div className="pipeline-flow-inline">
+            <div className="pipeline-flow-modal-header pipeline-flow-modal-header--inline">
+              <div>
+                <span className="pipeline-flow-modal-kicker">PIPELINE FLOW</span>
+                <h3>데이터 수집 → AI 분석 → 리포트 흐름</h3>
+                <p>각 노드를 클릭하면 해당 단계를 실행합니다. 진행 중인 노드는 펄스로, 흐름은 점선 애니메이션으로 표시됩니다.</p>
+              </div>
+            </div>
+
+            <div className="pipeline-flow-modal-svg-wrap">
+              <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <marker id="pf-arrow-inline" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 Z" fill="rgba(56,189,248,0.7)" />
+                  </marker>
+                </defs>
+                <text x="20" y="85" className="pf-lane-label">SOURCE</text>
+                <text x="20" y="235" className="pf-lane-label">AI / 처리</text>
+                <text x="20" y="385" className="pf-lane-label">통합 / 리포트</text>
+
+                {pipelineEdges.map(([fromKey, toKey]) => {
+                  const from = pipelineModalNodeMap.get(fromKey);
+                  const to = pipelineModalNodeMap.get(toKey);
+                  if (!from || !to) return null;
+                  const dx = to.x - from.x;
+                  const dy = to.y - from.y;
+                  const cx1 = from.x + dx * 0.15;
+                  const cy1 = from.y + dy * 0.6;
+                  const cx2 = to.x - dx * 0.15;
+                  const cy2 = to.y - dy * 0.4;
+                  const d = `M${from.x},${from.y + 32} C${cx1},${cy1} ${cx2},${cy2} ${to.x},${to.y - 32}`;
+                  const isFlowing = from.row.status === 'running' || to.row.status === 'running';
+                  const isComplete = from.row.status === 'ready' && to.row.status === 'ready';
+                  return (
+                    <path
+                      key={`${fromKey}-${toKey}`}
+                      d={d}
+                      fill="none"
+                      className={`pf-edge ${isFlowing ? 'pf-edge--flowing' : ''} ${isComplete ? 'pf-edge--complete' : ''}`}
+                      markerEnd="url(#pf-arrow-inline)"
+                    />
+                  );
+                })}
+
+                {pipelineModalNodes.map(({ key, x, y, row }) => {
+                  const isRunning = row.status === 'running';
+                  const isReady = row.status === 'ready';
+                  const isError = row.status === 'error';
+                  const status = isRunning ? 'running' : isReady ? 'ready' : isError ? 'error' : 'idle';
+                  return (
+                    <g key={key} className={`pf-node pf-node--${status}`} transform={`translate(${x} ${y})`}>
+                      {isRunning && <circle r="38" className="pf-node-pulse" />}
+                      <circle r="28" className="pf-node-bg" />
+                      <circle r="28" className="pf-node-ring" />
+                      <text y="-3" className="pf-node-lane">{row.lane}</text>
+                      <text y="10" className="pf-node-status">
+                        {isRunning ? '실행 중' : isReady ? '준비됨' : isError ? '오류' : '대기'}
+                      </text>
+                      <text y="52" className="pf-node-title">{row.title}</text>
+                      <circle
+                        r="28"
+                        fill="transparent"
+                        style={{ cursor: runningPipeline ? 'wait' : 'pointer' }}
+                        onClick={() => { if (!runningPipeline) runOperation(row.key); }}
+                      >
+                        <title>{row.primaryAction} — {row.title}</title>
+                      </circle>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+
+            <div className="pipeline-flow-modal-detail">
+              <div className="pipeline-flow-modal-detail-title">단계 설명 · 클릭하면 실행됩니다</div>
+              <div className="pipeline-flow-modal-detail-list">
+                {operationRows.map((row) => {
+                  const upstream = pipelineEdges.filter(([, to]) => to === row.key).map(([from]) => operationRows[operationIndex.get(from) || 0]?.title).filter(Boolean);
+                  const downstream = pipelineEdges.filter(([from]) => from === row.key).map(([, to]) => operationRows[operationIndex.get(to) || 0]?.title).filter(Boolean);
+                  const isRunning = row.status === 'running';
+                  return (
+                    <article key={row.key} className={`pipeline-flow-detail-row status-${row.status}`}>
+                      <div className="pipeline-flow-detail-head">
+                        <span className="pipeline-flow-detail-lane">{row.lane}</span>
+                        <span className="pipeline-flow-detail-state">{row.status === 'needs-run' ? '실행 필요' : row.status === 'ready' ? '준비됨' : row.status === 'running' ? '실행 중' : '오류'}</span>
+                      </div>
+                      <strong className="pipeline-flow-detail-title">{row.title}</strong>
+                      <p className="pipeline-flow-detail-text">{row.detail}</p>
+                      {(upstream.length > 0 || downstream.length > 0) && (
+                        <div className="pipeline-flow-detail-links">
+                          {upstream.length > 0 && <span>입력: {upstream.join(' + ')}</span>}
+                          {downstream.length > 0 && <span>다음: {downstream.join(' + ')}</span>}
+                        </div>
+                      )}
+                      <button
+                        className="pipeline-flow-detail-btn"
+                        disabled={!!runningPipeline}
+                        onClick={() => runOperation(row.key)}
+                        type="button"
+                      >
+                        {isRunning ? '실행 중...' : row.primaryAction}
+                      </button>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </main>
       )}
 
