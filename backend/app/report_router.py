@@ -399,6 +399,23 @@ def generate_osint_report() -> dict[str, Any]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gemini API 오류: {str(e)}")
 
+    snapshot = _load_snapshot()
+    prev_snapshot = _load_prev_snapshot(snapshot[0].get("date", target_date) if snapshot else target_date)
+    contract_sections = _build_contract_sections(
+        snapshot=snapshot,
+        prev_snapshot=prev_snapshot,
+        korea_news=korea_news,
+        global_signals=global_signals,
+        trends=trends,
+        report_kind="final",
+    )
+    report_text = _ensure_report_contract(
+        report_text=report_text,
+        title="Sentinel Korea OSINT 일간 리포트",
+        epiweek=_get_epiweek_for(target_date),
+        target_date=target_date,
+        contract_sections=contract_sections,
+    )
     path = _save_report("osint", target_date, report_text)
     return {
         "type": "osint",

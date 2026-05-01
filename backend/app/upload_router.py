@@ -167,6 +167,7 @@ async def get_kdca_notifiable(include_records: bool = False) -> dict[str, Any]:
 @router.post("/refresh-global")
 async def refresh_global_signals() -> dict[str, Any]:
     """WHO DON + 글로벌 뉴스를 새로 수집합니다."""
+    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     results = {}
 
     # WHO DON 스크래핑
@@ -175,7 +176,7 @@ async def refresh_global_signals() -> dict[str, Any]:
         data = spec.fetch_who_don()
         out_path = PROCESSED_DIR / "global_who_don.json"
         out_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-        results["who_don"] = {"status": "ok", "count": len(data)}
+        results["who_don"] = {"status": "ok" if data else "empty", "count": len(data)}
     except Exception as e:
         results["who_don"] = {"status": "error", "error": str(e)}
 
@@ -185,11 +186,21 @@ async def refresh_global_signals() -> dict[str, Any]:
         data = spec.fetch_global_news()
         out_path = PROCESSED_DIR / "global_news.json"
         out_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-        results["global_news"] = {"status": "ok", "count": len(data)}
+        results["global_news"] = {"status": "ok" if data else "empty", "count": len(data)}
     except Exception as e:
         results["global_news"] = {"status": "error", "error": str(e)}
 
-    return {"status": "completed", "results": results}
+    ok_count = sum(1 for item in results.values() if item.get("status") == "ok")
+    error_count = sum(1 for item in results.values() if item.get("status") == "error")
+    if ok_count == len(results):
+        status = "completed"
+    elif ok_count > 0:
+        status = "partial"
+    elif error_count:
+        status = "error"
+    else:
+        status = "empty"
+    return {"status": status, "results": results}
 
 
 @router.post("/refresh-korea")
@@ -226,6 +237,7 @@ async def refresh_korea_signals() -> dict[str, Any]:
 @router.post("/refresh-trends")
 async def refresh_trends() -> dict[str, Any]:
     """Google Trends + Naver Trends 데이터를 새로 수집합니다."""
+    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     results = {}
 
     # Google Trends
@@ -236,13 +248,21 @@ async def refresh_trends() -> dict[str, Any]:
         (PROCESSED_DIR / "google_trends_kr.json").write_text(
             json.dumps(kr_data, ensure_ascii=False, indent=2), encoding="utf-8"
         )
-        results["google_korea"] = {"status": "ok", "keywords": kr_data.get("keywords", [])}
+        results["google_korea"] = {
+            "status": "error" if kr_data.get("error") else "ok",
+            "keywords": kr_data.get("keywords", []),
+            **({"error": kr_data.get("error")} if kr_data.get("error") else {}),
+        }
 
         global_data = module.fetch_global_trends()
         (PROCESSED_DIR / "google_trends_global.json").write_text(
             json.dumps(global_data, ensure_ascii=False, indent=2), encoding="utf-8"
         )
-        results["google_global"] = {"status": "ok", "keywords": global_data.get("keywords", [])}
+        results["google_global"] = {
+            "status": "error" if global_data.get("error") else "ok",
+            "keywords": global_data.get("keywords", []),
+            **({"error": global_data.get("error")} if global_data.get("error") else {}),
+        }
     except Exception as e:
         results["google"] = {"status": "error", "error": str(e)}
 
@@ -257,7 +277,19 @@ async def refresh_trends() -> dict[str, Any]:
     except Exception as e:
         results["naver_korea"] = {"status": "error", "error": str(e)}
 
-    return {"status": "completed", "results": results}
+    google_ok = (
+        results.get("google_korea", {}).get("status") == "ok"
+        and results.get("google_global", {}).get("status") == "ok"
+    )
+    naver_ok = results.get("naver_korea", {}).get("status") == "ok"
+    if google_ok and naver_ok:
+        status = "completed"
+    elif google_ok or naver_ok:
+        status = "partial"
+    else:
+        status = "error"
+
+    return {"status": status, "results": results}
 
 
 @router.get("/upload-history")

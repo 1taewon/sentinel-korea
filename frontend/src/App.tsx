@@ -49,7 +49,9 @@ type UploadHistoryItem = {
 
 type ReportListItem = {
   filename: string;
+  type?: 'osint' | 'kdca' | 'final';
   epiweek?: string;
+  snapshot_date?: string;
   generated_at?: string;
   size_bytes?: number;
 };
@@ -279,6 +281,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
         body: JSON.stringify({}),
       });
       const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'OSINT analysis failed');
       setOsintResult(data);
       if (data.snapshot_date) {
         await fetchAlerts(data.snapshot_date);
@@ -287,14 +290,17 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       // Save OSINT daily report
       try {
         const rep = await fetch(`${API_BASE}/reports/generate-osint`, { method: 'POST' });
-        if (rep.ok) {
-          const repData = await rep.json();
-          data.summary = (data.summary || '') + `\n\n✅ OSINT 일간 리포트 저장됨: ${repData.report_filename}`;
-          setOsintResult({ ...data });
-        }
-      } catch { /* ignore — analysis still succeeded */ }
-    } catch {
-      setOsintResult({ summary: 'OSINT analysis failed. Check server connection.' });
+        const repData = await rep.json();
+        if (!rep.ok) throw new Error(repData?.detail || 'OSINT report generation failed');
+        data.summary = (data.summary || '') + `\n\nOSINT daily report saved: ${repData.report_filename}`;
+        setOsintResult({ ...data });
+        await refreshOperationStatus();
+      } catch (reportError) {
+        data.summary = (data.summary || '') + `\n\nOSINT analysis completed, but report save failed: ${reportError instanceof Error ? reportError.message : 'unknown error'}`;
+        setOsintResult({ ...data });
+      }
+    } catch (error) {
+      setOsintResult({ summary: error instanceof Error ? error.message : 'OSINT analysis failed. Check server connection.' });
     } finally {
       setAnalyzingOsint(false);
     }
@@ -311,26 +317,28 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
         body: JSON.stringify({ include_kdca: true }),
       });
       const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'Sentinel integrated analysis failed');
       setFullResult(data);
+      const reportSnapshot = data.snapshot_date || currentDate;
       if (data.snapshot_date) {
         await fetchAlerts(data.snapshot_date);
         await refreshIngestionStatus(data.snapshot_date);
-
-        // Save FINAL weekly integrated report
-        try {
-          const rep = await fetch(`${API_BASE}/reports/generate-final?snapshot_date=${data.snapshot_date}`, { method: 'POST' });
-          if (rep.ok) {
-            const repData = await rep.json();
-            data.summary = (data.summary || '') + `\n\n✅ FINAL 통합 리포트 저장됨: ${repData.report_filename}`;
-            setFullResult({ ...data });
-          }
-        } catch {
-          data.summary = (data.summary || '') + '\n\n⚠️ 통합 리포트 저장 실패.';
-          setFullResult({ ...data });
-        }
       }
-    } catch {
-      setFullResult({ summary: 'Analysis failed. Check server connection.' });
+
+      // Save FINAL weekly integrated report even if the AI response omitted snapshot_date.
+      try {
+        const rep = await fetch(`${API_BASE}/reports/generate-final?snapshot_date=${reportSnapshot}`, { method: 'POST' });
+        const repData = await rep.json();
+        if (!rep.ok) throw new Error(repData?.detail || 'Final report generation failed');
+        data.summary = (data.summary || '') + `\n\nSentinel final report saved: ${repData.report_filename}`;
+        setFullResult({ ...data, snapshot_date: data.snapshot_date || reportSnapshot });
+        await refreshOperationStatus();
+      } catch (reportError) {
+        data.summary = (data.summary || '') + `\n\nSentinel analysis completed, but final report save failed: ${reportError instanceof Error ? reportError.message : 'unknown error'}`;
+        setFullResult({ ...data });
+      }
+    } catch (error) {
+      setFullResult({ summary: error instanceof Error ? error.message : 'Analysis failed. Check server connection.' });
     } finally {
       setAnalyzingFull(false);
     }
@@ -343,12 +351,14 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     try {
       const res = await fetch(`${API_BASE}/reports/generate-kdca?snapshot_date=${currentDate}`, { method: 'POST' });
       const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'KDCA report generation failed');
       setKdcaReportResult({
         summary: `KDCA 주간 리포트 저장됨 (${data.report_filename || data.epiweek || '완료'}).`,
         filename: data.report_filename,
       });
-    } catch {
-      setKdcaReportResult({ summary: 'Weekly report generation failed. Check server connection.' });
+      await refreshOperationStatus();
+    } catch (error) {
+      setKdcaReportResult({ summary: error instanceof Error ? error.message : 'Weekly report generation failed. Check server connection.' });
     } finally {
       setGeneratingKdcaReport(false);
     }
@@ -367,10 +377,17 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
         if (!res.ok) throw new Error('Korea news refresh failed');
       } else if (key === 'trends') {
         const res = await fetch(`${API_BASE}/ingestion/refresh-trends`, { method: 'POST' });
-        if (!res.ok) throw new Error('Trends refresh failed');
+        const data = await res.json();
+        const googleError = data?.results?.google?.error || data?.results?.google_korea?.error || data?.results?.google_global?.error;
+        if (!res.ok || googleError || data?.status === 'error') {
+          throw new Error(googleError || data?.detail || 'Google Trends refresh failed');
+        }
       } else if (key === 'global') {
         const res = await fetch(`${API_BASE}/ingestion/refresh-global`, { method: 'POST' });
-        if (!res.ok) throw new Error('Global signal refresh failed');
+        const data = await res.json();
+        if (!res.ok || data?.status === 'error' || data?.status === 'empty') {
+          throw new Error(data?.details || data?.detail || 'WHO DON / overseas news refresh failed');
+        }
         await fetchAlerts();
       } else if (key === 'kdca_api') {
         await handleRefreshKdcaNotifiable();
@@ -423,15 +440,14 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
 
   const elevatedCount = koreaAlerts.filter((alert) => alert.score >= 0.55).length;
   const criticalCount = koreaAlerts.filter((alert) => alert.score >= 0.75).length;
-  const topKoreaAlert = useMemo(
-    () => [...koreaAlerts].sort((a, b) => b.score - a.score)[0] || null,
-    [koreaAlerts],
-  );
   const internationalSummary = useMemo(() => {
     const sourceLabels: Record<string, string> = {
       healthmap: 'HealthMap',
       promed: 'ProMED',
       google_trends: 'Google Trends',
+      who_don: 'WHO DON',
+      news_global: 'Global News',
+      google_news: 'Google News',
     };
     const bySource = globalSignals.reduce<Record<string, number>>((acc, signal) => {
       const key = sourceLabels[signal.source] || signal.source;
@@ -467,15 +483,6 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       : 0;
     return { bySource, bySeverity, byRelevance, topCountries, recentSignals, averageRelevance };
   }, [globalSignals]);
-  const globeLaneSummary = [
-    { key: 'KDCA', label: '공식 감시', value: koreaAlerts.length || 17, tone: 'green' },
-    { key: 'ILI', label: 'ILI/SARI', value: koreaAlerts.filter((alert) => alert.signals?.influenza_like != null).length, tone: 'red' },
-    { key: 'WASTE', label: '폐하수', value: koreaAlerts.filter((alert) => alert.regional_wastewater).length, tone: 'amber' },
-    { key: 'NEWS', label: '국내 뉴스', value: koreaAlerts.filter((alert) => alert.news_trends_risk).length, tone: 'blue' },
-    { key: 'TRENDS', label: '국내 검색', value: koreaAlerts.filter((alert) => alert.signals?.news_trends_ai != null).length, tone: 'violet' },
-    { key: 'WHO', label: '국제 보조', value: globalSignals.length, tone: 'cyan' },
-    { key: 'ALERT', label: '주의 이상', value: elevatedCount, tone: 'red' },
-  ];
   const latestUpload = useMemo(() => {
     return [...uploadHistory]
       .sort((a, b) => (b.uploaded_at || '').localeCompare(a.uploaded_at || ''))[0];
@@ -483,6 +490,15 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   const latestReport = useMemo(() => {
     return [...reportList]
       .sort((a, b) => (b.generated_at || '').localeCompare(a.generated_at || ''))[0];
+  }, [reportList]);
+  const latestReportsByType = useMemo(() => {
+    return reportList.reduce<Record<string, ReportListItem | undefined>>((acc, report) => {
+      const type = report.type || 'kdca';
+      if (!acc[type] || (report.generated_at || '').localeCompare(acc[type]?.generated_at || '') > 0) {
+        acc[type] = report;
+      }
+      return acc;
+    }, {});
   }, [reportList]);
   const formatRunTime = (value?: string) => {
     if (!value) return 'not run';
@@ -499,97 +515,168 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     {
       key: 'korea_news',
       lane: 'SOURCE',
-      title: 'Korea news refresh',
-      detail: '국내 뉴스/Naver lane을 새로 수집합니다.',
+      title: '국내 뉴스 수집',
+      detail: '네이버 뉴스와 국내 NewsAPI 결과를 새로 모아 OSINT 분석의 국내 사건/증상 탐색 근거로 씁니다.',
       status: runningPipeline === 'korea_news' ? 'running' : lastPipelineRun.korea_news ? 'ready' : 'needs-run',
       updatedAt: lastPipelineRun.korea_news,
-      primaryAction: 'Refresh',
+      primaryAction: '수집',
     },
     {
       key: 'trends',
       lane: 'SOURCE',
-      title: 'Search trends refresh',
-      detail: 'Google/Naver 검색 트렌드 lane을 새로 수집합니다.',
+      title: '검색 트렌드 수집',
+      detail: 'Google Trends와 Naver DataLab 검색량을 갱신해 뉴스가 실제 관심도 변화와 맞물리는지 봅니다.',
       status: runningPipeline === 'trends' ? 'running' : lastPipelineRun.trends ? 'ready' : 'needs-run',
       updatedAt: lastPipelineRun.trends,
-      primaryAction: 'Refresh',
+      primaryAction: '수집',
     },
     {
       key: 'global',
       lane: 'SOURCE',
-      title: 'Global signals refresh',
-      detail: `${globalSignals.length} global signals currently loaded.`,
+      title: 'WHO/해외 뉴스 수집',
+      detail: `WHO DON, NewsAPI, Google News RSS에서 해외 outbreak 보조 신호를 가져옵니다. 현재 ${globalSignals.length}건 로드됨.`,
       status: runningPipeline === 'global' ? 'running' : globalSignals.length ? 'ready' : 'needs-run',
       updatedAt: lastPipelineRun.global,
-      primaryAction: 'Refresh',
+      primaryAction: '수집',
     },
     {
       key: 'kdca_upload',
       lane: 'KDCA',
-      title: 'KDCA upload parser',
+      title: 'KDCA 파일 업로드/파싱',
       detail: latestUpload
         ? `${latestUpload.file_type} / ${latestUpload.records_parsed || 0} records / ${latestUpload.snapshot_count || 0} snapshots`
-        : 'xlsx/pdf 원자료 업로드가 필요합니다.',
+        : '질병청 주간 xlsx/pdf 원자료를 업로드하면 지역별 감시 신호로 정규화합니다.',
       status: runningPipeline === 'kdca_upload' ? 'running' : latestUpload ? 'ready' : 'needs-run',
       updatedAt: latestUpload?.uploaded_at,
-      primaryAction: 'Open upload',
+      primaryAction: '업로드',
     },
     {
       key: 'kdca_api',
       lane: 'KDCA',
-      title: 'KDCA notifiable API',
-      detail: kdcaApiResult?.summary || 'PeriodRegion 법정감염병 API 보조 lane입니다.',
+      title: 'KDCA 법정감염병 API',
+      detail: kdcaApiResult?.summary || '공공데이터 PeriodRegion/PeriodBasic API를 갱신해 법정감염병 보조 신호를 확인합니다.',
       status: runningPipeline === 'kdca_api' || refreshingKdcaApi ? 'running' : lastPipelineRun.kdca_api ? 'ready' : 'needs-run',
       updatedAt: lastPipelineRun.kdca_api,
-      primaryAction: 'Run API',
+      primaryAction: 'API 실행',
     },
     {
       key: 'kdca_digest',
       lane: 'AI',
-      title: 'KDCA surveillance digest',
+      title: 'KDCA 감시자료 요약',
       detail: kdcaDigestStatus?.status === 'ok'
         ? `${kdcaDigestStatus.sources_used?.length || 0} source files summarized.`
-        : 'KDCA 업로드 자료 기반 요약이 아직 없거나 갱신이 필요합니다.',
+        : '업로드된 질병청 원자료를 AI가 요약해 Sentinel 통합 분석의 공식 감시 맥락으로 넘깁니다.',
       status: runningPipeline === 'kdca_digest' ? 'running' : kdcaDigestStatus?.status === 'ok' ? 'ready' : 'needs-run',
       updatedAt: kdcaDigestStatus?.generated_at,
-      primaryAction: 'Digest',
+      primaryAction: '요약',
     },
     {
       key: 'osint',
       lane: 'AI',
-      title: 'OSINT map analysis',
+      title: 'OSINT 지도 분석',
       detail: osintResult?.snapshot_date
         ? `snapshot ${osintResult.snapshot_date}`
-        : `${koreaAlerts.filter((alert) => alert.news_trends_risk).length} regions have OSINT risk.`,
-      status: runningPipeline === 'osint' || analyzingOsint ? 'running' : koreaAlerts.some((alert) => alert.news_trends_risk) || osintResult ? 'ready' : 'needs-run',
-      updatedAt: lastPipelineRun.osint,
+        : latestReportsByType.osint?.filename || `국내 뉴스/검색 트렌드 기반 OSINT 위험이 있는 지역 ${koreaAlerts.filter((alert) => alert.news_trends_risk).length}개.`,
+      status: runningPipeline === 'osint' || analyzingOsint ? 'running' : latestReportsByType.osint || koreaAlerts.some((alert) => alert.news_trends_risk) || osintResult ? 'ready' : 'needs-run',
+      updatedAt: latestReportsByType.osint?.generated_at || lastPipelineRun.osint,
       epiweek: osintResult?.snapshot_date || currentDate,
-      primaryAction: 'Analyze',
+      primaryAction: '분석',
     },
     {
       key: 'sentinel',
       lane: 'AI',
-      title: 'Sentinel integrated analysis',
+      title: 'Sentinel 통합 분석',
       detail: fullResult?.snapshot_date
         ? `final snapshot ${fullResult.snapshot_date}`
-        : `${koreaAlerts.filter((alert) => alert.total_risk).length} regions have integrated risk.`,
-      status: runningPipeline === 'sentinel' || analyzingFull ? 'running' : koreaAlerts.some((alert) => alert.total_risk) || fullResult ? 'ready' : 'needs-run',
-      updatedAt: lastPipelineRun.sentinel,
+        : latestReportsByType.final?.filename || `KDCA, OSINT, 해외 보조 신호를 결합한 통합 위험 지역 ${koreaAlerts.filter((alert) => alert.total_risk).length}개.`,
+      status: runningPipeline === 'sentinel' || analyzingFull ? 'running' : latestReportsByType.final || koreaAlerts.some((alert) => alert.total_risk) || fullResult ? 'ready' : 'needs-run',
+      updatedAt: latestReportsByType.final?.generated_at || lastPipelineRun.sentinel,
       epiweek: fullResult?.snapshot_date || currentDate,
-      primaryAction: 'Analyze',
+      primaryAction: '분석',
     },
     {
       key: 'kdca_report',
       lane: 'REPORT',
-      title: 'KDCA weekly report',
-      detail: latestReport?.filename || kdcaReportResult?.filename || '아직 생성된 리포트가 없습니다.',
-      status: runningPipeline === 'kdca_report' || generatingKdcaReport ? 'running' : latestReport || kdcaReportResult ? 'ready' : 'needs-run',
-      updatedAt: latestReport?.generated_at || lastPipelineRun.kdca_report,
-      epiweek: latestReport?.epiweek || currentDate,
-      primaryAction: 'Generate',
+      title: 'KDCA 주간 리포트',
+      detail: latestReportsByType.kdca?.filename || kdcaReportResult?.filename || '아직 생성된 KDCA 주간 리포트가 없습니다.',
+      status: runningPipeline === 'kdca_report' || generatingKdcaReport ? 'running' : latestReportsByType.kdca || kdcaReportResult ? 'ready' : 'needs-run',
+      updatedAt: latestReportsByType.kdca?.generated_at || lastPipelineRun.kdca_report,
+      epiweek: latestReportsByType.kdca?.epiweek || currentDate,
+      primaryAction: '생성',
     },
   ];
+  const pipelineEdges: Array<[OperationKey, OperationKey]> = [
+    ['korea_news', 'osint'],
+    ['trends', 'osint'],
+    ['global', 'osint'],
+    ['kdca_upload', 'kdca_digest'],
+    ['kdca_api', 'kdca_digest'],
+    ['kdca_digest', 'sentinel'],
+    ['osint', 'sentinel'],
+    ['sentinel', 'kdca_report'],
+  ];
+  const operationIndex = new Map(operationRows.map((row, index) => [row.key, index]));
+  const pipelineNodePositions = operationRows.map((row, index) => {
+    const x = 28 + (index % 3) * 32;
+    const y = 24 + Math.floor(index / 3) * 28;
+    return { key: row.key, x, y, row };
+  });
+  const pipelineNodeMap = new Map(pipelineNodePositions.map((node) => [node.key, node]));
   const operationReadyCount = operationRows.filter((row) => row.status === 'ready').length;
+  const mapToolGuides = [
+    {
+      title: 'WHO/국제 뉴스 보조레이어',
+      text: '해외 outbreak, WHO DON, Google News/NewsAPI 신호를 globe에서 확인합니다.',
+      action: () => setIsGlobeExpanded(true),
+      active: isGlobeExpanded,
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="square">
+          <circle cx="12" cy="12" r="9" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <ellipse cx="12" cy="12" rx="4.5" ry="9" />
+        </svg>
+      ),
+    },
+    {
+      title: '레이어 선택',
+      text: 'KDCA, OSINT, 폐하수, 통합 위험도를 켜고 끄며 지도 색의 근거를 비교합니다.',
+      action: () => setShowLayerPanel(true),
+      active: showLayerPanel,
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter">
+          <rect x="4" y="4" width="12" height="12" />
+          <rect x="8" y="8" width="12" height="12" />
+        </svg>
+      ),
+    },
+    {
+      title: 'Query console',
+      text: '현재 snapshot과 원천자료를 기준으로 질문하고, 지역/신호 해석을 빠르게 확인합니다.',
+      action: () => {
+        const btn = document.getElementById('chatbot-toggle-btn');
+        if (btn) (btn as HTMLButtonElement).click();
+      },
+      active: false,
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter">
+          <rect x="3" y="5" width="18" height="14" />
+          <polyline points="7,10 10,12 7,14" />
+          <line x1="12" y1="15" x2="17" y2="15" />
+        </svg>
+      ),
+    },
+    {
+      title: 'Run analyze center',
+      text: '데이터 수집, AI 분석, 리포트 생성을 한 곳에서 실행하고 연결 상태를 봅니다.',
+      action: () => setShowRunPanel(true),
+      active: showRunPanel,
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter">
+          <polyline points="2,12 5,12 7,6 10,18 13,9 15,15 17,12 22,12" />
+        </svg>
+      ),
+    },
+  ];
   const sourceOverviewCards = [
     {
       label: 'OFFICIAL',
@@ -663,6 +750,25 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       {/* === MAP TAB (default) === */}
       {navTab === 'map' && (
         <main className="kas-map-view">
+          <section className="map-system-brief" aria-label="Sentinel Korea structure">
+            <div>
+              <span>Sentinel Korea structure</span>
+              <strong>공식 감시자료, OSINT, 검색 트렌드, 해외 보조 신호를 한 지도에서 합성합니다.</strong>
+              <p>
+                KDCA 주간 감시와 법정감염병 API가 기준선을 만들고, 국내 뉴스/검색 트렌드가 이상 징후를 보조합니다.
+                WHO DON과 해외 뉴스는 국내 경보를 대체하지 않고, 한국 관련성이 있는 외부 outbreak 맥락을 globe에서 따로 보여줍니다.
+              </p>
+            </div>
+            <div className="map-system-brief-flow">
+              <span>KDCA</span>
+              <i />
+              <span>OSINT</span>
+              <i />
+              <span>GLOBAL</span>
+              <i />
+              <span>RISK MAP</span>
+            </div>
+          </section>
           <div className="kas-map-container">
             <KoreaMap
               koreaAlerts={koreaAlerts}
@@ -828,13 +934,47 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   <div className="run-control-error">{operationError}</div>
                 )}
 
+                <div className="run-control-flow" aria-label="Pipeline dependency map">
+                  <svg viewBox="0 0 100 84" role="img">
+                    <defs>
+                      <marker id="run-flow-arrow" markerWidth="5" markerHeight="5" refX="4.2" refY="2.5" orient="auto">
+                        <path d="M0,0 L5,2.5 L0,5 Z" />
+                      </marker>
+                    </defs>
+                    {pipelineEdges.map(([fromKey, toKey]) => {
+                      const from = pipelineNodeMap.get(fromKey);
+                      const to = pipelineNodeMap.get(toKey);
+                      if (!from || !to) return null;
+                      const dx = Math.abs(to.x - from.x);
+                      const midY = from.y + (to.y - from.y) * 0.55;
+                      const d = dx < 4
+                        ? `M${from.x},${from.y + 4} C${from.x - 8},${midY} ${to.x - 8},${midY} ${to.x},${to.y - 4}`
+                        : `M${from.x + 5},${from.y} C${from.x + 13},${midY} ${to.x - 13},${midY} ${to.x - 5},${to.y}`;
+                      return <path className="run-flow-edge" d={d} key={`${fromKey}-${toKey}`} markerEnd="url(#run-flow-arrow)" />;
+                    })}
+                    {pipelineNodePositions.map(({ key, x, y, row }) => (
+                      <g className={`run-flow-node status-${row.status}`} transform={`translate(${x} ${y})`} key={key}>
+                        <circle r="5.5" />
+                        <text y="15">{row.lane}</text>
+                      </g>
+                    ))}
+                  </svg>
+                  <div>
+                    <span>연결 흐름</span>
+                    <strong>원천자료가 OSINT와 KDCA 요약으로 들어가고, Sentinel 통합 분석이 최종 리포트로 이어집니다.</strong>
+                  </div>
+                </div>
+
                 <div className="run-control-list">
-                  {operationRows.map((row) => (
+                  {operationRows.map((row) => {
+                    const upstream = pipelineEdges.filter(([, to]) => to === row.key).map(([from]) => operationRows[operationIndex.get(from) || 0]?.title).filter(Boolean);
+                    const downstream = pipelineEdges.filter(([from]) => from === row.key).map(([, to]) => operationRows[operationIndex.get(to) || 0]?.title).filter(Boolean);
+                    return (
                     <article className={`run-control-row status-${row.status}`} key={row.key}>
                       <div className="run-control-row-main">
                         <div className="run-control-row-top">
                           <span className="run-control-lane">{row.lane}</span>
-                          <span className="run-control-state">{row.status === 'needs-run' ? 'needs run' : row.status}</span>
+                          <span className="run-control-state">{row.status === 'needs-run' ? '실행 필요' : row.status === 'ready' ? '준비됨' : row.status === 'running' ? '실행 중' : '오류'}</span>
                         </div>
                         <strong>{row.title}</strong>
                         <p>{row.detail}</p>
@@ -842,6 +982,12 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                           <span>updated: {formatRunTime(row.updatedAt)}</span>
                           {row.epiweek && <span>target: {row.epiweek}</span>}
                         </div>
+                        {(upstream.length > 0 || downstream.length > 0) && (
+                          <div className="run-control-links">
+                            {upstream.length > 0 && <span>입력: {upstream.join(' + ')}</span>}
+                            {downstream.length > 0 && <span>다음: {downstream.join(' + ')}</span>}
+                          </div>
+                        )}
                       </div>
                       <button
                         className="run-control-action"
@@ -852,7 +998,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                         {runningPipeline === row.key ? 'Running...' : row.primaryAction}
                       </button>
                     </article>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             )}
@@ -873,6 +1020,22 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   <b>날짜 패널</b>은 실제 오늘 날짜가 아니라 백엔드가 보관한 snapshot_date/epiweek를 선택하는 컨트롤입니다.
                   과거 주차를 선택하면 당시 기준의 경보와 설명을 다시 재생합니다.
                 </p>
+              </div>
+              <div className="map-tool-guide-list">
+                {mapToolGuides.map((tool) => (
+                  <button
+                    className={`map-tool-guide ${tool.active ? 'is-active' : ''}`}
+                    key={tool.title}
+                    onClick={tool.action}
+                    type="button"
+                  >
+                    <span className="map-tool-guide-icon">{tool.icon}</span>
+                    <span>
+                      <strong>{tool.title}</strong>
+                      <small>{tool.text}</small>
+                    </span>
+                  </button>
+                ))}
               </div>
               <div className="kas-side-legend-items">
                 <div className="kas-legend-item">
@@ -944,31 +1107,6 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 <button className="panel-close" onClick={() => setIsGlobeExpanded(false)}>×</button>
               </div>
               <div className="expanded-globe-body">
-                <aside className="globe-korea-hud">
-                  <div className="globe-hud-top">
-                    <span className="globe-hud-orbit" />
-                    <button className="globe-hud-close" onClick={() => setIsGlobeExpanded(false)} type="button">x</button>
-                  </div>
-                  <h4>SOUTH KOREA</h4>
-                  <p className="globe-hud-rank">
-                    {topKoreaAlert
-                      ? `#1 watch region: ${topKoreaAlert.region_name_kr}`
-                      : '17개 시도 호흡기 감시 대기'}
-                  </p>
-                  <div className="globe-hud-divider" />
-                  <div className="globe-hud-stats">
-                    <div><span>KDCA</span><strong>{koreaAlerts.length || 17}</strong></div>
-                    <div><span>G3</span><strong>{criticalCount}</strong></div>
-                    <div><span>G2+</span><strong>{elevatedCount}</strong></div>
-                    <div><span>WHO</span><strong>{globalSignals.length}</strong></div>
-                    <div><span>TOP</span><strong>{topKoreaAlert ? topKoreaAlert.score.toFixed(2) : '--'}</strong></div>
-                    <div><span>CONF</span><strong>{topKoreaAlert?.confidence || 'n/a'}</strong></div>
-                  </div>
-                  <p className="globe-hud-note">
-                    국제 arc는 한국 관련성 점수에 따라 빈도, 색상, 속도가 달라집니다.
-                    국내 감시/뉴스/검색을 대체하지 않고, 한국에 영향을 줄 수 있는 외부 맥락을 보조 설명합니다.
-                  </p>
-                </aside>
                 <div className="expanded-globe-container">
                   <MiniGlobe
                     isExpanded={true}
@@ -1111,15 +1249,6 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                     )}
                   </div>
                 </aside>
-              </div>
-              <div className="globe-bottom-lanes">
-                {globeLaneSummary.map((lane) => (
-                  <div className={`globe-lane-tile tone-${lane.tone}`} key={lane.key}>
-                    <span>{lane.value}</span>
-                    <strong>{lane.key}</strong>
-                    <em>{lane.label}</em>
-                  </div>
-                ))}
               </div>
             </div>
           )}
