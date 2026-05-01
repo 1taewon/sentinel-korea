@@ -836,71 +836,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
             </aside>
           )}
 
-          {/* Right-side vertical stack: toolbar + legend */}
+          {/* Right-side vertical stack: legend (toolbar removed — actions live in MAP guide cards) */}
           <div className="kas-right-stack">
-            <div className="kas-right-toolbar">
-              {/* Globe — wireframe meridian/parallel grid */}
-              <button
-                className={`kas-toolbar-btn ${isGlobeExpanded ? 'kas-toolbar-btn--active' : ''}`}
-                onClick={() => setIsGlobeExpanded(v => !v)}
-                title="WHO/국제 뉴스 보조 레이어"
-                type="button"
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="square">
-                  <circle cx="12" cy="12" r="9" />
-                  <line x1="3" y1="12" x2="21" y2="12" />
-                  <line x1="12" y1="3" x2="12" y2="21" />
-                  <ellipse cx="12" cy="12" rx="4.5" ry="9" />
-                  <ellipse cx="12" cy="12" rx="9" ry="4.5" />
-                </svg>
-              </button>
-              {/* Layers — orthographic stacked planes */}
-              <button
-                className={`kas-toolbar-btn ${showLayerPanel ? 'kas-toolbar-btn--active' : ''}`}
-                onClick={() => setShowLayerPanel(v => !v)}
-                title="Layers"
-                type="button"
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter">
-                  <rect x="4" y="4" width="12" height="12" />
-                  <rect x="8" y="8" width="12" height="12" />
-                </svg>
-              </button>
-              {/* Console / terminal prompt */}
-              <button
-                className="kas-toolbar-btn"
-                onClick={() => {
-                  const btn = document.getElementById('chatbot-toggle-btn');
-                  if (btn) btn.click();
-                }}
-                title="Query console"
-                type="button"
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter">
-                  <rect x="3" y="5" width="18" height="14" />
-                  <polyline points="7,10 10,12 7,14" />
-                  <line x1="12" y1="15" x2="17" y2="15" />
-                </svg>
-              </button>
-              {/* Waveform — signal / analysis */}
-              <button
-                className={`kas-toolbar-btn ${showRunPanel ? 'kas-toolbar-btn--active' : ''}`}
-                onClick={() => setShowRunPanel((v) => !v)}
-                title="Run analyze center"
-                type="button"
-              >
-                {runningPipeline ? (
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="square" className="kas-toolbar-spin">
-                    <path d="M21 12a9 9 0 1 1-6.2-8.55" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter">
-                    <polyline points="2,12 5,12 7,6 10,18 13,9 15,15 17,12 22,12" />
-                  </svg>
-                )}
-              </button>
-            </div>
-
             {showRunPanel && (
               <section className="run-control-panel" aria-label="Run analyze status center">
                 <div className="run-control-header">
@@ -1037,28 +974,30 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   </button>
                 ))}
               </div>
-              <div className="kas-side-legend-items">
-                <div className="kas-legend-item">
-                  <span className="kas-legend-dot kas-level-critical" />
-                  <div><strong>G3 위험</strong><small>즉시 원인 확인과 대응 검토</small></div>
-                  <span className="kas-legend-count">{criticalCount}</span>
-                </div>
-                <div className="kas-legend-item">
-                  <span className="kas-legend-dot kas-level-high" />
-                  <div><strong>G2 경계</strong><small>복수 신호 상승, 집중 모니터링</small></div>
-                  <span className="kas-legend-count">{elevatedCount - criticalCount}</span>
-                </div>
-                <div className="kas-legend-item">
-                  <span className="kas-legend-dot kas-level-moderate" />
-                  <div><strong>G1 주의</strong><small>초기 변화 가능성, 추세 확인</small></div>
-                  <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G1').length}</span>
-                </div>
-                <div className="kas-legend-item">
-                  <span className="kas-legend-dot kas-level-low" />
-                  <div><strong>G0 안정</strong><small>기준선 범위, 정기 감시 유지</small></div>
-                  <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G0').length}</span>
-                </div>
-              </div>
+            </div>
+          </div>
+
+          {/* Bottom horizontal alert legend (moved out of right stack so it doesn't get cut off) */}
+          <div className="kas-bottom-legend">
+            <div className="kas-legend-item">
+              <span className="kas-legend-dot kas-level-critical" />
+              <div><strong>G3 위험</strong><small>즉시 원인 확인과 대응 검토</small></div>
+              <span className="kas-legend-count">{criticalCount}</span>
+            </div>
+            <div className="kas-legend-item">
+              <span className="kas-legend-dot kas-level-high" />
+              <div><strong>G2 경계</strong><small>복수 신호 상승, 집중 모니터링</small></div>
+              <span className="kas-legend-count">{elevatedCount - criticalCount}</span>
+            </div>
+            <div className="kas-legend-item">
+              <span className="kas-legend-dot kas-level-moderate" />
+              <div><strong>G1 주의</strong><small>초기 변화 가능성, 추세 확인</small></div>
+              <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G1').length}</span>
+            </div>
+            <div className="kas-legend-item">
+              <span className="kas-legend-dot kas-level-low" />
+              <div><strong>G0 안정</strong><small>기준선 범위, 정기 감시 유지</small></div>
+              <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G0').length}</span>
             </div>
           </div>
 
