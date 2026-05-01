@@ -45,7 +45,7 @@ async def upload_kdca_file(file: UploadFile = File(...)) -> dict[str, Any]:
     if not file.filename:
         raise HTTPException(status_code=400, detail="파일명이 없습니다.")
 
-    allowed_ext = {".csv", ".xlsx", ".xls"}
+    allowed_ext = {".csv", ".xlsx"}
     ext = Path(file.filename).suffix.lower()
     if ext not in allowed_ext:
         raise HTTPException(status_code=400, detail=f"지원하지 않는 형식입니다: {ext}")

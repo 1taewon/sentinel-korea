@@ -433,7 +433,7 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".csv,.xlsx,.xls"
+                  accept=".csv,.xlsx"
                   onChange={onFileChange}
                   style={{ display: 'none' }}
                   id="kdca-file-input"
