@@ -1,0 +1,328 @@
+{
+  "status": "ok",
+  "source_type": "influenza",
+  "label": "인플루엔자 의사환자분율",
+  "filename": "인플루엔자 선택됨 - 17wk.xlsx",
+  "scope": "national_weekly",
+  "completed_records": 34,
+  "pending_records": 1,
+  "latest_completed_epiweek": "2026-W17",
+  "latest_completed_period": "2026년 17주",
+  "records": [
+    {
+      "year": 2025,
+      "week": 36,
+      "epiweek": "2025-W36",
+      "date": "2025-09-07",
+      "value": 6.6,
+      "ili_index": 6.6,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 37,
+      "epiweek": "2025-W37",
+      "date": "2025-09-14",
+      "value": 6.7,
+      "ili_index": 6.7,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 38,
+      "epiweek": "2025-W38",
+      "date": "2025-09-21",
+      "value": 8.0,
+      "ili_index": 8.0,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 39,
+      "epiweek": "2025-W39",
+      "date": "2025-09-28",
+      "value": 9.0,
+      "ili_index": 9.0,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 40,
+      "epiweek": "2025-W40",
+      "date": "2025-10-05",
+      "value": 12.4,
+      "ili_index": 12.4,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 41,
+      "epiweek": "2025-W41",
+      "date": "2025-10-12",
+      "value": 14.4,
+      "ili_index": 14.4,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 42,
+      "epiweek": "2025-W42",
+      "date": "2025-10-19",
+      "value": 7.9,
+      "ili_index": 7.9,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 43,
+      "epiweek": "2025-W43",
+      "date": "2025-10-26",
+      "value": 13.6,
+      "ili_index": 13.6,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 44,
+      "epiweek": "2025-W44",
+      "date": "2025-11-02",
+      "value": 22.8,
+      "ili_index": 22.8,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 45,
+      "epiweek": "2025-W45",
+      "date": "2025-11-09",
+      "value": 50.7,
+      "ili_index": 50.7,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 46,
+      "epiweek": "2025-W46",
+      "date": "2025-11-16",
+      "value": 66.3,
+      "ili_index": 66.3,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 47,
+      "epiweek": "2025-W47",
+      "date": "2025-11-23",
+      "value": 70.9,
+      "ili_index": 70.9,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 48,
+      "epiweek": "2025-W48",
+      "date": "2025-11-30",
+      "value": 69.4,
+      "ili_index": 69.4,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 49,
+      "epiweek": "2025-W49",
+      "date": "2025-12-07",
+      "value": 56.7,
+      "ili_index": 56.7,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 50,
+      "epiweek": "2025-W50",
+      "date": "2025-12-14",
+      "value": 48.4,
+      "ili_index": 48.4,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 51,
+      "epiweek": "2025-W51",
+      "date": "2025-12-21",
+      "value": 39.1,
+      "ili_index": 39.1,
+      "pending": false
+    },
+    {
+      "year": 2025,
+      "week": 52,
+      "epiweek": "2025-W52",
+      "date": "2025-12-28",
+      "value": 37.5,
+      "ili_index": 37.5,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 1,
+      "epiweek": "2026-W01",
+      "date": "2026-01-04",
+      "value": 36.6,
+      "ili_index": 36.6,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 2,
+      "epiweek": "2026-W02",
+      "date": "2026-01-11",
+      "value": 40.9,
+      "ili_index": 40.9,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 3,
+      "epiweek": "2026-W03",
+      "date": "2026-01-18",
+      "value": 44.9,
+      "ili_index": 44.9,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 4,
+      "epiweek": "2026-W04",
+      "date": "2026-01-25",
+      "value": 47.7,
+      "ili_index": 47.7,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 5,
+      "epiweek": "2026-W05",
+      "date": "2026-02-01",
+      "value": 47.5,
+      "ili_index": 47.5,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 6,
+      "epiweek": "2026-W06",
+      "date": "2026-02-08",
+      "value": 52.6,
+      "ili_index": 52.6,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 7,
+      "epiweek": "2026-W07",
+      "date": "2026-02-15",
+      "value": 45.9,
+      "ili_index": 45.9,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 8,
+      "epiweek": "2026-W08",
+      "date": "2026-02-22",
+      "value": 44.2,
+      "ili_index": 44.2,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 9,
+      "epiweek": "2026-W09",
+      "date": "2026-03-01",
+      "value": 22.3,
+      "ili_index": 22.3,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 10,
+      "epiweek": "2026-W10",
+      "date": "2026-03-08",
+      "value": 17.4,
+      "ili_index": 17.4,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 11,
+      "epiweek": "2026-W11",
+      "date": "2026-03-15",
+      "value": 15.8,
+      "ili_index": 15.8,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 12,
+      "epiweek": "2026-W12",
+      "date": "2026-03-22",
+      "value": 17.6,
+      "ili_index": 17.6,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 13,
+      "epiweek": "2026-W13",
+      "date": "2026-03-29",
+      "value": 16.3,
+      "ili_index": 16.3,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 14,
+      "epiweek": "2026-W14",
+      "date": "2026-04-05",
+      "value": 14.5,
+      "ili_index": 14.5,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 15,
+      "epiweek": "2026-W15",
+      "date": "2026-04-12",
+      "value": 10.8,
+      "ili_index": 10.8,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 16,
+      "epiweek": "2026-W16",
+      "date": "2026-04-19",
+      "value": 10.1,
+      "ili_index": 10.1,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 17,
+      "epiweek": "2026-W17",
+      "date": "2026-04-26",
+      "value": 6.9,
+      "ili_index": 6.9,
+      "pending": false
+    },
+    {
+      "year": 2026,
+      "week": 18,
+      "epiweek": "2026-W18",
+      "date": "2026-05-03",
+      "value": null,
+      "ili_index": null,
+      "pending": true
+    }
+  ]
+}

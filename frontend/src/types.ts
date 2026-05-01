@@ -63,7 +63,7 @@ export type KoreaAlert = {
 
 export type GlobalSignal = {
   id: string;
-  source: 'healthmap' | 'promed' | 'google_trends';
+  source: 'healthmap' | 'promed' | 'google_trends' | 'kdca_global_report' | string;
   title?: string;
   keyword?: string;
   lat: number;

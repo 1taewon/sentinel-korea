@@ -10,10 +10,12 @@
     "level": "G2",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.2556,
-      "influenza_like": 0.825,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 1.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 2,
     "confidence": "High Confidence",
@@ -31,6 +33,12 @@
       "score": 0.7,
       "level": "G2",
       "reason": "전국적 인플루엔자 유행(G3) 속 하수 감시 G2 유지. 봄철 대기오염 및 황사로 인한 호흡기 기저질환자 증상 악화 우려."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -44,10 +52,12 @@
     "level": "G1",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.525,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.75,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 2,
     "confidence": "Watch",
@@ -63,6 +73,12 @@
       "score": 0.65,
       "level": "G2",
       "reason": "하수 감시상 인플루엔자가 G3에서 G2로 다소 완화되었으나, 여전히 높은 바이러스 검출률을 보임."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -76,10 +92,12 @@
     "level": "G2",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.9,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 1.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 2,
     "confidence": "High Confidence",
@@ -98,6 +116,12 @@
       "score": 0.45,
       "level": "G1",
       "reason": "하수 감시상 코로나19 및 인플루엔자가 G1 수준으로 안정화되었으나 전국적 유행의 영향권에 있음."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -111,10 +135,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.75,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 1,
     "confidence": "High Confidence",
@@ -132,6 +158,12 @@
       "score": 0.65,
       "level": "G2",
       "reason": "수도권 인구 밀집 구역으로 서울/경기권의 인플루엔자 확산세와 유사한 궤적을 보임."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -145,10 +177,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.3,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -164,6 +198,12 @@
       "score": 0.55,
       "level": "G2",
       "reason": "전국 평균 수준의 인플루엔자 의사환자 발생 및 봄철 알레르기 복합 요인 작용."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -177,10 +217,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.45,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -196,6 +238,12 @@
       "score": 0.55,
       "level": "G2",
       "reason": "KDCA 전국 지표 상승에 동조하며 호흡기 증상 발생 빈도 지속."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -209,10 +257,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.33,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -228,6 +278,12 @@
       "score": 0.5,
       "level": "G2",
       "reason": "인플루엔자 확산세가 유지되고 있으며, 영유아 중심의 호흡기 증상 발현 증가."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -241,10 +297,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.27,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -260,6 +318,12 @@
       "score": 0.5,
       "level": "G2",
       "reason": "영유아 및 아동 인구 비율이 높아 알레르기 및 호흡기 감염병 동시 유행에 취약함."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -273,10 +337,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.87,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 1,
     "confidence": "High Confidence",
@@ -294,6 +360,12 @@
       "score": 0.7,
       "level": "G2",
       "reason": "전국 최고 수준의 인플루엔자 발생 밀도 및 잦은 이동으로 인한 바이러스 확산세 지속."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -307,10 +379,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.42,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -326,6 +400,12 @@
       "score": 0.4,
       "level": "G1",
       "reason": "인구 밀집도가 낮아 타 지역 대비 확산세는 완만하나 검색 트렌드상 기침/발열 발생이 꾸준함."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -339,10 +419,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.375,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -358,6 +440,12 @@
       "score": 0.5,
       "level": "G2",
       "reason": "전국 G3 경보 발령에 따른 기저 확산세 및 봄철 미세먼지 영향."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -371,10 +459,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.42,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -390,6 +480,12 @@
       "score": 0.5,
       "level": "G2",
       "reason": "인접 지역 이동에 따른 호흡기 감염병 전파 및 지역 내 감염 지속."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -403,10 +499,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.33,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -422,6 +520,12 @@
       "score": 0.45,
       "level": "G1",
       "reason": "감염병 지표가 상대적으로 안정세를 보이나, 호흡기 검색량은 소폭 유지 중."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -435,10 +539,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.3,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -454,6 +560,12 @@
       "score": 0.45,
       "level": "G1",
       "reason": "검색 트렌드 하락세와 일치하게 지역 내 뚜렷한 급증 신호는 관찰되지 않음."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -467,10 +579,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.6,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 1,
     "confidence": "Low Confidence",
@@ -486,6 +600,12 @@
       "score": 0.45,
       "level": "G1",
       "reason": "대구 지역의 안정세(G1)와 유사하게 전반적인 바이러스 검출률이 비교적 낮음."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -499,10 +619,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.51,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 1,
     "confidence": "Watch",
@@ -518,6 +640,12 @@
       "score": 0.55,
       "level": "G2",
       "reason": "부산 지역의 인플루엔자 유행(G2~G3) 영향권으로 지속적인 모니터링 필요."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -531,10 +659,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.225,
+      "notifiable_disease": 0.7963,
+      "influenza_like": 0.0653,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.709,
+      "sari_influenza": 0.0423
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -550,6 +680,12 @@
       "score": 0.4,
       "level": "G1",
       "reason": "독립된 권역으로 급성 유행 신호는 약하나, 봄철 관광객 증가로 인한 유입 리스크 존재."
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   }
 ]

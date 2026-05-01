@@ -10,10 +10,12 @@
     "level": "G2",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.2556,
-      "influenza_like": 0.825,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 1.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 2,
     "confidence": "High Confidence",
@@ -26,6 +28,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -39,10 +47,12 @@
     "level": "G1",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.525,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.75,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 2,
     "confidence": "Watch",
@@ -53,6 +63,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -66,10 +82,12 @@
     "level": "G2",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.9,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 1.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 2,
     "confidence": "High Confidence",
@@ -83,6 +101,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -96,10 +120,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.75,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 1,
     "confidence": "High Confidence",
@@ -112,6 +138,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -125,10 +157,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.3,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -139,6 +173,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -152,10 +192,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.45,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -166,6 +208,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -179,10 +227,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.33,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -193,6 +243,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -206,10 +262,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.27,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -220,6 +278,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -233,10 +297,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.87,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 1,
     "confidence": "High Confidence",
@@ -249,6 +315,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -262,10 +334,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.42,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -276,6 +350,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -289,10 +369,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.375,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -303,6 +385,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -316,10 +404,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.42,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -330,6 +420,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -343,10 +439,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.33,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -357,6 +455,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -370,10 +474,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.3,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -384,6 +490,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -397,10 +509,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.6,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 1,
     "confidence": "Low Confidence",
@@ -411,6 +525,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -424,10 +544,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.51,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 1,
     "confidence": "Watch",
@@ -438,6 +560,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -451,10 +579,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.0,
-      "influenza_like": 0.225,
+      "notifiable_disease": 0.989,
+      "influenza_like": 0.1229,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 1.0,
+      "sari_influenza": 0.1056
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -465,6 +595,12 @@
       "score": 0.1,
       "level": "G0",
       "reason": "지역 내 감염병 유행 보도 없음, 호흡기 관련 검색 트렌드 전반적 안정/감소세"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   }
 ]

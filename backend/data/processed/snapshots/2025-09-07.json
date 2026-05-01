@@ -13,7 +13,9 @@
       "notifiable_disease": 0.2556,
       "influenza_like": 0.0,
       "wastewater_pathogen": 1.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 2,
     "confidence": "High Confidence",
@@ -21,7 +23,12 @@
       "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
       "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
       "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "26",
@@ -37,13 +44,20 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.75,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 2,
     "confidence": "Watch",
     "explanation": [
       "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "27",
@@ -59,7 +73,9 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 1.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 2,
     "confidence": "High Confidence",
@@ -68,7 +84,12 @@
       "인플루엔자 유사질환 활동 상승 (ILI activity above baseline).",
       "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
       "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "28",
@@ -84,7 +105,9 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 1,
     "confidence": "High Confidence",
@@ -92,7 +115,12 @@
       "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
       "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
       "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "29",
@@ -108,13 +136,20 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 0,
     "confidence": "Watch",
     "explanation": [
       "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "30",
@@ -130,13 +165,20 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 0,
     "confidence": "Watch",
     "explanation": [
       "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "31",
@@ -152,13 +194,20 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 0,
     "confidence": "Watch",
     "explanation": [
       "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "36",
@@ -174,13 +223,20 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 0,
     "confidence": "Watch",
     "explanation": [
       "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "41",
@@ -196,7 +252,9 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 1,
     "confidence": "High Confidence",
@@ -204,7 +262,12 @@
       "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
       "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
       "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "42",
@@ -220,13 +283,20 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 0,
     "confidence": "Watch",
     "explanation": [
       "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "43",
@@ -242,13 +312,20 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 0,
     "confidence": "Watch",
     "explanation": [
       "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "44",
@@ -264,13 +341,20 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 0,
     "confidence": "Watch",
     "explanation": [
       "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "45",
@@ -286,13 +370,20 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 0,
     "confidence": "Watch",
     "explanation": [
       "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "46",
@@ -308,13 +399,20 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 0,
     "confidence": "Watch",
     "explanation": [
       "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "47",
@@ -330,13 +428,20 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 1,
     "confidence": "Low Confidence",
     "explanation": [
       "폐하수 병원체 농도 계절 평균 근접 (Wastewater pathogen near seasonal threshold)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "48",
@@ -352,13 +457,20 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 1,
     "confidence": "Watch",
     "explanation": [
       "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   },
   {
     "region_id": "50",
@@ -374,12 +486,19 @@
       "notifiable_disease": 0.0,
       "influenza_like": 0.0,
       "wastewater_pathogen": 0.0,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.3507,
+      "sari_influenza": 0.0493
     },
     "active_sources": 0,
     "confidence": "Watch",
     "explanation": [
       "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
-    ]
+    ],
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
   }
 ]

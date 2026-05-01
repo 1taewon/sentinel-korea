@@ -188,7 +188,7 @@ def load_snapshot(requested: str | None = None) -> list[dict[str, Any]]:
 def load_global_signals() -> list[dict[str, Any]]:
     """WHO DON + 글로벌 뉴스 로드. 실제 데이터 없으면 mock으로 fallback."""
     results: list[dict] = []
-    for fname in ["global_who_don.json", "global_news.json"]:
+    for fname in ["global_who_don.json", "global_news.json", "global_kdca_outbreaks.json"]:
         p = PROCESSED_DIR / fname
         if p.exists():
             results.extend(load_json(p))

@@ -52,7 +52,7 @@ async def upload_kdca_file(file: UploadFile = File(...)) -> dict[str, Any]:
     if not file.filename:
         raise HTTPException(status_code=400, detail="파일명이 없습니다.")
 
-    allowed_ext = {".csv", ".xlsx"}
+    allowed_ext = {".csv", ".xlsx", ".pdf"}
     ext = Path(file.filename).suffix.lower()
     if ext not in allowed_ext:
         raise HTTPException(status_code=400, detail=f"지원하지 않는 형식입니다: {ext}")
@@ -76,7 +76,11 @@ async def upload_kdca_file(file: UploadFile = File(...)) -> dict[str, Any]:
     if not file_type:
         raise HTTPException(
             status_code=400,
-            detail=f"파일명에서 종류를 감지할 수 없습니다. '급성호흡기감염증', '인플루엔자', '중증급성호흡기' 등의 키워드를 포함해주세요."
+            detail=(
+                "파일명에서 종류를 감지할 수 없습니다. "
+                "'급성호흡기감염증', '인플루엔자', '중증급성호흡기', "
+                "'하수기반', '표본감시 주간소식지', '전 세계 감염병 발생 동향' 키워드를 포함해주세요."
+            )
         )
 
     result = process_file(Path(file.filename), content_bytes=content_bytes)

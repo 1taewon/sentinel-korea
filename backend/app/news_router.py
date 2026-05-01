@@ -23,7 +23,7 @@ def _load(path: Path) -> Any:
 @router.get("/signals/global")
 async def signals_global() -> list[dict]:
     results = []
-    for fname in ["global_who_don.json", "global_news.json"]:
+    for fname in ["global_who_don.json", "global_news.json", "global_kdca_outbreaks.json"]:
         p = PROCESSED_DIR / fname
         if p.exists():
             results.extend(_load(p))
@@ -46,6 +46,7 @@ async def news_global(limit: int = 30) -> list[dict]:
     # WHO DON 먼저, 그 다음 글로벌 뉴스 — 날짜 내림차순 정렬
     who_don = _load(PROCESSED_DIR / "global_who_don.json")
     global_news = _load(PROCESSED_DIR / "global_news.json")
-    results = who_don + global_news
+    kdca_outbreaks = _load(PROCESSED_DIR / "global_kdca_outbreaks.json")
+    results = who_don + global_news + kdca_outbreaks
     results.sort(key=lambda x: x.get("date", ""), reverse=True)
     return results[:limit]

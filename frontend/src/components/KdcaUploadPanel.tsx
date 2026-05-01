@@ -433,7 +433,7 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".csv,.xlsx"
+                  accept=".csv,.xlsx,.pdf"
                   onChange={onFileChange}
                   style={{ display: 'none' }}
                   id="kdca-file-input"
@@ -448,9 +448,10 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
                     <div className="kdca-dropzone-text">
                       Drop KDCA file here or click to upload
                     </div>
-                    <div className="kdca-dropzone-hint">CSV, XLSX supported</div>
+                    <div className="kdca-dropzone-hint">CSV, XLSX, PDF supported</div>
+                    <div className="kdca-dropzone-hint">PDF supported: 하수기반 / 표본감시 주간소식지 / 전 세계 감염병 발생 동향</div>
                     <div className="kdca-dropzone-hint" style={{ marginTop: 4, color: '#6366f1' }}>
-                      Filename must contain: 급성호흡기, 인플루엔자, or 중증급성
+                      Filename must contain: 급성호흡기, 인플루엔자, 중증급성, 하수기반, 표본감시, or 전 세계 감염병
                     </div>
                   </>
                 )}

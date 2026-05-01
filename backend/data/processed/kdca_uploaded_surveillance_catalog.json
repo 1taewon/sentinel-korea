@@ -1,0 +1,38 @@
+{
+  "status": "ok",
+  "sources": {
+    "influenza": {
+      "label": "인플루엔자 의사환자분율",
+      "filename": "인플루엔자 선택됨 - 17wk.xlsx",
+      "output_file": "kdca_influenza_ili_weekly.json",
+      "records": 35,
+      "completed_records": 34,
+      "latest_completed_epiweek": "2026-W17"
+    },
+    "ari": {
+      "label": "급성호흡기감염증 전체",
+      "filename": "급성호흡기감염증 선택됨- 전체[전체] - 17wk.xlsx",
+      "output_file": "kdca_ari_weekly.json",
+      "records": 18,
+      "completed_records": 17,
+      "latest_completed_epiweek": "2026-W17"
+    },
+    "sari_pneumonia": {
+      "label": "중증급성호흡기감염증 중 폐렴 환자",
+      "filename": "중증급성호흡기감염증 선택됨 환자 중 폐렴 환자 현황 - 17wk.xlsx",
+      "output_file": "kdca_sari_pneumonia_weekly.json",
+      "records": 35,
+      "completed_records": 34,
+      "latest_completed_epiweek": "2026-W17"
+    },
+    "sari_influenza": {
+      "label": "중증급성호흡기감염증 중 인플루엔자 환자",
+      "filename": "중증급성호흡기감염증 선택됨 환자 중 인플루엔자 환자 현황 - 17wk.xlsx",
+      "output_file": "kdca_sari_influenza_weekly.json",
+      "records": 35,
+      "completed_records": 34,
+      "latest_completed_epiweek": "2026-W17"
+    }
+  },
+  "updated_at": "2026-05-01T03:40:15.450918"
+}

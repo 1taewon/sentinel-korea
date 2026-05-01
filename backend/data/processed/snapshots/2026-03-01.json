@@ -10,10 +10,12 @@
     "level": "G1",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.4559,
-      "influenza_like": 0.2428,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.35,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 3,
     "confidence": "High Confidence",
@@ -40,6 +42,12 @@
         "level": "G1",
         "score": 0.35
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -53,10 +61,12 @@
     "level": "G1",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.4788,
-      "influenza_like": 0.2105,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.35,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -81,6 +91,12 @@
         "level": "G1",
         "score": 0.35
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -94,10 +110,12 @@
     "level": "G1",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.3936,
-      "influenza_like": 0.2408,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.35,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 3,
     "confidence": "High Confidence",
@@ -125,6 +143,12 @@
         "level": "G1",
         "score": 0.35
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -138,10 +162,12 @@
     "level": "G2",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.444,
-      "influenza_like": 0.2371,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.65,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 3,
     "confidence": "High Confidence",
@@ -168,6 +194,12 @@
         "level": "G2",
         "score": 0.65
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -181,10 +213,12 @@
     "level": "G1",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.3959,
-      "influenza_like": 0.2537,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.35,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -209,6 +243,12 @@
         "level": "G1",
         "score": 0.35
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -222,10 +262,12 @@
     "level": "G2",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.4429,
-      "influenza_like": 0.2611,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.65,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -250,6 +292,12 @@
         "level": "G2",
         "score": 0.65
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -263,10 +311,12 @@
     "level": "G2",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.4944,
-      "influenza_like": 0.2285,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.65,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -291,6 +341,12 @@
         "level": "G2",
         "score": 0.65
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -304,10 +360,12 @@
     "level": "G1",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.4571,
-      "influenza_like": 0.2395,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.35,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -332,6 +390,12 @@
         "level": "G1",
         "score": 0.35
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -345,10 +409,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.494,
-      "influenza_like": 0.2146,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.1,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 3,
     "confidence": "High Confidence",
@@ -375,6 +441,12 @@
         "level": "G0",
         "score": 0.1
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -388,10 +460,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.4246,
-      "influenza_like": 0.2188,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.1,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -416,6 +490,12 @@
         "level": "G0",
         "score": 0.1
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -429,10 +509,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.407,
-      "influenza_like": 0.2217,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.1,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -457,6 +539,12 @@
         "level": "G0",
         "score": 0.1
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -470,10 +558,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.3765,
-      "influenza_like": 0.2317,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.1,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -498,6 +588,12 @@
         "level": "G0",
         "score": 0.1
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -511,10 +607,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.3845,
-      "influenza_like": 0.2078,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.1,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -539,6 +637,12 @@
         "level": "G0",
         "score": 0.1
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -552,10 +656,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.4055,
-      "influenza_like": 0.2634,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.1,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -580,6 +686,12 @@
         "level": "G0",
         "score": 0.1
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -593,10 +705,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.4127,
-      "influenza_like": 0.2213,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.1,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 1,
     "confidence": "Low Confidence",
@@ -621,6 +735,12 @@
         "level": "G0",
         "score": 0.1
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -634,10 +754,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.4191,
-      "influenza_like": 0.2492,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.1,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -662,6 +784,12 @@
         "level": "G0",
         "score": 0.1
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   },
   {
@@ -675,10 +803,12 @@
     "level": "G0",
     "source_type": "korea_deep",
     "signals": {
-      "notifiable_disease": 0.3915,
-      "influenza_like": 0.2401,
+      "notifiable_disease": 0.2495,
+      "influenza_like": 0.2442,
       "wastewater_pathogen": 0.1,
-      "clinical_cxr_aware": null
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.597,
+      "sari_influenza": 0.1479
     },
     "active_sources": 0,
     "confidence": "Watch",
@@ -703,6 +833,12 @@
         "level": "G0",
         "score": 0.1
       }
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
     }
   }
 ]
