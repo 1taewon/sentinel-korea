@@ -44,21 +44,31 @@ API_KEY = os.getenv(
 
 PROCESSED_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
 
-# Exact disease allow-list. This avoids treating Hib as seasonal influenza and
-# keeps the API lane as a respiratory/notifiable corroboration source.
+# Exact respiratory-related allow-list. This avoids treating every notifiable
+# disease as a Sentinel respiratory signal while still preserving all raw rows
+# in a separate "all notifiable" artifact.
 RESPIRATORY_NOTIFIABLE_DISEASES: dict[str, dict[str, Any]] = {
-    "중증급성호흡기증후군(SARS)": {"category": "emerging_respiratory", "weight": 1.0},
-    "중동호흡기증후군(MERS)": {"category": "emerging_respiratory", "weight": 1.0},
-    "동물인플루엔자 인체감염증": {"category": "zoonotic_influenza", "weight": 1.0},
-    "신종인플루엔자": {"category": "novel_influenza", "weight": 1.0},
-    "디프테리아": {"category": "respiratory_notifiable", "weight": 0.55},
-    "백일해": {"category": "respiratory_notifiable", "weight": 0.75},
-    "b형헤모필루스인플루엔자": {"category": "respiratory_bacterial", "weight": 0.45},
-    "폐렴구균 감염증": {"category": "respiratory_bacterial", "weight": 0.65},
-    "레지오넬라증": {"category": "respiratory_bacterial", "weight": 0.65},
-    "홍역": {"category": "airborne_notifiable", "weight": 0.45},
-    "성홍열": {"category": "respiratory_related", "weight": 0.35},
+    "중증급성호흡기증후군(SARS)": {"category": "emerging_respiratory_virus", "weight": 1.0, "is_respiratory_virus": True},
+    "중동호흡기증후군(MERS)": {"category": "emerging_respiratory_virus", "weight": 1.0, "is_respiratory_virus": True},
+    "동물인플루엔자 인체감염증": {"category": "zoonotic_influenza", "weight": 1.0, "is_respiratory_virus": True},
+    "신종인플루엔자": {"category": "novel_influenza", "weight": 1.0, "is_respiratory_virus": True},
+    "인플루엔자": {"category": "seasonal_influenza", "weight": 0.8, "is_respiratory_virus": True},
+    "코로나바이러스감염증-19": {"category": "covid19", "weight": 0.85, "is_respiratory_virus": True},
+    "홍역": {"category": "airborne_viral", "weight": 0.45, "is_respiratory_virus": True},
+    "디프테리아": {"category": "respiratory_notifiable", "weight": 0.55, "is_respiratory_virus": False},
+    "백일해": {"category": "respiratory_notifiable", "weight": 0.75, "is_respiratory_virus": False},
+    "b형헤모필루스인플루엔자": {"category": "respiratory_bacterial", "weight": 0.45, "is_respiratory_virus": False},
+    "폐렴구균 감염증": {"category": "respiratory_bacterial", "weight": 0.65, "is_respiratory_virus": False},
+    "레지오넬라증": {"category": "respiratory_bacterial", "weight": 0.65, "is_respiratory_virus": False},
+    "성홍열": {"category": "respiratory_related", "weight": 0.35, "is_respiratory_virus": False},
+    "급성호흡기감염증": {"category": "respiratory_syndrome", "weight": 0.7, "is_respiratory_virus": False},
 }
+
+NOTIFIABLE_DEFINITION = (
+    "법정감염병은 감염병의 예방 및 관리에 관한 법률에 따라 신고·감시 대상이 되는 감염병입니다. "
+    "Sentinel은 KDCA EIDAPI PeriodRegion의 weekly resultVal, dmstcVal, outnatnVal을 원자료로 보관하고, "
+    "그중 호흡기 관련 질환과 호흡기/공기전파 바이러스 질환을 별도 subset으로 파싱합니다."
+)
 
 
 def _parse_value(value: Any) -> float | None:
@@ -77,6 +87,23 @@ def _parse_period(period: str) -> tuple[int | None, int | None, str | None]:
     year = int(match.group(1))
     week = int(match.group(2))
     return year, week, f"{year}-W{week:02d}"
+
+
+def _classify_disease(disease: str) -> dict[str, Any]:
+    meta = RESPIRATORY_NOTIFIABLE_DISEASES.get(disease)
+    if not meta:
+        return {
+            "category": "other_notifiable",
+            "weight": 0.0,
+            "is_respiratory_related": False,
+            "is_respiratory_virus": False,
+        }
+    return {
+        "category": meta["category"],
+        "weight": meta["weight"],
+        "is_respiratory_related": True,
+        "is_respiratory_virus": bool(meta.get("is_respiratory_virus")),
+    }
 
 
 def _items_from_response(data: dict[str, Any]) -> tuple[list[dict[str, Any]], int]:
@@ -123,13 +150,13 @@ def fetch_period_endpoint(endpoint: str, year: int, page_size: int = 1000) -> li
     return all_items[:total]
 
 
-def _normalize_period_region(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _normalize_period_region(items: list[dict[str, Any]], respiratory_only: bool = False) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     updated_at = datetime.now(timezone.utc).isoformat()
     for item in items:
         disease = item.get("icdNm") or ""
-        meta = RESPIRATORY_NOTIFIABLE_DISEASES.get(disease)
-        if not meta:
+        classification = _classify_disease(disease)
+        if respiratory_only and not classification["is_respiratory_related"]:
             continue
 
         year, week, epiweek = _parse_period(item.get("period", ""))
@@ -149,8 +176,10 @@ def _normalize_period_region(items: list[dict[str, Any]]) -> list[dict[str, Any]
                 "epiweek": epiweek,
                 "icd_group": item.get("icdGroupNm"),
                 "disease": disease,
-                "category": meta["category"],
-                "weight": meta["weight"],
+                "category": classification["category"],
+                "weight": classification["weight"],
+                "is_respiratory_related": classification["is_respiratory_related"],
+                "is_respiratory_virus": classification["is_respiratory_virus"],
                 "raw_value": total,
                 "domestic_value": domestic,
                 "imported_value": imported,
@@ -161,13 +190,13 @@ def _normalize_period_region(items: list[dict[str, Any]]) -> list[dict[str, Any]
     return records
 
 
-def _normalize_period_basic(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _normalize_period_basic(items: list[dict[str, Any]], respiratory_only: bool = False) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     updated_at = datetime.now(timezone.utc).isoformat()
     for item in items:
         disease = item.get("icdNm") or ""
-        meta = RESPIRATORY_NOTIFIABLE_DISEASES.get(disease)
-        if not meta:
+        classification = _classify_disease(disease)
+        if respiratory_only and not classification["is_respiratory_related"]:
             continue
 
         year, week, epiweek = _parse_period(item.get("period", ""))
@@ -182,7 +211,9 @@ def _normalize_period_basic(items: list[dict[str, Any]]) -> list[dict[str, Any]]
                 "epiweek": epiweek,
                 "icd_group": item.get("icdGroupNm"),
                 "disease": disease,
-                "category": meta["category"],
+                "category": classification["category"],
+                "is_respiratory_related": classification["is_respiratory_related"],
+                "is_respiratory_virus": classification["is_respiratory_virus"],
                 "raw_value": _parse_value(item.get("resultVal")) or 0.0,
                 "unit": "weekly reported cases",
                 "updated_at": updated_at,
@@ -222,6 +253,8 @@ def summarize_period_region(records: list[dict[str, Any]]) -> dict[str, Any]:
             slot["diseases"].append(
                 {
                     "disease": record.get("disease"),
+                    "category": record.get("category"),
+                    "is_respiratory_virus": record.get("is_respiratory_virus", False),
                     "total": total,
                     "domestic": domestic,
                     "imported": imported,
@@ -241,6 +274,7 @@ def summarize_period_region(records: list[dict[str, Any]]) -> dict[str, Any]:
         row["imported"] = round(float(row["imported"]), 3)
         row["weighted_total"] = round(float(row["weighted_total"]), 3)
         row["normalized_score"] = round(float(row["weighted_total"]) / max_weighted, 4) if max_weighted else 0.0
+        row["diseases"] = sorted(row["diseases"], key=lambda disease: disease["total"], reverse=True)
 
     latest = weekly_rows[-1] if weekly_rows else {}
     return {
@@ -287,10 +321,22 @@ def validate_against_period_basic(
     }
 
 
-def save_outputs(year: int, period_region_records: list[dict[str, Any]], period_basic_records: list[dict[str, Any]]) -> dict[str, Any]:
+def save_outputs(
+    year: int,
+    all_period_region_records: list[dict[str, Any]],
+    respiratory_period_region_records: list[dict[str, Any]],
+    all_period_basic_records: list[dict[str, Any]],
+    respiratory_period_basic_records: list[dict[str, Any]],
+) -> dict[str, Any]:
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-    summary = summarize_period_region(period_region_records)
-    validation = validate_against_period_basic(period_region_records, period_basic_records)
+    all_summary = summarize_period_region(all_period_region_records)
+    respiratory_summary = summarize_period_region(respiratory_period_region_records)
+    respiratory_virus_records = [
+        record for record in respiratory_period_region_records
+        if record.get("is_respiratory_virus")
+    ]
+    respiratory_virus_summary = summarize_period_region(respiratory_virus_records)
+    validation = validate_against_period_basic(respiratory_period_region_records, respiratory_period_basic_records)
 
     payload = {
         "status": "ok",
@@ -298,17 +344,38 @@ def save_outputs(year: int, period_region_records: list[dict[str, Any]], period_
         "primary_source": "KDCA EIDAPIService/PeriodRegion",
         "fallback_source": "KDCA EIDAPIService/PeriodBasic",
         "scope": "national weekly notifiable respiratory subset; PeriodRegion separates domestic/imported counts, not 17 sido regions",
+        "definition": NOTIFIABLE_DEFINITION,
         "respiratory_diseases": sorted(RESPIRATORY_NOTIFIABLE_DISEASES),
-        "summary": summary,
+        "respiratory_virus_diseases": sorted(
+            disease for disease, meta in RESPIRATORY_NOTIFIABLE_DISEASES.items()
+            if meta.get("is_respiratory_virus")
+        ),
+        "summary": respiratory_summary,
+        "respiratory_virus_summary": respiratory_virus_summary,
+        "all_notifiable_summary": all_summary,
         "validation": validation,
-        "records": period_region_records,
+        "records": respiratory_period_region_records,
     }
     basic_payload = {
         "status": "ok",
         "year": year,
         "source": "KDCA EIDAPIService/PeriodBasic",
-        "records": period_basic_records,
+        "definition": NOTIFIABLE_DEFINITION,
+        "records": respiratory_period_basic_records,
     }
+    all_payload = {
+        "status": "ok",
+        "year": year,
+        "source": "KDCA EIDAPIService/PeriodRegion",
+        "definition": NOTIFIABLE_DEFINITION,
+        "scope": "all national weekly notifiable disease rows; not 17 sido regions",
+        "summary": all_summary,
+        "respiratory_summary": respiratory_summary,
+        "respiratory_virus_summary": respiratory_virus_summary,
+        "validation": validation,
+        "records": all_period_region_records,
+    }
+    _ = all_period_basic_records
 
     (PROCESSED_DIR / "kdca_notifiable_weekly.json").write_text(
         json.dumps(payload, ensure_ascii=False, indent=2),
@@ -322,16 +389,37 @@ def save_outputs(year: int, period_region_records: list[dict[str, Any]], period_
         json.dumps(basic_payload, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+    (PROCESSED_DIR / "kdca_notifiable_all_period_region.json").write_text(
+        json.dumps(all_payload, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    (PROCESSED_DIR / "kdca_notifiable_respiratory_virus_weekly.json").write_text(
+        json.dumps(
+            {
+                "status": "ok",
+                "year": year,
+                "source": "KDCA EIDAPIService/PeriodRegion",
+                "definition": NOTIFIABLE_DEFINITION,
+                "summary": respiratory_virus_summary,
+                "records": respiratory_virus_records,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
 
     # Compatibility summary for older code paths that look for kdca_notifiable.json.
     compatibility = {
         "status": "ok",
         "source": payload["primary_source"],
         "year": year,
-        "latest_epiweek": summary.get("latest_epiweek"),
-        "latest_period": summary.get("latest_period"),
-        "latest_normalized_score": summary.get("latest_normalized_score", 0.0),
-        "record_count": summary.get("record_count", 0),
+        "latest_epiweek": respiratory_summary.get("latest_epiweek"),
+        "latest_period": respiratory_summary.get("latest_period"),
+        "latest_normalized_score": respiratory_summary.get("latest_normalized_score", 0.0),
+        "record_count": respiratory_summary.get("record_count", 0),
+        "all_notifiable_record_count": all_summary.get("record_count", 0),
+        "respiratory_virus_record_count": respiratory_virus_summary.get("record_count", 0),
         "note": payload["scope"],
     }
     (PROCESSED_DIR / "kdca_notifiable.json").write_text(
@@ -345,17 +433,31 @@ def main(year: int | None = None) -> dict[str, Any]:
     target_year = int(year or os.getenv("KDCA_NOTIFIABLE_YEAR") or date.today().year)
     region_items = fetch_period_endpoint(PERIOD_REGION_ENDPOINT, target_year)
     basic_items = fetch_period_endpoint(PERIOD_BASIC_ENDPOINT, target_year)
-    region_records = _normalize_period_region(region_items)
-    basic_records = _normalize_period_basic(basic_items)
+    all_region_records = _normalize_period_region(region_items, respiratory_only=False)
+    respiratory_region_records = _normalize_period_region(region_items, respiratory_only=True)
+    all_basic_records = _normalize_period_basic(basic_items, respiratory_only=False)
+    respiratory_basic_records = _normalize_period_basic(basic_items, respiratory_only=True)
 
-    if not region_records:
+    if not all_region_records:
+        raise RuntimeError("KDCA PeriodRegion returned no weekly notifiable records.")
+    if not respiratory_region_records:
         raise RuntimeError("KDCA PeriodRegion returned no respiratory notifiable records.")
 
-    payload = save_outputs(target_year, region_records, basic_records)
+    payload = save_outputs(
+        target_year,
+        all_region_records,
+        respiratory_region_records,
+        all_basic_records,
+        respiratory_basic_records,
+    )
     summary = payload["summary"]
     print(
-        f"Saved KDCA PeriodRegion weekly data: {summary['record_count']} records, "
+        f"Saved KDCA PeriodRegion weekly respiratory data: {summary['record_count']} records, "
         f"latest={summary.get('latest_epiweek')}, score={summary.get('latest_normalized_score')}"
+    )
+    print(
+        f"Saved all notifiable data: {payload['all_notifiable_summary']['record_count']} records; "
+        f"respiratory-virus subset={payload['respiratory_virus_summary']['record_count']} records."
     )
     validation = payload["validation"]
     if validation["mismatch_count"]:
@@ -368,6 +470,8 @@ def main(year: int | None = None) -> dict[str, Any]:
         "primary_source": payload["primary_source"],
         "fallback_source": payload["fallback_source"],
         "record_count": summary["record_count"],
+        "all_notifiable_record_count": payload["all_notifiable_summary"]["record_count"],
+        "respiratory_virus_record_count": payload["respiratory_virus_summary"]["record_count"],
         "latest_epiweek": summary.get("latest_epiweek"),
         "latest_period": summary.get("latest_period"),
         "latest_normalized_score": summary.get("latest_normalized_score"),
@@ -376,6 +480,8 @@ def main(year: int | None = None) -> dict[str, Any]:
             "kdca_notifiable_weekly.json",
             "kdca_notifiable_period_region.json",
             "kdca_notifiable_period_basic.json",
+            "kdca_notifiable_all_period_region.json",
+            "kdca_notifiable_respiratory_virus_weekly.json",
             "kdca_notifiable.json",
         ],
     }

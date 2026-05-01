@@ -39,6 +39,13 @@ def _run_script(script_name: str) -> dict[str, Any]:
         return {"status": "error", "script": script_name, "error": str(e)}
 
 
+def _load_processed_json(filename: str, default: Any) -> Any:
+    path = PROCESSED_DIR / filename
+    if not path.exists():
+        return default
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 @router.post("/upload-kdca")
 async def upload_kdca_file(file: UploadFile = File(...)) -> dict[str, Any]:
     """KDCA 엑셀/CSV 파일을 업로드하고 파싱합니다."""
@@ -109,6 +116,48 @@ async def refresh_kdca_notifiable(year: int | None = None) -> dict[str, Any]:
         return module.main(year=year)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"KDCA 법정감염병 API 갱신 실패: {str(e)}")
+
+
+@router.get("/kdca-notifiable")
+async def get_kdca_notifiable(include_records: bool = False) -> dict[str, Any]:
+    """주차별 법정감염병 원자료와 호흡기 subset 요약을 반환합니다."""
+    all_payload = _load_processed_json("kdca_notifiable_all_period_region.json", {})
+    respiratory_payload = _load_processed_json("kdca_notifiable_weekly.json", {})
+    virus_payload = _load_processed_json("kdca_notifiable_respiratory_virus_weekly.json", {})
+    compatibility = _load_processed_json("kdca_notifiable.json", {})
+
+    if not all_payload and not respiratory_payload:
+        return {
+            "status": "empty",
+            "definition": "KDCA 법정감염병 API가 아직 갱신되지 않았습니다.",
+            "all_weekly": [],
+            "respiratory_weekly": [],
+            "respiratory_virus_weekly": [],
+        }
+
+    response = {
+        "status": "ok",
+        "definition": all_payload.get("definition") or respiratory_payload.get("definition"),
+        "source": all_payload.get("source") or respiratory_payload.get("primary_source"),
+        "scope": all_payload.get("scope") or respiratory_payload.get("scope"),
+        "year": all_payload.get("year") or respiratory_payload.get("year") or compatibility.get("year"),
+        "latest_epiweek": compatibility.get("latest_epiweek") or respiratory_payload.get("summary", {}).get("latest_epiweek"),
+        "latest_period": compatibility.get("latest_period") or respiratory_payload.get("summary", {}).get("latest_period"),
+        "all_record_count": all_payload.get("summary", {}).get("record_count", 0),
+        "respiratory_record_count": respiratory_payload.get("summary", {}).get("record_count", 0),
+        "respiratory_virus_record_count": virus_payload.get("summary", {}).get("record_count", 0),
+        "all_weekly": all_payload.get("summary", {}).get("weekly", []),
+        "respiratory_weekly": respiratory_payload.get("summary", {}).get("weekly", []),
+        "respiratory_virus_weekly": virus_payload.get("summary", {}).get("weekly", []),
+        "respiratory_diseases": respiratory_payload.get("respiratory_diseases", []),
+        "respiratory_virus_diseases": respiratory_payload.get("respiratory_virus_diseases", []),
+        "validation": respiratory_payload.get("validation", {}),
+    }
+    if include_records:
+        response["all_records"] = all_payload.get("records", [])
+        response["respiratory_records"] = respiratory_payload.get("records", [])
+        response["respiratory_virus_records"] = virus_payload.get("records", [])
+    return response
 
 
 @router.post("/refresh-global")

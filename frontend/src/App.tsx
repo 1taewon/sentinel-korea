@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import FlowDiagram from './components/FlowDiagram';
 import GeminiChatbot from './components/GeminiChatbot';
+import KdcaNotifiablePanel from './components/KdcaNotifiablePanel';
 import KdcaUploadPanel from './components/KdcaUploadPanel';
 import KoreaMap from './components/KoreaMap';
 import LoginPage from './components/LoginPage';
@@ -279,7 +280,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       if (!res.ok) throw new Error(data?.detail || 'KDCA API refresh failed');
       const mismatchCount = data.validation?.mismatch_count ?? 0;
       setKdcaApiResult({
-        summary: `KDCA PeriodRegion ${data.year} 갱신 완료: respiratory ${data.record_count} rows, latest ${data.latest_epiweek || data.latest_period || 'n/a'}, PeriodBasic 검산 mismatch ${mismatchCount}.`,
+        summary: `KDCA PeriodRegion ${data.year} 갱신 완료: 전체 ${data.all_notifiable_record_count || 0} rows, 호흡기 관련 ${data.record_count} rows, 호흡기/공기전파 바이러스 ${data.respiratory_virus_record_count || 0} rows, latest ${data.latest_epiweek || data.latest_period || 'n/a'}, PeriodBasic 검산 mismatch ${mismatchCount}.`,
       });
     } catch {
       setKdcaApiResult({ summary: 'KDCA 법정감염병 API 갱신 실패. API key, 네트워크, 공공데이터포털 endpoint 상태를 확인하세요.' });
@@ -890,6 +891,13 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   질병관리청에서 제공하는 주간보고서를 기반으로 AI가 통합분석하여 요약 및 위험도 분석을 제공합니다.
                 </p>
                 <KdcaUploadPanel view="summary" />
+              </section>
+              <section className="kas-sources-card">
+                <h3>KDCA 법정감염병 real data</h3>
+                <p className="source-section-helper">
+                  EIDAPI PeriodRegion 원자료를 주차별로 보여주고, Sentinel이 호흡기 관련 질환과 호흡기/공기전파 바이러스 subset을 어떻게 파싱했는지 확인합니다.
+                </p>
+                <KdcaNotifiablePanel />
               </section>
             </div>
 

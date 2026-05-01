@@ -418,7 +418,7 @@ async def get_ingestion_status() -> dict[str, Any]:
                 "status": "active",
                 "latest_snapshot": latest_snapshot,
                 "cadence": "weekly",
-                "notes": "EIDAPI PeriodRegion supplies weekly domestic/imported respiratory notifiable counts; PeriodBasic is used as the total-count validation lane.",
+                "notes": "EIDAPI PeriodRegion supplies weekly all-notifiable national rows with domestic/imported values; Sentinel parses respiratory-related and respiratory-virus subsets, then validates totals with PeriodBasic.",
             },
             {
                 "source": "KDCA ILI/SARI",

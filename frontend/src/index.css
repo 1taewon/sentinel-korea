@@ -1380,6 +1380,220 @@ button, input, textarea, select { font: inherit; }
   font-size: 9px; color: var(--text-secondary); text-align: center;
   padding: 4px 0; border-top: 1px solid var(--border);
 }
+
+/* KDCA Notifiable Real Data */
+.notifiable-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px;
+}
+
+.notifiable-panel--loading {
+  min-height: 120px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.notifiable-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at top left, rgba(52, 211, 153, 0.16), transparent 34%),
+    var(--bg-card);
+}
+
+.notifiable-kicker {
+  display: block;
+  color: #34d399;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+}
+
+.notifiable-header h4 {
+  margin: 5px 0 6px;
+  color: var(--text-primary);
+  font-size: 18px;
+}
+
+.notifiable-header p {
+  max-width: 900px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.notifiable-refresh-btn {
+  flex-shrink: 0;
+  padding: 9px 13px;
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  border-radius: 999px;
+  background: rgba(52, 211, 153, 0.12);
+  color: #059669;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.notifiable-refresh-btn:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.notifiable-scope-note {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px dashed rgba(245, 158, 11, 0.45);
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.08);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.notifiable-scope-note strong {
+  color: #d97706;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+}
+
+.notifiable-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.notifiable-metrics > div,
+.notifiable-subsets > div {
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-soft);
+}
+
+.notifiable-metrics span,
+.notifiable-subsets span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.notifiable-metrics strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--text-primary);
+  font-family: var(--font-mono, monospace);
+  font-size: 15px;
+}
+
+.notifiable-subsets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.notifiable-subsets p {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.notifiable-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-card);
+}
+
+.notifiable-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.notifiable-table th,
+.notifiable-table td {
+  padding: 10px 11px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.notifiable-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.notifiable-table td {
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.notifiable-table td:nth-child(2),
+.notifiable-table td:nth-child(3),
+.notifiable-table td:nth-child(4),
+.notifiable-table td:nth-child(5) {
+  color: var(--text-primary);
+  font-family: var(--font-mono, monospace);
+  font-weight: 800;
+}
+
+.notifiable-table td strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.notifiable-table td small {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-family: var(--font-mono, monospace);
+}
+
+@media (max-width: 900px) {
+  .notifiable-header,
+  .notifiable-scope-note,
+  .notifiable-subsets {
+    grid-template-columns: 1fr;
+  }
+
+  .notifiable-header {
+    display: grid;
+  }
+
+  .notifiable-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .notifiable-refresh-btn {
+    width: 100%;
+  }
+}
+
 .news-sources-toggle {
   width: calc(100% - 20px); margin: 4px 10px; padding: 6px;
   background: var(--bg-soft); border: 1px solid var(--border);

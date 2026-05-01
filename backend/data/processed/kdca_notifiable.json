@@ -6,5 +6,7 @@
   "latest_period": "2026년 18주",
   "latest_normalized_score": 0.2531,
   "record_count": 198,
+  "all_notifiable_record_count": 1206,
+  "respiratory_virus_record_count": 90,
   "note": "national weekly notifiable respiratory subset; PeriodRegion separates domestic/imported counts, not 17 sido regions"
 }

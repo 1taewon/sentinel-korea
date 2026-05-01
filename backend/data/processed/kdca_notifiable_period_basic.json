@@ -2,6 +2,7 @@
   "status": "ok",
   "year": 2026,
   "source": "KDCA EIDAPIService/PeriodBasic",
+  "definition": "법정감염병은 감염병의 예방 및 관리에 관한 법률에 따라 신고·감시 대상이 되는 감염병입니다. Sentinel은 KDCA EIDAPI PeriodRegion의 weekly resultVal, dmstcVal, outnatnVal을 원자료로 보관하고, 그중 호흡기 관련 질환과 호흡기/공기전파 바이러스 질환을 별도 subset으로 파싱합니다.",
   "records": [
     {
       "source_type": "kdca_period_basic",
@@ -11,10 +12,12 @@
       "epiweek": "2026-W01",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -24,10 +27,12 @@
       "epiweek": "2026-W02",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -37,10 +42,12 @@
       "epiweek": "2026-W03",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -50,10 +57,12 @@
       "epiweek": "2026-W04",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -63,10 +72,12 @@
       "epiweek": "2026-W05",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -76,10 +87,12 @@
       "epiweek": "2026-W06",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -89,10 +102,12 @@
       "epiweek": "2026-W07",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -102,10 +117,12 @@
       "epiweek": "2026-W08",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -115,10 +132,12 @@
       "epiweek": "2026-W09",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -128,10 +147,12 @@
       "epiweek": "2026-W10",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -141,10 +162,12 @@
       "epiweek": "2026-W11",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -154,10 +177,12 @@
       "epiweek": "2026-W12",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -167,10 +192,12 @@
       "epiweek": "2026-W13",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -180,10 +207,12 @@
       "epiweek": "2026-W14",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -193,10 +222,12 @@
       "epiweek": "2026-W15",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -206,10 +237,12 @@
       "epiweek": "2026-W16",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -219,10 +252,12 @@
       "epiweek": "2026-W17",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -232,10 +267,12 @@
       "epiweek": "2026-W18",
       "icd_group": "제1급",
       "disease": "중증급성호흡기증후군(SARS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -245,10 +282,12 @@
       "epiweek": "2026-W01",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -258,10 +297,12 @@
       "epiweek": "2026-W02",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -271,10 +312,12 @@
       "epiweek": "2026-W03",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -284,10 +327,12 @@
       "epiweek": "2026-W04",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -297,10 +342,12 @@
       "epiweek": "2026-W05",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -310,10 +357,12 @@
       "epiweek": "2026-W06",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -323,10 +372,12 @@
       "epiweek": "2026-W07",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -336,10 +387,12 @@
       "epiweek": "2026-W08",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -349,10 +402,12 @@
       "epiweek": "2026-W09",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -362,10 +417,12 @@
       "epiweek": "2026-W10",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -375,10 +432,12 @@
       "epiweek": "2026-W11",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -388,10 +447,12 @@
       "epiweek": "2026-W12",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -401,10 +462,12 @@
       "epiweek": "2026-W13",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -414,10 +477,12 @@
       "epiweek": "2026-W14",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -427,10 +492,12 @@
       "epiweek": "2026-W15",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -440,10 +507,12 @@
       "epiweek": "2026-W16",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -453,10 +522,12 @@
       "epiweek": "2026-W17",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -466,10 +537,12 @@
       "epiweek": "2026-W18",
       "icd_group": "제1급",
       "disease": "중동호흡기증후군(MERS)",
-      "category": "emerging_respiratory",
+      "category": "emerging_respiratory_virus",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -480,9 +553,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -493,9 +568,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -506,9 +583,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -519,9 +598,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -532,9 +613,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -545,9 +628,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -558,9 +643,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -571,9 +658,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -584,9 +673,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -597,9 +688,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -610,9 +703,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -623,9 +718,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -636,9 +733,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -649,9 +748,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -662,9 +763,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -675,9 +778,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -688,9 +793,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -701,9 +808,11 @@
       "icd_group": "제1급",
       "disease": "동물인플루엔자 인체감염증",
       "category": "zoonotic_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -714,9 +823,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -727,9 +838,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -740,9 +853,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -753,9 +868,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -766,9 +883,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -779,9 +898,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -792,9 +913,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -805,9 +928,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -818,9 +943,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -831,9 +958,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -844,9 +973,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -857,9 +988,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -870,9 +1003,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -883,9 +1018,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -896,9 +1033,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -909,9 +1048,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -922,9 +1063,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -935,9 +1078,11 @@
       "icd_group": "제1급",
       "disease": "신종인플루엔자",
       "category": "novel_influenza",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -948,9 +1093,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -961,9 +1108,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -974,9 +1123,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -987,9 +1138,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1000,9 +1153,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1013,9 +1168,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1026,9 +1183,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1039,9 +1198,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1052,9 +1213,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1065,9 +1228,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1078,9 +1243,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1091,9 +1258,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1104,9 +1273,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1117,9 +1288,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1130,9 +1303,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1143,9 +1318,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1156,9 +1333,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1169,9 +1348,11 @@
       "icd_group": "제1급",
       "disease": "디프테리아",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1181,10 +1362,12 @@
       "epiweek": "2026-W01",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1194,10 +1377,12 @@
       "epiweek": "2026-W02",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1207,10 +1392,12 @@
       "epiweek": "2026-W03",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1220,10 +1407,12 @@
       "epiweek": "2026-W04",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1233,10 +1422,12 @@
       "epiweek": "2026-W05",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1246,10 +1437,12 @@
       "epiweek": "2026-W06",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 1.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1259,10 +1452,12 @@
       "epiweek": "2026-W07",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1272,10 +1467,12 @@
       "epiweek": "2026-W08",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 1.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1285,10 +1482,12 @@
       "epiweek": "2026-W09",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 1.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1298,10 +1497,12 @@
       "epiweek": "2026-W10",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1311,10 +1512,12 @@
       "epiweek": "2026-W11",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1324,10 +1527,12 @@
       "epiweek": "2026-W12",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1337,10 +1542,12 @@
       "epiweek": "2026-W13",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 1.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1350,10 +1557,12 @@
       "epiweek": "2026-W14",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 1.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1363,10 +1572,12 @@
       "epiweek": "2026-W15",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 1.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1376,10 +1587,12 @@
       "epiweek": "2026-W16",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1389,10 +1602,12 @@
       "epiweek": "2026-W17",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1402,10 +1617,12 @@
       "epiweek": "2026-W18",
       "icd_group": "제2급",
       "disease": "홍역",
-      "category": "airborne_notifiable",
+      "category": "airborne_viral",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1416,9 +1633,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 10.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1429,9 +1648,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 19.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1442,9 +1663,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 16.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1455,9 +1678,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 14.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1468,9 +1693,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 7.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1481,9 +1708,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 11.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1494,9 +1723,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 3.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1507,9 +1738,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 6.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1520,9 +1753,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 7.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1533,9 +1768,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 9.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1546,9 +1783,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 4.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1559,9 +1798,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 5.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1572,9 +1813,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 8.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1585,9 +1828,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 2.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1598,9 +1843,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 2.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1611,9 +1858,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 2.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1624,9 +1873,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 11.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1637,9 +1888,11 @@
       "icd_group": "제2급",
       "disease": "백일해",
       "category": "respiratory_notifiable",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1650,9 +1903,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1663,9 +1918,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1676,9 +1933,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1689,9 +1948,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1702,9 +1963,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1715,9 +1978,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1728,9 +1993,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1741,9 +2008,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1754,9 +2023,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1767,9 +2038,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1780,9 +2053,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1793,9 +2068,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1806,9 +2083,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1819,9 +2098,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1832,9 +2113,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1845,9 +2128,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1858,9 +2143,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1871,9 +2158,11 @@
       "icd_group": "제2급",
       "disease": "b형헤모필루스인플루엔자",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1884,9 +2173,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 6.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1897,9 +2188,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 8.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1910,9 +2203,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 5.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1923,9 +2218,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 3.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1936,9 +2233,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 11.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1949,9 +2248,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 10.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1962,9 +2263,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 11.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1975,9 +2278,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 12.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -1988,9 +2293,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 9.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2001,9 +2308,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 12.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2014,9 +2323,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 8.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2027,9 +2338,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 7.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2040,9 +2353,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 11.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2053,9 +2368,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 15.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2066,9 +2383,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 12.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2079,9 +2398,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 13.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2092,9 +2413,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 15.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2105,9 +2428,11 @@
       "icd_group": "제2급",
       "disease": "폐렴구균 감염증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 4.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2118,9 +2443,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 300.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2131,9 +2458,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 258.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2144,9 +2473,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 304.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2157,9 +2488,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 287.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2170,9 +2503,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 271.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2183,9 +2518,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 268.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2196,9 +2533,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 246.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2209,9 +2548,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 165.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2222,9 +2563,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 174.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2235,9 +2578,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 136.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2248,9 +2593,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 251.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2261,9 +2608,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 241.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2274,9 +2623,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 272.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2287,9 +2638,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 284.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2300,9 +2653,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 268.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2313,9 +2668,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 271.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2326,9 +2683,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 216.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2339,9 +2698,11 @@
       "icd_group": "제2급",
       "disease": "성홍열",
       "category": "respiratory_related",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 83.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2352,9 +2713,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 17.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2365,9 +2728,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 17.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2378,9 +2743,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 21.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2391,9 +2758,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 16.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2404,9 +2773,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 12.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2417,9 +2788,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 12.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2430,9 +2803,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 17.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2443,9 +2818,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 12.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2456,9 +2833,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 27.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2469,9 +2848,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 12.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2482,9 +2863,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 14.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2495,9 +2878,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 10.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2508,9 +2893,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 12.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2521,9 +2908,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 10.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2534,9 +2923,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 13.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2547,9 +2938,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 7.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2560,9 +2953,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 10.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     },
     {
       "source_type": "kdca_period_basic",
@@ -2573,9 +2968,11 @@
       "icd_group": "제3급",
       "disease": "레지오넬라증",
       "category": "respiratory_bacterial",
+      "is_respiratory_related": true,
+      "is_respiratory_virus": false,
       "raw_value": 4.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:44:34.633254+00:00"
+      "updated_at": "2026-05-01T02:56:33.911885+00:00"
     }
   ]
 }
