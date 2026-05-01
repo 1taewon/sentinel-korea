@@ -25,6 +25,53 @@ const AUTH_ENABLED = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VIT
 
 type Layer = 'respiratory' | 'wastewater_covid' | 'wastewater_flu' | 'news_trends_risk' | 'total_risk';
 type AggregationMode = 'max' | 'weighted';
+type OperationKey =
+  | 'korea_news'
+  | 'trends'
+  | 'global'
+  | 'kdca_upload'
+  | 'kdca_api'
+  | 'kdca_digest'
+  | 'osint'
+  | 'sentinel'
+  | 'kdca_report';
+
+type UploadHistoryItem = {
+  filename: string;
+  file_type: string;
+  label?: string;
+  uploaded_at?: string;
+  updated_dates?: string[];
+  snapshot_count?: number;
+  records_parsed?: number;
+  outputs?: string[];
+};
+
+type ReportListItem = {
+  filename: string;
+  epiweek?: string;
+  generated_at?: string;
+  size_bytes?: number;
+};
+
+type KdcaDigestStatus = {
+  status?: string;
+  generated_at?: string;
+  sources_used?: string[];
+  kdca_summary?: string;
+  message?: string;
+};
+
+type OperationRow = {
+  key: OperationKey;
+  lane: string;
+  title: string;
+  detail: string;
+  status: 'ready' | 'needs-run' | 'running' | 'error';
+  updatedAt?: string;
+  epiweek?: string;
+  primaryAction: string;
+};
 
 const relevanceFactorLabels: Record<string, string> = {
   severity: '질병 심각도',
@@ -110,6 +157,23 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   const [kdcaReportResult, setKdcaReportResult] = useState<{ summary?: string; filename?: string } | null>(null);
   const [refreshingKdcaApi, setRefreshingKdcaApi] = useState(false);
   const [kdcaApiResult, setKdcaApiResult] = useState<{ summary?: string } | null>(null);
+  const [showRunPanel, setShowRunPanel] = useState(false);
+  const [runningPipeline, setRunningPipeline] = useState<OperationKey | null>(null);
+  const [operationError, setOperationError] = useState<string | null>(null);
+  const [uploadHistory, setUploadHistory] = useState<UploadHistoryItem[]>([]);
+  const [reportList, setReportList] = useState<ReportListItem[]>([]);
+  const [kdcaDigestStatus, setKdcaDigestStatus] = useState<KdcaDigestStatus | null>(null);
+  const [lastPipelineRun, setLastPipelineRun] = useState<Record<OperationKey, string | undefined>>({
+    korea_news: undefined,
+    trends: undefined,
+    global: undefined,
+    kdca_upload: undefined,
+    kdca_api: undefined,
+    kdca_digest: undefined,
+    osint: undefined,
+    sentinel: undefined,
+    kdca_report: undefined,
+  });
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -125,6 +189,25 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     };
     fetchStatus();
   }, []);
+
+  const refreshOperationStatus = useCallback(async () => {
+    try {
+      const [historyRes, reportsRes, kdcaDigestRes] = await Promise.all([
+        fetch(`${API_BASE}/ingestion/upload-history`),
+        fetch(`${API_BASE}/reports/list`),
+        fetch(`${API_BASE}/risk-analysis/kdca-digest`),
+      ]);
+      if (historyRes.ok) setUploadHistory(await historyRes.json());
+      if (reportsRes.ok) setReportList(await reportsRes.json());
+      if (kdcaDigestRes.ok) setKdcaDigestStatus(await kdcaDigestRes.json());
+    } catch {
+      // The dashboard itself should remain usable even when one status lane is unavailable.
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshOperationStatus();
+  }, [refreshOperationStatus]);
 
   const fetchAlerts = useCallback(async (date?: string) => {
     const d = date || currentDate;
@@ -271,6 +354,49 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     }
   };
 
+  const markPipelineRun = (key: OperationKey) => {
+    setLastPipelineRun((prev) => ({ ...prev, [key]: new Date().toISOString() }));
+  };
+
+  const runOperation = async (key: OperationKey) => {
+    setRunningPipeline(key);
+    setOperationError(null);
+    try {
+      if (key === 'korea_news') {
+        const res = await fetch(`${API_BASE}/ingestion/refresh-korea`, { method: 'POST' });
+        if (!res.ok) throw new Error('Korea news refresh failed');
+      } else if (key === 'trends') {
+        const res = await fetch(`${API_BASE}/ingestion/refresh-trends`, { method: 'POST' });
+        if (!res.ok) throw new Error('Trends refresh failed');
+      } else if (key === 'global') {
+        const res = await fetch(`${API_BASE}/ingestion/refresh-global`, { method: 'POST' });
+        if (!res.ok) throw new Error('Global signal refresh failed');
+        await fetchAlerts();
+      } else if (key === 'kdca_api') {
+        await handleRefreshKdcaNotifiable();
+      } else if (key === 'kdca_digest') {
+        const res = await fetch(`${API_BASE}/risk-analysis/kdca-digest`, { method: 'POST' });
+        if (!res.ok) throw new Error('KDCA digest failed');
+        setKdcaDigestStatus(await res.json());
+      } else if (key === 'osint') {
+        await handleRunOsintAnalysis();
+      } else if (key === 'sentinel') {
+        await handleRunFullAnalysis();
+      } else if (key === 'kdca_report') {
+        await handleGenerateKdcaReport();
+      } else if (key === 'kdca_upload') {
+        setNavTab('data_sources');
+      }
+      markPipelineRun(key);
+      await refreshIngestionStatus();
+      await refreshOperationStatus();
+    } catch (error) {
+      setOperationError(error instanceof Error ? error.message : 'Run failed');
+    } finally {
+      setRunningPipeline(null);
+    }
+  };
+
   const handleRefreshKdcaNotifiable = async () => {
     setRefreshingKdcaApi(true);
     setKdcaApiResult(null);
@@ -350,6 +476,120 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     { key: 'WHO', label: '국제 보조', value: globalSignals.length, tone: 'cyan' },
     { key: 'ALERT', label: '주의 이상', value: elevatedCount, tone: 'red' },
   ];
+  const latestUpload = useMemo(() => {
+    return [...uploadHistory]
+      .sort((a, b) => (b.uploaded_at || '').localeCompare(a.uploaded_at || ''))[0];
+  }, [uploadHistory]);
+  const latestReport = useMemo(() => {
+    return [...reportList]
+      .sort((a, b) => (b.generated_at || '').localeCompare(a.generated_at || ''))[0];
+  }, [reportList]);
+  const formatRunTime = (value?: string) => {
+    if (!value) return 'not run';
+    const dateValue = new Date(value);
+    if (Number.isNaN(dateValue.getTime())) return value;
+    return dateValue.toLocaleString('ko-KR', {
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+  const operationRows: OperationRow[] = [
+    {
+      key: 'korea_news',
+      lane: 'SOURCE',
+      title: 'Korea news refresh',
+      detail: '국내 뉴스/Naver lane을 새로 수집합니다.',
+      status: runningPipeline === 'korea_news' ? 'running' : lastPipelineRun.korea_news ? 'ready' : 'needs-run',
+      updatedAt: lastPipelineRun.korea_news,
+      primaryAction: 'Refresh',
+    },
+    {
+      key: 'trends',
+      lane: 'SOURCE',
+      title: 'Search trends refresh',
+      detail: 'Google/Naver 검색 트렌드 lane을 새로 수집합니다.',
+      status: runningPipeline === 'trends' ? 'running' : lastPipelineRun.trends ? 'ready' : 'needs-run',
+      updatedAt: lastPipelineRun.trends,
+      primaryAction: 'Refresh',
+    },
+    {
+      key: 'global',
+      lane: 'SOURCE',
+      title: 'Global signals refresh',
+      detail: `${globalSignals.length} global signals currently loaded.`,
+      status: runningPipeline === 'global' ? 'running' : globalSignals.length ? 'ready' : 'needs-run',
+      updatedAt: lastPipelineRun.global,
+      primaryAction: 'Refresh',
+    },
+    {
+      key: 'kdca_upload',
+      lane: 'KDCA',
+      title: 'KDCA upload parser',
+      detail: latestUpload
+        ? `${latestUpload.file_type} / ${latestUpload.records_parsed || 0} records / ${latestUpload.snapshot_count || 0} snapshots`
+        : 'xlsx/pdf 원자료 업로드가 필요합니다.',
+      status: runningPipeline === 'kdca_upload' ? 'running' : latestUpload ? 'ready' : 'needs-run',
+      updatedAt: latestUpload?.uploaded_at,
+      primaryAction: 'Open upload',
+    },
+    {
+      key: 'kdca_api',
+      lane: 'KDCA',
+      title: 'KDCA notifiable API',
+      detail: kdcaApiResult?.summary || 'PeriodRegion 법정감염병 API 보조 lane입니다.',
+      status: runningPipeline === 'kdca_api' || refreshingKdcaApi ? 'running' : lastPipelineRun.kdca_api ? 'ready' : 'needs-run',
+      updatedAt: lastPipelineRun.kdca_api,
+      primaryAction: 'Run API',
+    },
+    {
+      key: 'kdca_digest',
+      lane: 'AI',
+      title: 'KDCA surveillance digest',
+      detail: kdcaDigestStatus?.status === 'ok'
+        ? `${kdcaDigestStatus.sources_used?.length || 0} source files summarized.`
+        : 'KDCA 업로드 자료 기반 요약이 아직 없거나 갱신이 필요합니다.',
+      status: runningPipeline === 'kdca_digest' ? 'running' : kdcaDigestStatus?.status === 'ok' ? 'ready' : 'needs-run',
+      updatedAt: kdcaDigestStatus?.generated_at,
+      primaryAction: 'Digest',
+    },
+    {
+      key: 'osint',
+      lane: 'AI',
+      title: 'OSINT map analysis',
+      detail: osintResult?.snapshot_date
+        ? `snapshot ${osintResult.snapshot_date}`
+        : `${koreaAlerts.filter((alert) => alert.news_trends_risk).length} regions have OSINT risk.`,
+      status: runningPipeline === 'osint' || analyzingOsint ? 'running' : koreaAlerts.some((alert) => alert.news_trends_risk) || osintResult ? 'ready' : 'needs-run',
+      updatedAt: lastPipelineRun.osint,
+      epiweek: osintResult?.snapshot_date || currentDate,
+      primaryAction: 'Analyze',
+    },
+    {
+      key: 'sentinel',
+      lane: 'AI',
+      title: 'Sentinel integrated analysis',
+      detail: fullResult?.snapshot_date
+        ? `final snapshot ${fullResult.snapshot_date}`
+        : `${koreaAlerts.filter((alert) => alert.total_risk).length} regions have integrated risk.`,
+      status: runningPipeline === 'sentinel' || analyzingFull ? 'running' : koreaAlerts.some((alert) => alert.total_risk) || fullResult ? 'ready' : 'needs-run',
+      updatedAt: lastPipelineRun.sentinel,
+      epiweek: fullResult?.snapshot_date || currentDate,
+      primaryAction: 'Analyze',
+    },
+    {
+      key: 'kdca_report',
+      lane: 'REPORT',
+      title: 'KDCA weekly report',
+      detail: latestReport?.filename || kdcaReportResult?.filename || '아직 생성된 리포트가 없습니다.',
+      status: runningPipeline === 'kdca_report' || generatingKdcaReport ? 'running' : latestReport || kdcaReportResult ? 'ready' : 'needs-run',
+      updatedAt: latestReport?.generated_at || lastPipelineRun.kdca_report,
+      epiweek: latestReport?.epiweek || currentDate,
+      primaryAction: 'Generate',
+    },
+  ];
+  const operationReadyCount = operationRows.filter((row) => row.status === 'ready').length;
   const sourceOverviewCards = [
     {
       label: 'OFFICIAL',
@@ -538,13 +778,12 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
               </button>
               {/* Waveform — signal / analysis */}
               <button
-                className="kas-toolbar-btn"
-                onClick={() => handleRunFullAnalysis()}
-                title="Run analysis"
-                disabled={analyzingFull}
+                className={`kas-toolbar-btn ${showRunPanel ? 'kas-toolbar-btn--active' : ''}`}
+                onClick={() => setShowRunPanel((v) => !v)}
+                title="Run analyze center"
                 type="button"
               >
-                {analyzingFull ? (
+                {runningPipeline ? (
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="square" className="kas-toolbar-spin">
                     <path d="M21 12a9 9 0 1 1-6.2-8.55" />
                   </svg>
@@ -555,6 +794,68 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 )}
               </button>
             </div>
+
+            {showRunPanel && (
+              <section className="run-control-panel" aria-label="Run analyze status center">
+                <div className="run-control-header">
+                  <div>
+                    <span className="run-control-kicker">RUN ANALYZE</span>
+                    <h3>Pipeline command center</h3>
+                    <p>Source lane, KDCA, AI analysis, report status are tracked here.</p>
+                  </div>
+                  <div className="run-control-score">
+                    <strong>{operationReadyCount}/{operationRows.length}</strong>
+                    <span>ready</span>
+                  </div>
+                </div>
+
+                <div className="run-control-summary">
+                  <div>
+                    <span>Current snapshot</span>
+                    <strong>{meta?.snapshot_date || currentDate}</strong>
+                  </div>
+                  <div>
+                    <span>KDCA latest</span>
+                    <strong>{latestUpload?.updated_dates?.slice(-1)[0] || latestUpload?.file_type || 'none'}</strong>
+                  </div>
+                  <div>
+                    <span>Report</span>
+                    <strong>{latestReport?.epiweek || 'none'}</strong>
+                  </div>
+                </div>
+
+                {operationError && (
+                  <div className="run-control-error">{operationError}</div>
+                )}
+
+                <div className="run-control-list">
+                  {operationRows.map((row) => (
+                    <article className={`run-control-row status-${row.status}`} key={row.key}>
+                      <div className="run-control-row-main">
+                        <div className="run-control-row-top">
+                          <span className="run-control-lane">{row.lane}</span>
+                          <span className="run-control-state">{row.status === 'needs-run' ? 'needs run' : row.status}</span>
+                        </div>
+                        <strong>{row.title}</strong>
+                        <p>{row.detail}</p>
+                        <div className="run-control-meta">
+                          <span>updated: {formatRunTime(row.updatedAt)}</span>
+                          {row.epiweek && <span>target: {row.epiweek}</span>}
+                        </div>
+                      </div>
+                      <button
+                        className="run-control-action"
+                        disabled={!!runningPipeline}
+                        onClick={() => runOperation(row.key)}
+                        type="button"
+                      >
+                        {runningPipeline === row.key ? 'Running...' : row.primaryAction}
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Right-side legend (vertical) */}
             <div className="kas-side-legend">
