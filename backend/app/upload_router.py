@@ -101,6 +101,16 @@ async def process_sentinel_folder() -> dict[str, Any]:
     }
 
 
+@router.post("/refresh-kdca-notifiable")
+async def refresh_kdca_notifiable(year: int | None = None) -> dict[str, Any]:
+    """KDCA EIDAPI PeriodRegion 데이터를 수집하고 PeriodBasic으로 검산합니다."""
+    try:
+        module = __import_script("fetch_kdca_api")
+        return module.main(year=year)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"KDCA 법정감염병 API 갱신 실패: {str(e)}")
+
+
 @router.post("/refresh-global")
 async def refresh_global_signals() -> dict[str, Any]:
     """WHO DON + 글로벌 뉴스를 새로 수집합니다."""

@@ -107,6 +107,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
 
   const [generatingKdcaReport, setGeneratingKdcaReport] = useState(false);
   const [kdcaReportResult, setKdcaReportResult] = useState<{ summary?: string; filename?: string } | null>(null);
+  const [refreshingKdcaApi, setRefreshingKdcaApi] = useState(false);
+  const [kdcaApiResult, setKdcaApiResult] = useState<{ summary?: string } | null>(null);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -268,6 +270,24 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     }
   };
 
+  const handleRefreshKdcaNotifiable = async () => {
+    setRefreshingKdcaApi(true);
+    setKdcaApiResult(null);
+    try {
+      const res = await fetch(`${API_BASE}/ingestion/refresh-kdca-notifiable`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'KDCA API refresh failed');
+      const mismatchCount = data.validation?.mismatch_count ?? 0;
+      setKdcaApiResult({
+        summary: `KDCA PeriodRegion ${data.year} 갱신 완료: respiratory ${data.record_count} rows, latest ${data.latest_epiweek || data.latest_period || 'n/a'}, PeriodBasic 검산 mismatch ${mismatchCount}.`,
+      });
+    } catch {
+      setKdcaApiResult({ summary: 'KDCA 법정감염병 API 갱신 실패. API key, 네트워크, 공공데이터포털 endpoint 상태를 확인하세요.' });
+    } finally {
+      setRefreshingKdcaApi(false);
+    }
+  };
+
   // Trigger NewsPanel's internal Keywords Settings modal from the console aside
   const openKeywordsModal = () => {
     const btn = document.getElementById('news-panel-keywords-btn');
@@ -332,10 +352,10 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   const sourceOverviewCards = [
     {
       label: 'OFFICIAL',
-      title: 'KDCA 표본감시자료',
-      description: 'ILI/SARI, 법정감염병, 지역 단위 기준선을 만드는 핵심 소스입니다.',
+      title: 'KDCA 표본감시 + 법정감염병 API',
+      description: 'ILI/ARI/SARI xlsx/csv는 핵심 지역 감시 신호로, EIDAPI PeriodRegion은 주차별 법정감염병 국내/해외유입 보조 신호로 사용합니다.',
       cadence: '주간 / epiweek',
-      output: 'normalized_signal',
+      output: 'normalized_signal + period_region',
       metric: `${koreaAlerts.length || 17} 시도`,
       tone: 'green',
     },
@@ -893,6 +913,24 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   <div className="kas-console-subcard-title">KDCA 데이터 입력</div>
                   <p className="console-card-desc">질병청 원천자료 업로드와 보고서 수신자 관리를 담당합니다.</p>
                   <KdcaUploadPanel view="console" />
+                </div>
+
+                <div className="kas-console-subcard">
+                  <div className="kas-console-subcard-title">KDCA 법정감염병 API</div>
+                  <p className="console-card-desc">
+                    PeriodRegion을 기본으로 주차별 법정감염병 국내/해외유입 값을 수집하고, PeriodBasic으로 총합을 검산합니다.
+                    17개 시도 지역 신호는 업로드 xlsx/csv 감시자료가 담당합니다.
+                  </p>
+                  <button className="console-action-btn console-neutral-btn" onClick={handleRefreshKdcaNotifiable} disabled={refreshingKdcaApi}>
+                    <span className="console-btn-title">{refreshingKdcaApi ? 'KDCA API 갱신 중...' : '법정감염병 API 갱신'}</span>
+                    <span className="console-btn-sub">PeriodRegion primary · PeriodBasic validation</span>
+                  </button>
+                  {kdcaApiResult?.summary && (
+                    <div className="osint-analysis-result">
+                      <div className="osint-result-header">KDCA EIDAPI</div>
+                      <p className="osint-result-text">{kdcaApiResult.summary}</p>
+                    </div>
+                  )}
                 </div>
               </section>
 

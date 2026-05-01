@@ -64,6 +64,7 @@ const PIPELINE_STAGES: PipelineStage[] = [
     tone: 'blue',
     lanes: [
       { ko: '질병청 ILI/SARI 표', en: 'KDCA ILI/SARI tables' },
+      { ko: 'KDCA PeriodRegion 법정감염병 API', en: 'KDCA PeriodRegion notifiable API' },
       { ko: '폐하수 PDF 공보', en: 'Wastewater PDF bulletin' },
       { ko: '국내 뉴스', en: 'Korea news feeds' },
       { ko: '국내 검색 트렌드', en: 'Korea search trends' },
@@ -72,9 +73,9 @@ const PIPELINE_STAGES: PipelineStage[] = [
       {
         id: 'refresh-official',
         label: { ko: '공식 감시 갱신', en: 'Refresh official lane' },
-        description: { ko: '질병청/국내 감시 신호를 다시 불러옵니다.', en: 'Reload the Korea surveillance lane.' },
-        endpoints: ['/ingestion/refresh-korea'],
-        result: { ko: '공식 감시 신호 갱신 완료.', en: 'Official surveillance lane refreshed.' },
+        description: { ko: '질병청 감시 신호와 법정감염병 API 보조 신호를 다시 불러옵니다.', en: 'Reload KDCA surveillance plus the notifiable API corroboration lane.' },
+        endpoints: ['/ingestion/refresh-korea', '/ingestion/refresh-kdca-notifiable'],
+        result: { ko: '공식 감시 신호 갱신 완료. PeriodRegion은 PeriodBasic으로 검산됩니다.', en: 'Official surveillance lane refreshed. PeriodRegion was validated against PeriodBasic.' },
       },
       {
         id: 'refresh-osint',
@@ -85,6 +86,7 @@ const PIPELINE_STAGES: PipelineStage[] = [
       },
     ],
     checklist: [
+      { ko: 'PeriodRegion은 국내/해외유입 주차별 보조 신호이며, 17개 시도 지역값은 xlsx/csv 업로드 자료에서 파싱합니다.', en: 'PeriodRegion is a weekly domestic/imported corroboration lane; 17-region values come from uploaded xlsx/csv files.' },
       { ko: '폐하수는 현재 문서-only 보조 신호입니다.', en: 'Wastewater remains a document-only corroboration lane.' },
       { ko: 'WHO/국제 뉴스는 국내 OSINT와 섞지 않고 Globe 패널에서 별도로 설명합니다.', en: 'WHO/international news is shown separately in the Globe panel.' },
     ],

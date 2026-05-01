@@ -1,19 +1,10 @@
 {
-  "Seoul": 0.1704,
-  "Busan": 0.0,
-  "Daegu": 0.0,
-  "Incheon": 0.0,
-  "Gwangju": 0.0,
-  "Daejeon": 0.0,
-  "Ulsan": 0.0,
-  "Sejong": 0.0,
-  "Gyeonggi-do": 0.0,
-  "Gangwon-do": 0.0,
-  "Chungcheongbuk-do": 0.0,
-  "Chungcheongnam-do": 0.0,
-  "Jeollabuk-do": 0.0,
-  "Jeollanam-do": 0.0,
-  "Gyeongsangbuk-do": 0.0,
-  "Gyeongsangnam-do": 0.0,
-  "Jeju-do": 0.0
+  "status": "ok",
+  "source": "KDCA EIDAPIService/PeriodRegion",
+  "year": 2026,
+  "latest_epiweek": "2026-W18",
+  "latest_period": "2026년 18주",
+  "latest_normalized_score": 0.2531,
+  "record_count": 198,
+  "note": "national weekly notifiable respiratory subset; PeriodRegion separates domestic/imported counts, not 17 sido regions"
 }

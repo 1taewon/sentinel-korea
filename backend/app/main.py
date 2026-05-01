@@ -418,7 +418,7 @@ async def get_ingestion_status() -> dict[str, Any]:
                 "status": "active",
                 "latest_snapshot": latest_snapshot,
                 "cadence": "weekly",
-                "notes": "Respiratory notifiable disease counts are included in the Korea-first MVP.",
+                "notes": "EIDAPI PeriodRegion supplies weekly domestic/imported respiratory notifiable counts; PeriodBasic is used as the total-count validation lane.",
             },
             {
                 "source": "KDCA ILI/SARI",
