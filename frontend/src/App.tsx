@@ -1090,6 +1090,60 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                     onGlobalSignalClick={setSelectedGlobal}
                     selectedGlobalId={selectedGlobal?.id}
                   />
+
+                  {/* Bottom-LEFT: Korea relevance summary + legend overlay */}
+                  <div className="globe-korea-overlay">
+                    <div className="globe-korea-overlay-section">
+                      <span className="globe-korea-overlay-kicker">한국 관련성 요약</span>
+                      <div className="globe-korea-overlay-stats">
+                        <div>
+                          <strong>{(internationalSummary.byRelevance.critical || 0) + (internationalSummary.byRelevance.high || 0)}</strong>
+                          <span>High+ 신호</span>
+                        </div>
+                        <div>
+                          <strong>{formatPercent(internationalSummary.averageRelevance)}</strong>
+                          <span>평균 관련도</span>
+                        </div>
+                        <div>
+                          <strong>{globalSignals.length}</strong>
+                          <span>전체 outbreak</span>
+                        </div>
+                      </div>
+                      {internationalSummary.recentSignals.slice(0, 3).map((signal) => {
+                        const relevance = scoreInternationalRelevance(signal);
+                        return (
+                          <div className="globe-korea-overlay-signal" key={`korea-rel-${signal.id}`} style={{ borderLeftColor: relevance.color }}>
+                            <span className="globe-korea-overlay-signal-meta">{signal.date} · {(signal.source || '').replace('_', ' ')}</span>
+                            <strong>{signal.title || signal.keyword || signal.disease || 'International signal'}</strong>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="globe-korea-overlay-section globe-korea-overlay-legend">
+                      <span className="globe-korea-overlay-kicker">지도 표기 설명</span>
+                      <div className="globe-legend-row">
+                        <i className="globe-legend-dot dot-critical" />
+                        <div><strong>빨강</strong><small>Korea relevance critical (즉시 모니터링)</small></div>
+                      </div>
+                      <div className="globe-legend-row">
+                        <i className="globe-legend-dot dot-high" />
+                        <div><strong>주황</strong><small>관련성 높음 — 한국 영향 가능</small></div>
+                      </div>
+                      <div className="globe-legend-row">
+                        <i className="globe-legend-dot dot-medium" />
+                        <div><strong>노랑</strong><small>중간 — 추세 관찰</small></div>
+                      </div>
+                      <div className="globe-legend-row">
+                        <i className="globe-legend-dot dot-low" />
+                        <div><strong>회색</strong><small>낮음 — 참고용</small></div>
+                      </div>
+                      <div className="globe-legend-row">
+                        <i className="globe-legend-arc" />
+                        <div><strong>아크 라인</strong><small>각 outbreak 위치 → 한국으로 이어지는 관련성 흐름. 굵을수록 한국에 가까운 신호.</small></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <aside className="globe-context-panel">
                   <span className="globe-context-kicker">한국 관련성 기반 국제 감시</span>

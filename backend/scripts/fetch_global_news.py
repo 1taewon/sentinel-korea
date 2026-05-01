@@ -59,6 +59,34 @@ DEFAULT_QUERIES = [
     "WHO respiratory emergency",
 ]
 
+# Agency-specific queries — pulled via Google News RSS with a 6-month window.
+# Each tuple: (query, source-tag). The source-tag is what shows up in the UI.
+AGENCY_QUERIES: list[tuple[str, str]] = [
+    # WHO ecosystem (covers WHO-DON adjacent reporting outside the official feed)
+    ("WHO outbreak respiratory pneumonia influenza", "who_news"),
+    # US CDC
+    ("CDC outbreak respiratory pneumonia", "cdc_news"),
+    ("CDC HAN health alert respiratory", "cdc_news"),
+    # ECDC (EU)
+    ("ECDC outbreak respiratory pneumonia influenza", "ecdc_news"),
+    ("ECDC communicable disease threat", "ecdc_news"),
+    # Africa CDC
+    ("Africa CDC outbreak respiratory", "africa_cdc_news"),
+    ("Africa CDC weekly bulletin", "africa_cdc_news"),
+    # East Asia neighbours
+    ("China CDC respiratory outbreak pneumonia", "east_asia_news"),
+    ("Japan respiratory outbreak influenza pneumonia", "east_asia_news"),
+    ("Taiwan CDC respiratory outbreak pneumonia", "east_asia_news"),
+    # Southeast Asia
+    ("Southeast Asia respiratory outbreak pneumonia", "sea_news"),
+    ("Vietnam Thailand Indonesia respiratory outbreak", "sea_news"),
+    ("Philippines Malaysia Singapore respiratory outbreak", "sea_news"),
+    # Generic Google outbreak news
+    ("respiratory disease outbreak news", "google_outbreak"),
+    ("emerging respiratory pathogen 2026", "google_outbreak"),
+    ("respiratory outbreak surveillance report", "google_outbreak"),
+]
+
 
 def _get_queries() -> tuple[list[str], str]:
     if CONFIG_FILE.exists():
@@ -146,6 +174,7 @@ def _fetch_newsapi(queries: list[str], exclude_str: str, seen: set[str]) -> list
         return []
 
     client = NewsApiClient(api_key=api_key)
+    # NewsAPI free tier caps history at 30 days; paid plans see further back.
     from_date = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d")
     results: list[dict] = []
     for query in queries:
@@ -174,15 +203,16 @@ def _fetch_newsapi(queries: list[str], exclude_str: str, seen: set[str]) -> list
     return results
 
 
-def _fetch_google_news(queries: list[str], seen: set[str]) -> list[dict]:
+def _fetch_google_news(queries: list[str], seen: set[str], window: str = "6m", source_tag: str = "google_news", limit_per_query: int = 14) -> list[dict]:
+    """Pull Google News RSS for a list of queries, defaulting to a 6-month window."""
     results: list[dict] = []
     for query in queries:
         try:
-            rss_url = f"{GOOGLE_NEWS_RSS}?q={quote_plus(query + ' when:30d')}&hl=en-US&gl=US&ceid=US:en"
+            rss_url = f"{GOOGLE_NEWS_RSS}?q={quote_plus(query + f' when:{window}')}&hl=en-US&gl=US&ceid=US:en"
             response = httpx.get(rss_url, follow_redirects=True, timeout=20)
             response.raise_for_status()
             root = ET.fromstring(response.content)
-            for item in root.findall(".//item")[:14]:
+            for item in root.findall(".//item")[:limit_per_query]:
                 title = _clean(item.findtext("title"))
                 url = item.findtext("link") or ""
                 snippet = _clean(item.findtext("description"))
@@ -195,7 +225,7 @@ def _fetch_google_news(queries: list[str], seen: set[str]) -> list[dict]:
                 _append_result(
                     results,
                     seen,
-                    source="google_news",
+                    source=source_tag,
                     title=title,
                     snippet=snippet,
                     url=url,
@@ -207,19 +237,28 @@ def _fetch_google_news(queries: list[str], seen: set[str]) -> list[dict]:
     return results
 
 
+def _fetch_agency_news(seen: set[str]) -> list[dict]:
+    """Fetch agency/region specific outbreak feeds (CDC, ECDC, Africa CDC, East Asia, SEA)."""
+    results: list[dict] = []
+    for query, tag in AGENCY_QUERIES:
+        results.extend(_fetch_google_news([query], seen, window="6m", source_tag=tag, limit_per_query=10))
+    return results
+
+
 def fetch_global_news() -> list[dict]:
     queries, exclude_str = _get_queries()
     seen: set[str] = set()
     results = [
         *_fetch_newsapi(queries, exclude_str, seen),
-        *_fetch_google_news(queries, seen),
+        *_fetch_google_news(queries, seen, window="6m", source_tag="google_news"),
+        *_fetch_agency_news(seen),
     ]
     results.sort(key=lambda row: row["date"], reverse=True)
-    print(
-        f"[GlobalNews] collected {len(results)} overseas news "
-        f"(NewsAPI {sum(1 for row in results if row['source'] == 'news_global')}, "
-        f"Google News {sum(1 for row in results if row['source'] == 'google_news')})"
-    )
+    counts: dict[str, int] = {}
+    for row in results:
+        counts[row["source"]] = counts.get(row["source"], 0) + 1
+    breakdown = ", ".join(f"{k}={v}" for k, v in sorted(counts.items()))
+    print(f"[GlobalNews] collected {len(results)} overseas news ({breakdown})")
     return results
 
 
