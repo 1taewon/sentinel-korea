@@ -77,26 +77,6 @@ const TYPE_META: Record<ReportType, { label: string; color: string; cadence: str
 
 const TYPE_ORDER: Array<'all' | ReportType> = ['all', 'final', 'kdca', 'osint'];
 
-const REGION_TERMS = [
-  '서울특별시',
-  '부산광역시',
-  '대구광역시',
-  '인천광역시',
-  '광주광역시',
-  '대전광역시',
-  '울산광역시',
-  '세종특별자치시',
-  '경기도',
-  '강원특별자치도',
-  '충청북도',
-  '충청남도',
-  '전북특별자치도',
-  '전라남도',
-  '경상북도',
-  '경상남도',
-  '제주특별자치도',
-];
-
 const SIGNAL_TERMS = [
   { id: 'signal-kdca', label: 'KDCA 공식감시', terms: ['KDCA', '질병청', '공식 감시', 'baseline', '감시자료'] },
   { id: 'signal-osint', label: 'OSINT 신호', terms: ['OSINT', '국내 뉴스', '뉴스', '증상탐색행동', '증상 탐색 행동'] },
@@ -113,13 +93,6 @@ const TOPIC_TERMS = [
   { id: 'topic-rsv', label: 'RSV', terms: ['RSV', '호흡기세포융합'] },
   { id: 'topic-measles', label: '홍역/measles', terms: ['홍역', 'measles'] },
   { id: 'topic-quality', label: 'freshness/coverage', terms: ['freshness', 'coverage', 'data quality', '신뢰도'] },
-];
-
-const ACTION_TERMS = [
-  { id: 'action-watch', label: '지역 watch', terms: ['watch', '감시', '주시', '관찰'] },
-  { id: 'action-breakdown', label: '신호 breakdown', terms: ['breakdown', '원천자료', '신호 breakdown'] },
-  { id: 'action-globe', label: 'globe raw 확인', terms: ['globe', 'Korea relevance', 'raw data', '국제 신호'] },
-  { id: 'action-prevention', label: '예방/접종', terms: ['예방', '접종', '기침 예절', '손 씻기'] },
 ];
 
 function titleForReport(item: ReportItem) {
@@ -155,11 +128,6 @@ function termCount(text: string, terms: string[]) {
   }, 0);
 }
 
-function regionLevel(markdown: string, region: string) {
-  const match = new RegExp(`${region}[^\\n]{0,90}(G[0-3])|\\[(G[0-3])[^\\n]{0,90}${region}`).exec(markdown);
-  return match?.[1] || match?.[2] || '';
-}
-
 function sectionBody(markdown: string, heading: string) {
   const lines = markdown.split(/\r?\n/);
   const start = lines.findIndex((line) => line.trim().toLowerCase() === `## ${heading}`.toLowerCase());
@@ -190,133 +158,109 @@ function relationshipPath(from: RelationshipNode, to: RelationshipNode) {
   return `M ${from.x} ${from.y} C ${midX} ${from.y - bend}, ${midX} ${to.y + bend}, ${to.x} ${to.y}`;
 }
 
-function buildRelationshipFigure(item: ReportItem | null, markdown: string, sections: IntelligenceSection[]): RelationshipFigure {
+function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sections: IntelligenceSection[]): RelationshipFigure {
+  void _sections;
   const text = markdown || '';
+  const paragraphs = text.split(/\n{2,}/).map((p) => p.toLowerCase());
+
+  // Bipartite layout — signals on the LEFT, diseases/keywords on the RIGHT.
+  // Center carries a small report identifier purely for orientation.
+  const VIEW_W = 1200;
+  const VIEW_H = 720;
+  const LEFT_X = 230;
+  const RIGHT_X = 970;
+  const CENTER_X = VIEW_W / 2;
+  const CENTER_Y = VIEW_H / 2;
+
   const nodes: RelationshipNode[] = [
-    { id: 'report', label: item ? titleForReport(item) : 'Sentinel report', kind: 'report', x: 430, y: 222, weight: 1, subtitle: item ? TYPE_META[item.type].label : 'REPORT' },
-    { id: 'section-changed', label: 'What changed', kind: 'section', x: 184, y: 88, weight: 0.86 },
-    { id: 'section-matters', label: 'Why it matters', kind: 'section', x: 676, y: 96, weight: 0.78 },
-    { id: 'section-confidence', label: 'Confidence', kind: 'section', x: 678, y: 345, weight: 0.74 },
-    { id: 'section-actions', label: 'Watch actions', kind: 'action', x: 184, y: 346, weight: 0.82 },
+    { id: 'report', label: item ? titleForReport(item) : 'Sentinel report', kind: 'report', x: CENTER_X, y: CENTER_Y, weight: 1, subtitle: item ? TYPE_META[item.type].label : 'REPORT' },
   ];
-  const edges: RelationshipEdge[] = [
-    { from: 'section-changed', to: 'report', label: 'change', strength: 0.82, tone: 'primary' },
-    { from: 'section-matters', to: 'report', label: 'meaning', strength: 0.78, tone: 'primary' },
-    { from: 'section-confidence', to: 'report', label: 'trust', strength: 0.7, tone: 'primary' },
-    { from: 'section-actions', to: 'report', label: 'response', strength: 0.74, tone: 'action' },
-  ];
+  const edges: RelationshipEdge[] = [];
 
-  const detectedRegions = REGION_TERMS
-    .map((region) => ({ region, count: termCount(text, [region]), level: regionLevel(text, region) }))
-    .filter((entry) => entry.count > 0)
-    .sort((a, b) => {
-      const levelDelta = (b.level ? Number(b.level.slice(1)) : 0) - (a.level ? Number(a.level.slice(1)) : 0);
-      return levelDelta || b.count - a.count;
-    })
-    .slice(0, 5);
-
-  detectedRegions.forEach((entry, index) => {
-    const id = `region-${index}`;
-    nodes.push({
-      id,
-      label: entry.region.replace('특별자치시', '').replace('특별자치도', '').replace('광역시', '').replace('특별시', ''),
-      kind: 'region',
-      x: 78,
-      y: 140 + index * 48,
-      weight: Math.min(1, 0.42 + entry.count * 0.12),
-      subtitle: entry.level || 'watch',
-    });
-    edges.push({ from: id, to: 'section-changed', label: entry.level || 'region', strength: Math.min(1, 0.45 + entry.count * 0.08), tone: 'region' });
-  });
-
+  // ── Detect signals (sources)
   const detectedSignals = SIGNAL_TERMS
     .map((signal) => ({ ...signal, count: termCount(text, signal.terms) }))
     .filter((signal) => signal.count > 0)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
-  const signalPositions = [
-    { x: 296, y: 112 },
-    { x: 312, y: 360 },
-    { x: 486, y: 372 },
-    { x: 560, y: 110 },
-    { x: 532, y: 250 },
-  ];
+    .sort((a, b) => b.count - a.count);
+
+  // ── Detect topics (diseases/keywords)
+  const detectedTopics = TOPIC_TERMS
+    .map((topic) => ({ ...topic, count: termCount(text, topic.terms) }))
+    .filter((topic) => topic.count > 0)
+    .sort((a, b) => b.count - a.count);
+
+  const sigCount = Math.max(1, detectedSignals.length);
+  const topCount = Math.max(1, detectedTopics.length);
+  const verticalPad = 90;
+
   detectedSignals.forEach((signal, index) => {
+    const y = sigCount === 1 ? CENTER_Y : verticalPad + ((VIEW_H - 2 * verticalPad) / (sigCount - 1)) * index;
     nodes.push({
       id: signal.id,
       label: signal.label,
       kind: 'signal',
-      x: signalPositions[index].x,
-      y: signalPositions[index].y,
-      weight: Math.min(1, 0.38 + signal.count * 0.09),
-      subtitle: `${signal.count} hits`,
+      x: LEFT_X,
+      y,
+      weight: Math.min(1, 0.42 + signal.count * 0.07),
+      subtitle: `${signal.count} mentions`,
     });
-    const target = signal.id === 'signal-kdca'
-      ? 'section-confidence'
-      : signal.id === 'signal-global'
-        ? 'section-actions'
-        : signal.id === 'signal-trends' || signal.id === 'signal-osint'
-          ? 'section-changed'
-          : 'section-matters';
-    edges.push({ from: signal.id, to: target, label: 'evidence', strength: Math.min(1, 0.45 + signal.count * 0.05), tone: 'signal' });
-    edges.push({ from: signal.id, to: 'report', label: 'synthesis', strength: 0.45, tone: 'signal' });
+    // signal → report (synthesis link)
+    edges.push({ from: signal.id, to: 'report', label: 'synthesis', strength: Math.min(1, 0.4 + signal.count * 0.04), tone: 'signal' });
   });
 
-  const detectedTopics = TOPIC_TERMS
-    .map((topic) => ({ ...topic, count: termCount(text, topic.terms) }))
-    .filter((topic) => topic.count > 0)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
   detectedTopics.forEach((topic, index) => {
+    const y = topCount === 1 ? CENTER_Y : verticalPad + ((VIEW_H - 2 * verticalPad) / (topCount - 1)) * index;
     nodes.push({
       id: topic.id,
       label: topic.label,
       kind: 'topic',
-      x: 188 + index * 116,
-      y: 455,
-      weight: Math.min(1, 0.34 + topic.count * 0.08),
+      x: RIGHT_X,
+      y,
+      weight: Math.min(1, 0.42 + topic.count * 0.08),
       subtitle: `${topic.count} mentions`,
     });
-    const target = topic.id === 'topic-quality'
-      ? 'section-confidence'
-      : topic.id === 'topic-measles' || topic.id === 'topic-covid'
-        ? 'signal-global'
-        : 'signal-trends';
-    if (nodes.some((node) => node.id === target)) {
-      edges.push({ from: topic.id, to: target, label: 'topic', strength: Math.min(1, 0.38 + topic.count * 0.04), tone: 'topic' });
-    } else {
-      edges.push({ from: topic.id, to: 'report', label: 'topic', strength: 0.42, tone: 'topic' });
-    }
+    edges.push({ from: 'report', to: topic.id, label: 'discussed', strength: Math.min(1, 0.4 + topic.count * 0.04), tone: 'topic' });
   });
 
-  const detectedActions = ACTION_TERMS
-    .map((action) => ({ ...action, count: termCount(text, action.terms) }))
-    .filter((action) => action.count > 0)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 3);
-  detectedActions.forEach((action, index) => {
-    nodes.push({
-      id: action.id,
-      label: action.label,
-      kind: 'action',
-      x: 770,
-      y: 190 + index * 56,
-      weight: Math.min(1, 0.36 + action.count * 0.06),
-      subtitle: `${action.count} hits`,
+  // ── Co-occurrence: signal × topic edges (which signal mentions which disease)
+  // Edge strength = number of paragraphs containing both terms.
+  detectedSignals.forEach((signal) => {
+    const sigTerms = signal.terms.map((t) => t.toLowerCase());
+    detectedTopics.forEach((topic) => {
+      const topicTerms = topic.terms.map((t) => t.toLowerCase());
+      let coOccur = 0;
+      for (const para of paragraphs) {
+        const hasSig = sigTerms.some((t) => para.includes(t));
+        const hasTopic = topicTerms.some((t) => para.includes(t));
+        if (hasSig && hasTopic) coOccur += 1;
+      }
+      if (coOccur > 0) {
+        edges.push({
+          from: signal.id,
+          to: topic.id,
+          label: 'mentions',
+          strength: Math.min(1, 0.3 + coOccur * 0.18),
+          tone: 'primary',
+        });
+      }
     });
-    edges.push({ from: action.id, to: 'section-actions', label: 'action', strength: Math.min(1, 0.42 + action.count * 0.04), tone: 'action' });
   });
 
-  const sectionInsights = sections
-    .filter((section) => section.body)
-    .slice(0, 2)
-    .map((section) => `${section.title}: ${section.body.slice(0, 96)}${section.body.length > 96 ? '...' : ''}`);
-  const insight = [
-    detectedRegions.length ? `지역 노드: ${detectedRegions.map((entry) => `${entry.region}${entry.level ? ` ${entry.level}` : ''}`).join(', ')}` : '지역 노드: 보고서 내 명시 지역이 적어 중심 report node 위주로 표시합니다.',
-    detectedSignals.length ? `신호 lane: ${detectedSignals.map((signal) => signal.label).join(' / ')}` : '신호 lane: 명시된 source 용어가 부족합니다.',
-    detectedTopics.length ? `반복 topic: ${detectedTopics.map((topic) => topic.label).join(' / ')}` : '반복 topic: 주요 질병/품질 키워드가 적게 감지되었습니다.',
-    ...sectionInsights,
-  ].slice(0, 5);
+  // ── Insight text (질병 / 신호원 중심)
+  const topTopic = detectedTopics[0];
+  const topSignal = detectedSignals[0];
+  const insight: string[] = [];
+  if (topTopic) {
+    insight.push(`가장 많이 언급된 질병/키워드: ${topTopic.label} (${topTopic.count}회).`);
+  }
+  if (topSignal) {
+    insight.push(`주요 신호원: ${topSignal.label} (${topSignal.count}회 등장).`);
+  }
+  if (detectedTopics.length && detectedSignals.length) {
+    insight.push(`연결선이 굵을수록 같은 문단 안에서 신호원과 질병이 함께 등장한 빈도가 높다는 뜻입니다.`);
+  }
+  if (!detectedTopics.length) insight.push('질병/키워드: 명시적 언급이 적게 감지되었습니다.');
+  if (!detectedSignals.length) insight.push('신호원: 명시된 source 용어가 부족합니다.');
 
   return { nodes, edges, insight };
 }
@@ -385,33 +329,38 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
   const nodeById = new Map(figure.nodes.map((node) => [node.id, node]));
 
   return (
-    <section className="report-relationship-card">
+    <section className="report-relationship-card report-relationship-card--wide">
       <div className="report-relationship-header">
         <div>
           <span>Report relationship figure</span>
-          <h3>보고서 텍스트 기반 의미 관계도</h3>
+          <h3>신호원 ↔ 질병/키워드 관계도</h3>
           <p>
-            RAW report artifact에서 지역, 신호원, 질병/키워드, action 용어를 추출해
-            이번 보고서의 숨은 흐름을 시각화합니다.
+            보고서 본문에서 추출한 신호원(좌측)과 질병/키워드(우측)의 동시 등장 관계입니다.
+            연결선 굵기는 같은 문단에 함께 등장한 빈도를 의미합니다.
           </p>
         </div>
-        <strong>derived from raw report</strong>
+        <strong>bipartite ontology · derived from report</strong>
       </div>
 
-      <div className="report-relationship-layout">
-        <svg className="report-relationship-svg" viewBox="0 0 860 520" role="img" aria-label="Report semantic relationship map">
+      <div className="report-relationship-stage">
+        <svg className="report-relationship-svg" viewBox="0 0 1200 720" role="img" aria-label="Signal source × disease bipartite ontology">
           <defs>
-            <marker id="report-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+            <marker id="report-arrow" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
               <path d="M 0 0 L 8 4 L 0 8 z" className="report-arrow-marker" />
             </marker>
             <radialGradient id="reportCoreGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#38d8ff" stopOpacity="0.34" />
+              <stop offset="0%" stopColor="#38d8ff" stopOpacity="0.32" />
               <stop offset="100%" stopColor="#38d8ff" stopOpacity="0" />
             </radialGradient>
           </defs>
 
-          <circle cx="430" cy="222" r="154" fill="url(#reportCoreGlow)" />
+          {/* Lane labels */}
+          <text x="230" y="40" className="rel-lane-label" textAnchor="middle">SIGNAL SOURCES · 신호원</text>
+          <text x="970" y="40" className="rel-lane-label" textAnchor="middle">DISEASE / KEYWORDS · 질병/키워드</text>
 
+          <circle cx="600" cy="360" r="120" fill="url(#reportCoreGlow)" />
+
+          {/* Edges */}
           {figure.edges.map((edge, index) => {
             const from = nodeById.get(edge.from);
             const to = nodeById.get(edge.to);
@@ -421,12 +370,12 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
               <g className={`report-rel-edge edge-${edge.tone}`} key={`${edge.from}-${edge.to}-${index}`}>
                 <path
                   d={d}
-                  style={{ strokeWidth: 0.8 + edge.strength * 3.3, opacity: 0.28 + edge.strength * 0.52 }}
+                  style={{ strokeWidth: 0.8 + edge.strength * 4, opacity: 0.22 + edge.strength * 0.6 }}
                   markerEnd="url(#report-arrow)"
                 />
-                <circle r={2.4 + edge.strength * 2} className="report-rel-pulse">
+                <circle r={2.4 + edge.strength * 2.4} className="report-rel-pulse">
                   <animateMotion
-                    dur={`${5.1 - edge.strength * 1.8}s`}
+                    dur={`${5.4 - edge.strength * 2}s`}
                     repeatCount="indefinite"
                     path={d}
                     begin={`${index * 0.18}s`}
@@ -436,35 +385,45 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
             );
           })}
 
+          {/* Nodes */}
           {figure.nodes.map((node) => {
-            const radius = node.kind === 'report' ? 43 : node.kind === 'section' || node.kind === 'action' ? 30 : 23 + node.weight * 9;
+            const radius = node.kind === 'report' ? 50 : 30 + node.weight * 14;
             return (
               <g className={`report-rel-node node-${node.kind}`} key={node.id} transform={`translate(${node.x}, ${node.y})`}>
                 <circle r={radius} />
                 <text y={node.kind === 'report' ? -4 : 4}>
-                  {splitLabel(node.label, node.kind === 'report' ? 14 : 11).slice(0, 2).map((line, index) => (
-                    <tspan key={`${node.id}-${line}`} x="0" dy={index === 0 ? 0 : 13}>{line}</tspan>
+                  {splitLabel(node.label, node.kind === 'report' ? 14 : 12).slice(0, 2).map((line, index) => (
+                    <tspan key={`${node.id}-${line}`} x="0" dy={index === 0 ? 0 : 14}>{line}</tspan>
                   ))}
                 </text>
-                {node.subtitle && <text className="report-rel-subtitle" y={node.kind === 'report' ? 24 : radius + 15}>{node.subtitle}</text>}
+                {node.subtitle && (
+                  <text className="report-rel-subtitle" y={node.kind === 'report' ? 28 : radius + 18}>
+                    {node.subtitle}
+                  </text>
+                )}
               </g>
             );
           })}
         </svg>
+      </div>
 
-        <aside className="report-relationship-insights">
-          <span>Figure interpretation</span>
-          <h4>무엇을 읽어야 하나?</h4>
-          {figure.insight.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
+      <div className="report-relationship-belowfig">
+        <div className="report-relationship-insights-row">
+          <div>
+            <span>Figure interpretation</span>
+            <h4>무엇을 읽어야 하나?</h4>
+            {figure.insight.length === 0 ? (
+              <p>아직 분석 가능한 키워드가 부족합니다. 보고서가 충분히 길어지면 관계도가 채워집니다.</p>
+            ) : (
+              figure.insight.map((line) => <p key={line}>{line}</p>)
+            )}
+          </div>
           <div className="report-relationship-legend">
-            <span><i className="rel-dot region" /> 지역</span>
             <span><i className="rel-dot signal" /> 신호원</span>
             <span><i className="rel-dot topic" /> 질병/키워드</span>
-            <span><i className="rel-dot action" /> 조치</span>
+            <span><i className="rel-edge-sample" /> 동시 등장 빈도</span>
           </div>
-        </aside>
+        </div>
       </div>
     </section>
   );

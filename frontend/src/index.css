@@ -5063,6 +5063,39 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   align-items: stretch;
 }
 
+/* Wide bipartite ontology layout (Radassist conference style) */
+.report-relationship-card--wide {
+  padding: 22px 24px;
+}
+.report-relationship-stage {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background:
+    linear-gradient(90deg, rgba(52, 211, 153, 0.05), transparent 35%, rgba(192, 132, 252, 0.05) 100%),
+    radial-gradient(circle at 50% 50%, rgba(56, 216, 255, 0.06), transparent 50%),
+    var(--bg-card);
+  padding: 8px;
+  margin-bottom: 16px;
+}
+.report-relationship-card--wide .report-relationship-svg {
+  min-height: 0;
+  height: auto;
+  width: 100%;
+  border: none;
+  background: transparent;
+  display: block;
+  aspect-ratio: 1200 / 720;
+  max-height: 70vh;
+}
+.rel-lane-label {
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  fill: rgba(148, 163, 184, 0.85);
+}
+
 .report-relationship-svg {
   width: 100%;
   min-height: 390px;
@@ -5072,6 +5105,52 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
     linear-gradient(90deg, rgba(56, 216, 255, 0.05), transparent 48%),
     radial-gradient(circle at 50% 50%, rgba(56, 216, 255, 0.08), transparent 34%),
     var(--bg-card);
+}
+
+/* Below-figure insight strip (replaces right-aside layout) */
+.report-relationship-belowfig {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.report-relationship-insights-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 18px;
+  justify-content: space-between;
+}
+.report-relationship-insights-row > div:first-child {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+.report-relationship-insights-row > div:first-child span {
+  display: block;
+  color: var(--text-muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.report-relationship-insights-row h4 {
+  margin: 6px 0 10px;
+  color: var(--text-primary);
+  font-size: 15px;
+}
+.report-relationship-insights-row p {
+  margin: 0 0 8px;
+  padding-left: 10px;
+  border-left: 2px solid rgba(56, 216, 255, 0.4);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.rel-edge-sample {
+  display: inline-block;
+  width: 22px;
+  height: 2px;
+  background: linear-gradient(90deg, #38d8ff, #c084fc);
+  border-radius: 2px;
 }
 
 .report-arrow-marker {
@@ -5109,33 +5188,43 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 }
 
 .report-rel-node circle {
-  fill: var(--bg-secondary);
+  fill: var(--bg-card);
   stroke: var(--border-strong);
-  stroke-width: 1.4;
-  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.1));
+  stroke-width: 1.6;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.18));
 }
 
 .report-rel-node.node-report circle {
-  fill: rgba(56, 216, 255, 0.12);
+  fill: rgba(56, 216, 255, 0.10);
   stroke: #38d8ff;
-  stroke-width: 2;
+  stroke-width: 2.2;
 }
 
 .report-rel-node.node-section circle { stroke: #38d8ff; }
 .report-rel-node.node-region circle { stroke: #ff7a5c; }
-.report-rel-node.node-signal circle { stroke: #34d399; }
-.report-rel-node.node-topic circle { stroke: #c084fc; }
+.report-rel-node.node-signal circle {
+  fill: rgba(52, 211, 153, 0.10);
+  stroke: #34d399;
+  stroke-width: 2;
+}
+.report-rel-node.node-topic circle {
+  fill: rgba(192, 132, 252, 0.10);
+  stroke: #c084fc;
+  stroke-width: 2;
+}
 .report-rel-node.node-action circle { stroke: #f59e42; }
 
 .report-rel-node text {
   fill: var(--text-primary);
-  font-size: 10.5px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
   text-anchor: middle;
+  letter-spacing: 0.2px;
 }
 
 .report-rel-node.node-report text {
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .report-rel-node .report-rel-subtitle {
