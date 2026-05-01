@@ -185,7 +185,10 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
         const data: IngestionStatus = await res.json();
         setIngestionStatus(data);
         setAvailableDates(data.available_snapshots);
-        setCurrentDate((prev) => (data.available_snapshots.includes(prev) ? prev : data.latest_snapshot));
+        // Always default to the latest available snapshot on initial page load
+        if (data.latest_snapshot) {
+          setCurrentDate(data.latest_snapshot);
+        }
       } catch {
         setAvailableDates(['2026-03-15']);
       }
@@ -691,8 +694,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     {
       title: 'Run analyze center',
       text: '데이터 수집, AI 분석, 리포트 생성을 한 곳에서 실행하고 연결 상태를 봅니다.',
-      action: () => setShowRunPanel(true),
-      active: showRunPanel,
+      action: () => setPipelineFlowOpen(true),
+      active: pipelineFlowOpen,
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter">
           <polyline points="2,12 5,12 7,6 10,18 13,9 15,15 17,12 22,12" />
@@ -863,6 +866,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
           <div className="kas-right-stack">
             {showRunPanel && (
               <section className="run-control-panel" aria-label="Run analyze status center">
+                <button className="run-control-close" onClick={() => setShowRunPanel(false)} title="닫기" type="button">×</button>
                 <div className="run-control-header">
                   <div>
                     <span className="run-control-kicker">RUN ANALYZE</span>
@@ -1003,36 +1007,36 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   </button>
                 ))}
               </div>
-            </div>
-          </div>
-
-          {/* Bottom horizontal alert legend (moved out of right stack so it doesn't get cut off) */}
-          <div className="kas-bottom-legend">
-            <div className="kas-legend-item">
-              <span className="kas-legend-dot kas-level-critical" />
-              <div><strong>G3 위험</strong><small>즉시 원인 확인과 대응 검토</small></div>
-              <span className="kas-legend-count">{criticalCount}</span>
-            </div>
-            <div className="kas-legend-item">
-              <span className="kas-legend-dot kas-level-high" />
-              <div><strong>G2 경계</strong><small>복수 신호 상승, 집중 모니터링</small></div>
-              <span className="kas-legend-count">{elevatedCount - criticalCount}</span>
-            </div>
-            <div className="kas-legend-item">
-              <span className="kas-legend-dot kas-level-moderate" />
-              <div><strong>G1 주의</strong><small>초기 변화 가능성, 추세 확인</small></div>
-              <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G1').length}</span>
-            </div>
-            <div className="kas-legend-item">
-              <span className="kas-legend-dot kas-level-low" />
-              <div><strong>G0 안정</strong><small>기준선 범위, 정기 감시 유지</small></div>
-              <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G0').length}</span>
+              {/* G-level legend back inside right column so it stays off the map (Jeju) */}
+              <div className="kas-side-legend-items">
+                <div className="kas-legend-item">
+                  <span className="kas-legend-dot kas-level-critical" />
+                  <div><strong>G3 위험</strong><small>즉시 원인 확인과 대응 검토</small></div>
+                  <span className="kas-legend-count">{criticalCount}</span>
+                </div>
+                <div className="kas-legend-item">
+                  <span className="kas-legend-dot kas-level-high" />
+                  <div><strong>G2 경계</strong><small>복수 신호 상승, 집중 모니터링</small></div>
+                  <span className="kas-legend-count">{elevatedCount - criticalCount}</span>
+                </div>
+                <div className="kas-legend-item">
+                  <span className="kas-legend-dot kas-level-moderate" />
+                  <div><strong>G1 주의</strong><small>초기 변화 가능성, 추세 확인</small></div>
+                  <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G1').length}</span>
+                </div>
+                <div className="kas-legend-item">
+                  <span className="kas-legend-dot kas-level-low" />
+                  <div><strong>G0 안정</strong><small>기준선 범위, 정기 감시 유지</small></div>
+                  <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G0').length}</span>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Layer selector panel (toggle-able) */}
           {showLayerPanel && (
             <div className="kas-layer-panel">
+              <button className="kas-layer-panel-close" onClick={() => setShowLayerPanel(false)} title="닫기" type="button">×</button>
               <div className="kas-layer-panel-title">레이어 선택</div>
               <label className={`kas-layer-item ${activeLayers.includes('respiratory') ? 'active' : ''}`}>
                 <input type="checkbox" checked={activeLayers.includes('respiratory')} onChange={() => toggleLayer('respiratory')} />
@@ -1497,23 +1501,39 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
               </svg>
             </div>
 
-            <div className="pipeline-flow-modal-actions">
-              {operationRows.map((row) => {
-                const isRunning = row.status === 'running';
-                return (
-                  <button
-                    key={row.key}
-                    className={`pipeline-flow-action pipeline-flow-action--${row.status}`}
-                    disabled={!!runningPipeline}
-                    onClick={() => runOperation(row.key)}
-                    type="button"
-                  >
-                    <span className="pipeline-flow-action-lane">{row.lane}</span>
-                    <span className="pipeline-flow-action-title">{row.title}</span>
-                    <span className="pipeline-flow-action-cta">{isRunning ? '실행 중...' : row.primaryAction}</span>
-                  </button>
-                );
-              })}
+            <div className="pipeline-flow-modal-detail">
+              <div className="pipeline-flow-modal-detail-title">단계 설명 · 클릭하면 실행됩니다</div>
+              <div className="pipeline-flow-modal-detail-list">
+                {operationRows.map((row) => {
+                  const upstream = pipelineEdges.filter(([, to]) => to === row.key).map(([from]) => operationRows[operationIndex.get(from) || 0]?.title).filter(Boolean);
+                  const downstream = pipelineEdges.filter(([from]) => from === row.key).map(([, to]) => operationRows[operationIndex.get(to) || 0]?.title).filter(Boolean);
+                  const isRunning = row.status === 'running';
+                  return (
+                    <article key={row.key} className={`pipeline-flow-detail-row status-${row.status}`}>
+                      <div className="pipeline-flow-detail-head">
+                        <span className="pipeline-flow-detail-lane">{row.lane}</span>
+                        <span className="pipeline-flow-detail-state">{row.status === 'needs-run' ? '실행 필요' : row.status === 'ready' ? '준비됨' : row.status === 'running' ? '실행 중' : '오류'}</span>
+                      </div>
+                      <strong className="pipeline-flow-detail-title">{row.title}</strong>
+                      <p className="pipeline-flow-detail-text">{row.detail}</p>
+                      {(upstream.length > 0 || downstream.length > 0) && (
+                        <div className="pipeline-flow-detail-links">
+                          {upstream.length > 0 && <span>입력: {upstream.join(' + ')}</span>}
+                          {downstream.length > 0 && <span>다음: {downstream.join(' + ')}</span>}
+                        </div>
+                      )}
+                      <button
+                        className="pipeline-flow-detail-btn"
+                        disabled={!!runningPipeline}
+                        onClick={() => runOperation(row.key)}
+                        type="button"
+                      >
+                        {isRunning ? '실행 중...' : row.primaryAction}
+                      </button>
+                    </article>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>

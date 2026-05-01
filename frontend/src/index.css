@@ -3026,6 +3026,131 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 }
 .pipeline-flow-action--running .pipeline-flow-action-cta { color: #f59e42; }
 .pipeline-flow-action--ready .pipeline-flow-action-cta { color: #34d399; }
+
+/* Modal detail rows (operation explanations under flow) */
+.pipeline-flow-modal-detail {
+  border-top: 1px solid var(--border);
+  background: var(--bg-secondary);
+  padding: 14px 22px 18px;
+  max-height: 32vh;
+  overflow-y: auto;
+}
+.pipeline-flow-modal-detail-title {
+  margin-bottom: 10px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  color: #38bdf8;
+  text-transform: uppercase;
+}
+.pipeline-flow-modal-detail-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+.pipeline-flow-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+}
+.pipeline-flow-detail-row.status-running { border-color: #f59e42; background: rgba(245, 158, 66, 0.06); }
+.pipeline-flow-detail-row.status-ready   { border-color: rgba(52, 211, 153, 0.4); }
+.pipeline-flow-detail-row.status-error   { border-color: #ef4444; }
+.pipeline-flow-detail-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+.pipeline-flow-detail-lane {
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+.pipeline-flow-detail-state {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bg-soft);
+  color: var(--text-secondary);
+}
+.status-running .pipeline-flow-detail-state { color: #f59e42; background: rgba(245, 158, 66, 0.12); }
+.status-ready   .pipeline-flow-detail-state { color: #34d399; background: rgba(52, 211, 153, 0.12); }
+.pipeline-flow-detail-title {
+  font-size: 12.5px;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+.pipeline-flow-detail-text {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.pipeline-flow-detail-links {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.pipeline-flow-detail-btn {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 5px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.pipeline-flow-detail-btn:hover:not(:disabled) {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+.pipeline-flow-detail-btn:disabled { opacity: 0.5; cursor: wait; }
+
+/* Close buttons for layer panel & run-control side panel */
+.kas-layer-panel { position: relative; }
+.kas-layer-panel-close,
+.run-control-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.kas-layer-panel-close:hover,
+.run-control-close:hover {
+  background: var(--bg-soft);
+  color: var(--text-primary);
+}
+.run-control-panel { position: relative; }
+.run-control-header { padding-right: 36px; /* leave room for close button */ }
 .run-control-flow svg {
   width: 100%;
   height: auto;
