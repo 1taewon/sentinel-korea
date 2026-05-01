@@ -160,6 +160,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   const [refreshingKdcaApi, setRefreshingKdcaApi] = useState(false);
   const [kdcaApiResult, setKdcaApiResult] = useState<{ summary?: string } | null>(null);
   const [showRunPanel, setShowRunPanel] = useState(false);
+  const [pipelineFlowOpen, setPipelineFlowOpen] = useState(false);
   const [runningPipeline, setRunningPipeline] = useState<OperationKey | null>(null);
   const [operationError, setOperationError] = useState<string | null>(null);
   const [uploadHistory, setUploadHistory] = useState<UploadHistoryItem[]>([]);
@@ -622,10 +623,32 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     return { key: row.key, x, y, row };
   });
   const pipelineNodeMap = new Map(pipelineNodePositions.map((node) => [node.key, node]));
+
+  // Larger layout for the expanded modal (viewBox 1000x480)
+  // Row 1 (y=80): SOURCE lane — 5 sources fed into OSINT or KDCA digest
+  // Row 2 (y=230): MID lane — osint and kdca_digest
+  // Row 3 (y=380): FINAL — sentinel + kdca_report
+  const PIPELINE_MODAL_NODE_LAYOUT: Record<string, { x: number; y: number }> = {
+    korea_news:  { x: 120, y:  80 },
+    trends:      { x: 280, y:  80 },
+    global:      { x: 440, y:  80 },
+    kdca_upload: { x: 620, y:  80 },
+    kdca_api:    { x: 800, y:  80 },
+    osint:       { x: 280, y: 230 },
+    kdca_digest: { x: 710, y: 230 },
+    sentinel:    { x: 440, y: 380 },
+    kdca_report: { x: 780, y: 380 },
+  };
+  const pipelineModalNodes = operationRows.map((row) => {
+    const pos = PIPELINE_MODAL_NODE_LAYOUT[row.key] || { x: 0, y: 0 };
+    return { key: row.key, x: pos.x, y: pos.y, row };
+  });
+  const pipelineModalNodeMap = new Map(pipelineModalNodes.map((n) => [n.key, n]));
+
   const operationReadyCount = operationRows.filter((row) => row.status === 'ready').length;
   const mapToolGuides = [
     {
-      title: 'WHO/국제 뉴스 보조레이어',
+      title: 'World outbreak',
       text: '해외 outbreak, WHO DON, Google News/NewsAPI 신호를 globe에서 확인합니다.',
       action: () => setIsGlobeExpanded(true),
       active: isGlobeExpanded,
@@ -871,7 +894,12 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   <div className="run-control-error">{operationError}</div>
                 )}
 
-                <div className="run-control-flow" aria-label="Pipeline dependency map">
+                <button
+                  className="run-control-flow run-control-flow--clickable"
+                  aria-label="Pipeline dependency map — 클릭해서 확대"
+                  type="button"
+                  onClick={() => setPipelineFlowOpen(true)}
+                >
                   <svg viewBox="0 0 100 84" role="img">
                     <defs>
                       <marker id="run-flow-arrow" markerWidth="5" markerHeight="5" refX="4.2" refY="2.5" orient="auto">
@@ -887,7 +915,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                       const d = dx < 4
                         ? `M${from.x},${from.y + 4} C${from.x - 8},${midY} ${to.x - 8},${midY} ${to.x},${to.y - 4}`
                         : `M${from.x + 5},${from.y} C${from.x + 13},${midY} ${to.x - 13},${midY} ${to.x - 5},${to.y}`;
-                      return <path className="run-flow-edge" d={d} key={`${fromKey}-${toKey}`} markerEnd="url(#run-flow-arrow)" />;
+                      const isFlowing = from.row.status === 'running' || to.row.status === 'running';
+                      return <path className={`run-flow-edge ${isFlowing ? 'is-running' : ''}`} d={d} key={`${fromKey}-${toKey}`} markerEnd="url(#run-flow-arrow)" />;
                     })}
                     {pipelineNodePositions.map(({ key, x, y, row }) => (
                       <g className={`run-flow-node status-${row.status}`} transform={`translate(${x} ${y})`} key={key}>
@@ -897,10 +926,10 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                     ))}
                   </svg>
                   <div>
-                    <span>연결 흐름</span>
+                    <span>연결 흐름 · 클릭해서 확대</span>
                     <strong>원천자료가 OSINT와 KDCA 요약으로 들어가고, Sentinel 통합 분석이 최종 리포트로 이어집니다.</strong>
                   </div>
-                </div>
+                </button>
 
                 <div className="run-control-list">
                   {operationRows.map((row) => {
@@ -1040,7 +1069,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
             <div className="expanded-globe-overlay">
               <div className="expanded-globe-header">
                 <div>
-                  <h3>WHO/국제 뉴스 보조 레이어</h3>
+                  <h3>World outbreak</h3>
                   <p>국내 뉴스/국내 트렌드와 분리해서 보는 국제 발생 상황, WHO 알림, 외부 corroboration 패널입니다.</p>
                 </div>
                 <button className="panel-close" onClick={() => setIsGlobeExpanded(false)}>×</button>
@@ -1379,6 +1408,115 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
           onDataRefreshed={() => fetchAlerts()}
           snapshotDate={currentDate}
         />
+      )}
+
+      {/* Expanded Pipeline Flow Modal — animated ontology pathway */}
+      {pipelineFlowOpen && (
+        <div className="pipeline-flow-modal" onClick={() => setPipelineFlowOpen(false)}>
+          <div className="pipeline-flow-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="pipeline-flow-modal-header">
+              <div>
+                <span className="pipeline-flow-modal-kicker">PIPELINE FLOW</span>
+                <h3>데이터 수집 → AI 분석 → 리포트 흐름</h3>
+                <p>각 노드를 클릭하면 해당 단계를 실행합니다. 진행 중인 노드는 펄스로, 흐름은 점선 애니메이션으로 표시됩니다.</p>
+              </div>
+              <button className="pipeline-flow-modal-close" onClick={() => setPipelineFlowOpen(false)} type="button">×</button>
+            </div>
+
+            <div className="pipeline-flow-modal-svg-wrap">
+              <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <marker id="pf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 Z" fill="rgba(56,189,248,0.7)" />
+                  </marker>
+                </defs>
+
+                {/* Lane labels */}
+                <text x="20" y="85" className="pf-lane-label">SOURCE</text>
+                <text x="20" y="235" className="pf-lane-label">AI / 처리</text>
+                <text x="20" y="385" className="pf-lane-label">통합 / 리포트</text>
+
+                {/* Edges */}
+                {pipelineEdges.map(([fromKey, toKey]) => {
+                  const from = pipelineModalNodeMap.get(fromKey);
+                  const to = pipelineModalNodeMap.get(toKey);
+                  if (!from || !to) return null;
+                  const dx = to.x - from.x;
+                  const dy = to.y - from.y;
+                  const cx1 = from.x + dx * 0.15;
+                  const cy1 = from.y + dy * 0.6;
+                  const cx2 = to.x - dx * 0.15;
+                  const cy2 = to.y - dy * 0.4;
+                  const d = `M${from.x},${from.y + 32} C${cx1},${cy1} ${cx2},${cy2} ${to.x},${to.y - 32}`;
+                  const isFlowing = from.row.status === 'running' || to.row.status === 'running';
+                  const isComplete = from.row.status === 'ready' && to.row.status === 'ready';
+                  return (
+                    <path
+                      key={`${fromKey}-${toKey}`}
+                      d={d}
+                      fill="none"
+                      className={`pf-edge ${isFlowing ? 'pf-edge--flowing' : ''} ${isComplete ? 'pf-edge--complete' : ''}`}
+                      markerEnd="url(#pf-arrow)"
+                    />
+                  );
+                })}
+
+                {/* Nodes */}
+                {pipelineModalNodes.map(({ key, x, y, row }) => {
+                  const isRunning = row.status === 'running';
+                  const isReady = row.status === 'ready';
+                  const isError = row.status === 'error';
+                  const status = isRunning ? 'running' : isReady ? 'ready' : isError ? 'error' : 'idle';
+                  return (
+                    <g key={key} className={`pf-node pf-node--${status}`} transform={`translate(${x} ${y})`}>
+                      {/* Pulse ring (only when running) */}
+                      {isRunning && <circle r="38" className="pf-node-pulse" />}
+                      {/* Main circle */}
+                      <circle r="28" className="pf-node-bg" />
+                      <circle r="28" className="pf-node-ring" />
+                      {/* Lane badge */}
+                      <text y="-3" className="pf-node-lane">{row.lane}</text>
+                      {/* Status indicator */}
+                      <text y="10" className="pf-node-status">
+                        {isRunning ? '실행 중' : isReady ? '준비됨' : isError ? '오류' : '대기'}
+                      </text>
+                      {/* Label below */}
+                      <text y="52" className="pf-node-title">{row.title}</text>
+                      {/* Click overlay */}
+                      <circle
+                        r="28"
+                        fill="transparent"
+                        style={{ cursor: runningPipeline ? 'wait' : 'pointer' }}
+                        onClick={() => { if (!runningPipeline) runOperation(row.key); }}
+                      >
+                        <title>{row.primaryAction} — {row.title}</title>
+                      </circle>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+
+            <div className="pipeline-flow-modal-actions">
+              {operationRows.map((row) => {
+                const isRunning = row.status === 'running';
+                return (
+                  <button
+                    key={row.key}
+                    className={`pipeline-flow-action pipeline-flow-action--${row.status}`}
+                    disabled={!!runningPipeline}
+                    onClick={() => runOperation(row.key)}
+                    type="button"
+                  >
+                    <span className="pipeline-flow-action-lane">{row.lane}</span>
+                    <span className="pipeline-flow-action-title">{row.title}</span>
+                    <span className="pipeline-flow-action-cta">{isRunning ? '실행 중...' : row.primaryAction}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
