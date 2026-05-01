@@ -332,7 +332,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   const sourceOverviewCards = [
     {
       label: 'OFFICIAL',
-      title: '질병청 감시자료',
+      title: 'KDCA 표본감시자료',
       description: 'ILI/SARI, 법정감염병, 지역 단위 기준선을 만드는 핵심 소스입니다.',
       cadence: '주간 / epiweek',
       output: 'normalized_signal',
@@ -341,7 +341,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     },
     {
       label: 'DOCUMENT',
-      title: '폐하수 PDF 공보',
+      title: 'KDCA 폐하수감시 공보',
       description: '현재는 문서-only 보조 신호입니다. 자동 표 추출과 검수 모드는 다음 단계로 둡니다.',
       cadence: '주간 PDF',
       output: 'corroboration lane',
@@ -353,8 +353,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       title: '국내 뉴스 + 검색 트렌드',
       description: '국내 호흡기 이상 징후를 빠르게 포착하되, 공식 감시자료를 대체하지 않습니다.',
       cadence: '수동/일간 refresh',
-      output: 'evidence_digest',
-      metric: 'AI digest',
+      output: 'evidence_analysis',
+      metric: 'AI analyze',
       tone: 'blue',
     },
     {
@@ -540,11 +540,39 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
               <div className="kas-side-legend-title">
                 <Timeline dates={availableDates.length ? availableDates : [currentDate]} currentDate={currentDate} onChange={setCurrentDate} />
               </div>
+              <div className="kas-map-explain">
+                <span className="kas-map-explain-kicker">MAP 해석 가이드</span>
+                <strong>17개 시·도 호흡기 경보 현황</strong>
+                <p>
+                  지도 색상은 선택한 날짜의 snapshot에서 계산된 지역별 composite alert level입니다.
+                  클릭하면 어떤 신호가 점수를 올렸는지, 신뢰도와 근거 흐름을 확인합니다.
+                </p>
+                <p>
+                  <b>날짜 패널</b>은 실제 오늘 날짜가 아니라 백엔드가 보관한 snapshot_date/epiweek를 선택하는 컨트롤입니다.
+                  과거 주차를 선택하면 당시 기준의 경보와 설명을 다시 재생합니다.
+                </p>
+              </div>
               <div className="kas-side-legend-items">
-                <div className="kas-legend-item"><span className="kas-legend-dot kas-level-critical" />G3 위험 <span className="kas-legend-count">{criticalCount}</span></div>
-                <div className="kas-legend-item"><span className="kas-legend-dot kas-level-high" />G2 경계 <span className="kas-legend-count">{elevatedCount - criticalCount}</span></div>
-                <div className="kas-legend-item"><span className="kas-legend-dot kas-level-moderate" />G1 주의 <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G1').length}</span></div>
-                <div className="kas-legend-item"><span className="kas-legend-dot kas-level-low" />G0 안정 <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G0').length}</span></div>
+                <div className="kas-legend-item">
+                  <span className="kas-legend-dot kas-level-critical" />
+                  <div><strong>G3 위험</strong><small>즉시 원인 확인과 대응 검토</small></div>
+                  <span className="kas-legend-count">{criticalCount}</span>
+                </div>
+                <div className="kas-legend-item">
+                  <span className="kas-legend-dot kas-level-high" />
+                  <div><strong>G2 경계</strong><small>복수 신호 상승, 집중 모니터링</small></div>
+                  <span className="kas-legend-count">{elevatedCount - criticalCount}</span>
+                </div>
+                <div className="kas-legend-item">
+                  <span className="kas-legend-dot kas-level-moderate" />
+                  <div><strong>G1 주의</strong><small>초기 변화 가능성, 추세 확인</small></div>
+                  <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G1').length}</span>
+                </div>
+                <div className="kas-legend-item">
+                  <span className="kas-legend-dot kas-level-low" />
+                  <div><strong>G0 안정</strong><small>기준선 범위, 정기 감시 유지</small></div>
+                  <span className="kas-legend-count">{koreaAlerts.filter(a => a.level === 'G0').length}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -795,11 +823,10 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
           <section className="data-source-command-board">
             <div>
               <span className="data-source-kicker">데이터 소스 운영 현황</span>
-              <h2>Korea-first respiratory intelligence inputs</h2>
+              <h2>Respiratory surveillance intelligence data inputs</h2>
               <p>
-                질병청 직원이 볼 때 중요한 것은 데이터가 어디서 왔고, 어떤 역할이며,
-                최종 경보의 어느 부분에 쓰이는가입니다. 아래 보드는 각 source lane의
-                목적, 갱신 주기, 산출물을 먼저 보여줍니다.
+                Data를 해석할때 중요한 것은 데이터가 어디서 왔고, 어떤 역할이며, 최종 경보의 어느 부분에
+                쓰이는가입니다. 아래 보드는 각 source lane의 목적, 갱신 주기, 산출물을 먼저 보여줍니다.
               </p>
             </div>
             <div className="source-visibility-grid">
@@ -824,15 +851,24 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
             {/* LEFT — analysis result displays */}
             <div className="kas-sources-main">
               <section className="kas-sources-card">
-                <h3>뉴스/OSINT 파이프라인</h3>
+                <h3>뉴스트렌드 파이프라인</h3>
+                <p className="source-section-helper">
+                  국내외 뉴스를 분석하여 질환 관련 trends, 이상 징후, 초기 경고신호를 추출합니다.
+                </p>
                 <NewsPanel hideKeywordsButton />
               </section>
               <section className="kas-sources-card">
                 <h3>검색 트렌드 파이프라인</h3>
+                <p className="source-section-helper">
+                  국내 검색 행동 변화를 시간축으로 분석하여 증상 탐색 증가, 관심도 변화, 공식 감시자료와의 방향성을 비교합니다.
+                </p>
                 <TrendsChart />
               </section>
               <section className="kas-sources-card">
                 <h3>KDCA 감시자료 분석</h3>
+                <p className="source-section-helper">
+                  질병관리청에서 제공하는 주간보고서를 기반으로 AI가 통합분석하여 요약 및 위험도 분석을 제공합니다.
+                </p>
                 <KdcaUploadPanel view="summary" />
               </section>
             </div>
@@ -867,7 +903,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
 
                 <button className="osint-analysis-btn console-action-btn" onClick={handleRunOsintAnalysis} disabled={analyzingOsint}>
                   <span className="console-btn-title">{analyzingOsint ? 'OSINT 실행 중...' : 'OSINT 분석'}</span>
-                  <span className="console-btn-sub">국내 뉴스 + 검색 트렌드 보조 신호 요약</span>
+                  <span className="console-btn-sub">국내 뉴스 + 검색 트렌드 보조 신호 분석</span>
                 </button>
                 <button className="kdca-report-btn console-action-btn" onClick={handleGenerateKdcaReport} disabled={generatingKdcaReport}>
                   <span className="console-btn-title">{generatingKdcaReport ? 'KDCA 분석 중...' : 'KDCA 감시자료 분석'}</span>

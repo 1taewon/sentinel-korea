@@ -122,30 +122,30 @@ const PIPELINE_STAGES: PipelineStage[] = [
   },
   {
     id: 'digest',
-    title: { ko: 'AI 요약', en: 'AI digest' },
+    title: { ko: 'AI 분석', en: 'AI analysis' },
     subtitle: {
-      ko: '각 evidence lane을 먼저 요약해 약한 신호가 합성 과정에서 사라지지 않게 합니다.',
-      en: 'Summarize each evidence lane before fusion so weak signals stay visible.',
+      ko: '각 evidence lane을 먼저 분석해 약한 신호가 합성 과정에서 사라지지 않게 합니다.',
+      en: 'Analyze each evidence lane before fusion so weak signals stay visible.',
     },
-    artifact: 'evidence_digest',
+    artifact: 'evidence_analysis',
     tone: 'amber',
     lanes: [
-      { ko: '뉴스 요약', en: 'News digest' },
-      { ko: '트렌드 요약', en: 'Trend digest' },
-      { ko: 'KDCA 요약', en: 'KDCA digest' },
+      { ko: '뉴스 분석', en: 'News analysis' },
+      { ko: '트렌드 분석', en: 'Trend analysis' },
+      { ko: 'KDCA 분석', en: 'KDCA analysis' },
       { ko: '폐하수 메모', en: 'Wastewater note' },
     ],
     controls: [
       {
         id: 'generate-digests',
-        label: { ko: 'Evidence 요약 생성', en: 'Generate evidence digests' },
-        description: { ko: '뉴스, 트렌드, KDCA lane의 AI digest를 생성합니다.', en: 'Generate news, trends, and KDCA AI digests.' },
+        label: { ko: 'Evidence 분석 생성', en: 'Generate evidence analysis' },
+        description: { ko: '뉴스, 트렌드, KDCA lane의 AI 분석 결과를 생성합니다.', en: 'Generate news, trends, and KDCA AI analysis.' },
         endpoints: ['/risk-analysis/news-digest', '/risk-analysis/trends-digest', '/risk-analysis/kdca-digest'],
-        result: { ko: 'Evidence digest 생성 완료.', en: 'Evidence digests generated.' },
+        result: { ko: 'Evidence 분석 생성 완료.', en: 'Evidence analysis generated.' },
       },
     ],
     checklist: [
-      { ko: '요약은 경보 점수의 근거 설명에 사용됩니다.', en: 'Digests feed the alert explanation layer.' },
+      { ko: '분석 결과는 경보 점수의 근거 설명에 사용됩니다.', en: 'Analysis outputs feed the alert explanation layer.' },
       { ko: '뉴스/트렌드는 보조 corroboration으로 취급합니다.', en: 'News and trends remain corroborating signals.' },
     ],
   },
@@ -208,15 +208,15 @@ const PIPELINE_STAGES: PipelineStage[] = [
 ];
 
 const ONTOLOGY_NODES: OntologyNode[] = [
-  { id: 'kdca', label: { ko: '질병청 감시', en: 'KDCA surveillance' }, x: 84, y: 58, kind: 'source' },
-  { id: 'wastewater', label: { ko: '폐하수 PDF', en: 'Wastewater PDF' }, x: 86, y: 134, kind: 'source' },
+  { id: 'kdca', label: { ko: 'KDCA 표본감시데이터', en: 'KDCA sentinel surveillance' }, x: 84, y: 58, kind: 'source' },
+  { id: 'wastewater', label: { ko: 'KDCA 폐하수감시데이터', en: 'KDCA wastewater surveillance' }, x: 86, y: 134, kind: 'source' },
   { id: 'news', label: { ko: '국내 뉴스', en: 'Korea news' }, x: 86, y: 214, kind: 'source' },
   { id: 'trends', label: { ko: '국내 검색 트렌드', en: 'Korea search trends' }, x: 86, y: 292, kind: 'source' },
   { id: 'respiratory', label: { ko: '호흡기 활동성', en: 'Respiratory activity' }, x: 322, y: 100, kind: 'concept' },
   { id: 'environment', label: { ko: '환경 보조근거', en: 'Environmental corroboration' }, x: 330, y: 205, kind: 'concept' },
-  { id: 'behavior', label: { ko: '증상탐색행동(OSINT 신호)', en: 'Symptom-seeking behavior (OSINT signal)' }, x: 342, y: 318, kind: 'concept' },
-  { id: 'burden', label: { ko: '폐렴 부담 가설', en: 'Pneumonia burden hypothesis' }, x: 548, y: 142, kind: 'concept' },
-  { id: 'report', label: { ko: 'Sentinel 종합보고서', en: 'Sentinel analysis report' }, x: 720, y: 220, kind: 'output' },
+  { id: 'behavior', label: { ko: '증상탐색행동(OSINT 신호)', en: 'Symptom-seeking behavior (OSINT signal)' }, x: 342, y: 318, kind: 'output' },
+  { id: 'burden', label: { ko: '감시데이터통합', en: 'Surveillance data fusion' }, x: 548, y: 142, kind: 'concept' },
+  { id: 'report', label: { ko: '종합보고서', en: 'Final report' }, x: 720, y: 220, kind: 'output' },
 ];
 
 const ONTOLOGY_EDGES: OntologyEdge[] = [
@@ -268,9 +268,13 @@ function edgePath(edge: OntologyEdge) {
 
 function nodeLabelLines(node: OntologyNode, lang: Lang) {
   const label = copy(node.label, lang);
+  if (label.includes('\n')) return label.split('\n');
   if (lang === 'ko' && label.includes('(')) {
     const [main, detail] = label.split('(');
     return [main, `(${detail}`];
+  }
+  if (lang === 'ko' && label.startsWith('KDCA ')) {
+    return ['KDCA', label.replace('KDCA ', '')];
   }
   if (lang === 'en' && label.length > 26) {
     return label.replace(' (', '\n(').split('\n');
@@ -480,14 +484,13 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
             <div className="ontology-header">
               <div>
                 <span className="pipeline-detail-kicker">Sentinel ontology figure</span>
-                <h4>{lang === 'ko' ? 'AI가 해석한 신호 관계도' : 'AI interpretation of signal relationships'}</h4>
+                <h4>{lang === 'ko' ? '원천신호 및 AI분석 관계도' : 'Source signals and AI analysis map'}</h4>
                 <p className="ontology-header-copy">
                   {lang === 'ko'
-                    ? '점선과 pulse는 raw signal이 개념 노드로 묶이고, 최종 보고서로 흘러가는 과정을 보여줍니다.'
-                    : 'Dashed pulses show raw signals being grouped into concept nodes and routed into the report.'}
+                    ? '점선과 pulse는 원천 신호가 AI 분석 노드와 보고서 산출물로 흘러가는 과정을 보여줍니다.'
+                    : 'Dashed pulses show source signals flowing through AI analysis nodes into report outputs.'}
                 </p>
               </div>
-              <span className="ontology-badge">{lang === 'ko' ? '설명 가능한 figure' : 'explainable figure'}</span>
             </div>
 
             <svg className="ontology-map-svg" viewBox="0 0 820 420" role="img" aria-label="Sentinel evidence ontology map">
@@ -527,7 +530,7 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
 
             <div className="ontology-legend">
               <span><i className="legend-dot source" /> {lang === 'ko' ? '원천 신호' : 'Source signal'}</span>
-              <span><i className="legend-dot concept" /> {lang === 'ko' ? 'AI 개념 묶음' : 'AI concept group'}</span>
+              <span><i className="legend-dot concept" /> {lang === 'ko' ? 'AI 분석' : 'AI analysis'}</span>
               <span><i className="legend-dot output" /> {lang === 'ko' ? '보고서 산출물' : 'Report output'}</span>
             </div>
           </section>

@@ -59,7 +59,7 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
   const [statusType, setStatusType] = useState<'ok' | 'error' | 'pending'>('ok');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // AI Digest state
+  // AI analysis state
   const [digest, setDigest] = useState<KdcaDigest | null>(null);
   const [digestLoading, setDigestLoading] = useState(false);
   const [showRawData, setShowRawData] = useState(false);
@@ -113,9 +113,9 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
       const data = await res.json();
       setUploadResult(data);
       if (data.success) {
-        setStatus(`${data.snapshots_updated} snapshots updated. Generating AI digest...`, 'pending');
+        setStatus(`${data.snapshots_updated} snapshots updated. Generating AI analysis...`, 'pending');
         fetchData();
-        generateDigest().then(() => setStatus('Upload complete. AI digest generated.', 'ok'));
+        generateDigest().then(() => setStatus('Upload complete. AI analysis generated.', 'ok'));
       } else {
         setStatus(data.error || 'Processing failed', 'error');
       }
@@ -304,7 +304,7 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
       {/* 업로드 탭 */}
       {activeTab === 'upload' && (
         <div className="kdca-content">
-          {/* AI Digest Section — console 모드에서는 좌측 summary 패널이 대신 담당하므로 숨깁니다 */}
+          {/* AI analysis section — console 모드에서는 좌측 summary 패널이 대신 담당하므로 숨깁니다 */}
           {view !== 'console' && digestLoading && (
             <div className="news-loading">
               <div className="news-spinner" />
@@ -381,12 +381,12 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
 
           {view !== 'console' && !digestLoading && (!digest || digest.status === 'empty') && !showRawData && (
             <div className="trends-empty">
-              <p>No KDCA AI digest available.</p>
+              <p>No KDCA AI analysis available.</p>
               <p className="news-empty-hint">Upload KDCA data to generate an AI analysis.</p>
             </div>
           )}
 
-          {/* Toggle: AI Digest ↔ Raw Data — console 모드에서는 Refresh 만 노출 */}
+          {/* Toggle: AI analysis ↔ Raw Data — console 모드에서는 Refresh 만 노출 */}
           {view !== 'console' && (
             <div style={{ display: 'flex', gap: 8, margin: '6px 10px' }}>
               <button
@@ -394,7 +394,7 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
                 style={{ flex: 1, width: 'auto', margin: 0 }}
                 onClick={() => setShowRawData(!showRawData)}
               >
-                {showRawData ? 'View AI Summary' : 'View Raw Data'}
+                {showRawData ? 'View AI Analysis' : 'View Raw Data'}
               </button>
               {!showRawData && (
                 <button
@@ -403,7 +403,7 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
                   onClick={generateDigest}
                   disabled={digestLoading}
                 >
-                  {digestLoading ? 'Analyzing...' : 'Refresh Digest'}
+                  {digestLoading ? 'Analyzing...' : 'Refresh Analysis'}
                 </button>
               )}
             </div>
@@ -413,6 +413,14 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
           {/* Raw Data View */}
           {forceRawData && (
             <>
+              <div className="kdca-upload-guide">
+                <strong>업로드 형식 가이드</strong>
+                <p>
+                  파일명에 급성호흡기, 인플루엔자, 중증급성 중 하나가 들어가야 parser가 ARI/ILI/SARI lane을 구분합니다.
+                  첫 번째 시트 또는 CSV의 주차, 연도, 총계/발생률 열을 기준으로 snapshot을 갱신합니다.
+                </p>
+              </div>
+
               {/* 드래그앤드롭 존 */}
               <div
                 className={`kdca-dropzone${dragging ? ' kdca-dropzone--active' : ''}`}

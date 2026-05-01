@@ -81,7 +81,7 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
         if (data.status === 'ok' || data.status === 'partial') setDigest(data);
       }
     } catch (e) {
-      console.error('Digest load failed:', e);
+      console.error('Analysis load failed:', e);
     }
   };
 
@@ -104,7 +104,7 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
       ]);
       // 2. Fetch updated news
       await fetchNews();
-      // 3. Generate AI digest
+      // 3. Generate AI analysis
       const res = await fetch(`${API_BASE}/risk-analysis/news-digest`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
@@ -227,9 +227,9 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
       tone: 'slate',
     },
     {
-      label: 'AI digest',
+      label: 'AI analysis',
       count: digest?.status === 'ok' ? 'ready' : 'pending',
-      desc: '근거 요약과 risk interpretation',
+      desc: '근거 분석과 risk interpretation',
       tone: 'green',
     },
   ];
@@ -246,7 +246,7 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
             className="news-refresh-btn"
             onClick={handleRefresh}
             disabled={refreshing}
-            title="Collect news and generate AI digest"
+            title="Collect news and run AI analysis"
           >
             {refreshing ? '갱신 중...' : '소스 갱신'}
           </button>
@@ -263,7 +263,7 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
         ))}
       </div>
 
-      {/* AI Digest View */}
+      {/* AI Analysis View */}
       <div className="news-digest-section">
         {loading ? (
           <div className="news-loading">
@@ -326,8 +326,8 @@ export default function NewsPanel({ hideKeywordsButton = false }: NewsPanelProps
           </div>
         ) : (
           <div className="news-empty">
-            <p>AI digest가 아직 없습니다</p>
-            <p className="news-empty-hint">소스 갱신을 누르면 뉴스 수집과 AI 요약을 실행합니다.</p>
+            <p>AI 분석 결과가 아직 없습니다</p>
+            <p className="news-empty-hint">소스 갱신을 누르면 뉴스 수집과 AI 분석을 실행합니다.</p>
           </div>
         )}
       </div>

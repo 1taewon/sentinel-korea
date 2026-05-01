@@ -29,6 +29,16 @@ export default function StatisticsView({ koreaAlerts, onScoringApply, onRegionCl
 
   return (
     <div className="statistics-view">
+      <section className="stats-intro-card">
+        <span>Statistics guide</span>
+        <h2>지역별 경보 분포와 점수 민감도를 확인하는 화면</h2>
+        <p>
+          왼쪽 지표는 현재 snapshot에서 G0-G3가 몇 개 지역에 분포하는지 보여주고,
+          아래 순위표는 어느 시·도가 상대적으로 더 이상한지 비교합니다. 오른쪽 가중치 설정은
+          공식 감시자료, 폐하수, 뉴스/트렌드 같은 신호가 최종 경보에 미치는 영향도를 조정하는 실험 도구입니다.
+        </p>
+      </section>
+
       <div className="stats-grid">
         <div className="stats-card stats-card--critical">
           <div className="stats-card-label">위험 (G3)</div>
@@ -75,6 +85,10 @@ export default function StatisticsView({ koreaAlerts, onScoringApply, onRegionCl
 
         <div className="stats-scoring-panel">
           <h3 className="stats-section-title">가중치 설정</h3>
+          <p className="stats-section-copy">
+            같은 raw signal이라도 freshness, coverage, baseline 대비 z-score가 반영된 뒤 가중치가 적용됩니다.
+            따라서 이 설정은 “어떤 소스를 더 믿을지”가 아니라 “현재 분석에서 어떤 lane의 영향도를 더 크게 볼지”를 조정합니다.
+          </p>
           <ScoringPanel onApply={onScoringApply} />
         </div>
       </div>
