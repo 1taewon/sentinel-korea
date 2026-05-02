@@ -644,6 +644,17 @@ button, input, textarea, select { font: inherit; }
   color: var(--text-primary);
   line-height: 1.35;
 }
+.globe-korea-overlay-note {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-left: 2px solid #38d8ff;
+  background: rgba(56, 216, 255, 0.08);
+  border-radius: 0 6px 6px 0;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: rgba(226, 232, 240, 0.92);
+}
+.globe-korea-overlay-note strong { color: #38d8ff; }
 .globe-korea-overlay-section + .globe-korea-overlay-section {
   margin-top: 6px;
   padding-top: 8px;

@@ -1196,23 +1196,26 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                     </div>
 
                     <div className="globe-korea-overlay-section globe-korea-overlay-legend">
-                      <span className="globe-korea-overlay-kicker">노드 색상 (한국 관련성 점수)</span>
+                      <span className="globe-korea-overlay-kicker">노드 색상 — 한국 관련성 점수</span>
                       <div className="globe-legend-row">
                         <i className="globe-legend-dot dot-critical" />
-                        <div><strong>빨강 ≥75%</strong><small>critical — 즉시 모니터링</small></div>
+                        <div><strong>빨강 ≥ 75%</strong><small>critical — 즉시 모니터링 (arc ✓)</small></div>
                       </div>
                       <div className="globe-legend-row">
                         <i className="globe-legend-dot dot-high" />
-                        <div><strong>주황 ≥58%</strong><small>high — 한국 영향 가능</small></div>
+                        <div><strong>주황 ≥ 58%</strong><small>high — 한국 영향 가능 (arc ✓)</small></div>
                       </div>
                       <div className="globe-legend-row">
                         <i className="globe-legend-dot dot-watch" />
-                        <div><strong>하늘색 ≥40%</strong><small>watch — 추세 관찰</small></div>
+                        <div><strong>하늘색 ≥ 40%</strong><small>watch — 추세 관찰 (arc ✓)</small></div>
                       </div>
                       <div className="globe-legend-row">
                         <i className="globe-legend-dot dot-context" />
-                        <div><strong>보라색 &lt;40%</strong><small>context — 참고용 (HealthMap 다수)</small></div>
+                        <div><strong>보라색 &lt; 40%</strong><small>context — 참고용 / HealthMap 다수 (arc ✗)</small></div>
                       </div>
+                      <p className="globe-korea-overlay-note">
+                        한국으로 향하는 arc 라인은 <strong>한국 관련성 ≥ 40% (critical/high/watch)</strong> 노드에서만 그려집니다. 보라색(context) 항목은 globe에 노드만 표시됩니다.
+                      </p>
                       <div className="globe-legend-row">
                         <i className="globe-legend-arc" />
                         <div><strong>아크 라인</strong><small>outbreak 위치에서 한국으로 이어지는 관련성 흐름.</small></div>
