@@ -3,6 +3,8 @@ import Globe, { GlobeMethods } from 'react-globe.gl';
 import type { KoreaAlert, GlobalSignal } from '../types';
 import { relevanceLabel, scoreInternationalRelevance } from '../lib/internationalRelevance';
 
+const ARC_RELEVANCE_THRESHOLD = 0.50;
+
 // Read app theme from <html data-theme="..."> so the globe texture and tooltip
 // background can adapt to the current light/dark mode.
 function useTheme(): 'light' | 'dark' {
@@ -154,12 +156,10 @@ export default function MiniGlobe({
       { lat: 33.4996, lng: 126.5312 },
     ];
 
-    // Arcs are only drawn for signals at WATCH level or above (score >= 0.40)
-    // — i.e. critical (red), high (orange), watch (light-blue) nodes get an
-    // arc to Korea. Context-tier (purple, score < 0.40) signals stay as
-    // location-only nodes without arcs.
+    // Arcs are only drawn for Korea-relevance scores of 50% or higher.
+    // Lower-score signals remain as location-only nodes without Korea arcs.
     const arcCandidates = signals
-      .filter((s) => scoreInternationalRelevance(s).score >= 0.40)
+      .filter((s) => scoreInternationalRelevance(s).score >= ARC_RELEVANCE_THRESHOLD)
       .sort((a, b) => scoreInternationalRelevance(b).score - scoreInternationalRelevance(a).score);
 
     return arcCandidates

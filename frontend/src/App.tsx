@@ -1207,14 +1207,14 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                       </div>
                       <div className="globe-legend-row">
                         <i className="globe-legend-dot dot-watch" />
-                        <div><strong>하늘색 ≥ 40%</strong><small>watch — 추세 관찰 (arc ✓)</small></div>
+                        <div><strong>하늘색 ≥ 40%</strong><small>watch — 추세 관찰 (arc는 ≥50%만)</small></div>
                       </div>
                       <div className="globe-legend-row">
                         <i className="globe-legend-dot dot-context" />
                         <div><strong>보라색 &lt; 40%</strong><small>context — 참고용 / HealthMap 다수 (arc ✗)</small></div>
                       </div>
                       <p className="globe-korea-overlay-note">
-                        한국으로 향하는 arc 라인은 <strong>한국 관련성 ≥ 40% (critical/high/watch)</strong> 노드에서만 그려집니다. 보라색(context) 항목은 globe에 노드만 표시됩니다.
+                        한국으로 향하는 arc 라인은 <strong>한국 관련성 ≥ 50%</strong> 노드에서만 그려집니다. 50% 미만 항목은 globe에 노드만 표시됩니다.
                       </p>
                       <div className="globe-legend-row">
                         <i className="globe-legend-arc" />
@@ -1254,8 +1254,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   <h4>어떤 국제 신호가 한국에 가까운가?</h4>
                   <p>
                     국제 신호는 질병 심각도, 한국 이동량 proxy, 거리, 예상 밖 이벤트, 소스 신뢰도를
-                    함께 보아 Korea relevance를 계산합니다. 점수가 높을수록 globe에서 한국으로 향하는
-                    arc가 더 자주, 더 진하게 나타납니다.
+                    함께 보아 Korea relevance를 계산합니다. 점수가 50% 이상이면 globe에서 한국으로 향하는
+                    arc가 나타나고, 점수가 높을수록 더 자주, 더 진하게 나타납니다.
                   </p>
 
                   <div className="globe-context-metrics">
