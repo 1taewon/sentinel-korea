@@ -1,7 +1,25 @@
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useMemo, useState } from 'react';
 import Globe, { GlobeMethods } from 'react-globe.gl';
 import type { KoreaAlert, GlobalSignal } from '../types';
 import { relevanceLabel, scoreInternationalRelevance } from '../lib/internationalRelevance';
+
+// Read app theme from <html data-theme="..."> so the globe texture and tooltip
+// background can adapt to the current light/dark mode.
+function useTheme(): 'light' | 'dark' {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() =>
+    (typeof document !== 'undefined' && document.documentElement.dataset.theme === 'light') ? 'light' : 'dark'
+  );
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const observer = new MutationObserver(() => {
+      const next = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+      setTheme((prev) => (prev === next ? prev : next));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
+  return theme;
+}
 
 type Layer = 'respiratory' | 'wastewater_covid' | 'wastewater_flu' | 'news_trends_risk' | 'total_risk';
 
@@ -25,8 +43,12 @@ export default function MiniGlobe({
   selectedGlobalId = null,
 }: Props) {
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
+  const theme = useTheme();
   const expandedWidth = typeof window !== 'undefined' ? Math.max(560, window.innerWidth - 440) : 900;
   const expandedHeight = typeof window !== 'undefined' ? Math.max(520, window.innerHeight - 180) : 720;
+  const globeTexture = theme === 'light'
+    ? '//unpkg.com/three-globe/example/img/earth-day.jpg'
+    : '//unpkg.com/three-globe/example/img/earth-night.jpg';
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -171,7 +193,7 @@ export default function MiniGlobe({
         width={isExpanded ? expandedWidth : 180}
         height={isExpanded ? expandedHeight : 180}
         backgroundColor="rgba(0,0,0,0)"
-        globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
+        globeImageUrl={globeTexture}
         bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
         showAtmosphere={true}
         atmosphereColor="#38bdf8"
