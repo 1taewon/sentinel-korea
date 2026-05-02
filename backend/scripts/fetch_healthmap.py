@@ -30,9 +30,10 @@ from _outbreak_common import (
     normalize_item,
 )
 
-# HealthMap aggregates many sources, so 30 days is plenty (3-month window
-# would yield 900+ items and drown other feeds).
-LOOKBACK_DAYS = 30
+# HealthMap aggregates many sources at high frequency, so 14 days keeps the
+# globe legible. (3-month window yields 900+; even 30 days yields 537. Two
+# weeks gives ~250-300 well-curated alerts which is the sweet spot.)
+LOOKBACK_DAYS = 14
 
 PROCESSED_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
 OUTPUT_FILE = PROCESSED_DIR / "global_healthmap.json"
@@ -79,7 +80,8 @@ def _parse_marker(marker: dict[str, Any], cutoff: datetime) -> list[dict[str, An
     soup = BeautifulSoup(raw_html, "html.parser")
     # Each alert is wrapped in <div class="at"> ... <span class="d">DATE - </span> <a class="fbox" ...>TITLE</a> </div>
     # Cap at MAX_PER_MARKER to avoid one country drowning the globe with same-event headlines.
-    MAX_PER_MARKER = 5
+    # 3 alerts/place × ~270 markers ≈ 250-300 items total (target).
+    MAX_PER_MARKER = 3
     kept_for_marker = 0
     for block in soup.find_all("div", class_="at"):
         if kept_for_marker >= MAX_PER_MARKER:
