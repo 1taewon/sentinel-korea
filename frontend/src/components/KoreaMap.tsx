@@ -94,12 +94,22 @@ export default function KoreaMap({ koreaAlerts, onRegionClick, activeLayers, agg
   const getLayerScore = useCallback((alert?: KoreaAlert) => {
     if (!alert) return { score: 0, level: 'G0' };
 
+    // When the user has only the default "respiratory" layer selected, use the
+    // composite alert.score / alert.level that the backend already computed —
+    // that's what the sidebar legend counts. Recomputing from a single signal
+    // (e.g. national_respiratory) caused the map to show G0 (green) while the
+    // sidebar said G1, because composite signals can be elevated even when a
+    // single sub-signal is low.
+    if (activeLayers.length === 1 && activeLayers[0] === 'respiratory') {
+      return { score: alert.score, level: alert.level || 'G0' };
+    }
+
     const getScoreForLayer = (layer: Layer): number => {
       if (layer === 'wastewater_covid') return alert.regional_wastewater?.covid19.score ?? alert.score;
       if (layer === 'wastewater_flu') return alert.regional_wastewater?.influenza.score ?? alert.score;
       if (layer === 'news_trends_risk') return (alert as any).news_trends_risk?.score ?? 0;
       if (layer === 'total_risk') return (alert as any).total_risk?.score ?? 0;
-      return alert.national_respiratory?.score ?? alert.score;
+      return alert.score;
     };
 
     const scores = activeLayers.map(getScoreForLayer);

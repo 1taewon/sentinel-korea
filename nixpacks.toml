@@ -1,14 +1,22 @@
 [phases.setup]
-nixPkgs = ["python311", "python311Packages.pip", "gcc"]
-# zlib1g + libstdc++6 must come from apt — Nix store paths aren't searched
-# by dlopen for the numpy/pandas manylinux wheels.
-aptPkgs = ["zlib1g", "libstdc++6"]
+nixPkgs = []
+aptPkgs = [
+  "python3.11",
+  "python3.11-venv",
+  "python3-pip",
+  "gcc",
+  "zlib1g",
+  "libstdc++6",
+  "build-essential",
+]
 
 [phases.install]
-cmds = ["python -m venv /opt/venv && . /opt/venv/bin/activate && pip install --upgrade pip && pip install --no-cache-dir -r backend/requirements.txt && pip install --no-cache-dir --force-reinstall --no-deps 'numpy==1.26.4' && pip install --no-cache-dir --force-reinstall --no-deps 'pandas==2.1.4' && export LD_LIBRARY_PATH=/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH && python -c 'import numpy, pandas; print(\"numpy\", numpy.__version__, \"pandas\", pandas.__version__)'"]
+cmds = [
+  "python3.11 -m venv /opt/venv && . /opt/venv/bin/activate && pip install --upgrade pip && pip install --no-cache-dir -r backend/requirements.txt && python -c 'import numpy, pandas, pytrends; print(\"numpy\", numpy.__version__, \"pandas\", pandas.__version__)'"
+]
 
 [start]
-cmd = ". /opt/venv/bin/activate && export LD_LIBRARY_PATH=/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+cmd = ". /opt/venv/bin/activate && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 
 [variables]
 NIXPACKS_PYTHON_VERSION = "3.11"

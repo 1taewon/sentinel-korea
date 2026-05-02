@@ -1,26 +1,31 @@
 [build]
 builder = "nixpacks"
 
+# Use apt (Ubuntu) python everything — avoids the Nix-store/system libc mismatch
+# that was causing `libz.so.1: cannot open shared object file` and then
+# `__tunable_is_initialized` glibc errors.
 [build.nixpacksPlan.phases.setup]
-nixPkgs = ["python311", "python311Packages.pip", "gcc"]
-# zlib1g + libstdc++6 must come from apt so the manylinux numpy wheel finds
-# libz.so.1 / libstdc++.so.6 in standard /lib paths (Nix store paths are not
-# searched by dlopen for prebuilt manylinux wheels).
-aptPkgs = ["zlib1g", "libstdc++6"]
+nixPkgs = []
+aptPkgs = [
+  "python3.11",
+  "python3.11-venv",
+  "python3-pip",
+  "gcc",
+  "zlib1g",
+  "libstdc++6",
+  "build-essential",
+]
 
 [build.nixpacksPlan.phases.install]
 cmds = [
-  "python -m venv /opt/venv && . /opt/venv/bin/activate && pip install --upgrade pip && pip install --no-cache-dir -r backend/requirements.txt && pip install --no-cache-dir --force-reinstall --no-deps 'numpy==1.26.4' && pip install --no-cache-dir --force-reinstall --no-deps 'pandas==2.1.4' && export LD_LIBRARY_PATH=/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH && python -c 'import numpy, pandas; print(\"numpy\", numpy.__version__, \"pandas\", pandas.__version__)'"
+  "python3.11 -m venv /opt/venv && . /opt/venv/bin/activate && pip install --upgrade pip && pip install --no-cache-dir -r backend/requirements.txt && python -c 'import numpy, pandas, pytrends; print(\"numpy\", numpy.__version__, \"pandas\", pandas.__version__)'"
 ]
 
 [build.nixpacksPlan.start]
-cmd = ". /opt/venv/bin/activate && export LD_LIBRARY_PATH=/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+cmd = ". /opt/venv/bin/activate && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 
 [deploy]
-startCommand = ". /opt/venv/bin/activate && export LD_LIBRARY_PATH=/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+startCommand = ". /opt/venv/bin/activate && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"
 healthcheckTimeout = 60
 restartPolicyType = "on_failure"
-
-[deploy.envs]
-LD_LIBRARY_PATH = "/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu"
