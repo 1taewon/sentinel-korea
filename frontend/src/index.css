@@ -3202,7 +3202,7 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .pipeline-flow-modal-svg-wrap svg {
   width: 100%;
   height: auto;
-  max-height: 56vh;
+  max-height: 64vh;
   display: block;
 }
 .pf-lane-label {

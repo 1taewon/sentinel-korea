@@ -582,15 +582,6 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       primaryAction: '수집',
     },
     {
-      key: 'global',
-      lane: 'SOURCE',
-      title: 'WHO/해외 뉴스 수집',
-      detail: `WHO DON, NewsAPI, Google News RSS에서 해외 outbreak 보조 신호를 가져옵니다. 현재 ${globalSignals.length}건 로드됨.`,
-      status: runningPipeline === 'global' ? 'running' : globalSignals.length ? 'ready' : 'needs-run',
-      updatedAt: lastPipelineRun.global,
-      primaryAction: '수집',
-    },
-    {
       key: 'kdca_upload',
       lane: 'KDCA',
       title: 'KDCA 파일 업로드/파싱',
@@ -611,6 +602,15 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       primaryAction: 'API 실행',
     },
     {
+      key: 'global',
+      lane: 'SOURCE',
+      title: 'WHO/해외 뉴스 수집',
+      detail: `WHO DON, NewsAPI, Google News RSS에서 해외 outbreak 보조 신호를 가져옵니다. 현재 ${globalSignals.length}건 로드됨.`,
+      status: runningPipeline === 'global' ? 'running' : globalSignals.length ? 'ready' : 'needs-run',
+      updatedAt: lastPipelineRun.global,
+      primaryAction: '수집',
+    },
+    {
       key: 'kdca_digest',
       lane: 'AI',
       title: 'KDCA 감시자료 요약',
@@ -624,7 +624,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     {
       key: 'osint',
       lane: 'AI',
-      title: 'OSINT 지도 분석',
+      title: 'OSINT 신호 분석',
       detail: osintResult?.snapshot_date
         ? `snapshot ${osintResult.snapshot_date}`
         : latestReportsByType.osint?.filename || `국내 뉴스/검색 트렌드 기반 OSINT 위험이 있는 지역 ${koreaAlerts.filter((alert) => alert.news_trends_risk).length}개.`,
@@ -681,20 +681,21 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   });
   const pipelineNodeMap = new Map(pipelineNodePositions.map((node) => [node.key, node]));
 
-  // Larger layout for the expanded modal (viewBox 1000x480)
-  // Row 1 (y=80): SOURCE lane — 5 sources fed into OSINT or KDCA digest
-  // Row 2 (y=230): MID lane — osint and kdca_digest
-  // Row 3 (y=380): FINAL — sentinel + kdca_report
+  // Modal layout (viewBox 1000x560)
+  // Row 1 (y=80):  SOURCE — korea_news, trends, kdca_upload, kdca_api, global
+  // Row 2 (y=230): MID — osint, kdca_digest
+  // Row 3 (y=380): SYNTHESIS — sentinel
+  // Row 4 (y=490): REPORT — kdca_report (FINAL 통합 리포트), placed below sentinel
   const PIPELINE_MODAL_NODE_LAYOUT: Record<string, { x: number; y: number }> = {
     korea_news:  { x: 120, y:  80 },
-    trends:      { x: 280, y:  80 },
-    global:      { x: 440, y:  80 },
-    kdca_upload: { x: 620, y:  80 },
-    kdca_api:    { x: 800, y:  80 },
-    osint:       { x: 280, y: 230 },
-    kdca_digest: { x: 710, y: 230 },
-    sentinel:    { x: 440, y: 380 },
-    kdca_report: { x: 780, y: 380 },
+    trends:      { x: 290, y:  80 },
+    kdca_upload: { x: 540, y:  80 },
+    kdca_api:    { x: 720, y:  80 },
+    global:      { x: 890, y:  80 },   // ★ next to KDCA API
+    osint:       { x: 200, y: 230 },
+    kdca_digest: { x: 630, y: 230 },
+    sentinel:    { x: 415, y: 380 },
+    kdca_report: { x: 560, y: 490 },   // ★ slightly below sentinel
   };
   const pipelineModalNodes = operationRows.map((row) => {
     const pos = PIPELINE_MODAL_NODE_LAYOUT[row.key] || { x: 0, y: 0 };
@@ -1578,7 +1579,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
             </div>
 
             <div className="pipeline-flow-modal-svg-wrap">
-              <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+              <svg viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
                 <defs>
                   <marker id="pf-arrow-inline" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
                     <path d="M0,0 L10,5 L0,10 Z" fill="rgba(56,189,248,0.7)" />
@@ -1586,7 +1587,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 </defs>
                 <text x="20" y="85" className="pf-lane-label">SOURCE</text>
                 <text x="20" y="235" className="pf-lane-label">AI / 처리</text>
-                <text x="20" y="385" className="pf-lane-label">통합 / 리포트</text>
+                <text x="20" y="385" className="pf-lane-label">통합 분석</text>
+                <text x="20" y="495" className="pf-lane-label">FINAL 리포트</text>
 
                 {pipelineEdges.map(([fromKey, toKey]) => {
                   const from = pipelineModalNodeMap.get(fromKey);
@@ -1709,7 +1711,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
             </div>
 
             <div className="pipeline-flow-modal-svg-wrap">
-              <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+              <svg viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
                 <defs>
                   <marker id="pf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
                     <path d="M0,0 L10,5 L0,10 Z" fill="rgba(56,189,248,0.7)" />
@@ -1719,7 +1721,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 {/* Lane labels */}
                 <text x="20" y="85" className="pf-lane-label">SOURCE</text>
                 <text x="20" y="235" className="pf-lane-label">AI / 처리</text>
-                <text x="20" y="385" className="pf-lane-label">통합 / 리포트</text>
+                <text x="20" y="385" className="pf-lane-label">통합 분석</text>
+                <text x="20" y="495" className="pf-lane-label">FINAL 리포트</text>
 
                 {/* Edges */}
                 {pipelineEdges.map(([fromKey, toKey]) => {
