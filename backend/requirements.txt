@@ -8,9 +8,9 @@ aiosmtplib>=2.0.0
 markdown>=3.5.0
 httpx>=0.25.0
 openpyxl>=3.1.0
-numpy>=1.26.0
-pandas>=2.0.0
-pytrends>=4.9.0
+numpy==1.26.4
+pandas==2.1.4
+pytrends==4.9.2
 beautifulsoup4>=4.12.0
 requests>=2.31.0
 pdfplumber>=0.11.0

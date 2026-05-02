@@ -2,7 +2,7 @@
 nixPkgs = ["python311", "python311Packages.pip", "gcc"]
 
 [phases.install]
-cmds = ["python -m venv /opt/venv && . /opt/venv/bin/activate && pip install --upgrade pip && pip install --no-cache-dir 'numpy>=1.26.0' 'pandas>=2.0.0' && pip install --no-cache-dir -r backend/requirements.txt && pip install --no-cache-dir --force-reinstall 'numpy>=1.26.0' 'pandas>=2.0.0'"]
+cmds = ["python -m venv /opt/venv && . /opt/venv/bin/activate && pip install --upgrade pip && pip install --no-cache-dir -r backend/requirements.txt && pip install --no-cache-dir --force-reinstall --no-deps 'numpy==1.26.4' && pip install --no-cache-dir --force-reinstall --no-deps 'pandas==2.1.4' && python -c 'import numpy, pandas; print(\"numpy\", numpy.__version__, \"pandas\", pandas.__version__)'"]
 
 [start]
 cmd = ". /opt/venv/bin/activate && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
