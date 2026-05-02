@@ -36,6 +36,37 @@ type OperationKey =
   | 'sentinel'
   | 'kdca_report';
 
+const FINAL_PIPELINE_SEQUENCE: OperationKey[] = [
+  'korea_news',
+  'trends',
+  'global',
+  'kdca_api',
+  'kdca_digest',
+  'osint',
+  'sentinel',
+  'kdca_report',
+];
+
+const createEmptyPipelineRuns = (): Record<OperationKey, string | undefined> => ({
+  korea_news: undefined,
+  trends: undefined,
+  global: undefined,
+  kdca_upload: undefined,
+  kdca_api: undefined,
+  kdca_digest: undefined,
+  osint: undefined,
+  sentinel: undefined,
+  kdca_report: undefined,
+});
+
+type PipelineBatchState = {
+  active: boolean;
+  currentKey?: OperationKey;
+  completed: OperationKey[];
+  message: string;
+  finished: boolean;
+};
+
 type UploadHistoryItem = {
   filename: string;
   file_type: string;
@@ -207,6 +238,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   const [fullResult, setFullResult] = useState<{ summary?: string; key_signals?: string[]; snapshot_date?: string } | null>(null);
 
   const [generatingKdcaReport, setGeneratingKdcaReport] = useState(false);
+  const [generatingFinalReport, setGeneratingFinalReport] = useState(false);
   const [kdcaReportResult, setKdcaReportResult] = useState<{ summary?: string; filename?: string } | null>(null);
   const [refreshingKdcaApi, setRefreshingKdcaApi] = useState(false);
   const [kdcaApiResult, setKdcaApiResult] = useState<{ summary?: string } | null>(null);
@@ -217,17 +249,13 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   const [uploadHistory, setUploadHistory] = useState<UploadHistoryItem[]>([]);
   const [reportList, setReportList] = useState<ReportListItem[]>([]);
   const [kdcaDigestStatus, setKdcaDigestStatus] = useState<KdcaDigestStatus | null>(null);
-  const [lastPipelineRun, setLastPipelineRun] = useState<Record<OperationKey, string | undefined>>({
-    korea_news: undefined,
-    trends: undefined,
-    global: undefined,
-    kdca_upload: undefined,
-    kdca_api: undefined,
-    kdca_digest: undefined,
-    osint: undefined,
-    sentinel: undefined,
-    kdca_report: undefined,
+  const [pipelineBatch, setPipelineBatch] = useState<PipelineBatchState>({
+    active: false,
+    completed: [],
+    message: '전체 실행 대기 중',
+    finished: false,
   });
+  const [lastPipelineRun, setLastPipelineRun] = useState<Record<OperationKey, string | undefined>>(createEmptyPipelineRuns);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -326,7 +354,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   };
 
   // OSINT analysis (News+Trends → map update + save OSINT daily report)
-  const handleRunOsintAnalysis = async () => {
+  const handleRunOsintAnalysis = async (options?: { rethrow?: boolean }) => {
     setAnalyzingOsint(true);
     setOsintResult(null);
     try {
@@ -356,13 +384,14 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       }
     } catch (error) {
       setOsintResult({ summary: error instanceof Error ? error.message : 'OSINT analysis failed. Check server connection.' });
+      if (options?.rethrow) throw error;
     } finally {
       setAnalyzingOsint(false);
     }
   };
 
-  // Sentinel Analysis — Full integration (OSINT+KDCA → final report)
-  const handleRunFullAnalysis = async () => {
+  // Sentinel Analysis — Full integration (OSINT+KDCA → alert snapshot)
+  const handleRunFullAnalysis = async (options?: { rethrow?: boolean }) => {
     setAnalyzingFull(true);
     setFullResult(null);
     try {
@@ -379,21 +408,14 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
         await fetchAlerts(data.snapshot_date);
         await refreshIngestionStatus(data.snapshot_date);
       }
-
-      // Save FINAL weekly integrated report even if the AI response omitted snapshot_date.
-      try {
-        const rep = await fetch(`${API_BASE}/reports/generate-final?snapshot_date=${reportSnapshot}`, { method: 'POST' });
-        const repData = await rep.json();
-        if (!rep.ok) throw new Error(repData?.detail || 'Final report generation failed');
-        data.summary = (data.summary || '') + `\n\nSentinel final report saved: ${repData.report_filename}`;
-        setFullResult({ ...data, snapshot_date: data.snapshot_date || reportSnapshot });
-        await refreshOperationStatus();
-      } catch (reportError) {
-        data.summary = (data.summary || '') + `\n\nSentinel analysis completed, but final report save failed: ${reportError instanceof Error ? reportError.message : 'unknown error'}`;
-        setFullResult({ ...data });
-      }
+      setFullResult({
+        ...data,
+        snapshot_date: data.snapshot_date || reportSnapshot,
+        summary: (data.summary || '') + '\n\nSentinel 통합 분석 완료. FINAL 리포트는 REPORT 단계에서 생성됩니다.',
+      });
     } catch (error) {
       setFullResult({ summary: error instanceof Error ? error.message : 'Analysis failed. Check server connection.' });
+      if (options?.rethrow) throw error;
     } finally {
       setAnalyzingFull(false);
     }
@@ -419,11 +441,34 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     }
   };
 
+  const handleGenerateFinalReport = async (options?: { rethrow?: boolean }) => {
+    setGeneratingFinalReport(true);
+    try {
+      const res = await fetch(`${API_BASE}/reports/generate-final?snapshot_date=${currentDate}`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'Final report generation failed');
+      setFullResult((prev) => ({
+        ...(prev || {}),
+        snapshot_date: data.snapshot_date || currentDate,
+        summary: `${prev?.summary ? `${prev.summary}\n\n` : ''}FINAL 통합 리포트 저장됨 (${data.report_filename || data.epiweek || '완료'}).`,
+      }));
+      await refreshOperationStatus();
+    } catch (error) {
+      setFullResult((prev) => ({
+        ...(prev || {}),
+        summary: error instanceof Error ? error.message : 'Final report generation failed. Check server connection.',
+      }));
+      if (options?.rethrow) throw error;
+    } finally {
+      setGeneratingFinalReport(false);
+    }
+  };
+
   const markPipelineRun = (key: OperationKey) => {
     setLastPipelineRun((prev) => ({ ...prev, [key]: new Date().toISOString() }));
   };
 
-  const runOperation = async (key: OperationKey) => {
+  const runOperation = async (key: OperationKey): Promise<boolean> => {
     setRunningPipeline(key);
     setOperationError(null);
     try {
@@ -445,31 +490,33 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
         }
         await fetchAlerts();
       } else if (key === 'kdca_api') {
-        await handleRefreshKdcaNotifiable();
+        await handleRefreshKdcaNotifiable({ rethrow: true });
       } else if (key === 'kdca_digest') {
         const res = await fetch(`${API_BASE}/risk-analysis/kdca-digest`, { method: 'POST' });
         if (!res.ok) throw new Error('KDCA digest failed');
         setKdcaDigestStatus(await res.json());
       } else if (key === 'osint') {
-        await handleRunOsintAnalysis();
+        await handleRunOsintAnalysis({ rethrow: true });
       } else if (key === 'sentinel') {
-        await handleRunFullAnalysis();
+        await handleRunFullAnalysis({ rethrow: true });
       } else if (key === 'kdca_report') {
-        await handleGenerateKdcaReport();
+        await handleGenerateFinalReport({ rethrow: true });
       } else if (key === 'kdca_upload') {
         setNavTab('data_sources');
       }
       markPipelineRun(key);
       await refreshIngestionStatus();
       await refreshOperationStatus();
+      return true;
     } catch (error) {
       setOperationError(error instanceof Error ? error.message : 'Run failed');
+      return false;
     } finally {
       setRunningPipeline(null);
     }
   };
 
-  const handleRefreshKdcaNotifiable = async () => {
+  const handleRefreshKdcaNotifiable = async (options?: { rethrow?: boolean }) => {
     setRefreshingKdcaApi(true);
     setKdcaApiResult(null);
     try {
@@ -482,9 +529,71 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       });
     } catch {
       setKdcaApiResult({ summary: 'KDCA 법정감염병 API 갱신 실패. API key, 네트워크, 공공데이터포털 endpoint 상태를 확인하세요.' });
+      if (options?.rethrow) throw new Error('KDCA 법정감염병 API 갱신 실패');
     } finally {
       setRefreshingKdcaApi(false);
     }
+  };
+
+  const resetFullPipeline = () => {
+    if (runningPipeline || pipelineBatch.active) return;
+    setPipelineBatch({
+      active: false,
+      completed: [],
+      message: '전체 실행 대기 중',
+      finished: false,
+    });
+    setLastPipelineRun(createEmptyPipelineRuns());
+    setOperationError(null);
+    setOsintResult(null);
+    setFullResult(null);
+    setKdcaReportResult(null);
+    setKdcaApiResult(null);
+  };
+
+  const runFullFinalPipeline = async () => {
+    if (runningPipeline || pipelineBatch.active) return;
+    setPipelineFlowOpen(true);
+    setOperationError(null);
+    setPipelineBatch({
+      active: true,
+      currentKey: FINAL_PIPELINE_SEQUENCE[0],
+      completed: [],
+      message: 'SOURCE 단계부터 FINAL 리포트 생성까지 순차 실행합니다.',
+      finished: false,
+    });
+
+    for (const key of FINAL_PIPELINE_SEQUENCE) {
+      const row = operationRows.find((item) => item.key === key);
+      setPipelineBatch((prev) => ({
+        ...prev,
+        currentKey: key,
+        message: `${row?.lane || 'PIPE'} · ${row?.title || key} 실행 중`,
+      }));
+      const ok = await runOperation(key);
+      if (!ok) {
+        setPipelineBatch((prev) => ({
+          ...prev,
+          active: false,
+          currentKey: key,
+          message: `${row?.title || key} 단계에서 중단되었습니다.`,
+          finished: false,
+        }));
+        return;
+      }
+      setPipelineBatch((prev) => ({
+        ...prev,
+        completed: [...prev.completed.filter((doneKey) => doneKey !== key), key],
+      }));
+      await new Promise((resolve) => window.setTimeout(resolve, 260));
+    }
+
+    setPipelineBatch({
+      active: false,
+      completed: [...FINAL_PIPELINE_SEQUENCE],
+      message: '전체 실행 완료 · FINAL 통합 리포트가 생성되었습니다.',
+      finished: true,
+    });
   };
 
   // Trigger NewsPanel's internal Keywords Settings modal from the console aside
@@ -643,9 +752,9 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       title: 'Sentinel 통합 분석',
       detail: fullResult?.snapshot_date
         ? `final snapshot ${fullResult.snapshot_date}`
-        : latestReportsByType.final?.filename || `KDCA, OSINT, 해외 보조 신호를 결합한 통합 위험 지역 ${koreaAlerts.filter((alert) => alert.total_risk).length}개.`,
-      status: runningPipeline === 'sentinel' || analyzingFull ? 'running' : latestReportsByType.final || koreaAlerts.some((alert) => alert.total_risk) || fullResult ? 'ready' : 'needs-run',
-      updatedAt: latestReportsByType.final?.generated_at || lastPipelineRun.sentinel,
+        : `KDCA, OSINT, 해외 보조 신호를 결합한 통합 위험 지역 ${koreaAlerts.filter((alert) => alert.total_risk).length}개.`,
+      status: runningPipeline === 'sentinel' || analyzingFull ? 'running' : koreaAlerts.some((alert) => alert.total_risk) || fullResult ? 'ready' : 'needs-run',
+      updatedAt: lastPipelineRun.sentinel,
       epiweek: fullResult?.snapshot_date || currentDate,
       primaryAction: '분석',
     },
@@ -653,10 +762,10 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       key: 'kdca_report',
       lane: 'REPORT',
       title: 'FINAL 통합 리포트',
-      detail: latestReportsByType.final?.filename || latestReportsByType.kdca?.filename || kdcaReportResult?.filename || 'FINAL 통합 리포트는 OSINT(국내 뉴스/트렌드) + KDCA(공식 감시) + 한국 관련성 ≥70% 해외 outbreak을 합쳐 작성합니다.',
-      status: runningPipeline === 'kdca_report' || generatingKdcaReport ? 'running' : latestReportsByType.final || latestReportsByType.kdca || kdcaReportResult ? 'ready' : 'needs-run',
-      updatedAt: latestReportsByType.final?.generated_at || latestReportsByType.kdca?.generated_at || lastPipelineRun.kdca_report,
-      epiweek: latestReportsByType.final?.epiweek || latestReportsByType.kdca?.epiweek || currentDate,
+      detail: latestReportsByType.final?.filename || 'FINAL 통합 리포트는 OSINT(국내 뉴스/트렌드) + KDCA(공식 감시) + 한국 관련성 ≥70% 해외 outbreak을 합쳐 작성합니다.',
+      status: runningPipeline === 'kdca_report' || generatingFinalReport ? 'running' : latestReportsByType.final ? 'ready' : 'needs-run',
+      updatedAt: latestReportsByType.final?.generated_at || lastPipelineRun.kdca_report,
+      epiweek: latestReportsByType.final?.epiweek || currentDate,
       primaryAction: '생성',
     },
   ];
@@ -706,6 +815,13 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     return { key: row.key, x: pos.x, y: pos.y, row };
   });
   const pipelineModalNodeMap = new Map(pipelineModalNodes.map((n) => [n.key, n]));
+  const isBatchNodeCurrent = (key: OperationKey) => pipelineBatch.currentKey === key && pipelineBatch.active;
+  const isBatchNodeComplete = (key: OperationKey) => pipelineBatch.completed.includes(key);
+  const isBatchEdgeCurrent = (from: OperationKey, to: OperationKey) =>
+    pipelineBatch.active && (pipelineBatch.currentKey === from || pipelineBatch.currentKey === to);
+  const isBatchEdgeComplete = (from: OperationKey, to: OperationKey) =>
+    pipelineBatch.completed.includes(from) && pipelineBatch.completed.includes(to);
+  const batchProgressPercent = Math.round((pipelineBatch.completed.length / FINAL_PIPELINE_SEQUENCE.length) * 100);
 
   const operationReadyCount = operationRows.filter((row) => row.status === 'ready').length;
   const mapToolGuides = [
@@ -957,6 +1073,48 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   <div className="run-control-error">{operationError}</div>
                 )}
 
+                <div className={`run-control-batch ${pipelineBatch.active ? 'is-running' : ''} ${pipelineBatch.finished ? 'is-complete' : ''}`}>
+                  <div className="run-control-batch-copy">
+                    <span>PIPECONTROL · FINAL 자동 생성</span>
+                    <strong>전체 실행으로 SOURCE → AI 분석 → FINAL 리포트까지 순차 진행</strong>
+                    <p>{pipelineBatch.message}</p>
+                  </div>
+                  <div className="run-control-batch-actions">
+                    <button
+                      className="run-control-batch-btn run-control-batch-btn--primary"
+                      disabled={!!runningPipeline || pipelineBatch.active}
+                      onClick={runFullFinalPipeline}
+                      type="button"
+                    >
+                      {pipelineBatch.active ? '전체 실행 중...' : '전체 실행'}
+                    </button>
+                    <button
+                      className="run-control-batch-btn"
+                      disabled={!!runningPipeline || pipelineBatch.active}
+                      onClick={resetFullPipeline}
+                      type="button"
+                    >
+                      전체 되돌리기
+                    </button>
+                  </div>
+                  <div className="run-control-batch-progress" aria-label={`전체 실행 진행률 ${batchProgressPercent}%`}>
+                    <span style={{ width: `${batchProgressPercent}%` }} />
+                  </div>
+                  <div className="run-control-batch-steps">
+                    {FINAL_PIPELINE_SEQUENCE.map((key) => {
+                      const row = operationRows[operationIndex.get(key) || 0];
+                      return (
+                        <span
+                          className={`${isBatchNodeCurrent(key) ? 'is-current' : ''} ${isBatchNodeComplete(key) ? 'is-done' : ''}`}
+                          key={`batch-step-${key}`}
+                        >
+                          {row?.lane}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <button
                   className="run-control-flow run-control-flow--clickable"
                   aria-label="Pipeline dependency map — 클릭해서 확대"
@@ -979,10 +1137,10 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                         ? `M${from.x},${from.y + 4} C${from.x - 8},${midY} ${to.x - 8},${midY} ${to.x},${to.y - 4}`
                         : `M${from.x + 5},${from.y} C${from.x + 13},${midY} ${to.x - 13},${midY} ${to.x - 5},${to.y}`;
                       const isFlowing = from.row.status === 'running' || to.row.status === 'running';
-                      return <path className={`run-flow-edge ${isFlowing ? 'is-running' : ''}`} d={d} key={`${fromKey}-${toKey}`} markerEnd="url(#run-flow-arrow)" />;
+                      return <path className={`run-flow-edge ${isFlowing ? 'is-running' : ''} ${isBatchEdgeCurrent(fromKey, toKey) ? 'is-batch-current' : ''} ${isBatchEdgeComplete(fromKey, toKey) ? 'is-batch-complete' : ''}`} d={d} key={`${fromKey}-${toKey}`} markerEnd="url(#run-flow-arrow)" />;
                     })}
                     {pipelineNodePositions.map(({ key, x, y, row }) => (
-                      <g className={`run-flow-node status-${row.status}`} transform={`translate(${x} ${y})`} key={key}>
+                      <g className={`run-flow-node status-${row.status} ${isBatchNodeCurrent(key) ? 'is-batch-current' : ''} ${isBatchNodeComplete(key) ? 'is-batch-complete' : ''}`} transform={`translate(${x} ${y})`} key={key}>
                         <circle r="5.5" />
                         <text y="15">{row.lane}</text>
                       </g>
@@ -1615,7 +1773,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                     PeriodRegion을 기본으로 주차별 법정감염병 국내/해외유입 값을 수집하고, PeriodBasic으로 총합을 검산합니다.
                     17개 시도 지역 신호는 업로드 xlsx/csv 감시자료가 담당합니다.
                   </p>
-                  <button className="console-action-btn console-neutral-btn" onClick={handleRefreshKdcaNotifiable} disabled={refreshingKdcaApi}>
+                  <button className="console-action-btn console-neutral-btn" onClick={() => handleRefreshKdcaNotifiable()} disabled={refreshingKdcaApi}>
                     <span className="console-btn-title">{refreshingKdcaApi ? 'KDCA API 갱신 중...' : '법정감염병 API 갱신'}</span>
                     <span className="console-btn-sub">PeriodRegion primary · PeriodBasic validation</span>
                   </button>
@@ -1633,7 +1791,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 <h3 className="kas-console-group-title">분석 실행 / AI ANALYZE</h3>
                 <p className="console-card-desc">각 분석 버튼은 map, report, pipeline control의 산출물을 갱신합니다.</p>
 
-                <button className="osint-analysis-btn console-action-btn" onClick={handleRunOsintAnalysis} disabled={analyzingOsint}>
+                <button className="osint-analysis-btn console-action-btn" onClick={() => handleRunOsintAnalysis()} disabled={analyzingOsint}>
                   <span className="console-btn-title">{analyzingOsint ? 'OSINT 실행 중...' : 'OSINT 분석'}</span>
                   <span className="console-btn-sub">국내 뉴스 + 검색 트렌드 보조 신호 분석</span>
                 </button>
@@ -1641,7 +1799,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   <span className="console-btn-title">{generatingKdcaReport ? 'KDCA 분석 중...' : 'KDCA 감시자료 분석'}</span>
                   <span className="console-btn-sub">공식 감시자료 기반 주간 AI report</span>
                 </button>
-                <button className="sentinel-analysis-btn console-action-btn" onClick={handleRunFullAnalysis} disabled={analyzingFull}>
+                <button className="sentinel-analysis-btn console-action-btn" onClick={() => handleRunFullAnalysis()} disabled={analyzingFull}>
                   <span className="console-btn-title">{analyzingFull ? 'Sentinel 실행 중...' : 'Sentinel 통합 분석'}</span>
                   <span className="console-btn-sub">KDCA + OSINT + trend를 결합해 alert snapshot 계산</span>
                 </button>
@@ -1680,6 +1838,14 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 <h3>데이터 수집 → AI 분석 → 리포트 흐름</h3>
                 <p>각 노드를 클릭하면 해당 단계를 실행합니다. 진행 중인 노드는 펄스로, 흐름은 점선 애니메이션으로 표시됩니다.</p>
               </div>
+              <div className="pipeline-flow-header-actions">
+                <button disabled={!!runningPipeline || pipelineBatch.active} onClick={runFullFinalPipeline} type="button">
+                  {pipelineBatch.active ? '전체 실행 중...' : '전체 실행'}
+                </button>
+                <button disabled={!!runningPipeline || pipelineBatch.active} onClick={resetFullPipeline} type="button">
+                  전체 되돌리기
+                </button>
+              </div>
             </div>
 
             <div className="pipeline-flow-modal-svg-wrap">
@@ -1712,7 +1878,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                       key={`${fromKey}-${toKey}`}
                       d={d}
                       fill="none"
-                      className={`pf-edge ${isFlowing ? 'pf-edge--flowing' : ''} ${isComplete ? 'pf-edge--complete' : ''}`}
+                      className={`pf-edge ${isFlowing ? 'pf-edge--flowing' : ''} ${isComplete ? 'pf-edge--complete' : ''} ${isBatchEdgeCurrent(fromKey, toKey) ? 'pf-edge--batch-current' : ''} ${isBatchEdgeComplete(fromKey, toKey) ? 'pf-edge--batch-complete' : ''}`}
                       markerEnd="url(#pf-arrow-inline)"
                     />
                   );
@@ -1724,8 +1890,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   const isError = row.status === 'error';
                   const status = isRunning ? 'running' : isReady ? 'ready' : isError ? 'error' : 'idle';
                   return (
-                    <g key={key} className={`pf-node pf-node--${status}`} transform={`translate(${x} ${y})`}>
-                      {isRunning && <circle r="38" className="pf-node-pulse" />}
+                    <g key={key} className={`pf-node pf-node--${status} ${isBatchNodeCurrent(key) ? 'pf-node--batch-current' : ''} ${isBatchNodeComplete(key) ? 'pf-node--batch-complete' : ''}`} transform={`translate(${x} ${y})`}>
+                      {(isRunning || isBatchNodeCurrent(key)) && <circle r="38" className="pf-node-pulse" />}
                       <circle r="28" className="pf-node-bg" />
                       <circle r="28" className="pf-node-ring" />
                       <text y="-3" className="pf-node-lane">{row.lane}</text>
@@ -1811,6 +1977,14 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 <h3>데이터 수집 → AI 분석 → 리포트 흐름</h3>
                 <p>각 노드를 클릭하면 해당 단계를 실행합니다. 진행 중인 노드는 펄스로, 흐름은 점선 애니메이션으로 표시됩니다.</p>
               </div>
+              <div className="pipeline-flow-header-actions">
+                <button disabled={!!runningPipeline || pipelineBatch.active} onClick={runFullFinalPipeline} type="button">
+                  {pipelineBatch.active ? '전체 실행 중...' : '전체 실행'}
+                </button>
+                <button disabled={!!runningPipeline || pipelineBatch.active} onClick={resetFullPipeline} type="button">
+                  전체 되돌리기
+                </button>
+              </div>
               <button className="pipeline-flow-modal-close" onClick={() => setPipelineFlowOpen(false)} type="button">×</button>
             </div>
 
@@ -1847,7 +2021,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                       key={`${fromKey}-${toKey}`}
                       d={d}
                       fill="none"
-                      className={`pf-edge ${isFlowing ? 'pf-edge--flowing' : ''} ${isComplete ? 'pf-edge--complete' : ''}`}
+                      className={`pf-edge ${isFlowing ? 'pf-edge--flowing' : ''} ${isComplete ? 'pf-edge--complete' : ''} ${isBatchEdgeCurrent(fromKey, toKey) ? 'pf-edge--batch-current' : ''} ${isBatchEdgeComplete(fromKey, toKey) ? 'pf-edge--batch-complete' : ''}`}
                       markerEnd="url(#pf-arrow)"
                     />
                   );
@@ -1860,9 +2034,9 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   const isError = row.status === 'error';
                   const status = isRunning ? 'running' : isReady ? 'ready' : isError ? 'error' : 'idle';
                   return (
-                    <g key={key} className={`pf-node pf-node--${status}`} transform={`translate(${x} ${y})`}>
+                    <g key={key} className={`pf-node pf-node--${status} ${isBatchNodeCurrent(key) ? 'pf-node--batch-current' : ''} ${isBatchNodeComplete(key) ? 'pf-node--batch-complete' : ''}`} transform={`translate(${x} ${y})`}>
                       {/* Pulse ring (only when running) */}
-                      {isRunning && <circle r="38" className="pf-node-pulse" />}
+                      {(isRunning || isBatchNodeCurrent(key)) && <circle r="38" className="pf-node-pulse" />}
                       {/* Main circle */}
                       <circle r="28" className="pf-node-bg" />
                       <circle r="28" className="pf-node-ring" />
