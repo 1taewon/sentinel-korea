@@ -82,7 +82,25 @@ const relevanceFactorLabels: Record<string, string> = {
   proximity: '거리/인접성',
   unexpectedness: '예상 밖 이벤트',
   sourceReliability: '소스 신뢰도',
+  recency: '최신성 (시간 감쇠)',
 };
+
+// Friendly labels for the "소스 구성" breakdown in World outbreak panel.
+const SOURCE_LABELS: Record<string, string> = {
+  who_don: 'WHO DON',
+  cdc: 'US CDC',
+  ecdc: 'ECDC (EU)',
+  africa_cdc: 'Africa CDC',
+  east_asia: 'East Asia (CN/JP/TW)',
+  sea: 'Southeast Asia',
+  gemini_outbreak: 'Gemini Search',
+  news_global: 'NewsAPI (global)',
+  google_news: 'Google News',
+  promed: 'ProMED-mail',
+  healthmap: 'HealthMap',
+  kdca_global_report: 'KDCA imported',
+};
+const formatSource = (key: string) => SOURCE_LABELS[key] || key.replace(/_/g, ' ');
 
 const formatPercent = (value: number) => `${Math.round(value * 100)}%`;
 const formatDistance = (value: number) => `${Math.round(value).toLocaleString()} km`;
@@ -1113,7 +1131,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                         const relevance = scoreInternationalRelevance(signal);
                         return (
                           <div className="globe-korea-overlay-signal" key={`korea-rel-${signal.id}`} style={{ borderLeftColor: relevance.color }}>
-                            <span className="globe-korea-overlay-signal-meta">{signal.date} · {(signal.source || '').replace('_', ' ')}</span>
+                            <span className="globe-korea-overlay-signal-meta">{signal.date} · {formatSource(signal.source || '')}</span>
                             <strong>{signal.title || signal.keyword || signal.disease || 'International signal'}</strong>
                           </div>
                         );
@@ -1140,7 +1158,19 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                       </div>
                       <div className="globe-legend-row">
                         <i className="globe-legend-arc" />
-                        <div><strong>아크 라인</strong><small>각 outbreak 위치 → 한국으로 이어지는 관련성 흐름. 굵을수록 한국에 가까운 신호.</small></div>
+                        <div><strong>아크 라인</strong><small>outbreak 위치에서 한국으로 이어지는 관련성 흐름.</small></div>
+                      </div>
+                      <div className="globe-legend-row">
+                        <i className="globe-legend-arc globe-legend-arc--thick" />
+                        <div><strong>선 굵기</strong><small>한국 관련도 점수가 높을수록 굵어집니다 (질병/거리/이동량/최신성 통합).</small></div>
+                      </div>
+                      <div className="globe-legend-row">
+                        <i className="globe-legend-arc globe-legend-arc--fast" />
+                        <div><strong>펄스 빈도</strong><small>위험도가 높은 신호일수록 펄스가 더 자주, 빠르게 흐릅니다.</small></div>
+                      </div>
+                      <div className="globe-legend-row">
+                        <i className="globe-legend-arc globe-legend-arc--faded" />
+                        <div><strong>흐린 선</strong><small>최신일과 멀수록 (≥6개월) 자동으로 관련성과 굵기가 줄어듭니다.</small></div>
                       </div>
                     </div>
                   </div>
@@ -1178,7 +1208,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                     {Object.entries(internationalSummary.bySource).length ? (
                       Object.entries(internationalSummary.bySource).map(([source, count]) => (
                         <div className="globe-context-row" key={source}>
-                          <span>{source}</span>
+                          <span>{formatSource(source)}</span>
                           <strong>{count}</strong>
                         </div>
                       ))
@@ -1214,7 +1244,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                             onClick={() => setSelectedGlobal(signal)}
                             type="button"
                           >
-                            <span>{signal.date} / {signal.source.replace('_', ' ')}</span>
+                            <span>{signal.date} / {formatSource(signal.source)}</span>
                             <strong>{signal.title || signal.keyword || signal.disease || 'International signal'}</strong>
                             <div className="globe-signal-meta">
                               <em>{signal.country || signal.severity}</em>
@@ -1263,10 +1293,40 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                           </div>
                           {selectedGlobal.url && (
                             <a className="globe-raw-link" href={selectedGlobal.url} target="_blank" rel="noreferrer">
-                              원문 링크 열기
+                              원문 링크 열기 →
                             </a>
                           )}
-                          <pre className="globe-raw-json">{JSON.stringify(selectedGlobal, null, 2)}</pre>
+                          <div className="globe-raw-preview">
+                            {selectedGlobal.url && (
+                              <div className="globe-raw-preview-row">
+                                <span>URL</span>
+                                <a href={selectedGlobal.url} target="_blank" rel="noreferrer" className="globe-raw-preview-url">
+                                  {selectedGlobal.url.length > 64 ? selectedGlobal.url.slice(0, 64) + '…' : selectedGlobal.url}
+                                </a>
+                              </div>
+                            )}
+                            {selectedGlobal.publisher && (
+                              <div className="globe-raw-preview-row">
+                                <span>발행</span>
+                                <strong>{selectedGlobal.publisher}</strong>
+                              </div>
+                            )}
+                            {selectedGlobal.date && (
+                              <div className="globe-raw-preview-row">
+                                <span>날짜</span>
+                                <strong>{selectedGlobal.date}</strong>
+                              </div>
+                            )}
+                            {selectedGlobal.severity && (
+                              <div className="globe-raw-preview-row">
+                                <span>심각도</span>
+                                <strong>{selectedGlobal.severity}</strong>
+                              </div>
+                            )}
+                            {selectedGlobal.snippet && (
+                              <div className="globe-raw-preview-snippet">{selectedGlobal.snippet}</div>
+                            )}
+                          </div>
                         </div>
                       );
                     })() : (

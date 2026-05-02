@@ -71,6 +71,24 @@ function trafficProxy(signal: GlobalSignal, distanceKm: number) {
   return 0.28;
 }
 
+/**
+ * Time decay — older news = lower relevance.
+ * 0d   → 1.00
+ * 30d  → 0.78
+ * 90d  → 0.45
+ * 180d → 0.18
+ * >180d → 0.10 floor
+ */
+function recencyScore(signal: GlobalSignal): number {
+  if (!signal.date) return 0.6;
+  const ts = Date.parse(signal.date);
+  if (Number.isNaN(ts)) return 0.6;
+  const ageDays = Math.max(0, (Date.now() - ts) / (1000 * 60 * 60 * 24));
+  // Exponential decay with half-life ~60 days
+  const decay = Math.exp(-ageDays / 60);
+  return clamp(decay, 0.1, 1);
+}
+
 export function scoreInternationalRelevance(signal: GlobalSignal) {
   const distanceKm = distanceToKoreaKm(signal);
   const proximityScore = clamp(1 - Math.min(distanceKm, 9000) / 9000);
@@ -79,15 +97,21 @@ export function scoreInternationalRelevance(signal: GlobalSignal) {
   const riskScore = diseaseRisk(signal);
   const trafficScore = trafficProxy(signal, distanceKm);
   const unexpectedScore = unexpectedness(signal);
+  const recency = recencyScore(signal);
 
-  const score = clamp(
-    severityScore * 0.25 +
+  // base composite (ignoring recency)
+  const baseScore = clamp(
+    severityScore * 0.26 +
       riskScore * 0.22 +
       trafficScore * 0.2 +
-      proximityScore * 0.15 +
-      unexpectedScore * 0.12 +
+      proximityScore * 0.16 +
+      unexpectedScore * 0.1 +
       sourceScore * 0.06,
   );
+
+  // Time decay: recency multiplicatively dampens older signals
+  // Floor at baseScore * 0.25 so very old severe events don't disappear entirely
+  const score = clamp(Math.max(baseScore * recency, baseScore * 0.25));
 
   const level = score >= 0.75 ? 'critical' : score >= 0.58 ? 'high' : score >= 0.4 ? 'watch' : 'context';
   const color = level === 'critical' ? '#ff4d4f' : level === 'high' ? '#f59e42' : level === 'watch' ? '#38d8ff' : '#8b8cff';
@@ -107,6 +131,7 @@ export function scoreInternationalRelevance(signal: GlobalSignal) {
       proximity: proximityScore,
       unexpectedness: unexpectedScore,
       sourceReliability: sourceScore,
+      recency,
     },
   };
 }

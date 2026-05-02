@@ -166,29 +166,35 @@ async def get_kdca_notifiable(include_records: bool = False) -> dict[str, Any]:
 
 @router.post("/refresh-global")
 async def refresh_global_signals() -> dict[str, Any]:
-    """WHO DON + 글로벌 뉴스를 새로 수집합니다."""
+    """Run all outbreak fetchers — WHO DON + 5 agency feeds + Gemini grounded search + global news.
+
+    Each fetcher is independent: if one fails, the others still run.
+    """
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-    results = {}
+    results: dict[str, Any] = {}
 
-    # WHO DON 스크래핑
-    try:
-        spec = __import_script("fetch_who_don")
-        data = spec.fetch_who_don()
-        out_path = PROCESSED_DIR / "global_who_don.json"
-        out_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-        results["who_don"] = {"status": "ok" if data else "empty", "count": len(data)}
-    except Exception as e:
-        results["who_don"] = {"status": "error", "error": str(e)}
+    # (output_filename, module_name, function_name, result_key)
+    fetchers: list[tuple[str, str, str, str]] = [
+        ("global_who_don.json",          "fetch_who_don",            "fetch_who_don",            "who_don"),
+        ("global_cdc.json",              "fetch_cdc_news",           "fetch_cdc_news",           "cdc"),
+        ("global_ecdc.json",             "fetch_ecdc_news",          "fetch_ecdc_news",          "ecdc"),
+        ("global_africa_cdc.json",       "fetch_africa_cdc_news",    "fetch_africa_cdc_news",    "africa_cdc"),
+        ("global_east_asia.json",        "fetch_east_asia_news",     "fetch_east_asia_news",     "east_asia"),
+        ("global_sea.json",              "fetch_sea_news",           "fetch_sea_news",           "sea"),
+        ("global_gemini_outbreak.json",  "fetch_gemini_outbreak_news", "fetch_gemini_outbreak_news", "gemini_outbreak"),
+        ("global_news.json",             "fetch_global_news",        "fetch_global_news",        "global_news"),
+    ]
 
-    # 글로벌 뉴스
-    try:
-        spec = __import_script("fetch_global_news")
-        data = spec.fetch_global_news()
-        out_path = PROCESSED_DIR / "global_news.json"
-        out_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-        results["global_news"] = {"status": "ok" if data else "empty", "count": len(data)}
-    except Exception as e:
-        results["global_news"] = {"status": "error", "error": str(e)}
+    for out_filename, module_name, fn_name, key in fetchers:
+        try:
+            mod = __import_script(module_name)
+            fn = getattr(mod, fn_name)
+            data = fn()
+            out_path = PROCESSED_DIR / out_filename
+            out_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            results[key] = {"status": "ok" if data else "empty", "count": len(data)}
+        except Exception as e:
+            results[key] = {"status": "error", "error": str(e)}
 
     ok_count = sum(1 for item in results.values() if item.get("status") == "ok")
     error_count = sum(1 for item in results.values() if item.get("status") == "error")

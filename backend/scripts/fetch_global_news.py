@@ -204,11 +204,17 @@ def _fetch_newsapi(queries: list[str], exclude_str: str, seen: set[str]) -> list
 
 
 def _fetch_google_news(queries: list[str], seen: set[str], window: str = "6m", source_tag: str = "google_news", limit_per_query: int = 14) -> list[dict]:
-    """Pull Google News RSS for a list of queries, defaulting to a 6-month window."""
+    """Pull Google News RSS for a list of queries.
+
+    Note: Google News deprecated the `when:` operator (silently returns 0 items),
+    so we issue the bare query and rely on response date for downstream filtering.
+    The `window` arg is kept for API compatibility but is ignored.
+    """
+    del window
     results: list[dict] = []
     for query in queries:
         try:
-            rss_url = f"{GOOGLE_NEWS_RSS}?q={quote_plus(query + f' when:{window}')}&hl=en-US&gl=US&ceid=US:en"
+            rss_url = f"{GOOGLE_NEWS_RSS}?q={quote_plus(query)}&hl=en-US&gl=US&ceid=US:en"
             response = httpx.get(rss_url, follow_redirects=True, timeout=20)
             response.raise_for_status()
             root = ET.fromstring(response.content)

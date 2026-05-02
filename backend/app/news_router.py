@@ -20,14 +20,41 @@ def _load(path: Path) -> Any:
     return []
 
 
+# Every outbreak source file the frontend should consume in /signals/global and /news/global
+GLOBAL_SOURCE_FILES = [
+    "global_who_don.json",        # WHO DON
+    "global_cdc.json",            # US CDC
+    "global_ecdc.json",           # ECDC (EU)
+    "global_africa_cdc.json",     # Africa CDC
+    "global_east_asia.json",      # China / Japan / Taiwan
+    "global_sea.json",            # Southeast Asia
+    "global_gemini_outbreak.json",  # Gemini grounded search
+    "global_news.json",           # NewsAPI + Google News (general)
+    "global_kdca_outbreaks.json", # KDCA imported outbreak signals
+]
+
+
 @router.get("/signals/global")
 async def signals_global() -> list[dict]:
-    results = []
-    for fname in ["global_who_don.json", "global_news.json", "global_kdca_outbreaks.json"]:
+    results: list[dict] = []
+    for fname in GLOBAL_SOURCE_FILES:
         p = PROCESSED_DIR / fname
         if p.exists():
             results.extend(_load(p))
-    return results or _load(MOCK_DIR / "mock_global_signals.json")
+    # dedupe by id, preserving the highest-priority occurrence (file order above)
+    seen: set[str] = set()
+    unique: list[dict] = []
+    for item in results:
+        item_id = item.get("id")
+        if item_id and item_id in seen:
+            continue
+        if item_id:
+            seen.add(item_id)
+        unique.append(item)
+    if unique:
+        unique.sort(key=lambda x: x.get("date", ""), reverse=True)
+        return unique
+    return _load(MOCK_DIR / "mock_global_signals.json")
 
 
 @router.get("/news/korea")
@@ -42,11 +69,38 @@ async def news_korea(limit: int = 30) -> list[dict]:
 
 
 @router.get("/news/global")
-async def news_global(limit: int = 30) -> list[dict]:
-    # WHO DON 먼저, 그 다음 글로벌 뉴스 — 날짜 내림차순 정렬
-    who_don = _load(PROCESSED_DIR / "global_who_don.json")
-    global_news = _load(PROCESSED_DIR / "global_news.json")
-    kdca_outbreaks = _load(PROCESSED_DIR / "global_kdca_outbreaks.json")
-    results = who_don + global_news + kdca_outbreaks
-    results.sort(key=lambda x: x.get("date", ""), reverse=True)
-    return results[:limit]
+async def news_global(limit: int = 60) -> list[dict]:
+    """Aggregate all outbreak sources (WHO DON + 5 agency feeds + Gemini + NewsAPI/Google).
+
+    Sort by:
+      1) is_respiratory == True first
+      2) severity high > medium > low
+      3) date descending
+    """
+    severity_rank = {"high": 0, "medium": 1, "low": 2}
+
+    results: list[dict] = []
+    for fname in GLOBAL_SOURCE_FILES:
+        p = PROCESSED_DIR / fname
+        if p.exists():
+            results.extend(_load(p))
+
+    # dedupe
+    seen: set[str] = set()
+    unique: list[dict] = []
+    for item in results:
+        item_id = item.get("id")
+        if item_id and item_id in seen:
+            continue
+        if item_id:
+            seen.add(item_id)
+        unique.append(item)
+
+    unique.sort(
+        key=lambda x: (
+            0 if x.get("is_respiratory") else 1,
+            severity_rank.get(x.get("severity", ""), 3),
+            -1 * (int(x.get("date", "0000-00-00").replace("-", "")) if x.get("date") else 0),
+        )
+    )
+    return unique[:limit]

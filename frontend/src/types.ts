@@ -75,6 +75,8 @@ export type GlobalSignal = {
   baseline?: number;
   severity: 'low' | 'medium' | 'high';
   url?: string;
+  publisher?: string;
+  snippet?: string;
 };
 
 export type SignalConfig = {
