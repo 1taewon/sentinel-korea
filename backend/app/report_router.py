@@ -308,6 +308,108 @@ def _build_osint_prompt(korea_news, global_signals, trends, target_date) -> str:
 리포트:"""
 
 
+def _score_outbreak_for_korea(item: dict) -> float:
+    """Lightweight Python port of scoreInternationalRelevance (frontend) so
+    the FINAL report can pick the Top-3 most Korea-relevant outbreaks.
+    Returns 0..1.
+    """
+    from datetime import datetime as _dt
+
+    # Korea center (Seoul) for distance heuristic
+    KOREA_LAT, KOREA_LNG = 37.57, 126.98
+    SOURCE_RELIABILITY = {
+        "who_don": 0.95, "ecdc": 0.92, "cdc": 0.90, "promed": 0.88,
+        "kdca_global_report": 0.85, "healthmap": 0.78,
+        "gemini_outbreak": 0.65, "news_global": 0.55,
+        "google_news_outbreak": 0.50, "google_news": 0.45,
+    }
+    HIGH_TRAFFIC = {
+        "china": 0.95, "japan": 0.95, "taiwan": 0.82, "vietnam": 0.78,
+        "thailand": 0.76, "philippines": 0.72, "singapore": 0.72,
+        "indonesia": 0.66, "malaysia": 0.65, "usa": 0.64, "united states": 0.64,
+        "australia": 0.56, "canada": 0.52, "india": 0.50,
+    }
+
+    severity = item.get("severity", "low")
+    severity_score = 1.0 if severity == "high" else 0.62 if severity == "medium" else 0.30
+    source_score = SOURCE_RELIABILITY.get(item.get("source", ""), 0.55)
+
+    # Disease risk
+    text = " ".join(str(item.get(k, "")) for k in ("title", "snippet", "disease", "country", "source")).lower()
+    if any(t in text for t in ["h5n1", "avian", "mers", "sars", "novel", "unknown", "fatal", "severe pneumonia"]):
+        risk_score = 1.0
+    elif any(t in text for t in ["covid", "coronavirus", "influenza", "pneumonia", "respiratory outbreak", "cluster"]):
+        risk_score = 0.78
+    elif any(t in text for t in ["rsv", "mycoplasma", "fever", "cough", "respiratory"]):
+        risk_score = 0.58
+    else:
+        risk_score = 0.30
+
+    # Distance & traffic proxy
+    try:
+        lat = float(item.get("lat", 20))
+        lng = float(item.get("lng", 0))
+        dist_km = max(100, ((lat - KOREA_LAT) ** 2 + (lng - KOREA_LNG) ** 2) ** 0.5 * 111)  # rough km
+    except Exception:
+        dist_km = 6000
+    proximity = max(0.0, 1 - min(dist_km, 9000) / 9000)
+    country = (item.get("country", "") or "").lower()
+    traffic = next((v for k, v in HIGH_TRAFFIC.items() if k in country), None)
+    if traffic is None:
+        traffic = 0.82 if dist_km < 900 else 0.68 if dist_km < 2500 else 0.48 if dist_km < 5500 else 0.28
+
+    # Recency
+    try:
+        days_old = (datetime.utcnow() - datetime.fromisoformat(str(item.get("date", ""))[:10])).days
+    except Exception:
+        days_old = 14
+    import math
+    recency = max(0.1, math.exp(-max(0, days_old) / 60))
+
+    # HealthMap marker boost (if available)
+    marker_count = item.get("marker_alert_count") or 0
+    marker_boost = 0.18 + math.log10(marker_count + 1) * 0.45 if marker_count > 1 else 0
+
+    base = (
+        severity_score * 0.22
+        + risk_score * 0.20
+        + traffic * 0.18
+        + proximity * 0.14
+        + source_score * 0.06
+        + min(1.0, marker_boost) * 0.10
+        + (item.get("marker_significance") or 0) * 0.05
+    )
+    score = max(base * 0.25, base * recency)
+    return min(1.0, score)
+
+
+def _load_top_outbreaks_for_korea(top_n: int = 3, min_score: float = 0.6) -> list[dict]:
+    """Load all current global_*.json source files and return the Top-N most
+    Korea-relevant outbreak items (score >= min_score)."""
+    files = [
+        "global_who_don.json", "global_cdc.json", "global_ecdc.json",
+        "global_healthmap.json", "global_gemini_outbreak.json",
+        "global_google_outbreak.json", "global_news.json",
+        "global_kdca_outbreaks.json",
+    ]
+    items: list[dict] = []
+    seen: set[str] = set()
+    for fname in files:
+        p = PROCESSED_DIR / fname
+        if not p.exists():
+            continue
+        for item in _load(p):
+            iid = item.get("id")
+            if iid and iid in seen:
+                continue
+            if iid:
+                seen.add(iid)
+            items.append({**item, "_korea_score": _score_outbreak_for_korea(item)})
+    items.sort(key=lambda x: x.get("_korea_score", 0), reverse=True)
+    qualified = [x for x in items if x.get("_korea_score", 0) >= min_score]
+    return qualified[:top_n]
+
+
 def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, trends, kdca_data, target_date) -> str:
     epiweek = _get_epiweek_for(target_date)
     level_map: dict[str, list[str]] = {"G3": [], "G2": [], "G1": [], "G0": []}
@@ -324,6 +426,20 @@ def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, tre
     dash_lines = [f"{labels[l]} {', '.join(level_map.get(l,[])) or '없음'}" for l in ["G3","G2","G1","G0"]]
     news_lines = [f"- [{n.get('date','')}] {n.get('title','')}" for n in korea_news[:8]]
     global_lines = [f"- [{n.get('date','')}] {n.get('title','')}" for n in global_signals[:5]]
+
+    # Phase 3-B: Top-3 Korea-relevant global outbreaks (auto-injected from all sources)
+    top_outbreaks = _load_top_outbreaks_for_korea(top_n=3, min_score=0.55)
+    outbreak_lines = []
+    for item in top_outbreaks:
+        score_pct = round(item.get("_korea_score", 0) * 100)
+        country = item.get("country", "") or "unknown"
+        date_s = item.get("date", "")
+        title = item.get("title", "")
+        source = item.get("source", "")
+        publisher = item.get("publisher", "")
+        outbreak_lines.append(
+            f"- [관련성 {score_pct}%] [{date_s}] {country} — {title} (출처: {publisher or source})"
+        )
     trend_lines = []
     for s in (trends.get("korea", {}).get("series") or [])[:3]:
         pts = s.get("points", [])
@@ -343,8 +459,11 @@ def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, tre
 ### OSINT — 한국 뉴스
 {chr(10).join(news_lines) if news_lines else '없음'}
 
-### OSINT — 글로벌 신호
+### OSINT — 글로벌 신호 (raw)
 {chr(10).join(global_lines) if global_lines else '없음'}
+
+### Top 3 — 한국 관련 outbreak (자동 선정, 모든 source 통합)
+{chr(10).join(outbreak_lines) if outbreak_lines else '관련성 임계값을 넘는 outbreak 없음'}
 
 ### OSINT — Google Trends
 {chr(10).join(trend_lines) if trend_lines else '없음'}
@@ -352,7 +471,8 @@ def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, tre
 ### KDCA 감시 데이터 (공식)
 {kdca_section}
 
-다음 구조를 반드시 지켜 한국어 **통합 리포트**를 작성하세요. 첫 네 섹션 제목은 영어 그대로 사용하고, OSINT와 KDCA 신호가 수렴하는지/충돌하는지 명시하세요:
+다음 구조를 반드시 지켜 한국어 **통합 리포트**를 작성하세요. 첫 네 섹션 제목은 영어 그대로 사용하고, OSINT와 KDCA 신호가 수렴하는지/충돌하는지 명시하세요.
+**중요:** 위 "Top 3 — 한국 관련 outbreak" 섹션의 항목들은 자동 점수화로 선정된 한국 imported-risk 후보입니다. **"Why it matters"** 섹션에서 이 Top 3을 반드시 언급하고, 한국 입국 가능성·항공 노선·환자 표현형 측면에서 의미를 풀어 쓰세요. 비어 있으면 "이번 주 임계값을 넘는 해외 신호 없음"이라고 명시하세요.
 
 # Sentinel Korea — 통합 최종 리포트 (FINAL)
 ## Period: {epiweek} ({target_date})

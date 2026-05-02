@@ -126,6 +126,11 @@ export default function App() {
 function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').User | null; signOut: () => Promise<void> }) {
   const [koreaAlerts, setKoreaAlerts] = useState<KoreaAlert[]>([]);
   const [globalSignals, setGlobalSignals] = useState<GlobalSignal[]>([]);
+  // Phase 3-A: archive replay
+  const [archiveDates, setArchiveDates] = useState<string[]>([]);
+  const [selectedArchiveDate, setSelectedArchiveDate] = useState<string>('');  // '' = live
+  const [archiveSignals, setArchiveSignals] = useState<GlobalSignal[]>([]);
+  const [archiveLoading, setArchiveLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedKorea, setSelectedKorea] = useState<KoreaAlert | null>(null);
   const [selectedGlobal, setSelectedGlobal] = useState<GlobalSignal | null>(null);
@@ -162,6 +167,30 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('sentinel-theme', theme);
   }, [theme]);
+
+  // Phase 3-A: load archive snapshot dates and replay archived globe state.
+  useEffect(() => {
+    fetch(`${API_BASE}/signals/global/archive-dates`)
+      .then(r => r.ok ? r.json() : [])
+      .then(setArchiveDates)
+      .catch(() => setArchiveDates([]));
+  }, []);
+
+  useEffect(() => {
+    if (!selectedArchiveDate) {
+      setArchiveSignals([]);
+      return;
+    }
+    setArchiveLoading(true);
+    fetch(`${API_BASE}/signals/global?archive_date=${selectedArchiveDate}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setArchiveSignals(Array.isArray(data) ? data : []))
+      .catch(() => setArchiveSignals([]))
+      .finally(() => setArchiveLoading(false));
+  }, [selectedArchiveDate]);
+
+  // What the World outbreak modal renders — archive replay if a past date is picked, otherwise live signals.
+  const displayedSignals = selectedArchiveDate ? archiveSignals : globalSignals;
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
@@ -1095,13 +1124,29 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   <h3>World outbreak</h3>
                   <p>국내 뉴스/국내 트렌드와 분리해서 보는 국제 발생 상황, WHO 알림, 외부 corroboration 패널입니다.</p>
                 </div>
+                <div className="expanded-globe-archive-picker">
+                  <label>
+                    <span>스냅샷 재생</span>
+                    <select
+                      value={selectedArchiveDate}
+                      onChange={(e) => setSelectedArchiveDate(e.target.value)}
+                      disabled={archiveLoading}
+                    >
+                      <option value="">지금 (live)</option>
+                      {archiveDates.map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </label>
+                  {archiveLoading && <span className="expanded-globe-archive-loading">불러오는 중...</span>}
+                </div>
                 <button className="panel-close" onClick={() => setIsGlobeExpanded(false)}>×</button>
               </div>
               <div className="expanded-globe-body">
                 <div className="expanded-globe-container">
                   <MiniGlobe
                     isExpanded={true}
-                    signals={globalSignals}
+                    signals={displayedSignals}
                     koreaAlerts={koreaAlerts}
                     activeLayers={activeLayers}
                     aggregationMode={aggregationMode}

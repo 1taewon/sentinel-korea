@@ -17,6 +17,8 @@ router = APIRouter(prefix="/ingestion", tags=["ingestion"])
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 PROCESSED_DIR = DATA_DIR / "processed"
 UPLOAD_HISTORY_FILE = PROCESSED_DIR / "upload_history.json"
+# Historical archive of /refresh-global outputs — one folder per YYYY-MM-DD snapshot.
+OUTBREAK_ARCHIVE_DIR = PROCESSED_DIR / "global_outbreak_archive"
 SENTINEL_DATA_DIR = Path(
     os.getenv("SENTINEL_DATA_DIR", r"C:\Users\han75\OneDrive\Desktop\Sentinel_data")
 )
@@ -184,16 +186,27 @@ async def refresh_global_signals() -> dict[str, Any]:
         ("global_news.json",               "fetch_global_news",             "fetch_global_news",             "global_news"),
     ]
 
+    # Date stamp used for the archive snapshot so we can replay past globe state.
+    from datetime import datetime as _dt
+    snapshot_date = _dt.utcnow().strftime("%Y-%m-%d")
+    archive_dir = OUTBREAK_ARCHIVE_DIR / snapshot_date
+    archive_dir.mkdir(parents=True, exist_ok=True)
+
     for out_filename, module_name, fn_name, key in fetchers:
         try:
             mod = __import_script(module_name)
             fn = getattr(mod, fn_name)
             data = fn()
             out_path = PROCESSED_DIR / out_filename
-            out_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            payload = json.dumps(data, ensure_ascii=False, indent=2)
+            out_path.write_text(payload, encoding="utf-8")
+            # Mirror today's set into the dated archive folder
+            (archive_dir / out_filename).write_text(payload, encoding="utf-8")
             results[key] = {"status": "ok" if data else "empty", "count": len(data)}
         except Exception as e:
             results[key] = {"status": "error", "error": str(e)}
+
+    results["_archive"] = {"snapshot_date": snapshot_date, "path": str(archive_dir)}
 
     ok_count = sum(1 for item in results.values() if item.get("status") == "ok")
     error_count = sum(1 for item in results.values() if item.get("status") == "error")
