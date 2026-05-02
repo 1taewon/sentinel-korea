@@ -28,9 +28,11 @@ import sys
 from datetime import datetime
 from typing import Any
 
-# ── 3-month default cutoff used by every outbreak fetcher ─────────────────────
-# (User feedback: 6 months is too long; 3 months keeps signals current.)
-LOOKBACK_DAYS = 90
+# ── 1-month default cutoff for outbreak fetchers ──────────────────────────────
+# (User feedback: 3 months is too noisy; 1 month focuses on actionable signals.)
+# HealthMap overrides this to 14 days inside its own fetcher because it
+# aggregates many sources at high frequency.
+LOOKBACK_DAYS = 30
 
 # ── Respiratory keyword filter ─────────────────────────────────────────────────
 RESPIRATORY_KEYWORDS: list[str] = [

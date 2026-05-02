@@ -62,6 +62,15 @@ function unexpectedness(signal: GlobalSignal) {
   return clamp(score);
 }
 
+/** HealthMap-specific signal volume — many alerts at one place = real cluster.
+ *  log scale: 1 alert → 0.25, 5 → 0.55, 10 → 0.7, 20 → 0.85, 30+ → 0.95
+ */
+function markerVolumeBoost(signal: GlobalSignal): number {
+  const count = signal.marker_alert_count ?? 0;
+  if (count <= 1) return 0;
+  return clamp(0.18 + Math.log10(count + 1) * 0.45);
+}
+
 function trafficProxy(signal: GlobalSignal, distanceKm: number) {
   const country = (signal.country || '').toLowerCase();
   const matched = Object.entries(HIGH_TRAFFIC_COUNTRY_PROXY).find(([key]) => country.includes(key));
@@ -100,15 +109,20 @@ export function scoreInternationalRelevance(signal: GlobalSignal) {
   const trafficScore = trafficProxy(signal, distanceKm);
   const unexpectedScore = unexpectedness(signal);
   const recency = recencyScore(signal);
+  // HealthMap signals: marker volume (clustering) + pin significance (curated tier)
+  const markerVolume = markerVolumeBoost(signal);
+  const markerSignificance = signal.marker_significance ?? 0;
 
   // base composite (ignoring recency)
   const baseScore = clamp(
-    severityScore * 0.26 +
-      riskScore * 0.22 +
-      trafficScore * 0.2 +
-      proximityScore * 0.16 +
-      unexpectedScore * 0.1 +
-      sourceScore * 0.06,
+    severityScore * 0.22 +
+      riskScore * 0.20 +
+      trafficScore * 0.18 +
+      proximityScore * 0.14 +
+      unexpectedScore * 0.08 +
+      sourceScore * 0.06 +
+      markerVolume * 0.07 +
+      markerSignificance * 0.05,
   );
 
   // Time decay: recency multiplicatively dampens older signals
@@ -134,6 +148,8 @@ export function scoreInternationalRelevance(signal: GlobalSignal) {
       unexpectedness: unexpectedScore,
       sourceReliability: sourceScore,
       recency,
+      markerVolume,
+      markerSignificance,
     },
   };
 }

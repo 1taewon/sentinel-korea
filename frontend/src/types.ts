@@ -77,6 +77,11 @@ export type GlobalSignal = {
   url?: string;
   publisher?: string;
   snippet?: string;
+  // HealthMap-specific signals
+  marker_alert_count?: number;       // # alerts at this place
+  marker_pin?: string;               // raw HealthMap pin code (e.g. "l3", "s2")
+  marker_pin_tier?: string;          // "location_cluster" | "single_alert" | "unknown"
+  marker_significance?: number;      // 0..1, derived from pin
 };
 
 export type SignalConfig = {

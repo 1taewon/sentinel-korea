@@ -83,6 +83,8 @@ const relevanceFactorLabels: Record<string, string> = {
   unexpectedness: '예상 밖 이벤트',
   sourceReliability: '소스 신뢰도',
   recency: '최신성 (시간 감쇠)',
+  markerVolume: '동일 지역 alert 클러스터링',
+  markerSignificance: 'HealthMap pin 등급',
 };
 
 // Friendly labels for the "소스 구성" breakdown in World outbreak panel.
@@ -1319,6 +1321,18 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                               <div className="globe-raw-preview-row">
                                 <span>심각도</span>
                                 <strong>{selectedGlobal.severity}</strong>
+                              </div>
+                            )}
+                            {selectedGlobal.marker_alert_count !== undefined && selectedGlobal.marker_alert_count > 0 && (
+                              <div className="globe-raw-preview-row">
+                                <span>지역 alert</span>
+                                <strong>{selectedGlobal.marker_alert_count}건 / 지역</strong>
+                              </div>
+                            )}
+                            {selectedGlobal.marker_pin && (
+                              <div className="globe-raw-preview-row">
+                                <span>HealthMap pin</span>
+                                <strong>{selectedGlobal.marker_pin} ({selectedGlobal.marker_pin_tier === 'location_cluster' ? 'cluster' : selectedGlobal.marker_pin_tier === 'single_alert' ? 'single' : '?'})</strong>
                               </div>
                             )}
                             {selectedGlobal.snippet && (

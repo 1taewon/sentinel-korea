@@ -14,7 +14,11 @@
     "category": "respiratory",
     "country": "chile",
     "lat": -37.8525,
-    "lng": -72.374
+    "lng": -72.374,
+    "marker_alert_count": 24,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-6991768a4b",
@@ -31,7 +35,11 @@
     "category": "respiratory",
     "country": "chile",
     "lat": -37.8525,
-    "lng": -72.374
+    "lng": -72.374,
+    "marker_alert_count": 24,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-9cd6af35df",
@@ -48,7 +56,11 @@
     "category": "respiratory",
     "country": "france",
     "lat": 46.5645,
-    "lng": 2.552
+    "lng": 2.552,
+    "marker_alert_count": 15,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-f256a4b76d",
@@ -65,7 +77,11 @@
     "category": "other_infectious",
     "country": "wyoming, united states",
     "lat": 43.0046,
-    "lng": -107.4903
+    "lng": -107.4903,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-96fca382a2",
@@ -82,7 +98,11 @@
     "category": "other_infectious",
     "country": "wyoming, united states",
     "lat": 43.0046,
-    "lng": -107.4903
+    "lng": -107.4903,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-8cb5527ab9",
@@ -99,7 +119,11 @@
     "category": "other_infectious",
     "country": "minas gerais, brazil",
     "lat": -18.0,
-    "lng": -44.0
+    "lng": -44.0,
+    "marker_alert_count": 5,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-fed453708d",
@@ -116,7 +140,11 @@
     "category": "respiratory",
     "country": "canada",
     "lat": 55.429,
-    "lng": -101.8653
+    "lng": -101.8653,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-4a580e9db9",
@@ -133,7 +161,11 @@
     "category": "other_infectious",
     "country": "south carolina, united states",
     "lat": 33.6877,
-    "lng": -80.5958
+    "lng": -80.5958,
+    "marker_alert_count": 10,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-1eb5ff72d0",
@@ -150,7 +182,11 @@
     "category": "other_infectious",
     "country": "pakistan",
     "lat": 29.967,
-    "lng": 69.386
+    "lng": 69.386,
+    "marker_alert_count": 10,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-231ce98b97",
@@ -167,7 +203,11 @@
     "category": "other_infectious",
     "country": "pakistan",
     "lat": 29.967,
-    "lng": 69.386
+    "lng": 69.386,
+    "marker_alert_count": 10,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-98358b84e9",
@@ -184,7 +224,11 @@
     "category": "other_infectious",
     "country": "pakistan",
     "lat": 29.967,
-    "lng": 69.386
+    "lng": 69.386,
+    "marker_alert_count": 10,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-7783419336",
@@ -201,7 +245,11 @@
     "category": "respiratory",
     "country": "spain",
     "lat": 40.2268,
-    "lng": -3.6496
+    "lng": -3.6496,
+    "marker_alert_count": 40,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-4b3d12b015",
@@ -218,7 +266,11 @@
     "category": "respiratory",
     "country": "spain",
     "lat": 40.2268,
-    "lng": -3.6496
+    "lng": -3.6496,
+    "marker_alert_count": 40,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-aa6aa2d7f6",
@@ -235,7 +287,11 @@
     "category": "respiratory",
     "country": "spain",
     "lat": 40.2268,
-    "lng": -3.6496
+    "lng": -3.6496,
+    "marker_alert_count": 40,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-f7d406e883",
@@ -252,7 +308,11 @@
     "category": "other_infectious",
     "country": "russia",
     "lat": 61.9461,
-    "lng": 93.5777
+    "lng": 93.5777,
+    "marker_alert_count": 21,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-028bc01f43",
@@ -269,7 +329,11 @@
     "category": "other_infectious",
     "country": "russia",
     "lat": 61.9461,
-    "lng": 93.5777
+    "lng": 93.5777,
+    "marker_alert_count": 21,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-3695945541",
@@ -286,7 +350,11 @@
     "category": "respiratory",
     "country": "brazil",
     "lat": -10.7731,
-    "lng": -53.0898
+    "lng": -53.0898,
+    "marker_alert_count": 15,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-705f44ca5f",
@@ -303,7 +371,11 @@
     "category": "other_infectious",
     "country": "indonesia",
     "lat": -2.6358,
-    "lng": 120.9375
+    "lng": 120.9375,
+    "marker_alert_count": 35,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-9bc845b354",
@@ -320,7 +392,11 @@
     "category": "other_infectious",
     "country": "indonesia",
     "lat": -2.6358,
-    "lng": 120.9375
+    "lng": 120.9375,
+    "marker_alert_count": 35,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-79fbb1d8dd",
@@ -337,7 +413,11 @@
     "category": "other_infectious",
     "country": "east kalimantan, indonesia",
     "lat": 1.5,
-    "lng": 116.5
+    "lng": 116.5,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-dfca83bc16",
@@ -354,7 +434,11 @@
     "category": "other_infectious",
     "country": "east kalimantan, indonesia",
     "lat": 1.5,
-    "lng": 116.5
+    "lng": 116.5,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-5d11bfe83e",
@@ -371,7 +455,11 @@
     "category": "other_infectious",
     "country": "estado de sonora, mexico",
     "lat": 29.3247,
-    "lng": -110.6763
+    "lng": -110.6763,
+    "marker_alert_count": 5,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-3a21e8cc3f",
@@ -388,7 +476,11 @@
     "category": "respiratory",
     "country": "egypt",
     "lat": 26.4942,
-    "lng": 29.872
+    "lng": 29.872,
+    "marker_alert_count": 9,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-178842f9a7",
@@ -405,7 +497,11 @@
     "category": "respiratory",
     "country": "ontario province, canada",
     "lat": 51.727,
-    "lng": -86.7042
+    "lng": -86.7042,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-e422c59e71",
@@ -422,7 +518,11 @@
     "category": "other_infectious",
     "country": "port rashid, al mina, dubai, united arab emirates",
     "lat": 25.2706,
-    "lng": 55.2908
+    "lng": 55.2908,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-2148a45dbf",
@@ -439,7 +539,11 @@
     "category": "respiratory",
     "country": "karnataka state, india",
     "lat": 13.5,
-    "lng": 76.0
+    "lng": 76.0,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-7410aa2264",
@@ -456,7 +560,11 @@
     "category": "respiratory",
     "country": "karnataka state, india",
     "lat": 13.5,
-    "lng": 76.0
+    "lng": 76.0,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-20e3b2335b",
@@ -473,7 +581,11 @@
     "category": "respiratory",
     "country": "karnataka state, india",
     "lat": 13.5,
-    "lng": 76.0
+    "lng": 76.0,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-a806c27947",
@@ -490,7 +602,11 @@
     "category": "respiratory",
     "country": "united states",
     "lat": 39.9669,
-    "lng": -97.5561
+    "lng": -97.5561,
+    "marker_alert_count": 36,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-a67a03525a",
@@ -507,7 +623,11 @@
     "category": "respiratory",
     "country": "united states",
     "lat": 39.9669,
-    "lng": -97.5561
+    "lng": -97.5561,
+    "marker_alert_count": 36,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-161a8d665d",
@@ -524,7 +644,11 @@
     "category": "respiratory",
     "country": "united states",
     "lat": 39.9669,
-    "lng": -97.5561
+    "lng": -97.5561,
+    "marker_alert_count": 36,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-b9fece3a21",
@@ -541,7 +665,11 @@
     "category": "other_infectious",
     "country": "cuba",
     "lat": 21.6212,
-    "lng": -79.0363
+    "lng": -79.0363,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-3e44204d5f",
@@ -558,7 +686,11 @@
     "category": "respiratory",
     "country": "vietnam",
     "lat": 14.9447,
-    "lng": 108.457
+    "lng": 108.457,
+    "marker_alert_count": 68,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-f1bdaf892a",
@@ -575,7 +707,11 @@
     "category": "respiratory",
     "country": "vietnam",
     "lat": 14.9447,
-    "lng": 108.457
+    "lng": 108.457,
+    "marker_alert_count": 68,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-de7885b1e9",
@@ -592,7 +728,11 @@
     "category": "respiratory",
     "country": "vietnam",
     "lat": 14.9447,
-    "lng": 108.457
+    "lng": 108.457,
+    "marker_alert_count": 68,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-0e605648ce",
@@ -609,7 +749,11 @@
     "category": "respiratory",
     "country": "florida, united states",
     "lat": 28.1495,
-    "lng": -81.6504
+    "lng": -81.6504,
+    "marker_alert_count": 7,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-6001a7c143",
@@ -626,7 +770,11 @@
     "category": "other_infectious",
     "country": "switzerland",
     "lat": 46.8025,
-    "lng": 8.2344
+    "lng": 8.2344,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-ff7f1e1f25",
@@ -643,7 +791,11 @@
     "category": "other_infectious",
     "country": "north dakota, united states",
     "lat": 47.4875,
-    "lng": -100.0196
+    "lng": -100.0196,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-7d692b384d",
@@ -660,7 +812,11 @@
     "category": "respiratory",
     "country": "alagoas, brazil",
     "lat": -9.0,
-    "lng": -36.0
+    "lng": -36.0,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-f987aa11d2",
@@ -677,7 +833,11 @@
     "category": "other_infectious",
     "country": "italy",
     "lat": 42.7958,
-    "lng": 12.0717
+    "lng": 12.0717,
+    "marker_alert_count": 9,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-7543f96e9f",
@@ -694,7 +854,11 @@
     "category": "respiratory",
     "country": "north korea",
     "lat": 40.0,
-    "lng": 127.0
+    "lng": 127.0,
+    "marker_alert_count": 7,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-11405e7c54",
@@ -711,7 +875,11 @@
     "category": "respiratory",
     "country": "iran",
     "lat": 32.7395,
-    "lng": 54.1978
+    "lng": 54.1978,
+    "marker_alert_count": 6,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-362a763f35",
@@ -728,7 +896,11 @@
     "category": "other_infectious",
     "country": "azerbaijan",
     "lat": 40.5,
-    "lng": 47.5
+    "lng": 47.5,
+    "marker_alert_count": 2,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-2fd7da97f7",
@@ -745,7 +917,11 @@
     "category": "other_infectious",
     "country": "michigan, united states",
     "lat": 43.5803,
-    "lng": -84.4629
+    "lng": -84.4629,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-a978da5ca9",
@@ -762,7 +938,11 @@
     "category": "other_infectious",
     "country": "perth, western australia, australia",
     "lat": -31.9334,
-    "lng": 115.8333
+    "lng": 115.8333,
+    "marker_alert_count": 2,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-946532edec",
@@ -779,7 +959,11 @@
     "category": "other_infectious",
     "country": "london, england, united kingdom",
     "lat": 51.5,
-    "lng": -0.1167
+    "lng": -0.1167,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-b5176ccaeb",
@@ -796,7 +980,11 @@
     "category": "respiratory",
     "country": "colombia",
     "lat": 3.9012,
-    "lng": -73.0734
+    "lng": -73.0734,
+    "marker_alert_count": 15,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-119964c4de",
@@ -813,7 +1001,11 @@
     "category": "respiratory",
     "country": "há»“ chã­ minh city, vietnam",
     "lat": 10.75,
-    "lng": 106.6667
+    "lng": 106.6667,
+    "marker_alert_count": 14,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-f61fe167cc",
@@ -830,7 +1022,11 @@
     "category": "respiratory",
     "country": "california, united states",
     "lat": 37.2502,
-    "lng": -119.7503
+    "lng": -119.7503,
+    "marker_alert_count": 6,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-f80caf15cc",
@@ -847,7 +1043,11 @@
     "category": "other_infectious",
     "country": "burundi",
     "lat": -3.3562,
-    "lng": 29.8872
+    "lng": 29.8872,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-70aac189d3",
@@ -864,7 +1064,11 @@
     "category": "other_infectious",
     "country": "texas, united states",
     "lat": 31.2409,
-    "lng": -99.2286
+    "lng": -99.2286,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-76e5ea63d9",
@@ -881,7 +1085,11 @@
     "category": "respiratory",
     "country": "saskatchewan province, canada",
     "lat": 54.0077,
-    "lng": -105.9961
+    "lng": -105.9961,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-c18c6babfd",
@@ -898,7 +1106,11 @@
     "category": "respiratory",
     "country": "saskatchewan province, canada",
     "lat": 54.0077,
-    "lng": -105.9961
+    "lng": -105.9961,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-ef3358aa26",
@@ -915,7 +1127,11 @@
     "category": "respiratory",
     "country": "france",
     "lat": 46.5645,
-    "lng": 2.552
+    "lng": 2.552,
+    "marker_alert_count": 15,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-e5aa2c6a82",
@@ -932,7 +1148,11 @@
     "category": "respiratory",
     "country": "brazil",
     "lat": -10.7731,
-    "lng": -53.0898
+    "lng": -53.0898,
+    "marker_alert_count": 15,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-dc76b0df9b",
@@ -949,7 +1169,11 @@
     "category": "other_infectious",
     "country": "indonesia",
     "lat": -2.6358,
-    "lng": 120.9375
+    "lng": 120.9375,
+    "marker_alert_count": 35,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-569eef0d5d",
@@ -966,7 +1190,11 @@
     "category": "other_infectious",
     "country": "estado de sonora, mexico",
     "lat": 29.3247,
-    "lng": -110.6763
+    "lng": -110.6763,
+    "marker_alert_count": 5,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-7fbd5507ab",
@@ -983,7 +1211,11 @@
     "category": "respiratory",
     "country": "egypt",
     "lat": 26.4942,
-    "lng": 29.872
+    "lng": 29.872,
+    "marker_alert_count": 9,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-fd24cad51f",
@@ -1000,7 +1232,11 @@
     "category": "respiratory",
     "country": "vancouver, british columbia, canada",
     "lat": 49.2496,
-    "lng": -123.1194
+    "lng": -123.1194,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-b78a4c0936",
@@ -1017,7 +1253,11 @@
     "category": "respiratory",
     "country": "argentina",
     "lat": -35.3764,
-    "lng": -64.1677
+    "lng": -64.1677,
+    "marker_alert_count": 33,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-7680f6335a",
@@ -1034,7 +1274,11 @@
     "category": "respiratory",
     "country": "india",
     "lat": 22.8835,
-    "lng": 79.6162
+    "lng": 79.6162,
+    "marker_alert_count": 10,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-47027239cd",
@@ -1051,7 +1295,11 @@
     "category": "other_infectious",
     "country": "washington, dc, united states",
     "lat": 38.895,
-    "lng": -77.0367
+    "lng": -77.0367,
+    "marker_alert_count": 6,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-3537ccfffb",
@@ -1068,7 +1316,11 @@
     "category": "other_infectious",
     "country": "washington, dc, united states",
     "lat": 38.895,
-    "lng": -77.0367
+    "lng": -77.0367,
+    "marker_alert_count": 6,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-864b799388",
@@ -1085,7 +1337,11 @@
     "category": "other_infectious",
     "country": "estado de tamaulipas, mexico",
     "lat": 23.8,
-    "lng": -98.7
+    "lng": -98.7,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-741e0c374d",
@@ -1102,7 +1358,11 @@
     "category": "respiratory",
     "country": "china",
     "lat": 36.52,
-    "lng": 103.8918
+    "lng": 103.8918,
+    "marker_alert_count": 31,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-38d56883e0",
@@ -1119,7 +1379,11 @@
     "category": "respiratory",
     "country": "north korea",
     "lat": 40.0,
-    "lng": 127.0
+    "lng": 127.0,
+    "marker_alert_count": 7,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-8b1c793140",
@@ -1136,7 +1400,11 @@
     "category": "other_infectious",
     "country": "moscow, russia",
     "lat": 55.762,
-    "lng": 37.607
+    "lng": 37.607,
+    "marker_alert_count": 8,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-3126c61cbc",
@@ -1153,7 +1421,11 @@
     "category": "other_infectious",
     "country": "moscow, russia",
     "lat": 55.762,
-    "lng": 37.607
+    "lng": 37.607,
+    "marker_alert_count": 8,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-8998c99674",
@@ -1170,7 +1442,11 @@
     "category": "respiratory",
     "country": "portugal",
     "lat": 39.601,
-    "lng": -8.0627
+    "lng": -8.0627,
+    "marker_alert_count": 10,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-d378ec65cb",
@@ -1187,7 +1463,11 @@
     "category": "other_infectious",
     "country": "london, england, united kingdom",
     "lat": 51.5,
-    "lng": -0.1167
+    "lng": -0.1167,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-83132c2c55",
@@ -1204,7 +1484,11 @@
     "category": "respiratory",
     "country": "colombia",
     "lat": 3.9012,
-    "lng": -73.0734
+    "lng": -73.0734,
+    "marker_alert_count": 15,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-c046716c4c",
@@ -1221,7 +1505,11 @@
     "category": "respiratory",
     "country": "colombia",
     "lat": 3.9012,
-    "lng": -73.0734
+    "lng": -73.0734,
+    "marker_alert_count": 15,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-8043a83c72",
@@ -1238,7 +1526,11 @@
     "category": "other_infectious",
     "country": "texas, united states",
     "lat": 31.2409,
-    "lng": -99.2286
+    "lng": -99.2286,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-6fa3765876",
@@ -1255,7 +1547,11 @@
     "category": "respiratory",
     "country": "hã  ná»™i city, vietnam ",
     "lat": 21.0333,
-    "lng": 105.85
+    "lng": 105.85,
+    "marker_alert_count": 19,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-535d6e251c",
@@ -1272,7 +1568,11 @@
     "category": "other_infectious",
     "country": "paraguay",
     "lat": -23.2362,
-    "lng": -58.391
+    "lng": -58.391,
+    "marker_alert_count": 10,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-d1c563bf68",
@@ -1289,7 +1589,11 @@
     "category": "other_infectious",
     "country": "los angeles, california, united states",
     "lat": 34.0522,
-    "lng": -118.2428
+    "lng": -118.2428,
+    "marker_alert_count": 5,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-c9aa57fbf0",
@@ -1306,7 +1610,11 @@
     "category": "respiratory",
     "country": "guangdong province, china",
     "lat": 24.8764,
-    "lng": 112.8405
+    "lng": 112.8405,
+    "marker_alert_count": 6,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-80aa0443e3",
@@ -1323,7 +1631,11 @@
     "category": "respiratory",
     "country": "guangdong province, china",
     "lat": 24.8764,
-    "lng": 112.8405
+    "lng": 112.8405,
+    "marker_alert_count": 6,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-4d5400b4c3",
@@ -1340,7 +1652,11 @@
     "category": "respiratory",
     "country": "guangdong province, china",
     "lat": 24.8764,
-    "lng": 112.8405
+    "lng": 112.8405,
+    "marker_alert_count": 6,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-6cc4e77856",
@@ -1357,7 +1673,11 @@
     "category": "other_infectious",
     "country": "ecuador",
     "lat": -1.4274,
-    "lng": -78.7671
+    "lng": -78.7671,
+    "marker_alert_count": 7,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-77bdb65d0b",
@@ -1374,7 +1694,11 @@
     "category": "other_infectious",
     "country": "ecuador",
     "lat": -1.4274,
-    "lng": -78.7671
+    "lng": -78.7671,
+    "marker_alert_count": 7,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-9ffd91b57c",
@@ -1391,7 +1715,11 @@
     "category": "other_infectious",
     "country": "gujarat state, india",
     "lat": 22.9988,
-    "lng": 72.0043
+    "lng": 72.0043,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-105d2931b7",
@@ -1408,7 +1736,11 @@
     "category": "other_infectious",
     "country": "mexico",
     "lat": 23.9505,
-    "lng": -102.5329
+    "lng": -102.5329,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-07fbd704f9",
@@ -1425,7 +1757,11 @@
     "category": "respiratory",
     "country": "maharashtra state, india",
     "lat": 19.5597,
-    "lng": 75.8798
+    "lng": 75.8798,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-e58774ff67",
@@ -1442,7 +1778,11 @@
     "category": "other_infectious",
     "country": "guatemala",
     "lat": 15.7021,
-    "lng": -90.3562
+    "lng": -90.3562,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-9d8e4b40dd",
@@ -1459,7 +1799,11 @@
     "category": "respiratory",
     "country": "taiwan",
     "lat": 23.873,
-    "lng": 121.017
+    "lng": 121.017,
+    "marker_alert_count": 6,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-67fd409230",
@@ -1476,7 +1820,11 @@
     "category": "other_infectious",
     "country": "komi republic, russia",
     "lat": 64.0,
-    "lng": 54.0
+    "lng": 54.0,
+    "marker_alert_count": 1,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-5170bd83aa",
@@ -1493,7 +1841,11 @@
     "category": "respiratory",
     "country": "laos",
     "lat": 18.5027,
-    "lng": 103.7633
+    "lng": 103.7633,
+    "marker_alert_count": 5,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-dee7da1dd5",
@@ -1510,7 +1862,11 @@
     "category": "other_infectious",
     "country": "uganda",
     "lat": 1.28,
-    "lng": 32.3862
+    "lng": 32.3862,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-fec13ff637",
@@ -1527,7 +1883,11 @@
     "category": "other_infectious",
     "country": "estado de nuevo leã³n, mexico",
     "lat": 25.6613,
-    "lng": -99.9976
+    "lng": -99.9976,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-91eb0b351c",
@@ -1544,7 +1904,11 @@
     "category": "other_infectious",
     "country": "estado de nuevo leã³n, mexico",
     "lat": 25.6613,
-    "lng": -99.9976
+    "lng": -99.9976,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-eee272948d",
@@ -1561,7 +1925,11 @@
     "category": "respiratory",
     "country": "new mexico, united states",
     "lat": 34.4884,
-    "lng": -105.9961
+    "lng": -105.9961,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-58a4812239",
@@ -1578,7 +1946,11 @@
     "category": "respiratory",
     "country": "mauritius",
     "lat": -20.2519,
-    "lng": 57.8708
+    "lng": 57.8708,
+    "marker_alert_count": 3,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-0783613985",
@@ -1595,7 +1967,11 @@
     "category": "respiratory",
     "country": "west virginia, united states",
     "lat": 38.5137,
-    "lng": -80.5079
+    "lng": -80.5079,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-405f57876e",
@@ -1612,7 +1988,11 @@
     "category": "other_infectious",
     "country": "kazakhstan",
     "lat": 48.016,
-    "lng": 66.6578
+    "lng": 66.6578,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-458e547331",
@@ -1629,7 +2009,11 @@
     "category": "other_infectious",
     "country": "altai krai, russia",
     "lat": 52.1563,
-    "lng": 82.705
+    "lng": 82.705,
+    "marker_alert_count": 2,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-329a34d254",
@@ -1646,7 +2030,11 @@
     "category": "respiratory",
     "country": "south dakota, united states",
     "lat": 44.4965,
-    "lng": -100.2393
+    "lng": -100.2393,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-a640f9d5ce",
@@ -1663,7 +2051,11 @@
     "category": "other_infectious",
     "country": "east java, indonesia",
     "lat": -7.6457,
-    "lng": 112.5879
+    "lng": 112.5879,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-9dc73f4cea",
@@ -1680,7 +2072,11 @@
     "category": "other_infectious",
     "country": "east java, indonesia",
     "lat": -7.6457,
-    "lng": 112.5879
+    "lng": 112.5879,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-21a336a415",
@@ -1697,7 +2093,11 @@
     "category": "respiratory",
     "country": "ukraine",
     "lat": 49.0171,
-    "lng": 31.3871
+    "lng": 31.3871,
+    "marker_alert_count": 6,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-c32c48025c",
@@ -1714,7 +2114,11 @@
     "category": "other_infectious",
     "country": "nghá»‡ an province, vietnam",
     "lat": 19.3333,
-    "lng": 104.8333
+    "lng": 104.8333,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-606a3f9217",
@@ -1731,7 +2135,11 @@
     "category": "other_infectious",
     "country": "jangsu-gun, north jeolla province, south korea",
     "lat": 35.6667,
-    "lng": 127.5333
+    "lng": 127.5333,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-563424fc94",
@@ -1748,7 +2156,11 @@
     "category": "other_infectious",
     "country": "labrador, newfoundland and labrador, canada",
     "lat": 54.0077,
-    "lng": -59.8536
+    "lng": -59.8536,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-0a06eb0581",
@@ -1765,7 +2177,11 @@
     "category": "other_infectious",
     "country": "united kingdom",
     "lat": 54.47,
-    "lng": -2.0215
+    "lng": -2.0215,
+    "marker_alert_count": 11,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-222902f9ea",
@@ -1782,7 +2198,11 @@
     "category": "other_infectious",
     "country": "united kingdom",
     "lat": 54.47,
-    "lng": -2.0215
+    "lng": -2.0215,
+    "marker_alert_count": 11,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-d089a9ead4",
@@ -1799,7 +2219,11 @@
     "category": "respiratory",
     "country": "pasadena, california, united states",
     "lat": 34.1478,
-    "lng": -118.1445
+    "lng": -118.1445,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-1e9000b405",
@@ -1816,7 +2240,11 @@
     "category": "other_infectious",
     "country": "minas gerais, brazil",
     "lat": -18.0,
-    "lng": -44.0
+    "lng": -44.0,
+    "marker_alert_count": 5,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-12389ee4b4",
@@ -1833,7 +2261,11 @@
     "category": "other_infectious",
     "country": "minas gerais, brazil",
     "lat": -18.0,
-    "lng": -44.0
+    "lng": -44.0,
+    "marker_alert_count": 5,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-812f665290",
@@ -1850,7 +2282,11 @@
     "category": "respiratory",
     "country": "brazil",
     "lat": -10.7731,
-    "lng": -53.0898
+    "lng": -53.0898,
+    "marker_alert_count": 15,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-d62d7f6f05",
@@ -1867,7 +2303,11 @@
     "category": "other_infectious",
     "country": "estado de sonora, mexico",
     "lat": 29.3247,
-    "lng": -110.6763
+    "lng": -110.6763,
+    "marker_alert_count": 5,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-5aeff623f9",
@@ -1884,7 +2324,11 @@
     "category": "respiratory",
     "country": "vancouver, british columbia, canada",
     "lat": 49.2496,
-    "lng": -123.1194
+    "lng": -123.1194,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-c6ff9606f6",
@@ -1901,7 +2345,11 @@
     "category": "respiratory",
     "country": "vancouver, british columbia, canada",
     "lat": 49.2496,
-    "lng": -123.1194
+    "lng": -123.1194,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-b61f8898c6",
@@ -1918,7 +2366,11 @@
     "category": "respiratory",
     "country": "india",
     "lat": 22.8835,
-    "lng": 79.6162
+    "lng": 79.6162,
+    "marker_alert_count": 10,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-c6dd185988",
@@ -1935,7 +2387,11 @@
     "category": "other_infectious",
     "country": "north dakota, united states",
     "lat": 47.4875,
-    "lng": -100.0196
+    "lng": -100.0196,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-2f70af2a15",
@@ -1952,7 +2408,11 @@
     "category": "other_infectious",
     "country": "colorado, united states",
     "lat": 38.9935,
-    "lng": -105.5127
+    "lng": -105.5127,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-53405f5464",
@@ -1969,7 +2429,11 @@
     "category": "other_infectious",
     "country": "afghanistan",
     "lat": 33.8388,
-    "lng": 66.0265
+    "lng": 66.0265,
+    "marker_alert_count": 1,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-5938478f90",
@@ -1986,7 +2450,11 @@
     "category": "respiratory",
     "country": "china",
     "lat": 36.52,
-    "lng": 103.8918
+    "lng": 103.8918,
+    "marker_alert_count": 31,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-73fce7ba7f",
@@ -2003,7 +2471,11 @@
     "category": "other_infectious",
     "country": "italy",
     "lat": 42.7958,
-    "lng": 12.0717
+    "lng": 12.0717,
+    "marker_alert_count": 9,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-5a79c50819",
@@ -2020,7 +2492,11 @@
     "category": "other_infectious",
     "country": "italy",
     "lat": 42.7958,
-    "lng": 12.0717
+    "lng": 12.0717,
+    "marker_alert_count": 9,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-923a8a8d58",
@@ -2037,7 +2513,11 @@
     "category": "respiratory",
     "country": "iran",
     "lat": 32.7395,
-    "lng": 54.1978
+    "lng": 54.1978,
+    "marker_alert_count": 6,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-841aeaa0a6",
@@ -2054,7 +2534,11 @@
     "category": "other_infectious",
     "country": "michigan, united states",
     "lat": 43.5803,
-    "lng": -84.4629
+    "lng": -84.4629,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-96a6dcebe5",
@@ -2071,7 +2555,11 @@
     "category": "respiratory",
     "country": "portugal",
     "lat": 39.601,
-    "lng": -8.0627
+    "lng": -8.0627,
+    "marker_alert_count": 10,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-d3b6b8455c",
@@ -2088,7 +2576,11 @@
     "category": "respiratory",
     "country": "portugal",
     "lat": 39.601,
-    "lng": -8.0627
+    "lng": -8.0627,
+    "marker_alert_count": 10,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-e151581c78",
@@ -2105,7 +2597,11 @@
     "category": "respiratory",
     "country": "california, united states",
     "lat": 37.2502,
-    "lng": -119.7503
+    "lng": -119.7503,
+    "marker_alert_count": 6,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-d4e609460c",
@@ -2122,7 +2618,11 @@
     "category": "respiratory",
     "country": "california, united states",
     "lat": 37.2502,
-    "lng": -119.7503
+    "lng": -119.7503,
+    "marker_alert_count": 6,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-fa3a7308a7",
@@ -2139,7 +2639,11 @@
     "category": "other_infectious",
     "country": "sverdlovsk oblast, russia",
     "lat": 57.9848,
-    "lng": 61.9628
+    "lng": 61.9628,
+    "marker_alert_count": 8,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-a49994182e",
@@ -2156,7 +2660,11 @@
     "category": "other_infectious",
     "country": "sverdlovsk oblast, russia",
     "lat": 57.9848,
-    "lng": 61.9628
+    "lng": 61.9628,
+    "marker_alert_count": 8,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-d04e9e0361",
@@ -2173,7 +2681,11 @@
     "category": "respiratory",
     "country": "hã  ná»™i city, vietnam ",
     "lat": 21.0333,
-    "lng": 105.85
+    "lng": 105.85,
+    "marker_alert_count": 19,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-2801253f1c",
@@ -2190,7 +2702,11 @@
     "category": "other_infectious",
     "country": "paraguay",
     "lat": -23.2362,
-    "lng": -58.391
+    "lng": -58.391,
+    "marker_alert_count": 10,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-126e01ed97",
@@ -2207,7 +2723,11 @@
     "category": "other_infectious",
     "country": "paraguay",
     "lat": -23.2362,
-    "lng": -58.391
+    "lng": -58.391,
+    "marker_alert_count": 10,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-c3d9edb1b7",
@@ -2224,7 +2744,11 @@
     "category": "other_infectious",
     "country": "los angeles, california, united states",
     "lat": 34.0522,
-    "lng": -118.2428
+    "lng": -118.2428,
+    "marker_alert_count": 5,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-9a27ee59ab",
@@ -2241,7 +2765,11 @@
     "category": "other_infectious",
     "country": "los angeles, california, united states",
     "lat": 34.0522,
-    "lng": -118.2428
+    "lng": -118.2428,
+    "marker_alert_count": 5,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-8d1ffb38b3",
@@ -2258,7 +2786,11 @@
     "category": "other_infectious",
     "country": "ecuador",
     "lat": -1.4274,
-    "lng": -78.7671
+    "lng": -78.7671,
+    "marker_alert_count": 7,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-a608badbfc",
@@ -2275,7 +2807,11 @@
     "category": "other_infectious",
     "country": "gujarat state, india",
     "lat": 22.9988,
-    "lng": 72.0043
+    "lng": 72.0043,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-e3d2b85d8d",
@@ -2292,7 +2828,11 @@
     "category": "other_infectious",
     "country": "bangladesh",
     "lat": 23.8432,
-    "lng": 90.2685
+    "lng": 90.2685,
+    "marker_alert_count": 9,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-c2f4a6dba4",
@@ -2309,7 +2849,11 @@
     "category": "other_infectious",
     "country": "bangladesh",
     "lat": 23.8432,
-    "lng": 90.2685
+    "lng": 90.2685,
+    "marker_alert_count": 9,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-91cf3b8ea5",
@@ -2326,7 +2870,11 @@
     "category": "other_infectious",
     "country": "arizona, united states",
     "lat": 34.5002,
-    "lng": -111.5003
+    "lng": -111.5003,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-86f94d49b9",
@@ -2343,7 +2891,11 @@
     "category": "respiratory",
     "country": "mauritius",
     "lat": -20.2519,
-    "lng": 57.8708
+    "lng": 57.8708,
+    "marker_alert_count": 3,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-b2961d86c8",
@@ -2360,7 +2912,11 @@
     "category": "other_infectious",
     "country": "altai krai, russia",
     "lat": 52.1563,
-    "lng": 82.705
+    "lng": 82.705,
+    "marker_alert_count": 2,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-8506ef5011",
@@ -2377,7 +2933,11 @@
     "category": "respiratory",
     "country": "new zealand",
     "lat": -42.4235,
-    "lng": 172.6594
+    "lng": 172.6594,
+    "marker_alert_count": 1,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-1668fb9604",
@@ -2394,7 +2954,11 @@
     "category": "other_infectious",
     "country": "guangxi autonomous region, china",
     "lat": 24.0,
-    "lng": 109.0
+    "lng": 109.0,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-ec8a418cf6",
@@ -2411,7 +2975,11 @@
     "category": "other_infectious",
     "country": "united kingdom",
     "lat": 54.47,
-    "lng": -2.0215
+    "lng": -2.0215,
+    "marker_alert_count": 11,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-643028db6f",
@@ -2428,7 +2996,11 @@
     "category": "respiratory",
     "country": "honduras",
     "lat": 14.8192,
-    "lng": -86.6191
+    "lng": -86.6191,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-f35ae5825f",
@@ -2445,7 +3017,11 @@
     "category": "respiratory",
     "country": "germany",
     "lat": 51.1066,
-    "lng": 10.3937
+    "lng": 10.3937,
+    "marker_alert_count": 9,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-bd1808fa65",
@@ -2462,7 +3038,11 @@
     "category": "respiratory",
     "country": "germany",
     "lat": 51.1066,
-    "lng": 10.3937
+    "lng": 10.3937,
+    "marker_alert_count": 9,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-b2b9740b3d",
@@ -2479,7 +3059,11 @@
     "category": "respiratory",
     "country": "massachusetts, united states",
     "lat": 42.3991,
-    "lng": -71.7957
+    "lng": -71.7957,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-d0320f738a",
@@ -2496,7 +3080,11 @@
     "category": "other_infectious",
     "country": "piauã­, brazil",
     "lat": -7.0,
-    "lng": -43.0
+    "lng": -43.0,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-4bf211727d",
@@ -2513,7 +3101,11 @@
     "category": "other_infectious",
     "country": "piauã­, brazil",
     "lat": -7.0,
-    "lng": -43.0
+    "lng": -43.0,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-cd73302e23",
@@ -2530,7 +3122,11 @@
     "category": "respiratory",
     "country": "nigeria",
     "lat": 9.594,
-    "lng": 8.1053
+    "lng": 8.1053,
+    "marker_alert_count": 6,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-c9d61611fa",
@@ -2547,7 +3143,11 @@
     "category": "respiratory",
     "country": "nigeria",
     "lat": 9.594,
-    "lng": 8.1053
+    "lng": 8.1053,
+    "marker_alert_count": 6,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-9f96db2934",
@@ -2564,7 +3164,11 @@
     "category": "respiratory",
     "country": "estado de quintana roo, mexico",
     "lat": 19.3,
-    "lng": -88.5059
+    "lng": -88.5059,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-f2173c5860",
@@ -2581,7 +3185,11 @@
     "category": "other_infectious",
     "country": "estado de guanajuato, mexico",
     "lat": 21.0229,
-    "lng": -101.25
+    "lng": -101.25,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-8f9a17106b",
@@ -2598,7 +3206,11 @@
     "category": "other_infectious",
     "country": "penza oblast, russia",
     "lat": 53.0,
-    "lng": 44.5
+    "lng": 44.5,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-e1dd756b7a",
@@ -2615,7 +3227,11 @@
     "category": "other_infectious",
     "country": "washington state, united states",
     "lat": 47.4875,
-    "lng": -120.4981
+    "lng": -120.4981,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-ec10cc4cda",
@@ -2632,7 +3248,11 @@
     "category": "other_infectious",
     "country": "washington state, united states",
     "lat": 47.4875,
-    "lng": -120.4981
+    "lng": -120.4981,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-df979744b1",
@@ -2649,7 +3269,11 @@
     "category": "other_infectious",
     "country": "estado de chihuahua, mexico",
     "lat": 28.6333,
-    "lng": -106.0834
+    "lng": -106.0834,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-af53a91172",
@@ -2666,7 +3290,11 @@
     "category": "other_infectious",
     "country": "serbia",
     "lat": 43.867,
-    "lng": 20.899
+    "lng": 20.899,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-4575690838",
@@ -2683,7 +3311,11 @@
     "category": "respiratory",
     "country": "south sulawesi, indonesia",
     "lat": -4.3333,
-    "lng": 120.25
+    "lng": 120.25,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-ef28113db3",
@@ -2700,7 +3332,11 @@
     "category": "other_infectious",
     "country": "gambia",
     "lat": 13.5,
-    "lng": -15.5
+    "lng": -15.5,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-f517b86866",
@@ -2717,7 +3353,11 @@
     "category": "other_infectious",
     "country": "sã£o paulo, brazil",
     "lat": -22.0,
-    "lng": -49.0
+    "lng": -49.0,
+    "marker_alert_count": 5,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-52b8d22607",
@@ -2734,7 +3374,11 @@
     "category": "respiratory",
     "country": "national capital territory of delhi, india",
     "lat": 28.6713,
-    "lng": 77.2119
+    "lng": 77.2119,
+    "marker_alert_count": 3,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-3be4fd8100",
@@ -2751,7 +3395,11 @@
     "category": "respiratory",
     "country": "national capital territory of delhi, india",
     "lat": 28.6713,
-    "lng": 77.2119
+    "lng": 77.2119,
+    "marker_alert_count": 3,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-df92952649",
@@ -2768,7 +3416,11 @@
     "category": "respiratory",
     "country": "national capital territory of delhi, india",
     "lat": 28.6713,
-    "lng": 77.2119
+    "lng": 77.2119,
+    "marker_alert_count": 3,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-73ada24a99",
@@ -2785,7 +3437,11 @@
     "category": "other_infectious",
     "country": "sichuan province, china",
     "lat": 30.4865,
-    "lng": 102.4804
+    "lng": 102.4804,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-1dd072c9f2",
@@ -2802,7 +3458,11 @@
     "category": "other_infectious",
     "country": "haiti",
     "lat": 18.9416,
-    "lng": -72.6795
+    "lng": -72.6795,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-6708aee366",
@@ -2819,7 +3479,11 @@
     "category": "other_infectious",
     "country": "estado de chiapas, mexico",
     "lat": 16.5098,
-    "lng": -92.5049
+    "lng": -92.5049,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-4d3939ba18",
@@ -2836,7 +3500,11 @@
     "category": "other_infectious",
     "country": "puerto rico",
     "lat": 18.2513,
-    "lng": -66.5014
+    "lng": -66.5014,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-15098ffd27",
@@ -2853,7 +3521,11 @@
     "category": "other_infectious",
     "country": "papua, indonesia",
     "lat": -4.0615,
-    "lng": 139.1089
+    "lng": 139.1089,
+    "marker_alert_count": 1,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-7f964041e5",
@@ -2870,7 +3542,11 @@
     "category": "other_infectious",
     "country": "äáº¯k láº¯k province, vietnam",
     "lat": 12.8333,
-    "lng": 108.1667
+    "lng": 108.1667,
+    "marker_alert_count": 4,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-ecb2461f7a",
@@ -2887,7 +3563,11 @@
     "category": "other_infectious",
     "country": "sumatra, indonesia",
     "lat": -0.1443,
-    "lng": 100.6371
+    "lng": 100.6371,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-5d3bba5d89",
@@ -2904,7 +3584,11 @@
     "category": "other_infectious",
     "country": "karachi, sindh, pakistan",
     "lat": 24.8667,
-    "lng": 67.05
+    "lng": 67.05,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-41f6d85bd0",
@@ -2921,7 +3605,11 @@
     "category": "other_infectious",
     "country": "karachi, sindh, pakistan",
     "lat": 24.8667,
-    "lng": 67.05
+    "lng": 67.05,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-2ba59c40ae",
@@ -2938,7 +3626,11 @@
     "category": "other_infectious",
     "country": "karachi, sindh, pakistan",
     "lat": 24.8667,
-    "lng": 67.05
+    "lng": 67.05,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-1bda079593",
@@ -2955,7 +3647,11 @@
     "category": "other_infectious",
     "country": "astrakhan oblast, russia",
     "lat": 46.3469,
-    "lng": 48.0322
+    "lng": 48.0322,
+    "marker_alert_count": 1,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-411f76e4db",
@@ -2972,7 +3668,11 @@
     "category": "other_infectious",
     "country": "special region of yogyakarta, indonesia",
     "lat": -7.8014,
-    "lng": 110.3644
+    "lng": 110.3644,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-ea4180853b",
@@ -2989,7 +3689,11 @@
     "category": "other_infectious",
     "country": "peru",
     "lat": -9.1638,
-    "lng": -75.8756
+    "lng": -75.8756,
+    "marker_alert_count": 5,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-e24ea4db2b",
@@ -3006,7 +3710,11 @@
     "category": "other_infectious",
     "country": "estado de veracruz, mexico",
     "lat": 19.3318,
-    "lng": -96.6578
+    "lng": -96.6578,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-c90a34f1d9",
@@ -3023,7 +3731,11 @@
     "category": "respiratory",
     "country": "france",
     "lat": 46.5645,
-    "lng": 2.552
+    "lng": 2.552,
+    "marker_alert_count": 15,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-ed480f4738",
@@ -3040,7 +3752,11 @@
     "category": "respiratory",
     "country": "canada",
     "lat": 55.429,
-    "lng": -101.8653
+    "lng": -101.8653,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-4c9a03b7c9",
@@ -3057,7 +3773,11 @@
     "category": "other_infectious",
     "country": "russia",
     "lat": 61.9461,
-    "lng": 93.5777
+    "lng": 93.5777,
+    "marker_alert_count": 21,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-ec998a29e9",
@@ -3074,7 +3794,11 @@
     "category": "other_infectious",
     "country": "utah, united states",
     "lat": 39.2662,
-    "lng": -111.753
+    "lng": -111.753,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-8bca8cda92",
@@ -3091,7 +3815,11 @@
     "category": "other_infectious",
     "country": "switzerland",
     "lat": 46.8025,
-    "lng": 8.2344
+    "lng": 8.2344,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-1e1d49922b",
@@ -3108,7 +3836,11 @@
     "category": "other_infectious",
     "country": "washington, dc, united states",
     "lat": 38.895,
-    "lng": -77.0367
+    "lng": -77.0367,
+    "marker_alert_count": 6,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-32052cfd34",
@@ -3125,7 +3857,11 @@
     "category": "respiratory",
     "country": "voronezh, voronezh oblast, russia",
     "lat": 51.6657,
-    "lng": 39.169
+    "lng": 39.169,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-1f0dba2c79",
@@ -3142,7 +3878,11 @@
     "category": "other_infectious",
     "country": "colorado, united states",
     "lat": 38.9935,
-    "lng": -105.5127
+    "lng": -105.5127,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-830d0a4af5",
@@ -3159,7 +3899,11 @@
     "category": "other_infectious",
     "country": "colorado, united states",
     "lat": 38.9935,
-    "lng": -105.5127
+    "lng": -105.5127,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-beb18f29ad",
@@ -3176,7 +3920,11 @@
     "category": "respiratory",
     "country": "north korea",
     "lat": 40.0,
-    "lng": 127.0
+    "lng": 127.0,
+    "marker_alert_count": 7,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-1537f8def6",
@@ -3193,7 +3941,11 @@
     "category": "other_infectious",
     "country": "zimbabwe",
     "lat": -19.0001,
-    "lng": 29.8718
+    "lng": 29.8718,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-da97d7077f",
@@ -3210,7 +3962,11 @@
     "category": "respiratory",
     "country": "há»“ chã­ minh city, vietnam",
     "lat": 10.75,
-    "lng": 106.6667
+    "lng": 106.6667,
+    "marker_alert_count": 14,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-18d90a826e",
@@ -3227,7 +3983,11 @@
     "category": "respiratory",
     "country": "japan",
     "lat": 36.0985,
-    "lng": 138.4786
+    "lng": 138.4786,
+    "marker_alert_count": 31,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-7fb80f6a73",
@@ -3244,7 +4004,11 @@
     "category": "respiratory",
     "country": "hã  ná»™i city, vietnam ",
     "lat": 21.0333,
-    "lng": 105.85
+    "lng": 105.85,
+    "marker_alert_count": 19,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-1903e1d3c4",
@@ -3261,7 +4025,11 @@
     "category": "respiratory",
     "country": "saskatchewan province, canada",
     "lat": 54.0077,
-    "lng": -105.9961
+    "lng": -105.9961,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-f447d62e1e",
@@ -3278,7 +4046,11 @@
     "category": "other_infectious",
     "country": "darfur state, sudan",
     "lat": 13.0,
-    "lng": 25.0
+    "lng": 25.0,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-70c6f111bf",
@@ -3295,7 +4067,11 @@
     "category": "respiratory",
     "country": "laos",
     "lat": 18.5027,
-    "lng": 103.7633
+    "lng": 103.7633,
+    "marker_alert_count": 5,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-7db0059539",
@@ -3312,7 +4088,11 @@
     "category": "other_infectious",
     "country": "uganda",
     "lat": 1.28,
-    "lng": 32.3862
+    "lng": 32.3862,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-aa5561e454",
@@ -3329,7 +4109,11 @@
     "category": "other_infectious",
     "country": "sokoto state, nigeria",
     "lat": 13.1177,
-    "lng": 5.394
+    "lng": 5.394,
+    "marker_alert_count": 4,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-613fe0471d",
@@ -3346,7 +4130,11 @@
     "category": "other_infectious",
     "country": "sokoto state, nigeria",
     "lat": 13.1177,
-    "lng": 5.394
+    "lng": 5.394,
+    "marker_alert_count": 4,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-f97fb23713",
@@ -3363,7 +4151,11 @@
     "category": "other_infectious",
     "country": "sokoto state, nigeria",
     "lat": 13.1177,
-    "lng": 5.394
+    "lng": 5.394,
+    "marker_alert_count": 4,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-873bc72805",
@@ -3380,7 +4172,11 @@
     "category": "respiratory",
     "country": "ukraine",
     "lat": 49.0171,
-    "lng": 31.3871
+    "lng": 31.3871,
+    "marker_alert_count": 6,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-4f80474320",
@@ -3397,7 +4193,11 @@
     "category": "other_infectious",
     "country": "cao báº±ng province, vietnam",
     "lat": 22.667,
-    "lng": 106.0
+    "lng": 106.0,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-a205694c8a",
@@ -3414,7 +4214,11 @@
     "category": "other_infectious",
     "country": "cao báº±ng province, vietnam",
     "lat": 22.667,
-    "lng": 106.0
+    "lng": 106.0,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-c48a5c7369",
@@ -3431,7 +4235,11 @@
     "category": "respiratory",
     "country": "ajman, ajman, united arab emirates",
     "lat": 25.4111,
-    "lng": 55.435
+    "lng": 55.435,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-7fca87b2cc",
@@ -3448,7 +4256,11 @@
     "category": "respiratory",
     "country": "al ain, abu dhabi, united arab emirates",
     "lat": 24.1917,
-    "lng": 55.7606
+    "lng": 55.7606,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-cdb8740abd",
@@ -3465,7 +4277,11 @@
     "category": "respiratory",
     "country": "al-daur, saladin governorate, iraq",
     "lat": 34.4619,
-    "lng": 43.8079
+    "lng": 43.8079,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-c3353f1b2a",
@@ -3482,7 +4298,11 @@
     "category": "respiratory",
     "country": "hubei province, china",
     "lat": 31.0152,
-    "lng": 112.0166
+    "lng": 112.0166,
+    "marker_alert_count": 5,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-df59f75411",
@@ -3499,7 +4319,11 @@
     "category": "other_infectious",
     "country": "shenzhen, guangdong province, china",
     "lat": 22.5455,
-    "lng": 114.0683
+    "lng": 114.0683,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-49fa461e22",
@@ -3516,7 +4340,11 @@
     "category": "respiratory",
     "country": "honduras",
     "lat": 14.8192,
-    "lng": -86.6191
+    "lng": -86.6191,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-4b714b7557",
@@ -3533,7 +4361,11 @@
     "category": "respiratory",
     "country": "honduras",
     "lat": 14.8192,
-    "lng": -86.6191
+    "lng": -86.6191,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-2d4307ad4c",
@@ -3550,7 +4382,11 @@
     "category": "respiratory",
     "country": "germany",
     "lat": 51.1066,
-    "lng": 10.3937
+    "lng": 10.3937,
+    "marker_alert_count": 9,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-694604b1c4",
@@ -3567,7 +4403,11 @@
     "category": "respiratory",
     "country": "estado de quintana roo, mexico",
     "lat": 19.3,
-    "lng": -88.5059
+    "lng": -88.5059,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-a9c38aeba5",
@@ -3584,7 +4424,11 @@
     "category": "other_infectious",
     "country": "estado de chihuahua, mexico",
     "lat": 28.6333,
-    "lng": -106.0834
+    "lng": -106.0834,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-fea8db759a",
@@ -3601,7 +4445,11 @@
     "category": "other_infectious",
     "country": "sã£o paulo, brazil",
     "lat": -22.0,
-    "lng": -49.0
+    "lng": -49.0,
+    "marker_alert_count": 5,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-6b215f5f77",
@@ -3618,7 +4466,11 @@
     "category": "other_infectious",
     "country": "sã£o paulo, brazil",
     "lat": -22.0,
-    "lng": -49.0
+    "lng": -49.0,
+    "marker_alert_count": 5,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-7325d04f7f",
@@ -3635,7 +4487,11 @@
     "category": "other_infectious",
     "country": "äáº¯k láº¯k province, vietnam",
     "lat": 12.8333,
-    "lng": 108.1667
+    "lng": 108.1667,
+    "marker_alert_count": 4,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-b689f1aa77",
@@ -3652,7 +4508,11 @@
     "category": "other_infectious",
     "country": "quáº£ng ninh province, vietnam",
     "lat": 21.25,
-    "lng": 107.3333
+    "lng": 107.3333,
+    "marker_alert_count": 5,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-1ea19098d3",
@@ -3669,7 +4529,11 @@
     "category": "other_infectious",
     "country": "hainan province, china",
     "lat": 18.9374,
-    "lng": 109.4897
+    "lng": 109.4897,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-2d0a3dfc4f",
@@ -3686,7 +4550,11 @@
     "category": "other_infectious",
     "country": "peru",
     "lat": -9.1638,
-    "lng": -75.8756
+    "lng": -75.8756,
+    "marker_alert_count": 5,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-b4eecf511e",
@@ -3703,7 +4571,11 @@
     "category": "other_infectious",
     "country": "peru",
     "lat": -9.1638,
-    "lng": -75.8756
+    "lng": -75.8756,
+    "marker_alert_count": 5,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-5c57b955fc",
@@ -3720,7 +4592,11 @@
     "category": "other_infectious",
     "country": "sacramento, california, united states",
     "lat": 38.5816,
-    "lng": -121.4934
+    "lng": -121.4934,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-a2fda2785f",
@@ -3737,7 +4613,11 @@
     "category": "other_infectious",
     "country": "sacramento, california, united states",
     "lat": 38.5816,
-    "lng": -121.4934
+    "lng": -121.4934,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-5c77d82135",
@@ -3754,7 +4634,11 @@
     "category": "other_infectious",
     "country": "sacramento, california, united states",
     "lat": 38.5816,
-    "lng": -121.4934
+    "lng": -121.4934,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-6e9a5059f1",
@@ -3771,7 +4655,11 @@
     "category": "respiratory",
     "country": "costa rica",
     "lat": 9.9702,
-    "lng": -84.1879
+    "lng": -84.1879,
+    "marker_alert_count": 3,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-18b2459959",
@@ -3788,7 +4676,11 @@
     "category": "other_infectious",
     "country": "bolivia",
     "lat": -16.7146,
-    "lng": -64.6709
+    "lng": -64.6709,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-b2e4a4e102",
@@ -3805,7 +4697,11 @@
     "category": "other_infectious",
     "country": "ghana",
     "lat": 7.9599,
-    "lng": -1.2073
+    "lng": -1.2073,
+    "marker_alert_count": 5,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-02b843baab",
@@ -3822,7 +4718,11 @@
     "category": "other_infectious",
     "country": "ghana",
     "lat": 7.9599,
-    "lng": -1.2073
+    "lng": -1.2073,
+    "marker_alert_count": 5,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-68c8358356",
@@ -3839,7 +4739,11 @@
     "category": "other_infectious",
     "country": "maryland, united states",
     "lat": 38.9594,
-    "lng": -76.377
+    "lng": -76.377,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-73b38be46b",
@@ -3856,7 +4760,11 @@
     "category": "respiratory",
     "country": "south korea",
     "lat": 36.6155,
-    "lng": 127.727
+    "lng": 127.727,
+    "marker_alert_count": 4,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-cd496419d7",
@@ -3873,7 +4781,11 @@
     "category": "respiratory",
     "country": "hong kong",
     "lat": 22.284,
-    "lng": 114.15
+    "lng": 114.15,
+    "marker_alert_count": 7,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-ee32fbbd2e",
@@ -3890,7 +4802,11 @@
     "category": "other_infectious",
     "country": "hong kong",
     "lat": 22.284,
-    "lng": 114.15
+    "lng": 114.15,
+    "marker_alert_count": 7,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-f38b4d02c6",
@@ -3907,7 +4823,11 @@
     "category": "respiratory",
     "country": "estado de hidalgo, mexico",
     "lat": 20.5093,
-    "lng": -99.0088
+    "lng": -99.0088,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-f5d7f88625",
@@ -3924,7 +4844,11 @@
     "category": "other_infectious",
     "country": "el salvador",
     "lat": 13.7369,
-    "lng": -88.8665
+    "lng": -88.8665,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-b0244134d4",
@@ -3941,7 +4865,11 @@
     "category": "other_infectious",
     "country": "west java, indonesia",
     "lat": -6.75,
-    "lng": 107.5
+    "lng": 107.5,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-323ab41332",
@@ -3958,7 +4886,11 @@
     "category": "respiratory",
     "country": "báº¯c ninh province, vietnam",
     "lat": 21.083,
-    "lng": 106.167
+    "lng": 106.167,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-d1dfb77174",
@@ -3975,7 +4907,11 @@
     "category": "respiratory",
     "country": "báº¯c ninh province, vietnam",
     "lat": 21.083,
-    "lng": 106.167
+    "lng": 106.167,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-837c5b3b87",
@@ -3992,7 +4928,11 @@
     "category": "other_infectious",
     "country": "sudan",
     "lat": 13.8315,
-    "lng": 30.05
+    "lng": 30.05,
+    "marker_alert_count": 7,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-11af23f27c",
@@ -4009,7 +4949,11 @@
     "category": "other_infectious",
     "country": "sudan",
     "lat": 13.8315,
-    "lng": 30.05
+    "lng": 30.05,
+    "marker_alert_count": 7,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-bcb6a2f215",
@@ -4026,7 +4970,11 @@
     "category": "respiratory",
     "country": "shanghai, china",
     "lat": 31.2409,
-    "lng": 121.4648
+    "lng": 121.4648,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-7ba3b564d5",
@@ -4043,7 +4991,11 @@
     "category": "other_infectious",
     "country": "beijing, china",
     "lat": 39.9289,
-    "lng": 116.3883
+    "lng": 116.3883,
+    "marker_alert_count": 4,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-5dd95b4a75",
@@ -4060,7 +5012,11 @@
     "category": "other_infectious",
     "country": "mozambique",
     "lat": -17.2601,
-    "lng": 35.5522
+    "lng": 35.5522,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-61605a7bd7",
@@ -4077,7 +5033,11 @@
     "category": "respiratory",
     "country": "rã©gion d'outre-mer de mayotte, france",
     "lat": -12.8431,
-    "lng": 45.1383
+    "lng": 45.1383,
+    "marker_alert_count": 1,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-1cd8d1b42d",
@@ -4094,7 +5054,11 @@
     "category": "respiratory",
     "country": "taipei, taiwan",
     "lat": 25.0853,
-    "lng": 121.5615
+    "lng": 121.5615,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-9c81a50f39",
@@ -4111,7 +5075,11 @@
     "category": "respiratory",
     "country": "taipei, taiwan",
     "lat": 25.0853,
-    "lng": 121.5615
+    "lng": 121.5615,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-1c4e587137",
@@ -4128,7 +5096,11 @@
     "category": "other_infectious",
     "country": "sydney, new south wales, australia",
     "lat": -33.8705,
-    "lng": 151.2158
+    "lng": 151.2158,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-2637ddd673",
@@ -4145,7 +5117,11 @@
     "category": "respiratory",
     "country": "chile",
     "lat": -37.8525,
-    "lng": -72.374
+    "lng": -72.374,
+    "marker_alert_count": 24,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-59aaa5353f",
@@ -4162,7 +5138,11 @@
     "category": "respiratory",
     "country": "canada",
     "lat": 55.429,
-    "lng": -101.8653
+    "lng": -101.8653,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-6c83b710e8",
@@ -4179,7 +5159,11 @@
     "category": "other_infectious",
     "country": "south carolina, united states",
     "lat": 33.6877,
-    "lng": -80.5958
+    "lng": -80.5958,
+    "marker_alert_count": 10,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-388445b3a3",
@@ -4196,7 +5180,11 @@
     "category": "other_infectious",
     "country": "south carolina, united states",
     "lat": 33.6877,
-    "lng": -80.5958
+    "lng": -80.5958,
+    "marker_alert_count": 10,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-871bbcc2f3",
@@ -4213,7 +5201,11 @@
     "category": "other_infectious",
     "country": "north carolina, united states",
     "lat": 35.6037,
-    "lng": -78.9698
+    "lng": -78.9698,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-896ce32be0",
@@ -4230,7 +5222,11 @@
     "category": "other_infectious",
     "country": "north carolina, united states",
     "lat": 35.6037,
-    "lng": -78.9698
+    "lng": -78.9698,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-cd3f88b7d6",
@@ -4247,7 +5243,11 @@
     "category": "respiratory",
     "country": "egypt",
     "lat": 26.4942,
-    "lng": 29.872
+    "lng": 29.872,
+    "marker_alert_count": 9,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-a2d835d6b2",
@@ -4264,7 +5264,11 @@
     "category": "other_infectious",
     "country": "port rashid, al mina, dubai, united arab emirates",
     "lat": 25.2706,
-    "lng": 55.2908
+    "lng": 55.2908,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-bc022640ab",
@@ -4281,7 +5285,11 @@
     "category": "respiratory",
     "country": "florida, united states",
     "lat": 28.1495,
-    "lng": -81.6504
+    "lng": -81.6504,
+    "marker_alert_count": 7,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-7e23fcbef5",
@@ -4298,7 +5306,11 @@
     "category": "respiratory",
     "country": "florida, united states",
     "lat": 28.1495,
-    "lng": -81.6504
+    "lng": -81.6504,
+    "marker_alert_count": 7,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-93c54dc674",
@@ -4315,7 +5327,11 @@
     "category": "other_infectious",
     "country": "tatarstan republic, russia",
     "lat": 55.3333,
-    "lng": 51.0
+    "lng": 51.0,
+    "marker_alert_count": 3,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-8e03da1507",
@@ -4332,7 +5348,11 @@
     "category": "respiratory",
     "country": "australia",
     "lat": -25.735,
-    "lng": 134.4896
+    "lng": 134.4896,
+    "marker_alert_count": 3,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-dc34c77d03",
@@ -4349,7 +5369,11 @@
     "category": "other_infectious",
     "country": "tanzania",
     "lat": -6.0,
-    "lng": 35.0
+    "lng": 35.0,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-5e93ab562b",
@@ -4366,7 +5390,11 @@
     "category": "other_infectious",
     "country": "sverdlovsk oblast, russia",
     "lat": 57.9848,
-    "lng": 61.9628
+    "lng": 61.9628,
+    "marker_alert_count": 8,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-9f1d999314",
@@ -4383,7 +5411,11 @@
     "category": "respiratory",
     "country": "virginia, united states",
     "lat": 37.649,
-    "lng": -78.3545
+    "lng": -78.3545,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-11e0796280",
@@ -4400,7 +5432,11 @@
     "category": "other_infectious",
     "country": "dr congo",
     "lat": -2.0,
-    "lng": 25.0
+    "lng": 25.0,
+    "marker_alert_count": 4,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-0d72d5b3de",
@@ -4417,7 +5453,11 @@
     "category": "other_infectious",
     "country": "mexico",
     "lat": 23.9505,
-    "lng": -102.5329
+    "lng": -102.5329,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-9373dc6cd2",
@@ -4434,7 +5474,11 @@
     "category": "other_infectious",
     "country": "guatemala",
     "lat": 15.7021,
-    "lng": -90.3562
+    "lng": -90.3562,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-2e9f166ab1",
@@ -4451,7 +5495,11 @@
     "category": "respiratory",
     "country": "taiwan",
     "lat": 23.873,
-    "lng": 121.017
+    "lng": 121.017,
+    "marker_alert_count": 6,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-47800fd4f5",
@@ -4468,7 +5516,11 @@
     "category": "respiratory",
     "country": "laos",
     "lat": 18.5027,
-    "lng": 103.7633
+    "lng": 103.7633,
+    "marker_alert_count": 5,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-c04685fa61",
@@ -4485,7 +5537,11 @@
     "category": "respiratory",
     "country": "ukraine",
     "lat": 49.0171,
-    "lng": 31.3871
+    "lng": 31.3871,
+    "marker_alert_count": 6,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-4ad6e8d8f2",
@@ -4502,7 +5558,11 @@
     "category": "respiratory",
     "country": "hubei province, china",
     "lat": 31.0152,
-    "lng": 112.0166
+    "lng": 112.0166,
+    "marker_alert_count": 5,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-d8df267406",
@@ -4519,7 +5579,11 @@
     "category": "other_infectious",
     "country": "estado de guanajuato, mexico",
     "lat": 21.0229,
-    "lng": -101.25
+    "lng": -101.25,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-f531397ebc",
@@ -4536,7 +5600,11 @@
     "category": "respiratory",
     "country": "vizag, andhra pradesh, india",
     "lat": 17.6801,
-    "lng": 83.2016
+    "lng": 83.2016,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-baea40f1df",
@@ -4553,7 +5621,11 @@
     "category": "other_infectious",
     "country": "äáº¯k láº¯k province, vietnam",
     "lat": 12.8333,
-    "lng": 108.1667
+    "lng": 108.1667,
+    "marker_alert_count": 4,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-52584276a3",
@@ -4570,7 +5642,11 @@
     "category": "other_infectious",
     "country": "sumatra, indonesia",
     "lat": -0.1443,
-    "lng": 100.6371
+    "lng": 100.6371,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-d8f9272c50",
@@ -4587,7 +5663,11 @@
     "category": "other_infectious",
     "country": "quáº£ng ninh province, vietnam",
     "lat": 21.25,
-    "lng": 107.3333
+    "lng": 107.3333,
+    "marker_alert_count": 5,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-557d9a8d5e",
@@ -4604,7 +5684,11 @@
     "category": "other_infectious",
     "country": "kansas, united states",
     "lat": 38.2637,
-    "lng": -98.4815
+    "lng": -98.4815,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-827b3e213b",
@@ -4621,7 +5705,11 @@
     "category": "other_infectious",
     "country": "angola",
     "lat": -12.2953,
-    "lng": 17.5447
+    "lng": 17.5447,
+    "marker_alert_count": 4,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-6b65a8772f",
@@ -4638,7 +5726,11 @@
     "category": "respiratory",
     "country": "costa rica",
     "lat": 9.9702,
-    "lng": -84.1879
+    "lng": -84.1879,
+    "marker_alert_count": 3,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-2f3a9dea54",
@@ -4655,7 +5747,11 @@
     "category": "other_infectious",
     "country": "estado de veracruz, mexico",
     "lat": 19.3318,
-    "lng": -96.6578
+    "lng": -96.6578,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-85e2cc0ee0",
@@ -4672,7 +5768,11 @@
     "category": "other_infectious",
     "country": "ghana",
     "lat": 7.9599,
-    "lng": -1.2073
+    "lng": -1.2073,
+    "marker_alert_count": 5,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-9efd486485",
@@ -4689,7 +5789,11 @@
     "category": "other_infectious",
     "country": "maryland, united states",
     "lat": 38.9594,
-    "lng": -76.377
+    "lng": -76.377,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-32b7255998",
@@ -4706,7 +5810,11 @@
     "category": "other_infectious",
     "country": "hong kong",
     "lat": 22.284,
-    "lng": 114.15
+    "lng": 114.15,
+    "marker_alert_count": 7,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-835fe4af07",
@@ -4723,7 +5831,11 @@
     "category": "other_infectious",
     "country": "guangzhou, guangdong province, china",
     "lat": 23.1166,
-    "lng": 113.25
+    "lng": 113.25,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-6f176ff331",
@@ -4740,7 +5852,11 @@
     "category": "other_infectious",
     "country": "sudan",
     "lat": 13.8315,
-    "lng": 30.05
+    "lng": 30.05,
+    "marker_alert_count": 7,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-40605f0d21",
@@ -4757,7 +5873,11 @@
     "category": "other_infectious",
     "country": "tyre, south lebanon, lebanon",
     "lat": 33.2733,
-    "lng": 35.1939
+    "lng": 35.1939,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-876d99207b",
@@ -4774,7 +5894,11 @@
     "category": "other_infectious",
     "country": "senegal",
     "lat": 14.367,
-    "lng": -14.4677
+    "lng": -14.4677,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-be2af4ef79",
@@ -4791,7 +5915,11 @@
     "category": "respiratory",
     "country": "new york state, united states",
     "lat": 43.0046,
-    "lng": -75.4981
+    "lng": -75.4981,
+    "marker_alert_count": 5,
+    "marker_pin": "s2",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.6
   },
   {
     "id": "healthmap-b439c58f10",
@@ -4808,7 +5936,11 @@
     "category": "other_infectious",
     "country": "south africa",
     "lat": -28.9985,
-    "lng": 25.0925
+    "lng": 25.0925,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-6eca7131d2",
@@ -4825,7 +5957,11 @@
     "category": "other_infectious",
     "country": "nevada, united states",
     "lat": 39.2662,
-    "lng": -116.7627
+    "lng": -116.7627,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-1346abedd3",
@@ -4842,7 +5978,11 @@
     "category": "other_infectious",
     "country": "nevada, united states",
     "lat": 39.2662,
-    "lng": -116.7627
+    "lng": -116.7627,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-b43eda4d77",
@@ -4859,7 +5999,11 @@
     "category": "other_infectious",
     "country": "philippines",
     "lat": 11.7418,
-    "lng": 122.8787
+    "lng": 122.8787,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-ebf599225f",
@@ -4876,7 +6020,11 @@
     "category": "other_infectious",
     "country": "kerala state, india",
     "lat": 9.9904,
-    "lng": 76.5087
+    "lng": 76.5087,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-8131ded314",
@@ -4893,7 +6041,11 @@
     "category": "other_infectious",
     "country": "kerala state, india",
     "lat": 9.9904,
-    "lng": 76.5087
+    "lng": 76.5087,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-dd02120be7",
@@ -4910,7 +6062,11 @@
     "category": "other_infectious",
     "country": "chuvash republic, russia",
     "lat": 55.5,
-    "lng": 47.0
+    "lng": 47.0,
+    "marker_alert_count": 2,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-0239ec7cce",
@@ -4927,7 +6083,11 @@
     "category": "other_infectious",
     "country": "czech republic",
     "lat": 49.7429,
-    "lng": 15.3384
+    "lng": 15.3384,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-a826837078",
@@ -4944,7 +6104,11 @@
     "category": "respiratory",
     "country": "volgograd oblast, russia",
     "lat": 49.009,
-    "lng": 43.9892
+    "lng": 43.9892,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-c319c53244",
@@ -4961,7 +6125,11 @@
     "category": "other_infectious",
     "country": "volgograd oblast, russia",
     "lat": 49.009,
-    "lng": 43.9892
+    "lng": 43.9892,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-2ead3031d3",
@@ -4978,7 +6146,11 @@
     "category": "other_infectious",
     "country": "vladimir oblast, russia",
     "lat": 56.0,
-    "lng": 40.5
+    "lng": 40.5,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-1932571a48",
@@ -4995,7 +6167,11 @@
     "category": "other_infectious",
     "country": "vladimir oblast, russia",
     "lat": 56.0,
-    "lng": 40.5
+    "lng": 40.5,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-388ce446c2",
@@ -5012,7 +6188,11 @@
     "category": "other_infectious",
     "country": "belgium",
     "lat": 50.6428,
-    "lng": 4.664
+    "lng": 4.664,
+    "marker_alert_count": 1,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-5731a194dc",
@@ -5029,7 +6209,11 @@
     "category": "other_infectious",
     "country": "estado de sinaloa, mexico",
     "lat": 25.0059,
-    "lng": -107.4903
+    "lng": -107.4903,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-1efb2d3df7",
@@ -5046,7 +6230,11 @@
     "category": "respiratory",
     "country": "ulyanovsk oblast, russia",
     "lat": 54.401,
-    "lng": 48.8027
+    "lng": 48.8027,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-e1413c0b7c",
@@ -5063,7 +6251,11 @@
     "category": "other_infectious",
     "country": "damascus governorate, syria",
     "lat": 33.5102,
-    "lng": 36.2913
+    "lng": 36.2913,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-e4511071d6",
@@ -5080,7 +6272,11 @@
     "category": "other_infectious",
     "country": "krasnoyarsk, krasnoyarskiy krai, russia",
     "lat": 56.0229,
-    "lng": 92.8125
+    "lng": 92.8125,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-181b3e8dc8",
@@ -5097,7 +6293,11 @@
     "category": "other_infectious",
     "country": "cuba",
     "lat": 21.6212,
-    "lng": -79.0363
+    "lng": -79.0363,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-3065251117",
@@ -5114,7 +6314,11 @@
     "category": "other_infectious",
     "country": "utah, united states",
     "lat": 39.2662,
-    "lng": -111.753
+    "lng": -111.753,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-d32c208ca9",
@@ -5131,7 +6335,11 @@
     "category": "respiratory",
     "country": "háº£i dæ°æ¡ng province, vietnam",
     "lat": 20.9167,
-    "lng": 106.3333
+    "lng": 106.3333,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-f9c19636ee",
@@ -5148,7 +6356,11 @@
     "category": "respiratory",
     "country": "china",
     "lat": 36.52,
-    "lng": 103.8918
+    "lng": 103.8918,
+    "marker_alert_count": 31,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-98050504a4",
@@ -5165,7 +6377,11 @@
     "category": "other_infectious",
     "country": "moscow, russia",
     "lat": 55.762,
-    "lng": 37.607
+    "lng": 37.607,
+    "marker_alert_count": 8,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-60c9a3b185",
@@ -5182,7 +6398,11 @@
     "category": "respiratory",
     "country": "iran",
     "lat": 32.7395,
-    "lng": 54.1978
+    "lng": 54.1978,
+    "marker_alert_count": 6,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-0090692107",
@@ -5199,7 +6419,11 @@
     "category": "other_infectious",
     "country": "texas, united states",
     "lat": 31.2409,
-    "lng": -99.2286
+    "lng": -99.2286,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-842e5a69c2",
@@ -5216,7 +6440,11 @@
     "category": "other_infectious",
     "country": "dr congo",
     "lat": -2.0,
-    "lng": 25.0
+    "lng": 25.0,
+    "marker_alert_count": 4,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-7812141333",
@@ -5233,7 +6461,11 @@
     "category": "other_infectious",
     "country": "san francisco, california, united states",
     "lat": 37.775,
-    "lng": -122.4184
+    "lng": -122.4184,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-f41a59c14c",
@@ -5250,7 +6482,11 @@
     "category": "other_infectious",
     "country": "gujarat state, india",
     "lat": 22.9988,
-    "lng": 72.0043
+    "lng": 72.0043,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-7dd7198a44",
@@ -5267,7 +6503,11 @@
     "category": "respiratory",
     "country": "maharashtra state, india",
     "lat": 19.5597,
-    "lng": 75.8798
+    "lng": 75.8798,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-0cf0159815",
@@ -5284,7 +6524,11 @@
     "category": "respiratory",
     "country": "maharashtra state, india",
     "lat": 19.5597,
-    "lng": 75.8798
+    "lng": 75.8798,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-9afa12327f",
@@ -5301,7 +6545,11 @@
     "category": "other_infectious",
     "country": "bangladesh",
     "lat": 23.8432,
-    "lng": 90.2685
+    "lng": 90.2685,
+    "marker_alert_count": 9,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-c3aff7a81c",
@@ -5318,7 +6566,11 @@
     "category": "other_infectious",
     "country": "uganda",
     "lat": 1.28,
-    "lng": 32.3862
+    "lng": 32.3862,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-6ec86776a6",
@@ -5335,7 +6587,11 @@
     "category": "respiratory",
     "country": "new mexico, united states",
     "lat": 34.4884,
-    "lng": -105.9961
+    "lng": -105.9961,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-5001bec146",
@@ -5352,7 +6608,11 @@
     "category": "other_infectious",
     "country": "east java, indonesia",
     "lat": -7.6457,
-    "lng": 112.5879
+    "lng": 112.5879,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-1a79e87214",
@@ -5369,7 +6629,11 @@
     "category": "respiratory",
     "country": "venezuela",
     "lat": 7.1225,
-    "lng": -66.1696
+    "lng": -66.1696,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-3ca51c8dec",
@@ -5386,7 +6650,11 @@
     "category": "other_infectious",
     "country": "puerto rico",
     "lat": 18.2513,
-    "lng": -66.5014
+    "lng": -66.5014,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-30f1becb03",
@@ -5403,7 +6671,11 @@
     "category": "other_infectious",
     "country": "sumatra, indonesia",
     "lat": -0.1443,
-    "lng": 100.6371
+    "lng": 100.6371,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-671201fed8",
@@ -5420,7 +6692,11 @@
     "category": "other_infectious",
     "country": "england, united kingdom",
     "lat": 53.0346,
-    "lng": -0.5604
+    "lng": -0.5604,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-51b5280986",
@@ -5437,7 +6713,11 @@
     "category": "other_infectious",
     "country": "estado de veracruz, mexico",
     "lat": 19.3318,
-    "lng": -96.6578
+    "lng": -96.6578,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-c7c6d438ab",
@@ -5454,7 +6734,11 @@
     "category": "respiratory",
     "country": "south korea",
     "lat": 36.6155,
-    "lng": 127.727
+    "lng": 127.727,
+    "marker_alert_count": 4,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-95203532aa",
@@ -5471,7 +6755,11 @@
     "category": "other_infectious",
     "country": "beijing, china",
     "lat": 39.9289,
-    "lng": 116.3883
+    "lng": 116.3883,
+    "marker_alert_count": 4,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-e4b5731f50",
@@ -5488,7 +6776,11 @@
     "category": "respiratory",
     "country": "estado de aguascalientes, mexico",
     "lat": 21.8833,
-    "lng": -102.3
+    "lng": -102.3,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-511fd1889c",
@@ -5505,7 +6797,11 @@
     "category": "other_infectious",
     "country": "ohio, united states",
     "lat": 40.2459,
-    "lng": -83.0127
+    "lng": -83.0127,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-bcfcab11e3",
@@ -5522,7 +6818,11 @@
     "category": "other_infectious",
     "country": "rhode island, united states",
     "lat": 41.7385,
-    "lng": -71.4991
+    "lng": -71.4991,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-b3a0cbcc97",
@@ -5539,7 +6839,11 @@
     "category": "other_infectious",
     "country": "rhode island, united states",
     "lat": 41.7385,
-    "lng": -71.4991
+    "lng": -71.4991,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-20c5d2841a",
@@ -5556,7 +6860,11 @@
     "category": "respiratory",
     "country": "new york state, united states",
     "lat": 43.0046,
-    "lng": -75.4981
+    "lng": -75.4981,
+    "marker_alert_count": 5,
+    "marker_pin": "s2",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.6
   },
   {
     "id": "healthmap-5383d8d125",
@@ -5573,7 +6881,11 @@
     "category": "respiratory",
     "country": "nebraska, united states",
     "lat": 41.5085,
-    "lng": -99.7559
+    "lng": -99.7559,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-b1eeefc59d",
@@ -5590,7 +6902,11 @@
     "category": "other_infectious",
     "country": "ãá»“ng nai province, vietnam",
     "lat": 11.0,
-    "lng": 107.1667
+    "lng": 107.1667,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-e96a470ffe",
@@ -5607,7 +6923,11 @@
     "category": "other_infectious",
     "country": "north kordofan, sudan",
     "lat": 13.0833,
-    "lng": 30.35
+    "lng": 30.35,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-3ab846c944",
@@ -5624,7 +6944,11 @@
     "category": "other_infectious",
     "country": "ernakulam, kerala, india",
     "lat": 10.0,
-    "lng": 76.5
+    "lng": 76.5,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-fa36dc4408",
@@ -5641,7 +6965,11 @@
     "category": "respiratory",
     "country": "isle of man",
     "lat": 54.2361,
-    "lng": -4.5481
+    "lng": -4.5481,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-3691fbec4d",
@@ -5658,7 +6986,11 @@
     "category": "respiratory",
     "country": "tunisia",
     "lat": 34.1109,
-    "lng": 9.5613
+    "lng": 9.5613,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-628bdef48e",
@@ -5675,7 +7007,11 @@
     "category": "respiratory",
     "country": "syria",
     "lat": 35.0131,
-    "lng": 38.5051
+    "lng": 38.5051,
+    "marker_alert_count": 1,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-2f6d1c62d4",
@@ -5692,7 +7028,11 @@
     "category": "other_infectious",
     "country": "nepal",
     "lat": 28.253,
-    "lng": 83.9386
+    "lng": 83.9386,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-5193d23835",
@@ -5709,7 +7049,11 @@
     "category": "respiratory",
     "country": "argentina",
     "lat": -35.3764,
-    "lng": -64.1677
+    "lng": -64.1677,
+    "marker_alert_count": 33,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-4f94ec68ac",
@@ -5726,7 +7070,11 @@
     "category": "respiratory",
     "country": "qatar",
     "lat": 25.3151,
-    "lng": 51.1912
+    "lng": 51.1912,
+    "marker_alert_count": 7,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-6fd63b69cb",
@@ -5743,7 +7091,11 @@
     "category": "respiratory",
     "country": "qatar",
     "lat": 25.3151,
-    "lng": 51.1912
+    "lng": 51.1912,
+    "marker_alert_count": 7,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-8a84b588c9",
@@ -5760,7 +7112,11 @@
     "category": "respiratory",
     "country": "qatar",
     "lat": 25.3151,
-    "lng": 51.1912
+    "lng": 51.1912,
+    "marker_alert_count": 7,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-aaf9147ca3",
@@ -5777,7 +7133,11 @@
     "category": "respiratory",
     "country": "voronezh oblast, russia",
     "lat": 51.0,
-    "lng": 40.5
+    "lng": 40.5,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-3839bbc8f6",
@@ -5794,7 +7154,11 @@
     "category": "respiratory",
     "country": "voronezh oblast, russia",
     "lat": 51.0,
-    "lng": 40.5
+    "lng": 40.5,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-f600b51517",
@@ -5811,7 +7175,11 @@
     "category": "other_infectious",
     "country": "tatarstan republic, russia",
     "lat": 55.3333,
-    "lng": 51.0
+    "lng": 51.0,
+    "marker_alert_count": 3,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-125d06286a",
@@ -5828,7 +7196,11 @@
     "category": "other_infectious",
     "country": "london, england, united kingdom",
     "lat": 51.5,
-    "lng": -0.1167
+    "lng": -0.1167,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-ced1f88297",
@@ -5845,7 +7217,11 @@
     "category": "other_infectious",
     "country": "zimbabwe",
     "lat": -19.0001,
-    "lng": 29.8718
+    "lng": 29.8718,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-c2f9ffa00e",
@@ -5862,7 +7238,11 @@
     "category": "other_infectious",
     "country": "tanzania",
     "lat": -6.0,
-    "lng": 35.0
+    "lng": 35.0,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-5e3c023628",
@@ -5879,7 +7259,11 @@
     "category": "respiratory",
     "country": "japan",
     "lat": 36.0985,
-    "lng": 138.4786
+    "lng": 138.4786,
+    "marker_alert_count": 31,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-5426b5e244",
@@ -5896,7 +7280,11 @@
     "category": "respiratory",
     "country": "louisiana, united states",
     "lat": 31.0152,
-    "lng": -92.0215
+    "lng": -92.0215,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-59e1cce799",
@@ -5913,7 +7301,11 @@
     "category": "respiratory",
     "country": "new mexico, united states",
     "lat": 34.4884,
-    "lng": -105.9961
+    "lng": -105.9961,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-e17c5dceb2",
@@ -5930,7 +7322,11 @@
     "category": "respiratory",
     "country": "venezuela",
     "lat": 7.1225,
-    "lng": -66.1696
+    "lng": -66.1696,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-cbeda12865",
@@ -5947,7 +7343,11 @@
     "category": "other_infectious",
     "country": "guangxi autonomous region, china",
     "lat": 24.0,
-    "lng": 109.0
+    "lng": 109.0,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-1546ad2233",
@@ -5964,7 +7364,11 @@
     "category": "other_infectious",
     "country": "washington state, united states",
     "lat": 47.4875,
-    "lng": -120.4981
+    "lng": -120.4981,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-413d399de1",
@@ -5981,7 +7385,11 @@
     "category": "other_infectious",
     "country": "gambia",
     "lat": 13.5,
-    "lng": -15.5
+    "lng": -15.5,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-c24f0bf672",
@@ -5998,7 +7406,11 @@
     "category": "other_infectious",
     "country": "estado de chiapas, mexico",
     "lat": 16.5098,
-    "lng": -92.5049
+    "lng": -92.5049,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-20f30d44ad",
@@ -6015,7 +7427,11 @@
     "category": "other_infectious",
     "country": "quáº£ng ninh province, vietnam",
     "lat": 21.25,
-    "lng": 107.3333
+    "lng": 107.3333,
+    "marker_alert_count": 5,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-5b5a0f1d63",
@@ -6032,7 +7448,11 @@
     "category": "other_infectious",
     "country": "england, united kingdom",
     "lat": 53.0346,
-    "lng": -0.5604
+    "lng": -0.5604,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-acc0538dbe",
@@ -6049,7 +7469,11 @@
     "category": "other_infectious",
     "country": "special region of yogyakarta, indonesia",
     "lat": -7.8014,
-    "lng": 110.3644
+    "lng": 110.3644,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-814e3c5345",
@@ -6066,7 +7490,11 @@
     "category": "other_infectious",
     "country": "oyo state, nigeria",
     "lat": 8.0,
-    "lng": 4.0
+    "lng": 4.0,
+    "marker_alert_count": 4,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-d337a2b8ba",
@@ -6083,7 +7511,11 @@
     "category": "respiratory",
     "country": "wuhan, hubei province, china",
     "lat": 30.5833,
-    "lng": 114.2667
+    "lng": 114.2667,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-1d14f2a558",
@@ -6100,7 +7532,11 @@
     "category": "respiratory",
     "country": "south korea",
     "lat": 36.6155,
-    "lng": 127.727
+    "lng": 127.727,
+    "marker_alert_count": 4,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-93b71853db",
@@ -6117,7 +7553,11 @@
     "category": "respiratory",
     "country": "bulgaria",
     "lat": 42.7614,
-    "lng": 25.2315
+    "lng": 25.2315,
+    "marker_alert_count": 1,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-0bc2c29268",
@@ -6134,7 +7574,11 @@
     "category": "other_infectious",
     "country": "guangzhou, guangdong province, china",
     "lat": 23.1166,
-    "lng": 113.25
+    "lng": 113.25,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-85ea9d25dd",
@@ -6151,7 +7595,11 @@
     "category": "other_infectious",
     "country": "guangzhou, guangdong province, china",
     "lat": 23.1166,
-    "lng": 113.25
+    "lng": 113.25,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-c272eca313",
@@ -6168,7 +7616,11 @@
     "category": "other_infectious",
     "country": "beijing, china",
     "lat": 39.9289,
-    "lng": 116.3883
+    "lng": 116.3883,
+    "marker_alert_count": 4,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-8e844c1799",
@@ -6185,7 +7637,11 @@
     "category": "respiratory",
     "country": "estado de aguascalientes, mexico",
     "lat": 21.8833,
-    "lng": -102.3
+    "lng": -102.3,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-abd13c30f1",
@@ -6202,7 +7658,11 @@
     "category": "other_infectious",
     "country": "rhode island, united states",
     "lat": 41.7385,
-    "lng": -71.4991
+    "lng": -71.4991,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-477596c523",
@@ -6219,7 +7679,11 @@
     "category": "other_infectious",
     "country": "south africa",
     "lat": -28.9985,
-    "lng": 25.0925
+    "lng": 25.0925,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-a3da8bacb1",
@@ -6236,7 +7700,11 @@
     "category": "other_infectious",
     "country": "jakarta capital region, indonesia",
     "lat": -6.1862,
-    "lng": 106.8063
+    "lng": 106.8063,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-310e8744bc",
@@ -6253,7 +7721,11 @@
     "category": "respiratory",
     "country": "kenya",
     "lat": 0.5299,
-    "lng": 37.8579
+    "lng": 37.8579,
+    "marker_alert_count": 2,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-2086c62789",
@@ -6270,7 +7742,11 @@
     "category": "other_infectious",
     "country": "cote d'ivoire",
     "lat": 7.6315,
-    "lng": -5.0
+    "lng": -5.0,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-f7f2a12ff4",
@@ -6287,7 +7763,11 @@
     "category": "other_infectious",
     "country": "bashkortostan republic (bashkiria), russia",
     "lat": 54.0077,
-    "lng": 55.9863
+    "lng": 55.9863,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-44c82dde51",
@@ -6304,7 +7784,11 @@
     "category": "respiratory",
     "country": "pennsylvania, united states",
     "lat": 40.9301,
-    "lng": -77.4756
+    "lng": -77.4756,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-b9666d3e8d",
@@ -6321,7 +7805,11 @@
     "category": "other_infectious",
     "country": "mali",
     "lat": 17.3503,
-    "lng": -3.5244
+    "lng": -3.5244,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-4ee08aa1be",
@@ -6338,7 +7826,11 @@
     "category": "other_infectious",
     "country": "tonga",
     "lat": -20.4029,
-    "lng": -174.8363
+    "lng": -174.8363,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-cfb17dd0ed",
@@ -6355,7 +7847,11 @@
     "category": "other_infectious",
     "country": "estado de durango, mexico",
     "lat": 24.8,
-    "lng": -104.7
+    "lng": -104.7,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-0f5f9d000e",
@@ -6372,7 +7868,11 @@
     "category": "other_infectious",
     "country": "east kalimantan, indonesia",
     "lat": 1.5,
-    "lng": 116.5
+    "lng": 116.5,
+    "marker_alert_count": 3,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-71e1faac2e",
@@ -6389,7 +7889,11 @@
     "category": "respiratory",
     "country": "argentina",
     "lat": -35.3764,
-    "lng": -64.1677
+    "lng": -64.1677,
+    "marker_alert_count": 33,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-027c5fe611",
@@ -6406,7 +7910,11 @@
     "category": "other_infectious",
     "country": "cuba",
     "lat": 21.6212,
-    "lng": -79.0363
+    "lng": -79.0363,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-34c90f825d",
@@ -6423,7 +7931,11 @@
     "category": "respiratory",
     "country": "voronezh, voronezh oblast, russia",
     "lat": 51.6657,
-    "lng": 39.169
+    "lng": 39.169,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-97239294ba",
@@ -6440,7 +7952,11 @@
     "category": "other_infectious",
     "country": "estado de tamaulipas, mexico",
     "lat": 23.8,
-    "lng": -98.7
+    "lng": -98.7,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-53cbf969bd",
@@ -6457,7 +7973,11 @@
     "category": "other_infectious",
     "country": "estado de tamaulipas, mexico",
     "lat": 23.8,
-    "lng": -98.7
+    "lng": -98.7,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-a2ed466ebf",
@@ -6474,7 +7994,11 @@
     "category": "respiratory",
     "country": "voronezh oblast, russia",
     "lat": 51.0,
-    "lng": 40.5
+    "lng": 40.5,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-bb170a3879",
@@ -6491,7 +8015,11 @@
     "category": "other_infectious",
     "country": "tatarstan republic, russia",
     "lat": 55.3333,
-    "lng": 51.0
+    "lng": 51.0,
+    "marker_alert_count": 3,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-5c88888106",
@@ -6508,7 +8036,11 @@
     "category": "other_infectious",
     "country": "michigan, united states",
     "lat": 43.5803,
-    "lng": -84.4629
+    "lng": -84.4629,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-47103b0569",
@@ -6525,7 +8057,11 @@
     "category": "respiratory",
     "country": "australia",
     "lat": -25.735,
-    "lng": 134.4896
+    "lng": 134.4896,
+    "marker_alert_count": 3,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-8d5a102192",
@@ -6542,7 +8078,11 @@
     "category": "respiratory",
     "country": "há»“ chã­ minh city, vietnam",
     "lat": 10.75,
-    "lng": 106.6667
+    "lng": 106.6667,
+    "marker_alert_count": 14,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-5e418240c2",
@@ -6559,7 +8099,11 @@
     "category": "respiratory",
     "country": "virginia, united states",
     "lat": 37.649,
-    "lng": -78.3545
+    "lng": -78.3545,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-4cb8080be7",
@@ -6576,7 +8120,11 @@
     "category": "respiratory",
     "country": "japan",
     "lat": 36.0985,
-    "lng": 138.4786
+    "lng": 138.4786,
+    "marker_alert_count": 31,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-d13747bb5b",
@@ -6593,7 +8141,11 @@
     "category": "respiratory",
     "country": "louisiana, united states",
     "lat": 31.0152,
-    "lng": -92.0215
+    "lng": -92.0215,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-7daf0ec05a",
@@ -6610,7 +8162,11 @@
     "category": "other_infectious",
     "country": "arizona, united states",
     "lat": 34.5002,
-    "lng": -111.5003
+    "lng": -111.5003,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-1351c824dc",
@@ -6627,7 +8183,11 @@
     "category": "respiratory",
     "country": "mauritius",
     "lat": -20.2519,
-    "lng": 57.8708
+    "lng": 57.8708,
+    "marker_alert_count": 3,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-9de732b2c6",
@@ -6644,7 +8204,11 @@
     "category": "other_infectious",
     "country": "kazakhstan",
     "lat": 48.016,
-    "lng": 66.6578
+    "lng": 66.6578,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-9025753916",
@@ -6661,7 +8225,11 @@
     "category": "respiratory",
     "country": "hubei province, china",
     "lat": 31.0152,
-    "lng": 112.0166
+    "lng": 112.0166,
+    "marker_alert_count": 5,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-ec444f39ae",
@@ -6678,7 +8246,11 @@
     "category": "respiratory",
     "country": "venezuela",
     "lat": 7.1225,
-    "lng": -66.1696
+    "lng": -66.1696,
+    "marker_alert_count": 4,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-2310291a7f",
@@ -6695,7 +8267,11 @@
     "category": "other_infectious",
     "country": "oyo state, nigeria",
     "lat": 8.0,
-    "lng": 4.0
+    "lng": 4.0,
+    "marker_alert_count": 4,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-d0f8c4b36f",
@@ -6712,7 +8288,11 @@
     "category": "other_infectious",
     "country": "oyo state, nigeria",
     "lat": 8.0,
-    "lng": 4.0
+    "lng": 4.0,
+    "marker_alert_count": 4,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-ee4ff74163",
@@ -6729,7 +8309,11 @@
     "category": "respiratory",
     "country": "costa rica",
     "lat": 9.9702,
-    "lng": -84.1879
+    "lng": -84.1879,
+    "marker_alert_count": 3,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-318e165f8c",
@@ -6746,7 +8330,11 @@
     "category": "other_infectious",
     "country": "bolivia",
     "lat": -16.7146,
-    "lng": -64.6709
+    "lng": -64.6709,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-74d03d0180",
@@ -6763,7 +8351,11 @@
     "category": "other_infectious",
     "country": "maryland, united states",
     "lat": 38.9594,
-    "lng": -76.377
+    "lng": -76.377,
+    "marker_alert_count": 4,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-d8c96c1dbf",
@@ -6780,7 +8372,11 @@
     "category": "respiratory",
     "country": "wuhan, hubei province, china",
     "lat": 30.5833,
-    "lng": 114.2667
+    "lng": 114.2667,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-6c4467ebab",
@@ -6797,7 +8393,11 @@
     "category": "other_infectious",
     "country": "datong, shanxi sheng, china",
     "lat": 40.0936,
-    "lng": 113.2914
+    "lng": 113.2914,
+    "marker_alert_count": 1,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-048b3f1ce4",
@@ -6814,7 +8414,11 @@
     "category": "respiratory",
     "country": "taipei, taiwan",
     "lat": 25.0853,
-    "lng": 121.5615
+    "lng": 121.5615,
+    "marker_alert_count": 3,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-2427ea73ea",
@@ -6831,7 +8435,11 @@
     "category": "other_infectious",
     "country": "ohio, united states",
     "lat": 40.2459,
-    "lng": -83.0127
+    "lng": -83.0127,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-68548c1e77",
@@ -6848,7 +8456,11 @@
     "category": "respiratory",
     "country": "new york state, united states",
     "lat": 43.0046,
-    "lng": -75.4981
+    "lng": -75.4981,
+    "marker_alert_count": 5,
+    "marker_pin": "s2",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.6
   },
   {
     "id": "healthmap-1980e613e9",
@@ -6865,7 +8477,11 @@
     "category": "other_infectious",
     "country": "philippines",
     "lat": 11.7418,
-    "lng": 122.8787
+    "lng": 122.8787,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-bf98f1a5e1",
@@ -6882,7 +8498,11 @@
     "category": "other_infectious",
     "country": "chuvash republic, russia",
     "lat": 55.5,
-    "lng": 47.0
+    "lng": 47.0,
+    "marker_alert_count": 2,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-d5139b9790",
@@ -6899,7 +8519,11 @@
     "category": "other_infectious",
     "country": "estado de sinaloa, mexico",
     "lat": 25.0059,
-    "lng": -107.4903
+    "lng": -107.4903,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-16235d0230",
@@ -6916,7 +8540,11 @@
     "category": "respiratory",
     "country": "hebei province, china",
     "lat": 38.7369,
-    "lng": 115.0488
+    "lng": 115.0488,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-a04da57f63",
@@ -6933,7 +8561,11 @@
     "category": "other_infectious",
     "country": "suriname",
     "lat": 4.1264,
-    "lng": -55.9118
+    "lng": -55.9118,
+    "marker_alert_count": 1,
+    "marker_pin": "l1",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.67
   },
   {
     "id": "healthmap-4bd8a14ff7",
@@ -6950,7 +8582,11 @@
     "category": "respiratory",
     "country": "tunisia",
     "lat": 34.1109,
-    "lng": 9.5613
+    "lng": 9.5613,
+    "marker_alert_count": 2,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-ff1a2b49d4",
@@ -6967,7 +8603,11 @@
     "category": "other_infectious",
     "country": "jakarta capital region, indonesia",
     "lat": -6.1862,
-    "lng": 106.8063
+    "lng": 106.8063,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-6c4da78f8d",
@@ -6984,7 +8624,11 @@
     "category": "respiratory",
     "country": "kenya",
     "lat": 0.5299,
-    "lng": 37.8579
+    "lng": 37.8579,
+    "marker_alert_count": 2,
+    "marker_pin": "l4",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 1.0
   },
   {
     "id": "healthmap-e3f11aced7",
@@ -7001,7 +8645,11 @@
     "category": "respiratory",
     "country": "pennsylvania, united states",
     "lat": 40.9301,
-    "lng": -77.4756
+    "lng": -77.4756,
+    "marker_alert_count": 2,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-14b1eb3b92",
@@ -7018,7 +8666,11 @@
     "category": "other_infectious",
     "country": "qinghai province, china",
     "lat": 35.9957,
-    "lng": 96.0205
+    "lng": 96.0205,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-9a0c23d586",
@@ -7035,7 +8687,11 @@
     "category": "other_infectious",
     "country": "qinghai province, china",
     "lat": 35.9957,
-    "lng": 96.0205
+    "lng": 96.0205,
+    "marker_alert_count": 2,
+    "marker_pin": "s1",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.44999999999999996
   },
   {
     "id": "healthmap-9d02d8cfac",
@@ -7052,7 +8708,11 @@
     "category": "other_infectious",
     "country": "amazonas, brazil",
     "lat": -5.0,
-    "lng": -63.0
+    "lng": -63.0,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-e8a02be441",
@@ -7069,7 +8729,11 @@
     "category": "other_infectious",
     "country": "estado de morelos, mexico",
     "lat": 18.7503,
-    "lng": -99.0088
+    "lng": -99.0088,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-a95b71994b",
@@ -7086,7 +8750,11 @@
     "category": "other_infectious",
     "country": "rostov oblast, russia",
     "lat": 47.0102,
-    "lng": 42.0117
+    "lng": 42.0117,
+    "marker_alert_count": 1,
+    "marker_pin": "s4",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.8999999999999999
   },
   {
     "id": "healthmap-5014ebe79b",
@@ -7103,7 +8771,11 @@
     "category": "other_infectious",
     "country": "rio grande do sul, brazil",
     "lat": -30.0,
-    "lng": -54.0
+    "lng": -54.0,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-6b4a282c4f",
@@ -7120,7 +8792,11 @@
     "category": "other_infectious",
     "country": "estado de jalisco, mexico",
     "lat": 20.324,
-    "lng": -103.667
+    "lng": -103.667,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-0e0671d19d",
@@ -7137,7 +8813,11 @@
     "category": "other_infectious",
     "country": "chad",
     "lat": 15.3612,
-    "lng": 18.6645
+    "lng": 18.6645,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-1af91f866d",
@@ -7154,7 +8834,11 @@
     "category": "other_infectious",
     "country": "panama",
     "lat": 8.5072,
-    "lng": -80.1027
+    "lng": -80.1027,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   },
   {
     "id": "healthmap-31439c8db7",
@@ -7171,7 +8855,11 @@
     "category": "respiratory",
     "country": "estado de baja california, mexico",
     "lat": 30.0025,
-    "lng": -115.0049
+    "lng": -115.0049,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-55e144e1a2",
@@ -7188,7 +8876,11 @@
     "category": "other_infectious",
     "country": "victoria, australia",
     "lat": -36.9851,
-    "lng": 145.0195
+    "lng": 145.0195,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-a10ad69a94",
@@ -7205,7 +8897,11 @@
     "category": "respiratory",
     "country": "irkutsk oblast, russia",
     "lat": 57.4212,
-    "lng": 106.3037
+    "lng": 106.3037,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-438980b931",
@@ -7222,7 +8918,11 @@
     "category": "other_infectious",
     "country": "rã©gion d'outre-mer de guadeloupe, france",
     "lat": 16.25,
-    "lng": -61.5834
+    "lng": -61.5834,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-6ebb23ea9c",
@@ -7239,7 +8939,11 @@
     "category": "other_infectious",
     "country": "khanty-mansi autonomous okrug-yugra, russia",
     "lat": 62.0009,
-    "lng": 69.3017
+    "lng": 69.3017,
+    "marker_alert_count": 1,
+    "marker_pin": "s3",
+    "marker_pin_tier": "single_alert",
+    "marker_significance": 0.75
   },
   {
     "id": "healthmap-970a5ec643",
@@ -7256,6 +8960,10 @@
     "category": "other_infectious",
     "country": "dominican republic",
     "lat": 18.8944,
-    "lng": -70.4846
+    "lng": -70.4846,
+    "marker_alert_count": 1,
+    "marker_pin": "l3",
+    "marker_pin_tier": "location_cluster",
+    "marker_significance": 0.91
   }
 ]

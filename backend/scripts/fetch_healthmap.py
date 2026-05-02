@@ -52,6 +52,33 @@ ALERTID_RE = re.compile(r"b\((\d+)\b")
 DATE_RE = re.compile(r"^\s*(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})\s*$")
 
 
+def _pin_significance(pin: str) -> tuple[str, float]:
+    """Convert HealthMap pin code to (tier, significance 0..1).
+
+    HealthMap uses two prefixes for map markers:
+      - 'l1'..'l3' = location aggregation (multiple alerts at one place);
+        higher number = denser cluster → more meaningful concentration.
+      - 's1'..'s3' = single alert severity tier (1=low, 3=high).
+    Anything else → unknown / default 0.5.
+    """
+    if not pin:
+        return "unknown", 0.5
+    p = pin.lower().strip()
+    if p.startswith("l"):
+        try:
+            n = int(p[1:])
+            return "location_cluster", min(1.0, 0.55 + n * 0.12)  # l1=0.67, l2=0.79, l3=0.91
+        except ValueError:
+            return "location_cluster", 0.7
+    if p.startswith("s"):
+        try:
+            n = int(p[1:])
+            return "single_alert", min(1.0, 0.30 + n * 0.15)  # s1=0.45, s2=0.60, s3=0.75
+        except ValueError:
+            return "single_alert", 0.5
+    return "unknown", 0.5
+
+
 def _parse_date_token(text: str) -> str | None:
     m = DATE_RE.match(text or "")
     if not m:
@@ -76,6 +103,9 @@ def _parse_marker(marker: dict[str, Any], cutoff: datetime) -> list[dict[str, An
     lat = marker.get("lat") or 0
     lon = marker.get("lon") or 0
     disease_labels = marker.get("label") or ""
+    alert_count = len(marker.get("alertids", []) or [])
+    pin = str(marker.get("pin") or "")
+    pin_tier, pin_significance = _pin_significance(pin)
 
     soup = BeautifulSoup(raw_html, "html.parser")
     # Each alert is wrapped in <div class="at"> ... <span class="d">DATE - </span> <a class="fbox" ...>TITLE</a> </div>
@@ -138,6 +168,11 @@ def _parse_marker(marker: dict[str, Any], cutoff: datetime) -> list[dict[str, An
             except Exception:
                 pass
         normalized["country"] = (place_name or normalized.get("country", "")).lower()
+        # HealthMap-specific signals carried into the score function:
+        normalized["marker_alert_count"] = alert_count
+        normalized["marker_pin"] = pin
+        normalized["marker_pin_tier"] = pin_tier
+        normalized["marker_significance"] = pin_significance
         out.append(normalized)
         kept_for_marker += 1
 
