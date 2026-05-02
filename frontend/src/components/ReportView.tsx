@@ -79,11 +79,10 @@ const TYPE_ORDER: Array<'all' | ReportType> = ['all', 'final', 'kdca', 'osint'];
 
 const SIGNAL_TERMS = [
   { id: 'signal-kdca', label: 'KDCA 공식감시', terms: ['KDCA', '질병청', '공식 감시', 'baseline', '감시자료'] },
-  { id: 'signal-osint', label: 'OSINT 신호', terms: ['OSINT', '국내 뉴스', '뉴스', '증상탐색행동', '증상 탐색 행동'] },
   { id: 'signal-trends', label: '검색 트렌드', terms: ['Google Trends', '검색 트렌드', 'pneumonia', 'flu', '검색량'] },
+  { id: 'signal-news', label: '국내 뉴스', terms: ['뉴스', '보도', '언론', '기사'] },
   { id: 'signal-global', label: '국제/WHO 맥락', terms: ['글로벌', '국제', 'WHO', '해외', '유입'] },
   { id: 'signal-wastewater', label: '폐하수 보조', terms: ['폐하수', '폐수', 'wastewater'] },
-  { id: 'signal-cxr', label: 'CXR 집계', terms: ['CXR', '영상', 'corroboration'] },
 ];
 
 const TOPIC_TERMS = [
@@ -152,29 +151,45 @@ function splitLabel(label: string, maxLength = 12) {
   return [label.slice(0, midpoint), label.slice(midpoint)];
 }
 
+/** Compute node visible radius based on kind + weight (must match ReportRelationshipFigure). */
+function nodeRadius(node: RelationshipNode): number {
+  if (node.kind === 'report') return 50;
+  return 30 + node.weight * 14;
+}
+
+/** Build a curved path from one node's edge to another's edge (so arrows do
+ *  not penetrate the node circles). Subtracts each node's radius from the
+ *  segment endpoints along the connecting direction. */
 function relationshipPath(from: RelationshipNode, to: RelationshipNode) {
-  const midX = (from.x + to.x) / 2;
-  const bend = from.kind === 'topic' || to.kind === 'topic' ? 28 : 0;
-  return `M ${from.x} ${from.y} C ${midX} ${from.y - bend}, ${midX} ${to.y + bend}, ${to.x} ${to.y}`;
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+  const fr = nodeRadius(from) + 4;  // tiny gap so the arrow head is visible
+  const tr = nodeRadius(to) + 6;    // extra room so the arrow tip stops outside
+  const startX = from.x + (dx / dist) * fr;
+  const startY = from.y + (dy / dist) * fr;
+  const endX = to.x - (dx / dist) * tr;
+  const endY = to.y - (dy / dist) * tr;
+  // Gentle horizontal curve: control points pulled toward midpoint X
+  const midX = (startX + endX) / 2;
+  return `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
 }
 
 function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sections: IntelligenceSection[]): RelationshipFigure {
   void _sections;
+  void item;
   const text = markdown || '';
   const paragraphs = text.split(/\n{2,}/).map((p) => p.toLowerCase());
 
-  // Bipartite layout — signals on the LEFT, diseases/keywords on the RIGHT.
-  // Center carries a small report identifier purely for orientation.
-  const VIEW_W = 1200;
+  // Pure bipartite mind-map: signals on LEFT, diseases/keywords on RIGHT.
+  // No central report node — edges go signal → topic directly so the user can
+  // read "this signal source is about which disease" at a glance.
+  // viewBox is 1200x720 (matches SVG element)
   const VIEW_H = 720;
-  const LEFT_X = 230;
-  const RIGHT_X = 970;
-  const CENTER_X = VIEW_W / 2;
-  const CENTER_Y = VIEW_H / 2;
+  const LEFT_X = 220;
+  const RIGHT_X = 980;
 
-  const nodes: RelationshipNode[] = [
-    { id: 'report', label: item ? titleForReport(item) : 'Sentinel report', kind: 'report', x: CENTER_X, y: CENTER_Y, weight: 1, subtitle: item ? TYPE_META[item.type].label : 'REPORT' },
-  ];
+  const nodes: RelationshipNode[] = [];
   const edges: RelationshipEdge[] = [];
 
   // ── Detect signals (sources)
@@ -191,10 +206,12 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
 
   const sigCount = Math.max(1, detectedSignals.length);
   const topCount = Math.max(1, detectedTopics.length);
-  const verticalPad = 90;
+  const verticalPad = 80;
 
   detectedSignals.forEach((signal, index) => {
-    const y = sigCount === 1 ? CENTER_Y : verticalPad + ((VIEW_H - 2 * verticalPad) / (sigCount - 1)) * index;
+    const y = sigCount === 1
+      ? VIEW_H / 2
+      : verticalPad + ((VIEW_H - 2 * verticalPad) / (sigCount - 1)) * index;
     nodes.push({
       id: signal.id,
       label: signal.label,
@@ -202,14 +219,14 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
       x: LEFT_X,
       y,
       weight: Math.min(1, 0.42 + signal.count * 0.07),
-      subtitle: `${signal.count} mentions`,
+      subtitle: `${signal.count}회 언급`,
     });
-    // signal → report (synthesis link)
-    edges.push({ from: signal.id, to: 'report', label: 'synthesis', strength: Math.min(1, 0.4 + signal.count * 0.04), tone: 'signal' });
   });
 
   detectedTopics.forEach((topic, index) => {
-    const y = topCount === 1 ? CENTER_Y : verticalPad + ((VIEW_H - 2 * verticalPad) / (topCount - 1)) * index;
+    const y = topCount === 1
+      ? VIEW_H / 2
+      : verticalPad + ((VIEW_H - 2 * verticalPad) / (topCount - 1)) * index;
     nodes.push({
       id: topic.id,
       label: topic.label,
@@ -217,9 +234,8 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
       x: RIGHT_X,
       y,
       weight: Math.min(1, 0.42 + topic.count * 0.08),
-      subtitle: `${topic.count} mentions`,
+      subtitle: `${topic.count}회 언급`,
     });
-    edges.push({ from: 'report', to: topic.id, label: 'discussed', strength: Math.min(1, 0.4 + topic.count * 0.04), tone: 'topic' });
   });
 
   // ── Co-occurrence: signal × topic edges (which signal mentions which disease)
@@ -238,13 +254,23 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
         edges.push({
           from: signal.id,
           to: topic.id,
-          label: 'mentions',
+          label: `${coOccur}회 동시 등장`,
           strength: Math.min(1, 0.3 + coOccur * 0.18),
           tone: 'primary',
         });
       }
     });
   });
+
+  // Fallback edges so isolated signals/topics still reach the other side
+  // (use a thin "association" edge between every detected signal and the
+  // strongest topic, and vice versa).
+  if (edges.length === 0 && detectedSignals.length && detectedTopics.length) {
+    const topTopicId = detectedTopics[0].id;
+    detectedSignals.forEach((signal) => {
+      edges.push({ from: signal.id, to: topTopicId, label: 'association', strength: 0.35, tone: 'signal' });
+    });
+  }
 
   // ── Insight text (질병 / 신호원 중심)
   const topTopic = detectedTopics[0];
@@ -327,6 +353,18 @@ function buildReportBrief(item: ReportItem | null, markdown: string): Intelligen
 
 function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
   const nodeById = new Map(figure.nodes.map((node) => [node.id, node]));
+  const [hoverNode, setHoverNode] = useState<string | null>(null);
+
+  // Set of edges/nodes that should be highlighted when a node is hovered
+  const isEdgeRelated = (edge: RelationshipEdge) =>
+    !hoverNode || edge.from === hoverNode || edge.to === hoverNode;
+  const isNodeRelated = (id: string) => {
+    if (!hoverNode) return true;
+    if (id === hoverNode) return true;
+    return figure.edges.some(
+      (e) => (e.from === hoverNode && e.to === id) || (e.to === hoverNode && e.from === id),
+    );
+  };
 
   return (
     <section className="report-relationship-card report-relationship-card--wide">
@@ -335,45 +373,47 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
           <span>Report relationship figure</span>
           <h3>신호원 ↔ 질병/키워드 관계도</h3>
           <p>
-            보고서 본문에서 추출한 신호원(좌측)과 질병/키워드(우측)의 동시 등장 관계입니다.
-            연결선 굵기는 같은 문단에 함께 등장한 빈도를 의미합니다.
+            보고서 본문에서 추출한 <strong>신호원(좌)</strong>과 <strong>질병/키워드(우)</strong>의 동시 등장 관계입니다.
+            노드에 마우스를 올리면 해당 신호원이 어떤 질병으로 퍼지는지(또는 질병이 어디서 오는지) 강조됩니다.
+            연결선 굵기 = 같은 문단 안에서 함께 등장한 빈도.
           </p>
         </div>
-        <strong>bipartite ontology · derived from report</strong>
+        <strong>bipartite mind map</strong>
       </div>
 
       <div className="report-relationship-stage">
-        <svg className="report-relationship-svg" viewBox="0 0 1200 720" role="img" aria-label="Signal source × disease bipartite ontology">
+        <svg className="report-relationship-svg" viewBox="0 0 1200 720" role="img" aria-label="Signal source × disease bipartite mind map">
           <defs>
             <marker id="report-arrow" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
               <path d="M 0 0 L 8 4 L 0 8 z" className="report-arrow-marker" />
             </marker>
-            <radialGradient id="reportCoreGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#38d8ff" stopOpacity="0.32" />
-              <stop offset="100%" stopColor="#38d8ff" stopOpacity="0" />
-            </radialGradient>
           </defs>
 
           {/* Lane labels */}
-          <text x="230" y="40" className="rel-lane-label" textAnchor="middle">SIGNAL SOURCES · 신호원</text>
-          <text x="970" y="40" className="rel-lane-label" textAnchor="middle">DISEASE / KEYWORDS · 질병/키워드</text>
+          <text x="220" y="40" className="rel-lane-label" textAnchor="middle">SIGNAL SOURCES · 신호원</text>
+          <text x="980" y="40" className="rel-lane-label" textAnchor="middle">DISEASE / KEYWORDS · 질병/키워드</text>
 
-          <circle cx="600" cy="360" r="120" fill="url(#reportCoreGlow)" />
-
-          {/* Edges */}
+          {/* Edges (rendered first so nodes overlay them) */}
           {figure.edges.map((edge, index) => {
             const from = nodeById.get(edge.from);
             const to = nodeById.get(edge.to);
             if (!from || !to) return null;
             const d = relationshipPath(from, to);
+            const dim = !isEdgeRelated(edge) ? 0.12 : 1;
             return (
-              <g className={`report-rel-edge edge-${edge.tone}`} key={`${edge.from}-${edge.to}-${index}`}>
+              <g
+                className={`report-rel-edge edge-${edge.tone} ${isEdgeRelated(edge) ? 'is-active' : 'is-dim'}`}
+                key={`${edge.from}-${edge.to}-${index}`}
+              >
                 <path
                   d={d}
-                  style={{ strokeWidth: 0.8 + edge.strength * 4, opacity: 0.22 + edge.strength * 0.6 }}
+                  style={{
+                    strokeWidth: 0.8 + edge.strength * 4,
+                    opacity: (0.22 + edge.strength * 0.6) * dim,
+                  }}
                   markerEnd="url(#report-arrow)"
                 />
-                <circle r={2.4 + edge.strength * 2.4} className="report-rel-pulse">
+                <circle r={2.4 + edge.strength * 2.4} className="report-rel-pulse" style={{ opacity: dim }}>
                   <animateMotion
                     dur={`${5.4 - edge.strength * 2}s`}
                     repeatCount="indefinite"
@@ -387,17 +427,32 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
 
           {/* Nodes */}
           {figure.nodes.map((node) => {
-            const radius = node.kind === 'report' ? 50 : 30 + node.weight * 14;
+            const radius = nodeRadius(node);
+            const related = isNodeRelated(node.id);
             return (
-              <g className={`report-rel-node node-${node.kind}`} key={node.id} transform={`translate(${node.x}, ${node.y})`}>
+              <g
+                className={`report-rel-node node-${node.kind} ${related ? 'is-active' : 'is-dim'}`}
+                key={node.id}
+                transform={`translate(${node.x}, ${node.y})`}
+                onMouseEnter={() => setHoverNode(node.id)}
+                onMouseLeave={() => setHoverNode(null)}
+                style={{ cursor: 'pointer' }}
+              >
                 <circle r={radius} />
-                <text y={node.kind === 'report' ? -4 : 4}>
-                  {splitLabel(node.label, node.kind === 'report' ? 14 : 12).slice(0, 2).map((line, index) => (
-                    <tspan key={`${node.id}-${line}`} x="0" dy={index === 0 ? 0 : 14}>{line}</tspan>
+                {/* Label centered inside the node circle */}
+                <text textAnchor="middle" dominantBaseline="middle">
+                  {splitLabel(node.label, 12).slice(0, 2).map((line, idx, arr) => (
+                    <tspan
+                      key={`${node.id}-${line}-${idx}`}
+                      x="0"
+                      dy={idx === 0 ? (arr.length > 1 ? -7 : 0) : 14}
+                    >
+                      {line}
+                    </tspan>
                   ))}
                 </text>
                 {node.subtitle && (
-                  <text className="report-rel-subtitle" y={node.kind === 'report' ? 28 : radius + 18}>
+                  <text className="report-rel-subtitle" y={radius + 16} textAnchor="middle">
                     {node.subtitle}
                   </text>
                 )}

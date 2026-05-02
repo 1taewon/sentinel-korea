@@ -5678,11 +5678,25 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   }
 }
 
+.report-rel-node {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
 .report-rel-node circle {
   fill: var(--bg-card);
   stroke: var(--border-strong);
   stroke-width: 1.6;
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.18));
+  transition: stroke-width 0.18s ease, filter 0.18s ease;
+}
+/* hover-driven highlight: dim unrelated nodes, brighten related ones */
+.report-rel-node.is-dim { opacity: 0.22; }
+.report-rel-node.is-active circle { stroke-width: 2.6; filter: drop-shadow(0 8px 22px rgba(56, 216, 255, 0.4)); }
+.report-rel-node:hover circle { stroke-width: 3; }
+.report-rel-edge.is-dim { opacity: 0.22; transition: opacity 0.18s ease; }
+.report-rel-edge.is-active path { animation: rel-edge-pulse 0.9s ease-out; }
+@keyframes rel-edge-pulse {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -22; }
 }
 
 .report-rel-node.node-report circle {
