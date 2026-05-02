@@ -648,23 +648,30 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     {
       key: 'kdca_report',
       lane: 'REPORT',
-      title: 'KDCA 주간 리포트',
-      detail: latestReportsByType.kdca?.filename || kdcaReportResult?.filename || '아직 생성된 KDCA 주간 리포트가 없습니다.',
-      status: runningPipeline === 'kdca_report' || generatingKdcaReport ? 'running' : latestReportsByType.kdca || kdcaReportResult ? 'ready' : 'needs-run',
-      updatedAt: latestReportsByType.kdca?.generated_at || lastPipelineRun.kdca_report,
-      epiweek: latestReportsByType.kdca?.epiweek || currentDate,
+      title: 'FINAL 통합 리포트',
+      detail: latestReportsByType.final?.filename || latestReportsByType.kdca?.filename || kdcaReportResult?.filename || 'FINAL 통합 리포트는 OSINT(국내 뉴스/트렌드) + KDCA(공식 감시) + 한국 관련성 ≥70% 해외 outbreak을 합쳐 작성합니다.',
+      status: runningPipeline === 'kdca_report' || generatingKdcaReport ? 'running' : latestReportsByType.final || latestReportsByType.kdca || kdcaReportResult ? 'ready' : 'needs-run',
+      updatedAt: latestReportsByType.final?.generated_at || latestReportsByType.kdca?.generated_at || lastPipelineRun.kdca_report,
+      epiweek: latestReportsByType.final?.epiweek || latestReportsByType.kdca?.epiweek || currentDate,
       primaryAction: '생성',
     },
   ];
+  // Edge map reflects how each lane actually feeds the FINAL report:
+  //   - 국내 뉴스 + 검색 트렌드 → OSINT 지도 분석 (regional risk on Korea map)
+  //   - 해외(WHO/CDC/ECDC/HealthMap…) outbreak 뉴스는 OSINT 지도 분석 단계를
+  //     건너뛰고, FINAL 리포트 단계에서 한국 관련성 ≥70% 항목만 inject 됨
+  //   - KDCA 업로드 + API → KDCA 감시자료 요약
+  //   - OSINT + KDCA digest → Sentinel 통합 분석
+  //   - Sentinel + 해외 outbreak → FINAL 통합 리포트
   const pipelineEdges: Array<[OperationKey, OperationKey]> = [
     ['korea_news', 'osint'],
     ['trends', 'osint'],
-    ['global', 'osint'],
     ['kdca_upload', 'kdca_digest'],
     ['kdca_api', 'kdca_digest'],
     ['kdca_digest', 'sentinel'],
     ['osint', 'sentinel'],
     ['sentinel', 'kdca_report'],
+    ['global', 'kdca_report'],   // ★ 해외 뉴스는 FINAL 리포트로만 직행 (Phase 3-B)
   ];
   const operationIndex = new Map(operationRows.map((row, index) => [row.key, index]));
   const pipelineNodePositions = operationRows.map((row, index) => {
