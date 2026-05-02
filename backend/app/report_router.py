@@ -427,8 +427,9 @@ def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, tre
     news_lines = [f"- [{n.get('date','')}] {n.get('title','')}" for n in korea_news[:8]]
     global_lines = [f"- [{n.get('date','')}] {n.get('title','')}" for n in global_signals[:5]]
 
-    # Phase 3-B: Top-3 Korea-relevant global outbreaks (auto-injected from all sources)
-    top_outbreaks = _load_top_outbreaks_for_korea(top_n=3, min_score=0.55)
+    # Phase 3-B: Korea-relevant global outbreaks (≥70% only) auto-injected from all sources.
+    # 70% threshold maps to the frontend "high"+"critical" tiers.
+    top_outbreaks = _load_top_outbreaks_for_korea(top_n=10, min_score=0.70)
     outbreak_lines = []
     for item in top_outbreaks:
         score_pct = round(item.get("_korea_score", 0) * 100)
@@ -462,8 +463,8 @@ def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, tre
 ### OSINT — 글로벌 신호 (raw)
 {chr(10).join(global_lines) if global_lines else '없음'}
 
-### Top 3 — 한국 관련 outbreak (자동 선정, 모든 source 통합)
-{chr(10).join(outbreak_lines) if outbreak_lines else '관련성 임계값을 넘는 outbreak 없음'}
+### 한국 관련성 ≥70% outbreak (high tier, 자동 선정)
+{chr(10).join(outbreak_lines) if outbreak_lines else '이번 주 한국 관련성 70%를 넘는 해외 outbreak 없음'}
 
 ### OSINT — Google Trends
 {chr(10).join(trend_lines) if trend_lines else '없음'}
@@ -472,7 +473,7 @@ def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, tre
 {kdca_section}
 
 다음 구조를 반드시 지켜 한국어 **통합 리포트**를 작성하세요. 첫 네 섹션 제목은 영어 그대로 사용하고, OSINT와 KDCA 신호가 수렴하는지/충돌하는지 명시하세요.
-**중요:** 위 "Top 3 — 한국 관련 outbreak" 섹션의 항목들은 자동 점수화로 선정된 한국 imported-risk 후보입니다. **"Why it matters"** 섹션에서 이 Top 3을 반드시 언급하고, 한국 입국 가능성·항공 노선·환자 표현형 측면에서 의미를 풀어 쓰세요. 비어 있으면 "이번 주 임계값을 넘는 해외 신호 없음"이라고 명시하세요.
+**중요:** 위 "한국 관련성 ≥70% outbreak" 섹션은 모든 outbreak source(WHO DON / CDC / ECDC / HealthMap / Gemini / Google News)에서 자동 점수화로 선정된 high-tier imported-risk 후보입니다. **"Why it matters"** 섹션에서 이 항목들을 반드시 언급하고, 한국 입국 가능성·항공 노선·환자 표현형 측면에서 의미를 풀어 쓰세요. 항목이 비어 있으면 "이번 주 한국 관련성 70%를 넘는 해외 신호 없음"이라고 명시하세요.
 
 # Sentinel Korea — 통합 최종 리포트 (FINAL)
 ## Period: {epiweek} ({target_date})
