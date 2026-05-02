@@ -153,9 +153,20 @@ export default function MiniGlobe({
       { lat: 36.3504, lng: 127.3845 },
       { lat: 33.4996, lng: 126.5312 },
     ];
-    return [...signals]
-      .sort((a, b) => scoreInternationalRelevance(b).score - scoreInternationalRelevance(a).score)
-      .slice(0, 60)
+
+    // Sort by combined relevance + marker_volume so HealthMap clusters
+    // (e.g. Chile H5N1 with 24 alerts) get arcs even if their per-signal
+    // relevance score isn't critical.
+    const sortedByImportance = [...signals].sort((a, b) => {
+      const ra = scoreInternationalRelevance(a).score;
+      const rb = scoreInternationalRelevance(b).score;
+      const ma = (a.marker_alert_count ?? 0) > 5 ? 0.15 : 0; // cluster bonus
+      const mb = (b.marker_alert_count ?? 0) > 5 ? 0.15 : 0;
+      return (rb + mb) - (ra + ma);
+    });
+
+    return sortedByImportance
+      .slice(0, 150)   // raised from 60 — show more signals (HealthMap, ECDC, etc.)
       .flatMap((signal, index) => {
         const relevance = scoreInternationalRelevance(signal);
         return Array.from({ length: relevance.pulseCount }, (_, routeIndex) => {

@@ -1196,22 +1196,22 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                     </div>
 
                     <div className="globe-korea-overlay-section globe-korea-overlay-legend">
-                      <span className="globe-korea-overlay-kicker">지도 표기 설명</span>
+                      <span className="globe-korea-overlay-kicker">노드 색상 (한국 관련성 점수)</span>
                       <div className="globe-legend-row">
                         <i className="globe-legend-dot dot-critical" />
-                        <div><strong>빨강</strong><small>Korea relevance critical (즉시 모니터링)</small></div>
+                        <div><strong>빨강 ≥75%</strong><small>critical — 즉시 모니터링</small></div>
                       </div>
                       <div className="globe-legend-row">
                         <i className="globe-legend-dot dot-high" />
-                        <div><strong>주황</strong><small>관련성 높음 — 한국 영향 가능</small></div>
+                        <div><strong>주황 ≥58%</strong><small>high — 한국 영향 가능</small></div>
                       </div>
                       <div className="globe-legend-row">
-                        <i className="globe-legend-dot dot-medium" />
-                        <div><strong>노랑</strong><small>중간 — 추세 관찰</small></div>
+                        <i className="globe-legend-dot dot-watch" />
+                        <div><strong>하늘색 ≥40%</strong><small>watch — 추세 관찰</small></div>
                       </div>
                       <div className="globe-legend-row">
-                        <i className="globe-legend-dot dot-low" />
-                        <div><strong>회색</strong><small>낮음 — 참고용</small></div>
+                        <i className="globe-legend-dot dot-context" />
+                        <div><strong>보라색 &lt;40%</strong><small>context — 참고용 (HealthMap 다수)</small></div>
                       </div>
                       <div className="globe-legend-row">
                         <i className="globe-legend-arc" />

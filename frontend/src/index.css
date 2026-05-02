@@ -666,10 +666,14 @@ button, input, textarea, select { font: inherit; }
   margin-top: 3px;
   display: inline-block;
 }
-.globe-legend-dot.dot-critical { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.7); }
-.globe-legend-dot.dot-high     { background: #f97316; }
-.globe-legend-dot.dot-medium   { background: #eab308; }
-.globe-legend-dot.dot-low      { background: #94a3b8; }
+/* Match the actual node colors used by scoreInternationalRelevance() */
+.globe-legend-dot.dot-critical { background: #ff4d4f; box-shadow: 0 0 6px rgba(255, 77, 79, 0.7); }
+.globe-legend-dot.dot-high     { background: #f59e42; }
+.globe-legend-dot.dot-watch    { background: #38d8ff; }
+.globe-legend-dot.dot-context  { background: #8b8cff; }
+/* legacy aliases (keep for any other component still using old names) */
+.globe-legend-dot.dot-medium   { background: #38d8ff; }
+.globe-legend-dot.dot-low      { background: #8b8cff; }
 .globe-legend-arc {
   width: 22px;
   height: 6px;
