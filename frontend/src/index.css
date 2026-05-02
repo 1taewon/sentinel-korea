@@ -550,6 +550,11 @@ button, input, textarea, select { font: inherit; }
   min-width: 0;
   min-height: 0;
   position: relative;
+  /* Center the inner globe canvas in its column so the sphere sits visually
+     in the middle of the modal rather than offset to the left. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Bottom-LEFT overlay: Korea relevance summary + legend */

@@ -46,9 +46,23 @@ export default function MiniGlobe({
   const theme = useTheme();
   const expandedWidth = typeof window !== 'undefined' ? Math.max(560, window.innerWidth - 440) : 900;
   const expandedHeight = typeof window !== 'undefined' ? Math.max(520, window.innerHeight - 180) : 720;
+  // 1x1 white pixel — produces a clean white globe surface; country borders are
+  // overlaid as polygons below for a minimal/clinical look in light theme.
+  const WHITE_PIXEL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
   const globeTexture = theme === 'light'
-    ? '//unpkg.com/three-globe/example/img/earth-day.jpg'
+    ? WHITE_PIXEL
     : '//unpkg.com/three-globe/example/img/earth-night.jpg';
+
+  // Fetch country geojson once (cheap, ~270KB) so light mode can show borders
+  // on the white globe.
+  const [countries, setCountries] = useState<{ features: any[] }>({ features: [] });
+  useEffect(() => {
+    if (theme !== 'light' || countries.features.length > 0) return;
+    fetch('https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
+      .then((r) => r.ok ? r.json() : { features: [] })
+      .then((d) => setCountries(d))
+      .catch(() => setCountries({ features: [] }));
+  }, [theme, countries.features.length]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -194,10 +208,17 @@ export default function MiniGlobe({
         height={isExpanded ? expandedHeight : 180}
         backgroundColor="rgba(0,0,0,0)"
         globeImageUrl={globeTexture}
-        bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
+        bumpImageUrl={theme === 'dark' ? '//unpkg.com/three-globe/example/img/earth-topology.png' : ''}
         showAtmosphere={true}
-        atmosphereColor="#38bdf8"
+        atmosphereColor={theme === 'light' ? '#94a3b8' : '#38bdf8'}
         atmosphereAltitude={isExpanded ? 0.25 : 0.15}
+
+        // Light-theme country borders for a minimal "white globe" look
+        polygonsData={theme === 'light' ? countries.features : []}
+        polygonAltitude={0.005}
+        polygonCapColor={() => 'rgba(248, 250, 252, 1)'}
+        polygonSideColor={() => 'rgba(148, 163, 184, 0.15)'}
+        polygonStrokeColor={() => 'rgba(100, 116, 139, 0.55)'}
 
         arcsData={arcsData}
         arcStartLat="startLat"
