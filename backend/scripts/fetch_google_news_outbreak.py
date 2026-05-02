@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from _outbreak_common import (
+    LOOKBACK_DAYS,  # 90 days global default
     dedupe_by_id,
     fetch_google_news_rss,
     log,
@@ -29,9 +30,6 @@ from _outbreak_common import (
 
 PROCESSED_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
 OUTPUT_FILE = PROCESSED_DIR / "global_google_outbreak.json"
-
-# Override LOOKBACK_DAYS for this fetcher only — 3 months as user requested.
-LOOKBACK_DAYS = 90
 
 SOURCE_TAG = "google_news_outbreak"
 PUBLISHER = "Google News (analysis)"

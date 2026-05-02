@@ -1,4 +1,5 @@
 import type { GlobalSignal } from '../types';
+import { reliabilityFor } from './sourceReliability';
 
 const KOREA_CENTER = { lat: 37.5665, lng: 126.9780 };
 
@@ -93,7 +94,8 @@ export function scoreInternationalRelevance(signal: GlobalSignal) {
   const distanceKm = distanceToKoreaKm(signal);
   const proximityScore = clamp(1 - Math.min(distanceKm, 9000) / 9000);
   const severityScore = signal.severity === 'high' ? 1 : signal.severity === 'medium' ? 0.62 : 0.3;
-  const sourceScore = signal.source === 'promed' ? 0.86 : signal.source === 'healthmap' ? 0.72 : 0.55;
+  // Differential source reliability — official agency feeds outweigh raw news headlines.
+  const sourceScore = reliabilityFor(signal.source);
   const riskScore = diseaseRisk(signal);
   const trafficScore = trafficProxy(signal, distanceKm);
   const unexpectedScore = unexpectedness(signal);

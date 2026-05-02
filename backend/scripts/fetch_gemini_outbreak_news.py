@@ -17,7 +17,7 @@ from typing import Any
 from dotenv import load_dotenv
 
 from _outbreak_common import (
-    LOOKBACK_DAYS,
+    LOOKBACK_DAYS,  # 90 days global default
     dedupe_by_id,
     log,
     normalize_item,
@@ -47,11 +47,11 @@ def _build_prompt(region: str, query: str) -> str:
     today = datetime.utcnow().strftime("%Y-%m-%d")
     cutoff_date = (datetime.utcnow() - timedelta(days=LOOKBACK_DAYS)).strftime("%Y-%m-%d")
     return (
-        f"You are a public-health intelligence assistant. Search the web for {region} respiratory outbreak news using grounded search.\n"
+        f"You are a public-health intelligence assistant. Search the web for {region} infectious-disease outbreak news using grounded search.\n"
         f"Search query: {query}\n\n"
         f"Constraints:\n"
-        f"- Only include articles published between {cutoff_date} and {today}.\n"
-        f"- Only include articles relevant to RESPIRATORY pathogens: pneumonia, influenza, COVID/coronavirus, RSV, MERS, SARS, avian flu, H5N1, mycoplasma, HMPV, legionella, tuberculosis, pertussis.\n"
+        f"- Only include articles published between {cutoff_date} and {today} (last 3 months).\n"
+        f"- Include both RESPIRATORY (pneumonia, influenza, COVID, RSV, MERS, SARS, avian flu, H5N1, mycoplasma, HMPV, TB) and other major INFECTIOUS-DISEASE outbreaks (measles, cholera, dengue, mpox, ebola, marburg, polio, meningitis, HFMD, Zika, chikungunya).\n"
         f"- Up to 12 distinct events. Deduplicate identical incidents.\n\n"
         f"Output ONLY a JSON array. No prose, no markdown fences, no explanation.\n"
         f"Each item shape:\n"
@@ -164,6 +164,7 @@ def fetch_gemini_outbreak_news() -> list[dict[str, Any]]:
             date_str=str(raw.get("date", "")),
             cutoff_date=cutoff,
             id_prefix=ID_PREFIX,
+            allow_non_respiratory=True,  # match Google News broad scope
         )
         if not normalized:
             continue

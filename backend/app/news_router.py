@@ -25,6 +25,7 @@ GLOBAL_SOURCE_FILES = [
     "global_who_don.json",            # WHO DON (official)
     "global_cdc.json",                # US CDC (HAN + Newsroom — MMWR removed to skip retrospectives)
     "global_ecdc.json",               # ECDC CDTR Weekly (PDF parsed)
+    "global_healthmap.json",          # HealthMap curated outbreak alerts
     "global_gemini_outbreak.json",    # Gemini grounded search
     "global_google_outbreak.json",    # Google News broad outbreak (3 months, respiratory + other infectious)
     "global_news.json",               # NewsAPI + Google News (legacy)

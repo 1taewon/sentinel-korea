@@ -90,12 +90,12 @@ const SOURCE_LABELS: Record<string, string> = {
   who_don: 'WHO DON (공식)',
   cdc: 'US CDC (HAN/Newsroom)',
   ecdc: 'ECDC CDTR Weekly',
+  healthmap: 'HealthMap (curated)',
+  promed: 'ProMED-mail',
   gemini_outbreak: 'Gemini Search',
   google_news_outbreak: 'Google News (analysis)',
   news_global: 'NewsAPI (global)',
   google_news: 'Google News',
-  promed: 'ProMED-mail',
-  healthmap: 'HealthMap',
   kdca_global_report: 'KDCA imported',
 };
 const formatSource = (key: string) => SOURCE_LABELS[key] || key.replace(/_/g, ' ');
