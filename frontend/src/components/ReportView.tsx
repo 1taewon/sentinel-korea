@@ -153,8 +153,8 @@ function splitLabel(label: string, maxLength = 12) {
 
 /** Compute node visible radius based on kind + weight (must match ReportRelationshipFigure). */
 function nodeRadius(node: RelationshipNode): number {
-  if (node.kind === 'report') return 50;
-  return 30 + node.weight * 14;
+  if (node.kind === 'report') return 56;
+  return 24 + Math.sqrt(node.weight) * 26;
 }
 
 /** Build a curved path from one node's edge to another's edge (so arrows do
@@ -170,9 +170,16 @@ function relationshipPath(from: RelationshipNode, to: RelationshipNode) {
   const startY = from.y + (dy / dist) * fr;
   const endX = to.x - (dx / dist) * tr;
   const endY = to.y - (dy / dist) * tr;
-  // Gentle horizontal curve: control points pulled toward midpoint X
+  // Mind-map curve: bend the segment slightly so radial links do not look rigid.
   const midX = (startX + endX) / 2;
-  return `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
+  const midY = (startY + endY) / 2;
+  const normalX = -dy / dist;
+  const normalY = dx / dist;
+  const bend = Math.min(90, dist * (from.kind === 'report' || to.kind === 'report' ? 0.10 : 0.22));
+  const direction = from.y <= to.y ? 1 : -1;
+  const cx = midX + normalX * bend * direction;
+  const cy = midY + normalY * bend * direction;
+  return `M ${startX} ${startY} Q ${cx} ${cy} ${endX} ${endY}`;
 }
 
 function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sections: IntelligenceSection[]): RelationshipFigure {
@@ -181,13 +188,12 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
   const text = markdown || '';
   const paragraphs = text.split(/\n{2,}/).map((p) => p.toLowerCase());
 
-  // Pure bipartite mind-map: signals on LEFT, diseases/keywords on RIGHT.
-  // No central report node — edges go signal → topic directly so the user can
-  // read "this signal source is about which disease" at a glance.
-  // viewBox is 1200x720 (matches SVG element)
-  const VIEW_H = 720;
-  const LEFT_X = 220;
-  const RIGHT_X = 980;
+  // Radial mind map: one report hub, then signal sources and disease/keyword
+  // nodes around it. Node size is normalized to mention count.
+  const CENTER_X = 600;
+  const CENTER_Y = 360;
+  const RING_X = 395;
+  const RING_Y = 235;
 
   const nodes: RelationshipNode[] = [];
   const edges: RelationshipEdge[] = [];
@@ -204,37 +210,42 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
     .filter((topic) => topic.count > 0)
     .sort((a, b) => b.count - a.count);
 
-  const sigCount = Math.max(1, detectedSignals.length);
-  const topCount = Math.max(1, detectedTopics.length);
-  const verticalPad = 80;
+  const allDetected = [
+    ...detectedSignals.map((signal, index) => ({ ...signal, kind: 'signal' as const, order: index * 2 })),
+    ...detectedTopics.map((topic, index) => ({ ...topic, kind: 'topic' as const, order: index * 2 + 1 })),
+  ].sort((a, b) => a.order - b.order);
+  const maxMentions = Math.max(1, ...allDetected.map((entry) => entry.count));
 
-  detectedSignals.forEach((signal, index) => {
-    const y = sigCount === 1
-      ? VIEW_H / 2
-      : verticalPad + ((VIEW_H - 2 * verticalPad) / (sigCount - 1)) * index;
-    nodes.push({
-      id: signal.id,
-      label: signal.label,
-      kind: 'signal',
-      x: LEFT_X,
-      y,
-      weight: Math.min(1, 0.42 + signal.count * 0.07),
-      subtitle: `${signal.count}회 언급`,
-    });
+  nodes.push({
+    id: 'report-hub',
+    label: 'Report signals',
+    kind: 'report',
+    x: CENTER_X,
+    y: CENTER_Y,
+    weight: 1,
+    subtitle: `${detectedSignals.length} sources · ${detectedTopics.length} topics`,
   });
 
-  detectedTopics.forEach((topic, index) => {
-    const y = topCount === 1
-      ? VIEW_H / 2
-      : verticalPad + ((VIEW_H - 2 * verticalPad) / (topCount - 1)) * index;
+  allDetected.forEach((entry, index) => {
+    const angle = -Math.PI / 2 + (index / Math.max(1, allDetected.length)) * Math.PI * 2;
+    const weight = Math.max(0.16, entry.count / maxMentions);
+    const x = CENTER_X + Math.cos(angle) * RING_X;
+    const y = CENTER_Y + Math.sin(angle) * RING_Y;
     nodes.push({
-      id: topic.id,
-      label: topic.label,
-      kind: 'topic',
-      x: RIGHT_X,
+      id: entry.id,
+      label: entry.label,
+      kind: entry.kind,
+      x,
       y,
-      weight: Math.min(1, 0.42 + topic.count * 0.08),
-      subtitle: `${topic.count}회 언급`,
+      weight,
+      subtitle: `${entry.count}회 언급`,
+    });
+    edges.push({
+      from: 'report-hub',
+      to: entry.id,
+      label: `${entry.count}회 언급`,
+      strength: Math.min(1, 0.22 + weight * 0.42),
+      tone: entry.kind,
     });
   });
 
@@ -283,7 +294,8 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
     insight.push(`주요 신호원: ${topSignal.label} (${topSignal.count}회 등장).`);
   }
   if (detectedTopics.length && detectedSignals.length) {
-    insight.push(`연결선이 굵을수록 같은 문단 안에서 신호원과 질병이 함께 등장한 빈도가 높다는 뜻입니다.`);
+    insight.push(`노드가 클수록 보고서에서 더 자주 언급된 신호원 또는 질병/키워드입니다.`);
+    insight.push(`신호원-질병 연결선이 굵을수록 같은 문단 안에서 함께 등장한 빈도가 높다는 뜻입니다.`);
   }
   if (!detectedTopics.length) insight.push('질병/키워드: 명시적 언급이 적게 감지되었습니다.');
   if (!detectedSignals.length) insight.push('신호원: 명시된 source 용어가 부족합니다.');
@@ -373,25 +385,20 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
           <span>Report relationship figure</span>
           <h3>신호원 ↔ 질병/키워드 관계도</h3>
           <p>
-            보고서 본문에서 추출한 <strong>신호원(좌)</strong>과 <strong>질병/키워드(우)</strong>의 동시 등장 관계입니다.
-            노드에 마우스를 올리면 해당 신호원이 어떤 질병으로 퍼지는지(또는 질병이 어디서 오는지) 강조됩니다.
-            연결선 굵기 = 같은 문단 안에서 함께 등장한 빈도.
+            보고서 본문에서 추출한 <strong>신호원</strong>과 <strong>질병/키워드</strong>를 중앙 허브 주변에 배치한 mind map입니다.
+            노드 크기는 언급횟수에 비례하고, 연결선 굵기는 같은 문단 안에서 함께 등장한 빈도를 뜻합니다.
           </p>
         </div>
-        <strong>bipartite mind map</strong>
+        <strong>radial mind map</strong>
       </div>
 
       <div className="report-relationship-stage">
-        <svg className="report-relationship-svg" viewBox="0 0 1200 720" role="img" aria-label="Signal source × disease bipartite mind map">
+        <svg className="report-relationship-svg" viewBox="0 0 1200 720" role="img" aria-label="Signal source and disease radial mind map">
           <defs>
             <marker id="report-arrow" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
               <path d="M 0 0 L 8 4 L 0 8 z" className="report-arrow-marker" />
             </marker>
           </defs>
-
-          {/* Lane labels */}
-          <text x="220" y="40" className="rel-lane-label" textAnchor="middle">SIGNAL SOURCES · 신호원</text>
-          <text x="980" y="40" className="rel-lane-label" textAnchor="middle">DISEASE / KEYWORDS · 질병/키워드</text>
 
           {/* Edges (rendered first so nodes overlay them) */}
           {figure.edges.map((edge, index) => {
@@ -476,6 +483,7 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
           <div className="report-relationship-legend">
             <span><i className="rel-dot signal" /> 신호원</span>
             <span><i className="rel-dot topic" /> 질병/키워드</span>
+            <span><i className="rel-dot size" /> 노드 크기 = 언급횟수</span>
             <span><i className="rel-edge-sample" /> 동시 등장 빈도</span>
           </div>
         </div>
