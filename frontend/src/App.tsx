@@ -87,13 +87,11 @@ const relevanceFactorLabels: Record<string, string> = {
 
 // Friendly labels for the "소스 구성" breakdown in World outbreak panel.
 const SOURCE_LABELS: Record<string, string> = {
-  who_don: 'WHO DON',
-  cdc: 'US CDC',
-  ecdc: 'ECDC (EU)',
-  africa_cdc: 'Africa CDC',
-  east_asia: 'East Asia (CN/JP/TW)',
-  sea: 'Southeast Asia',
+  who_don: 'WHO DON (공식)',
+  cdc: 'US CDC (HAN/Newsroom)',
+  ecdc: 'ECDC CDTR Weekly',
   gemini_outbreak: 'Gemini Search',
+  google_news_outbreak: 'Google News (analysis)',
   news_global: 'NewsAPI (global)',
   google_news: 'Google News',
   promed: 'ProMED-mail',

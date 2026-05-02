@@ -30,12 +30,12 @@ SOURCE_TAG = "cdc"
 PUBLISHER = "US CDC"
 ID_PREFIX = "cdc"
 
-# Primary feeds — CDC Health Alert Network and MMWR (RSS-friendly)
+# Primary feeds — CDC Health Alert Network and Newsroom only.
+# MMWR is deliberately excluded because it surfaces retrospective analyses (e.g.
+# "TB outbreaks 2017-2023") that aren't current outbreak signals.
 PRIMARY_FEEDS: list[str] = [
     # CDC Newsroom
     "https://tools.cdc.gov/api/v2/resources/media/132608.rss",
-    # MMWR
-    "https://www.cdc.gov/mmwr/rss/rss.html",
     # CDC Outbreaks (sometimes provides feed)
     "https://tools.cdc.gov/api/v2/resources/media/403372.rss",
 ]

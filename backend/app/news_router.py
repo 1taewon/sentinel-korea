@@ -22,15 +22,13 @@ def _load(path: Path) -> Any:
 
 # Every outbreak source file the frontend should consume in /signals/global and /news/global
 GLOBAL_SOURCE_FILES = [
-    "global_who_don.json",        # WHO DON
-    "global_cdc.json",            # US CDC
-    "global_ecdc.json",           # ECDC (EU)
-    "global_africa_cdc.json",     # Africa CDC
-    "global_east_asia.json",      # China / Japan / Taiwan
-    "global_sea.json",            # Southeast Asia
-    "global_gemini_outbreak.json",  # Gemini grounded search
-    "global_news.json",           # NewsAPI + Google News (general)
-    "global_kdca_outbreaks.json", # KDCA imported outbreak signals
+    "global_who_don.json",            # WHO DON (official)
+    "global_cdc.json",                # US CDC (HAN + Newsroom — MMWR removed to skip retrospectives)
+    "global_ecdc.json",               # ECDC CDTR Weekly (PDF parsed)
+    "global_gemini_outbreak.json",    # Gemini grounded search
+    "global_google_outbreak.json",    # Google News broad outbreak (3 months, respiratory + other infectious)
+    "global_news.json",               # NewsAPI + Google News (legacy)
+    "global_kdca_outbreaks.json",     # KDCA imported outbreak signals
 ]
 
 

@@ -39,6 +39,35 @@ RESPIRATORY_KEYWORDS: list[str] = [
     "h5n1", "h7n9", "mycoplasma", "lung", "bronchitis",
 ]
 
+# ── Broader infectious-disease filter ─────────────────────────────────────────
+# Used by the Google News outbreak fetcher to surface ANY infectious-disease
+# outbreak that could foreshadow imported risk to Korea — includes respiratory
+# plus the major non-respiratory infectious diseases.
+INFECTIOUS_DISEASE_KEYWORDS: list[str] = RESPIRATORY_KEYWORDS + [
+    # Vaccine-preventable / measles family
+    "measles", "rubella", "mumps", "diphtheria",
+    # Polio
+    "poliovirus", "polio", "afp",  # acute flaccid paralysis
+    # Enteric (water/food-borne)
+    "cholera", "typhoid", "paratyphoid", "shigella", "dysentery",
+    "hepatitis a", "hepatitis e", "norovirus", "rotavirus",
+    # Vector-borne
+    "dengue", "malaria", "zika", "chikungunya", "yellow fever",
+    "west nile", "japanese encephalitis", "encephalitis",
+    # Hemorrhagic fevers
+    "ebola", "marburg", "lassa", "crimean-congo", "hantavirus",
+    "rift valley", "hemorrhagic", "haemorrhagic",
+    # Mpox & other pox
+    "mpox", "monkeypox", "smallpox",
+    # Bacterial / zoonotic
+    "meningitis", "meningococcal", "anthrax", "plague", "tularemia",
+    "leptospirosis", "brucellosis", "rabies", "nipah", "hendra",
+    # Childhood / hand-foot-mouth
+    "hfmd", "hand foot mouth", "enterovirus", "ev71",
+    # Generic outbreak/epidemic terms
+    "outbreak", "epidemic", "epizootic", "spillover", "zoonotic",
+]
+
 # ── Country → (lat, lng) for naive geocoding from titles/snippets ──────────────
 COUNTRY_COORDS: dict[str, tuple[float, float]] = {
     "china": (35.86, 104.19), "usa": (38.0, -97.0), "united states": (38.0, -97.0),
@@ -145,6 +174,19 @@ def is_respiratory(title: str, body: str = "") -> bool:
     return any(keyword in text for keyword in RESPIRATORY_KEYWORDS)
 
 
+def is_infectious(title: str, body: str = "") -> bool:
+    """Broader filter: respiratory OR major non-respiratory infectious-disease outbreak."""
+    text = f"{title} {body}".lower()
+    return any(keyword in text for keyword in INFECTIOUS_DISEASE_KEYWORDS)
+
+
+def disease_category(title: str, body: str = "") -> str:
+    """Coarse category for an outbreak item: 'respiratory' or 'other_infectious'."""
+    if is_respiratory(title, body):
+        return "respiratory"
+    return "other_infectious"
+
+
 def severity_from_text(title: str, body: str = "") -> str:
     text = f"{title} {body}".lower()
     if any(w in text for w in SEVERITY_HIGH):
@@ -197,13 +239,15 @@ def normalize_item(
     date_str: str,
     cutoff_date: datetime,
     id_prefix: str | None = None,
+    allow_non_respiratory: bool = False,
 ) -> dict[str, Any] | None:
-    """Build a standard outbreak item dict, applying respiratory filter and date cutoff.
+    """Build a standard outbreak item dict, applying date cutoff and disease filter.
 
     Returns None when:
     - title is empty
     - date is before cutoff
-    - the article is not respiratory-relevant
+    - article is not relevant (respiratory by default; broader infectious-disease
+      check if `allow_non_respiratory=True`)
     """
     title = clean_text(title)
     body = clean_text(body)
@@ -218,8 +262,12 @@ def normalize_item(
         pass
 
     is_resp = is_respiratory(title, body)
-    if not is_resp:
-        return None
+    if allow_non_respiratory:
+        if not (is_resp or is_infectious(title, body)):
+            return None
+    else:
+        if not is_resp:
+            return None
 
     lat, lng = extract_country_coords(f"{title} {body}")
     country = extract_country_name(f"{title} {body}")
@@ -235,7 +283,8 @@ def normalize_item(
         "date": date_norm,
         "disease": guess_disease(title, body),
         "severity": severity_from_text(title, body),
-        "is_respiratory": True,
+        "is_respiratory": is_resp,
+        "category": disease_category(title, body),
         "country": country,
         "lat": lat,
         "lng": lng,

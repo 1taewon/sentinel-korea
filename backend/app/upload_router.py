@@ -175,14 +175,12 @@ async def refresh_global_signals() -> dict[str, Any]:
 
     # (output_filename, module_name, function_name, result_key)
     fetchers: list[tuple[str, str, str, str]] = [
-        ("global_who_don.json",          "fetch_who_don",            "fetch_who_don",            "who_don"),
-        ("global_cdc.json",              "fetch_cdc_news",           "fetch_cdc_news",           "cdc"),
-        ("global_ecdc.json",             "fetch_ecdc_news",          "fetch_ecdc_news",          "ecdc"),
-        ("global_africa_cdc.json",       "fetch_africa_cdc_news",    "fetch_africa_cdc_news",    "africa_cdc"),
-        ("global_east_asia.json",        "fetch_east_asia_news",     "fetch_east_asia_news",     "east_asia"),
-        ("global_sea.json",              "fetch_sea_news",           "fetch_sea_news",           "sea"),
-        ("global_gemini_outbreak.json",  "fetch_gemini_outbreak_news", "fetch_gemini_outbreak_news", "gemini_outbreak"),
-        ("global_news.json",             "fetch_global_news",        "fetch_global_news",        "global_news"),
+        ("global_who_don.json",            "fetch_who_don",                 "fetch_who_don",                 "who_don"),
+        ("global_cdc.json",                "fetch_cdc_news",                "fetch_cdc_news",                "cdc"),
+        ("global_ecdc.json",               "fetch_ecdc_news",               "fetch_ecdc_news",               "ecdc"),
+        ("global_gemini_outbreak.json",    "fetch_gemini_outbreak_news",    "fetch_gemini_outbreak_news",    "gemini_outbreak"),
+        ("global_google_outbreak.json",    "fetch_google_news_outbreak",    "fetch_google_news_outbreak",    "google_news_outbreak"),
+        ("global_news.json",               "fetch_global_news",             "fetch_global_news",             "global_news"),
     ]
 
     for out_filename, module_name, fn_name, key in fetchers:
