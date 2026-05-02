@@ -131,6 +131,10 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   const [selectedArchiveDate, setSelectedArchiveDate] = useState<string>('');  // '' = live
   const [archiveSignals, setArchiveSignals] = useState<GlobalSignal[]>([]);
   const [archiveLoading, setArchiveLoading] = useState(false);
+  // World outbreak right-panel tab
+  const [globePanelTab, setGlobePanelTab] = useState<'summary' | 'rawdata'>('summary');
+  const [rawDataSourceFilter, setRawDataSourceFilter] = useState<string>('all');
+  const [rawDataSearch, setRawDataSearch] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [selectedKorea, setSelectedKorea] = useState<KoreaAlert | null>(null);
   const [selectedGlobal, setSelectedGlobal] = useState<GlobalSignal | null>(null);
@@ -1229,6 +1233,20 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   </div>
                 </div>
                 <aside className="globe-context-panel">
+                  <div className="globe-panel-tabs">
+                    <button
+                      className={`globe-panel-tab ${globePanelTab === 'summary' ? 'is-active' : ''}`}
+                      onClick={() => setGlobePanelTab('summary')}
+                      type="button"
+                    >요약</button>
+                    <button
+                      className={`globe-panel-tab ${globePanelTab === 'rawdata' ? 'is-active' : ''}`}
+                      onClick={() => setGlobePanelTab('rawdata')}
+                      type="button"
+                    >전체 원본 데이터 ({displayedSignals.length})</button>
+                  </div>
+
+                  {globePanelTab === 'summary' && <>
                   <span className="globe-context-kicker">한국 관련성 기반 국제 감시</span>
                   <h4>어떤 국제 신호가 한국에 가까운가?</h4>
                   <p>
@@ -1400,6 +1418,89 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                       </p>
                     )}
                   </div>
+                  </>}
+
+                  {/* === RAW DATA TAB === all source items grouped + filterable === */}
+                  {globePanelTab === 'rawdata' && (() => {
+                    const allSources = Array.from(new Set(displayedSignals.map(s => s.source))).sort();
+                    const filterText = rawDataSearch.trim().toLowerCase();
+                    const filtered = displayedSignals.filter(s => {
+                      if (rawDataSourceFilter !== 'all' && s.source !== rawDataSourceFilter) return false;
+                      if (filterText && !(`${s.title || ''} ${s.country || ''} ${s.disease || ''} ${s.snippet || ''}`).toLowerCase().includes(filterText)) return false;
+                      return true;
+                    });
+                    return (
+                      <>
+                        <span className="globe-context-kicker">분석에 사용된 전체 원본 데이터</span>
+                        <h4>모든 outbreak 신호 ({filtered.length} / {displayedSignals.length})</h4>
+                        <p>WHO DON · CDC · ECDC · HealthMap · Gemini Search · Google News · NewsAPI · KDCA imported를 통합한 raw 항목입니다.</p>
+
+                        <div className="globe-rawdata-controls">
+                          <input
+                            type="text"
+                            value={rawDataSearch}
+                            onChange={(e) => setRawDataSearch(e.target.value)}
+                            placeholder="제목·국가·질병 검색"
+                            className="globe-rawdata-search"
+                          />
+                          <div className="globe-rawdata-source-chips">
+                            <button
+                              className={`globe-rawdata-chip ${rawDataSourceFilter === 'all' ? 'is-active' : ''}`}
+                              onClick={() => setRawDataSourceFilter('all')}
+                              type="button"
+                            >전체 ({displayedSignals.length})</button>
+                            {allSources.map((src) => {
+                              const count = displayedSignals.filter(s => s.source === src).length;
+                              return (
+                                <button
+                                  key={src}
+                                  className={`globe-rawdata-chip ${rawDataSourceFilter === src ? 'is-active' : ''}`}
+                                  onClick={() => setRawDataSourceFilter(src)}
+                                  type="button"
+                                >{formatSource(src)} ({count})</button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="globe-rawdata-list">
+                          {filtered.length === 0 && (
+                            <p className="globe-context-empty">조건에 맞는 항목이 없습니다.</p>
+                          )}
+                          {filtered.slice(0, 200).map((signal) => {
+                            const relevance = scoreInternationalRelevance(signal);
+                            return (
+                              <button
+                                className={`globe-rawdata-row ${selectedGlobal?.id === signal.id ? 'is-selected' : ''}`}
+                                style={{ borderLeftColor: relevance.color }}
+                                key={`raw-${signal.id}`}
+                                onClick={() => setSelectedGlobal(signal)}
+                                type="button"
+                              >
+                                <div className="globe-rawdata-row-top">
+                                  <span className="globe-rawdata-source">{formatSource(signal.source)}</span>
+                                  <span className="globe-rawdata-date">{signal.date}</span>
+                                  <b className={`relevance-pill level-${relevance.level}`}>{formatPercent(relevance.score)}</b>
+                                </div>
+                                <strong className="globe-rawdata-title">{signal.title || signal.keyword || signal.disease || 'International signal'}</strong>
+                                <div className="globe-rawdata-meta">
+                                  <em>{signal.country || '—'}</em>
+                                  <span>{signal.disease || '—'}</span>
+                                  <span className={`severity-tag severity-${signal.severity}`}>{signal.severity}</span>
+                                  {signal.marker_alert_count !== undefined && signal.marker_alert_count > 1 && (
+                                    <span className="globe-rawdata-alerts">📍{signal.marker_alert_count}</span>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                          {filtered.length > 200 && (
+                            <p className="globe-rawdata-more">… 추가 {filtered.length - 200}건은 검색/필터로 좁혀보세요.</p>
+                          )}
+                        </div>
+                      </>
+                    );
+                  })()}
                 </aside>
               </div>
             </div>

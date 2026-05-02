@@ -186,12 +186,34 @@ def load_snapshot(requested: str | None = None) -> list[dict[str, Any]]:
 
 
 def load_global_signals() -> list[dict[str, Any]]:
-    """WHO DON + 글로벌 뉴스 로드. 실제 데이터 없으면 mock으로 fallback."""
+    """Load every outbreak source — WHO DON + agency feeds + HealthMap + Gemini + news.
+
+    Must stay in sync with `news_router.GLOBAL_SOURCE_FILES`. Falls back to
+    mock dataset only if every source file is empty.
+    """
+    source_files = [
+        "global_who_don.json",
+        "global_cdc.json",
+        "global_ecdc.json",
+        "global_healthmap.json",
+        "global_gemini_outbreak.json",
+        "global_google_outbreak.json",
+        "global_news.json",
+        "global_kdca_outbreaks.json",
+    ]
     results: list[dict] = []
-    for fname in ["global_who_don.json", "global_news.json", "global_kdca_outbreaks.json"]:
+    seen: set[str] = set()
+    for fname in source_files:
         p = PROCESSED_DIR / fname
-        if p.exists():
-            results.extend(load_json(p))
+        if not p.exists():
+            continue
+        for item in load_json(p):
+            iid = item.get("id")
+            if iid and iid in seen:
+                continue
+            if iid:
+                seen.add(iid)
+            results.append(item)
     if not results:
         results = load_json(MOCK_DIR / "mock_global_signals.json")
     return results
