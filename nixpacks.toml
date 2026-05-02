@@ -16,4 +16,5 @@ cmds = [
 ]
 
 [start]
-cmd = ". /opt/venv/bin/activate && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+# Root Directory is /backend in Railway → app/main.py already at /app/app/main.py
+cmd = ". /opt/venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
