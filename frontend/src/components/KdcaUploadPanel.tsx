@@ -501,13 +501,18 @@ export default function KdcaUploadPanel({ view = 'full', readOnly = false, getAd
               {/* 업로드 이력 */}
               {history.length > 0 && (
                 <div className="kdca-history">
-                  <div className="kdca-section-title">Upload History</div>
-                  {history.slice(-5).reverse().map((h, i) => (
-                    <div key={i} className="kdca-history-item">
-                      <span className="kdca-history-name">{h.filename}</span>
-                      <span className="kdca-history-meta">{h.file_type} · {h.snapshot_count} snapshots</span>
-                    </div>
-                  ))}
+                  <div className="kdca-section-title">
+                    Upload History
+                    <span className="kdca-history-count">{history.length}</span>
+                  </div>
+                  <div className="kdca-history-scroll">
+                    {history.slice().reverse().map((h, i) => (
+                      <div key={i} className="kdca-history-item">
+                        <span className="kdca-history-name">{h.filename}</span>
+                        <span className="kdca-history-meta">{h.file_type} · {h.snapshot_count} snapshots</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
