@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import ForceGraph2D from 'react-force-graph-2d';
 import { useAuth } from '../contexts/AuthContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -69,7 +70,7 @@ const TYPE_META: Record<ReportType, { label: string; color: string; cadence: str
     role: 'Official Korea surveillance baseline.',
   },
   final: {
-    label: 'SENTINEL',
+    label: 'FINAL',
     color: '#38bdf8',
     cadence: 'Weekly',
     role: 'Korea-first respiratory intelligence synthesis.',
@@ -139,48 +140,6 @@ function sectionBody(markdown: string, heading: string) {
     if (cleaned) body.push(cleaned);
   }
   return body.join(' ');
-}
-
-function splitLabel(label: string, maxLength = 12) {
-  if (label.length <= maxLength) return [label];
-  if (label.includes('/')) return label.split('/').map((part, index) => (index === 0 ? part : `/${part}`));
-  if (label.includes('(')) {
-    const [main, rest] = label.split('(');
-    return [main, `(${rest}`];
-  }
-  const midpoint = Math.ceil(label.length / 2);
-  return [label.slice(0, midpoint), label.slice(midpoint)];
-}
-
-/** Compute node visible radius based on kind + weight (must match ReportRelationshipFigure). */
-function nodeRadius(node: RelationshipNode): number {
-  if (node.kind === 'report') return 56;
-  return 24 + Math.sqrt(node.weight) * 26;
-}
-
-/** Build a curved path from one node's edge to another's edge (so arrows do
- *  not penetrate the node circles). Subtracts each node's radius from the
- *  segment endpoints along the connecting direction. */
-function relationshipPath(from: RelationshipNode, to: RelationshipNode) {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-  const fr = nodeRadius(from) + 4;  // tiny gap so the arrow head is visible
-  const tr = nodeRadius(to) + 6;    // extra room so the arrow tip stops outside
-  const startX = from.x + (dx / dist) * fr;
-  const startY = from.y + (dy / dist) * fr;
-  const endX = to.x - (dx / dist) * tr;
-  const endY = to.y - (dy / dist) * tr;
-  // Mind-map curve: bend the segment slightly so radial links do not look rigid.
-  const midX = (startX + endX) / 2;
-  const midY = (startY + endY) / 2;
-  const normalX = -dy / dist;
-  const normalY = dx / dist;
-  const bend = Math.min(90, dist * (from.kind === 'report' || to.kind === 'report' ? 0.10 : 0.22));
-  const direction = from.y <= to.y ? 1 : -1;
-  const cx = midX + normalX * bend * direction;
-  const cy = midY + normalY * bend * direction;
-  return `M ${startX} ${startY} Q ${cx} ${cy} ${endX} ${endY}`;
 }
 
 function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sections: IntelligenceSection[]): RelationshipFigure {
@@ -382,110 +341,230 @@ function buildReportBrief(item: ReportItem | null, markdown: string): Intelligen
   ];
 }
 
+/** Cliverad-style force-directed ontology graph (matches RadAssist OntologyGraph). */
 function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
-  const nodeById = new Map(figure.nodes.map((node) => [node.id, node]));
-  const [hoverNode, setHoverNode] = useState<string | null>(null);
+  const fgRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dims, setDims] = useState({ width: 0, height: 0 });
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // Set of edges/nodes that should be highlighted when a node is hovered
-  const isEdgeRelated = (edge: RelationshipEdge) =>
-    !hoverNode || edge.from === hoverNode || edge.to === hoverNode;
-  const isNodeRelated = (id: string) => {
-    if (!hoverNode) return true;
-    if (id === hoverNode) return true;
-    return figure.edges.some(
-      (e) => (e.from === hoverNode && e.to === id) || (e.to === hoverNode && e.from === id),
-    );
+  // Track stage size with ResizeObserver so the graph fills available area.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      if (w > 0 && h > 0) setDims({ width: w, height: h });
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    const raf = requestAnimationFrame(update);
+    return () => { ro.disconnect(); cancelAnimationFrame(raf); };
+  }, []);
+
+  // Build force-graph data — node `val` controls size (Math.sqrt(val)*3 in canvas).
+  // Heaviest node ≈ val 30 → r≈16; light node ≈ val 4 → r≈6 (clear visual difference).
+  const graphData = useMemo(() => {
+    const maxMentions = Math.max(1, ...figure.nodes.map((n) => Number(n.subtitle?.match(/(\d+)/)?.[1]) || 1));
+    const nodes = figure.nodes.map((n) => {
+      const mentions = Number(n.subtitle?.match(/(\d+)/)?.[1]) || 1;
+      const val = 4 + (mentions / maxMentions) * 26;       // 4..30
+      const color = n.kind === 'signal' ? '#34d399' : '#c084fc';
+      return {
+        id: n.id,
+        label: n.label,
+        kind: n.kind,
+        mentions,
+        val,
+        color,
+      };
+    });
+    const links = figure.edges.map((e) => ({
+      source: e.from,
+      target: e.to,
+      strength: e.strength,
+    }));
+    return { nodes, links };
+  }, [figure]);
+
+  // Tune forces so the layout is balanced and fits in view.
+  useEffect(() => {
+    if (!fgRef.current || dims.width === 0) return;
+    try {
+      const charge = fgRef.current.d3Force('charge');
+      if (charge) {
+        charge.strength(-160);
+        if (typeof charge.distanceMax === 'function') charge.distanceMax(220);
+      }
+      const link = fgRef.current.d3Force('link');
+      if (link) link.distance(80);
+    } catch { /* ignore */ }
+    const t = setTimeout(() => { try { fgRef.current?.zoomToFit(400, 60); } catch { /* ignore */ } }, 700);
+    return () => clearTimeout(t);
+  }, [graphData, dims.width, dims.height]);
+
+  const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] => {
+    const words = text.split(/\s+|(?=[/])/);
+    const lines: string[] = [];
+    let current = '';
+    for (const w of words) {
+      const test = current ? current + ' ' + w : w;
+      if (ctx.measureText(test).width > maxWidth && current) {
+        lines.push(current);
+        current = w;
+      } else {
+        current = test;
+      }
+    }
+    if (current) lines.push(current);
+    return lines;
   };
+
+  const nodeCanvasObject = useCallback((node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
+    if (typeof node.x !== 'number' || typeof node.y !== 'number') return;
+    const r = Math.sqrt(node.val) * 3;
+    const fontSize = Math.max(11 / globalScale, 3);
+    const isSelected = selectedId === node.id;
+
+    // Outer ring on selected node + multi-mention badge
+    if (isSelected) {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, r * 1.45, 0, 2 * Math.PI);
+      ctx.strokeStyle = node.color;
+      ctx.lineWidth = 1.5 / globalScale;
+      ctx.stroke();
+    }
+
+    // Filled circle (color tinted, scaled by mention count)
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
+    ctx.fillStyle = node.color + '38';
+    ctx.fill();
+    ctx.strokeStyle = node.color;
+    ctx.lineWidth = 2.4 / globalScale;
+    ctx.stroke();
+
+    // Mention count badge inside the node when meaningful (>=2)
+    if (node.mentions >= 2) {
+      ctx.font = `bold ${Math.max(fontSize * 0.95, 5)}px Inter, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#0f172a';
+      ctx.fillText(String(node.mentions), node.x, node.y);
+    }
+
+    // Label outside the node (does not collide with circle)
+    ctx.font = `${fontSize * 0.95}px Inter, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = node.color;
+    const labelStartY = node.y + r + 4 / globalScale;
+    const lines = wrapText(ctx, node.label, 130);
+    const lineH = fontSize * 0.95 * 1.25;
+    lines.forEach((line, i) => {
+      ctx.fillText(line, node.x, labelStartY + i * lineH);
+    });
+  }, [selectedId]);
+
+  const handleNodeClick = useCallback((node: any) => {
+    if (!node) return;
+    setSelectedId((prev) => (prev === node.id ? null : node.id));
+  }, []);
+
+  const selectedDetail = useMemo(() => {
+    if (!selectedId) return null;
+    const node = graphData.nodes.find((n: any) => n.id === selectedId);
+    if (!node) return null;
+    const related = graphData.links
+      .filter((l: any) => l.source === selectedId || l.target === selectedId || l.source?.id === selectedId || l.target?.id === selectedId)
+      .map((l: any) => {
+        const otherId = (l.source?.id ?? l.source) === selectedId ? (l.target?.id ?? l.target) : (l.source?.id ?? l.source);
+        const other = graphData.nodes.find((n: any) => n.id === otherId);
+        return { other, strength: l.strength };
+      })
+      .filter((x: any) => x.other);
+    return { node, related };
+  }, [selectedId, graphData]);
 
   return (
     <section className="report-relationship-card report-relationship-card--wide">
       <div className="report-relationship-header">
         <div>
           <span>Report relationship figure</span>
-          <h3>신호원 ↔ 질병/키워드 관계도</h3>
+          <h3>신호원 ↔ 질병/키워드 ontology</h3>
           <p>
-            보고서 본문에서 추출한 <strong>신호원</strong>과 <strong>질병/키워드</strong>를 중앙 허브 주변에 배치한 mind map입니다.
-            노드 크기는 언급횟수에 비례하고, 연결선 굵기는 같은 문단 안에서 함께 등장한 빈도를 뜻합니다.
+            보고서 본문에서 추출한 <strong>신호원(녹색)</strong>과 <strong>질병/키워드(보라)</strong> 를
+            force-directed graph로 표시합니다. 노드 크기는 언급횟수, 연결선은 같은 문단 안 동시 등장.
+            노드를 클릭하면 연결된 항목이 우측 패널에 나타납니다.
           </p>
         </div>
-        <strong>radial mind map</strong>
+        <strong>force-directed ontology</strong>
       </div>
 
-      <div className="report-relationship-stage">
-        <svg className="report-relationship-svg" viewBox="0 0 1200 720" role="img" aria-label="Signal source and disease radial mind map">
-          <defs>
-            <marker id="report-arrow" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
-              <path d="M 0 0 L 8 4 L 0 8 z" className="report-arrow-marker" />
-            </marker>
-          </defs>
+      <div className="report-relationship-stage" ref={containerRef} style={{ position: 'relative', minHeight: 480 }}>
+        {dims.width > 0 && dims.height > 0 ? (
+          <ForceGraph2D
+            ref={fgRef}
+            graphData={graphData}
+            nodeCanvasObject={nodeCanvasObject}
+            nodePointerAreaPaint={(node: any, color: string, ctx: CanvasRenderingContext2D) => {
+              if (typeof node.x !== 'number' || typeof node.y !== 'number') return;
+              const r = Math.sqrt(node.val) * 3;
+              ctx.beginPath();
+              ctx.arc(node.x, node.y, r + 6, 0, 2 * Math.PI);
+              ctx.fillStyle = color;
+              ctx.fill();
+            }}
+            onNodeClick={handleNodeClick}
+            onBackgroundClick={() => setSelectedId(null)}
+            linkColor={() => 'rgba(56, 189, 248, 0.45)'}
+            linkWidth={(l: any) => 0.8 + (l.strength || 0.4) * 2.4}
+            linkDirectionalArrowLength={0}
+            linkDirectionalParticles={2}
+            linkDirectionalParticleWidth={(l: any) => 1.5 + (l.strength || 0.4) * 1.5}
+            linkDirectionalParticleSpeed={0.006}
+            linkDirectionalParticleColor={() => '#38bdf8'}
+            linkHoverPrecision={6}
+            backgroundColor="rgba(0,0,0,0)"
+            width={dims.width}
+            height={dims.height}
+            cooldownTime={2500}
+            warmupTicks={60}
+            d3AlphaDecay={0.025}
+            d3VelocityDecay={0.4}
+          />
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
+            Loading ontology...
+          </div>
+        )}
 
-          {/* Edges (rendered first so nodes overlay them) */}
-          {figure.edges.map((edge, index) => {
-            const from = nodeById.get(edge.from);
-            const to = nodeById.get(edge.to);
-            if (!from || !to) return null;
-            const d = relationshipPath(from, to);
-            const dim = !isEdgeRelated(edge) ? 0.12 : 1;
-            return (
-              <g
-                className={`report-rel-edge edge-${edge.tone} ${isEdgeRelated(edge) ? 'is-active' : 'is-dim'}`}
-                key={`${edge.from}-${edge.to}-${index}`}
-              >
-                <path
-                  d={d}
-                  style={{
-                    strokeWidth: 0.8 + edge.strength * 4,
-                    opacity: (0.22 + edge.strength * 0.6) * dim,
-                  }}
-                  markerEnd="url(#report-arrow)"
-                />
-                <circle r={2.4 + edge.strength * 2.4} className="report-rel-pulse" style={{ opacity: dim }}>
-                  <animateMotion
-                    dur={`${5.4 - edge.strength * 2}s`}
-                    repeatCount="indefinite"
-                    path={d}
-                    begin={`${index * 0.18}s`}
-                  />
-                </circle>
-              </g>
-            );
-          })}
-
-          {/* Nodes */}
-          {figure.nodes.map((node) => {
-            const radius = nodeRadius(node);
-            const related = isNodeRelated(node.id);
-            return (
-              <g
-                className={`report-rel-node node-${node.kind} ${related ? 'is-active' : 'is-dim'}`}
-                key={node.id}
-                transform={`translate(${node.x}, ${node.y})`}
-                onMouseEnter={() => setHoverNode(node.id)}
-                onMouseLeave={() => setHoverNode(null)}
-                style={{ cursor: 'pointer' }}
-              >
-                <circle r={radius} />
-                {/* Label centered inside the node circle */}
-                <text textAnchor="middle" dominantBaseline="middle">
-                  {splitLabel(node.label, 12).slice(0, 2).map((line, idx, arr) => (
-                    <tspan
-                      key={`${node.id}-${line}-${idx}`}
-                      x="0"
-                      dy={idx === 0 ? (arr.length > 1 ? -7 : 0) : 14}
-                    >
-                      {line}
-                    </tspan>
-                  ))}
-                </text>
-                {node.subtitle && (
-                  <text className="report-rel-subtitle" y={radius + 16} textAnchor="middle">
-                    {node.subtitle}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-        </svg>
+        {selectedDetail && (
+          <div className="ontology-detail-panel">
+            <div className="ontology-detail-header">
+              <div>
+                <span className="ontology-detail-kicker">{selectedDetail.node.kind === 'signal' ? 'SIGNAL SOURCE · 신호원' : 'DISEASE / KEYWORD · 질병/키워드'}</span>
+                <h4>{selectedDetail.node.label}</h4>
+                <span className="ontology-detail-mentions">{selectedDetail.node.mentions}회 언급</span>
+              </div>
+              <button onClick={() => setSelectedId(null)} aria-label="Close" type="button">×</button>
+            </div>
+            <div className="ontology-detail-body">
+              <div className="ontology-detail-section-title">Connected ({selectedDetail.related.length})</div>
+              <ul>
+                {selectedDetail.related.map((r: any) => (
+                  <li key={r.other.id} onClick={() => setSelectedId(r.other.id)} role="button" tabIndex={0}>
+                    <span className="ontology-detail-dot" style={{ background: r.other.color }} />
+                    <span className="ontology-detail-name">{r.other.label}</span>
+                    <span className="ontology-detail-strength">{Math.round((r.strength || 0) * 100)}%</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="report-relationship-belowfig">
@@ -500,8 +579,8 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
             )}
           </div>
           <div className="report-relationship-legend">
-            <span><i className="rel-dot signal" /> 신호원</span>
-            <span><i className="rel-dot topic" /> 질병/키워드</span>
+            <span><i className="rel-dot signal" /> 신호원 (녹색)</span>
+            <span><i className="rel-dot topic" /> 질병/키워드 (보라)</span>
             <span><i className="rel-dot size" /> 노드 크기 = 언급횟수</span>
             <span><i className="rel-edge-sample" /> 동시 등장 빈도</span>
           </div>
@@ -605,7 +684,7 @@ export default function ReportView() {
   const generateFinalReport = async () => {
     if (!requireAdmin('Report generation')) return;
     setGenerating(true);
-    setStatus('Generating Sentinel intelligence report...');
+    setStatus('Generating FINAL intelligence report...');
     try {
       const res = await fetch(`${API_BASE}/reports/generate-final`, { method: 'POST', headers: await adminHeaders(false) });
       const data = await res.json();
@@ -694,7 +773,7 @@ export default function ReportView() {
         </div>
 
         <button className="report-generate-btn" onClick={generateFinalReport} disabled={!isAdmin || generating}>
-          {generating ? 'Generating...' : 'Generate Sentinel report'}
+          {generating ? 'Generating...' : 'Generate FINAL report'}
         </button>
 
         <div className="report-type-tabs">
@@ -717,7 +796,7 @@ export default function ReportView() {
         {loading ? (
           <div className="report-loading">Loading reports...</div>
         ) : filtered.length === 0 ? (
-          <div className="report-empty">No reports yet. Generate a Sentinel report from the control room.</div>
+          <div className="report-empty">No reports yet. Generate a FINAL report from the control room.</div>
         ) : (
           <div className="report-list">
             {filtered.map((report) => {
