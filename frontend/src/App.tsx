@@ -211,6 +211,11 @@ function AppInner({
   const [dismissedUpdateId, setDismissedUpdateId] = useState(() => localStorage.getItem('sentinel-dismissed-update') || '');
   const [, setIngestionStatus] = useState<IngestionStatus | null>(null);
   const [meta, setMeta] = useState<CombinedData['meta']>();
+  // Server-side data presence flags so the pipeline cards show 'ready' for
+  // every visitor (read-only included), not just the operator who triggered the run.
+  const [koreaNewsReady, setKoreaNewsReady] = useState(false);
+  const [trendsReady, setTrendsReady] = useState(false);
+  const [kdcaApiReady, setKdcaApiReady] = useState(false);
 
   // Top navigation tab
   const [navTab, setNavTab] = useState<NavTab>('map');
@@ -317,14 +322,29 @@ function AppInner({
 
   const refreshOperationStatus = useCallback(async () => {
     try {
-      const [historyRes, reportsRes, kdcaDigestRes] = await Promise.all([
+      const [historyRes, reportsRes, kdcaDigestRes, koreaNewsRes, trendsRes, kdcaApiRes] = await Promise.all([
         fetch(`${API_BASE}/ingestion/upload-history`),
         fetch(`${API_BASE}/reports/list`),
         fetch(`${API_BASE}/risk-analysis/kdca-digest`),
+        fetch(`${API_BASE}/news/korea?limit=1`),
+        fetch(`${API_BASE}/trends/korea`),
+        fetch(`${API_BASE}/ingestion/kdca-notifiable`),
       ]);
       if (historyRes.ok) setUploadHistory(await historyRes.json());
       if (reportsRes.ok) setReportList(await reportsRes.json());
       if (kdcaDigestRes.ok) setKdcaDigestStatus(await kdcaDigestRes.json());
+      if (koreaNewsRes.ok) {
+        const arr = await koreaNewsRes.json();
+        setKoreaNewsReady(Array.isArray(arr) && arr.length > 0);
+      }
+      if (trendsRes.ok) {
+        const data = await trendsRes.json();
+        setTrendsReady(Array.isArray(data?.series) && data.series.length > 0);
+      }
+      if (kdcaApiRes.ok) {
+        const data = await kdcaApiRes.json();
+        setKdcaApiReady(data?.status === 'ok');
+      }
     } catch {
       // The dashboard itself should remain usable even when one status lane is unavailable.
     }
@@ -729,7 +749,9 @@ function AppInner({
       lane: 'SOURCE',
       title: '국내 뉴스 수집',
       detail: '네이버 뉴스와 국내 NewsAPI 결과를 새로 모아 OSINT 분석의 국내 사건/증상 탐색 근거로 씁니다.',
-      status: runningPipeline === 'korea_news' ? 'running' : lastPipelineRun.korea_news ? 'ready' : 'needs-run',
+      status: runningPipeline === 'korea_news'
+        ? 'running'
+        : (koreaNewsReady || lastPipelineRun.korea_news) ? 'ready' : 'needs-run',
       updatedAt: lastPipelineRun.korea_news,
       primaryAction: '수집',
     },
@@ -738,7 +760,9 @@ function AppInner({
       lane: 'SOURCE',
       title: '검색 트렌드 수집',
       detail: 'Google Trends와 Naver DataLab 검색량을 갱신해 뉴스가 실제 관심도 변화와 맞물리는지 봅니다.',
-      status: runningPipeline === 'trends' ? 'running' : lastPipelineRun.trends ? 'ready' : 'needs-run',
+      status: runningPipeline === 'trends'
+        ? 'running'
+        : (trendsReady || lastPipelineRun.trends) ? 'ready' : 'needs-run',
       updatedAt: lastPipelineRun.trends,
       primaryAction: '수집',
     },
@@ -758,7 +782,9 @@ function AppInner({
       lane: 'KDCA',
       title: 'Notifiable Disease (KDCA API)',
       detail: kdcaApiResult?.summary || 'Refreshes KDCA PeriodRegion/PeriodBasic data to update the Notifiable Disease (KDCA API) signal lane.',
-      status: runningPipeline === 'kdca_api' || refreshingKdcaApi ? 'running' : lastPipelineRun.kdca_api ? 'ready' : 'needs-run',
+      status: runningPipeline === 'kdca_api' || refreshingKdcaApi
+        ? 'running'
+        : (kdcaApiReady || lastPipelineRun.kdca_api) ? 'ready' : 'needs-run',
       updatedAt: lastPipelineRun.kdca_api,
       primaryAction: 'API 실행',
     },

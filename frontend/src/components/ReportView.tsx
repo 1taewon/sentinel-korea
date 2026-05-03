@@ -189,12 +189,14 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
   const text = markdown || '';
   const paragraphs = text.split(/\n{2,}/).map((p) => p.toLowerCase());
 
-  // Radial mind map: one report hub, then signal sources and disease/keyword
-  // nodes around it. Node size is normalized to mention count.
-  const CENTER_X = 600;
-  const CENTER_Y = 360;
-  const RING_X = 395;
-  const RING_Y = 235;
+  // Pure bipartite mind map — signals on the LEFT, diseases/keywords on the RIGHT.
+  // No central hub. Edges go signal ↔ disease directly so the user reads
+  // "this source mentioned that disease" at a glance, with co-occurrence
+  // pulses animating along the connections.
+  const VIEW_H = 720;
+  const LEFT_X = 230;
+  const RIGHT_X = 970;
+  const verticalPad = 80;
 
   const nodes: RelationshipNode[] = [];
   const edges: RelationshipEdge[] = [];
@@ -211,42 +213,41 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
     .filter((topic) => topic.count > 0)
     .sort((a, b) => b.count - a.count);
 
-  const allDetected = [
-    ...detectedSignals.map((signal, index) => ({ ...signal, kind: 'signal' as const, order: index * 2 })),
-    ...detectedTopics.map((topic, index) => ({ ...topic, kind: 'topic' as const, order: index * 2 + 1 })),
-  ].sort((a, b) => a.order - b.order);
-  const maxMentions = Math.max(1, ...allDetected.map((entry) => entry.count));
+  const maxMentions = Math.max(
+    1,
+    ...detectedSignals.map((s) => s.count),
+    ...detectedTopics.map((t) => t.count),
+  );
+  const sigCount = Math.max(1, detectedSignals.length);
+  const topCount = Math.max(1, detectedTopics.length);
 
-  nodes.push({
-    id: 'report-hub',
-    label: 'Report signals',
-    kind: 'report',
-    x: CENTER_X,
-    y: CENTER_Y,
-    weight: 1,
-    subtitle: `${detectedSignals.length} sources · ${detectedTopics.length} topics`,
+  detectedSignals.forEach((signal, index) => {
+    const y = sigCount === 1
+      ? VIEW_H / 2
+      : verticalPad + ((VIEW_H - 2 * verticalPad) / (sigCount - 1)) * index;
+    nodes.push({
+      id: signal.id,
+      label: signal.label,
+      kind: 'signal',
+      x: LEFT_X,
+      y,
+      weight: Math.max(0.18, signal.count / maxMentions),
+      subtitle: `${signal.count}회 언급`,
+    });
   });
 
-  allDetected.forEach((entry, index) => {
-    const angle = -Math.PI / 2 + (index / Math.max(1, allDetected.length)) * Math.PI * 2;
-    const weight = Math.max(0.16, entry.count / maxMentions);
-    const x = CENTER_X + Math.cos(angle) * RING_X;
-    const y = CENTER_Y + Math.sin(angle) * RING_Y;
+  detectedTopics.forEach((topic, index) => {
+    const y = topCount === 1
+      ? VIEW_H / 2
+      : verticalPad + ((VIEW_H - 2 * verticalPad) / (topCount - 1)) * index;
     nodes.push({
-      id: entry.id,
-      label: entry.label,
-      kind: entry.kind,
-      x,
+      id: topic.id,
+      label: topic.label,
+      kind: 'topic',
+      x: RIGHT_X,
       y,
-      weight,
-      subtitle: `${entry.count}회 언급`,
-    });
-    edges.push({
-      from: 'report-hub',
-      to: entry.id,
-      label: `${entry.count}회 언급`,
-      strength: Math.min(1, 0.22 + weight * 0.42),
-      tone: entry.kind,
+      weight: Math.max(0.18, topic.count / maxMentions),
+      subtitle: `${topic.count}회 언급`,
     });
   });
 
