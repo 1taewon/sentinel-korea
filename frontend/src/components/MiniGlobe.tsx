@@ -147,7 +147,6 @@ export default function MiniGlobe({
   ];
 
   const arcsData = useMemo(() => {
-    if (!isExpanded) return [];
     const koreaTargets = [
       { lat: 37.5665, lng: 126.9780 },
       { lat: 35.1796, lng: 129.0756 },
@@ -158,11 +157,15 @@ export default function MiniGlobe({
 
     // Arcs are only drawn for Korea-relevance scores of 50% or higher.
     // Lower-score signals remain as location-only nodes without Korea arcs.
+    // For the small (non-expanded) mini globe in MAP, show only top arcs so
+    // the 220px sphere isn't visually overloaded.
     const arcCandidates = signals
       .filter((s) => scoreInternationalRelevance(s).score >= ARC_RELEVANCE_THRESHOLD)
       .sort((a, b) => scoreInternationalRelevance(b).score - scoreInternationalRelevance(a).score);
 
-    return arcCandidates
+    const limited = isExpanded ? arcCandidates : arcCandidates.slice(0, 12);
+
+    return limited
       .flatMap((signal, index) => {
         const relevance = scoreInternationalRelevance(signal);
         return Array.from({ length: relevance.pulseCount }, (_, routeIndex) => {
@@ -211,8 +214,8 @@ export default function MiniGlobe({
     <div className={isExpanded ? "expanded-globe-inner" : "mini-globe-container"}>
       <Globe
         ref={globeRef}
-        width={isExpanded ? expandedWidth : 180}
-        height={isExpanded ? expandedHeight : 180}
+        width={isExpanded ? expandedWidth : 220}
+        height={isExpanded ? expandedHeight : 220}
         backgroundColor="rgba(0,0,0,0)"
         globeImageUrl={globeTexture}
         bumpImageUrl={theme === 'dark' ? '//unpkg.com/three-globe/example/img/earth-topology.png' : ''}
