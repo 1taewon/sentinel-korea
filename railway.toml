@@ -22,12 +22,13 @@ cmds = [
 ]
 
 [build.nixpacksPlan.start]
-# Root Directory is /backend in Railway → /app/ already contains backend/ content
-# (so /app/app/main.py exists). Don't `cd backend` — that would look for backend/backend/.
-cmd = ". /opt/venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+# Build context is project root (install runs `pip install -r backend/requirements.txt`),
+# so the container working dir is /app and the FastAPI package lives at /app/backend/app.
+# `cd backend` before uvicorn so that `app.main` resolves.
+cmd = ". /opt/venv/bin/activate && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 
 [deploy]
-startCommand = ". /opt/venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+startCommand = ". /opt/venv/bin/activate && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"
 healthcheckTimeout = 60
 restartPolicyType = "on_failure"
