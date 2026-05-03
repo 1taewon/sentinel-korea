@@ -150,21 +150,30 @@ export default function GeminiChatbot({ snapshotDate, inSidebar = false }: Gemin
       .replace(/\n/g, '<br/>');
   };
 
+  // Chat bubble icon (matches Sentinel toolbar SVG style)
+  const chatIcon = (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter">
+      <path d="M4 5h16v12H8l-4 4z" />
+      <line x1="8" y1="10" x2="16" y2="10" />
+      <line x1="8" y1="13" x2="13" y2="13" />
+    </svg>
+  );
+
   return (
     <>
       <button
         id="chatbot-toggle-btn"
         className={inSidebar ? "chatbot-sidebar-btn" : "chatbot-fab"}
         onClick={() => setIsOpen(!isOpen)}
-        title="Sentinel 분석"
-        aria-label="Sentinel Korea AI 어시스턴트 열기"
+        title="Query chat"
+        aria-label="Sentinel Korea Query chat 열기"
       >
         {inSidebar ? (
-          <span>Sentinel chat</span>
+          <span>Query chat</span>
         ) : (
           <>
-            {isOpen ? '×' : 'AI'}
-            {!isOpen && <span className="chatbot-fab-label">Chat</span>}
+            {isOpen ? <span>×</span> : chatIcon}
+            {!isOpen && <span className="chatbot-fab-label">Query chat</span>}
           </>
         )}
       </button>
@@ -175,13 +184,13 @@ export default function GeminiChatbot({ snapshotDate, inSidebar = false }: Gemin
           {/* 헤더 */}
           <div className="chatbot-header">
             <div className="chatbot-header-info">
-              <div className="chatbot-avatar">AI</div>
+              <div className="chatbot-avatar" aria-hidden="true">{chatIcon}</div>
               <div>
-                <div className="chatbot-title">Sentinel chat</div>
-                <div className="chatbot-subtitle">AI-powered insights</div>
+                <div className="chatbot-kicker">QUERY CONSOLE</div>
+                <div className="chatbot-title">Query chat</div>
               </div>
             </div>
-            <button className="chatbot-close-btn" onClick={() => setIsOpen(false)}>×</button>
+            <button className="chatbot-close-btn" onClick={() => setIsOpen(false)} aria-label="Close chat">×</button>
           </div>
 
           {/* 빠른 액션 버튼 */}

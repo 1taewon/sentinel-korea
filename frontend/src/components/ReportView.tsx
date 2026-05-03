@@ -189,14 +189,15 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
   const text = markdown || '';
   const paragraphs = text.split(/\n{2,}/).map((p) => p.toLowerCase());
 
-  // Pure bipartite mind map — signals on the LEFT, diseases/keywords on the RIGHT.
-  // No central hub. Edges go signal ↔ disease directly so the user reads
-  // "this source mentioned that disease" at a glance, with co-occurrence
-  // pulses animating along the connections.
+  // Cliverad-style interactive ontology — no central hub, no rigid left/right
+  // columns. Signals occupy the left half-circle and topics the right half-circle
+  // around an empty negative-space center, with stronger nodes pulled toward the
+  // middle so the heaviest signal-disease relationships visually cluster. Edges
+  // are curved bezier paths that cross the empty middle, producing the web-like
+  // ontology look.
+  const CX = 600;
+  const CY = 360;
   const VIEW_H = 720;
-  const LEFT_X = 230;
-  const RIGHT_X = 970;
-  const verticalPad = 80;
 
   const nodes: RelationshipNode[] = [];
   const edges: RelationshipEdge[] = [];
@@ -218,35 +219,51 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
     ...detectedSignals.map((s) => s.count),
     ...detectedTopics.map((t) => t.count),
   );
-  const sigCount = Math.max(1, detectedSignals.length);
-  const topCount = Math.max(1, detectedTopics.length);
+
+  /** Place nodes on a half-circle arc.
+   *  side: 'left'   → angles from 110° to 250° (counter-clockwise around left)
+   *  side: 'right'  → angles from -70° to  70° (right hemisphere)
+   *  Heaviest mention count gets the largest arc radius (pushed slightly inward
+   *  toward the empty center so important nodes cluster). Light nodes pushed
+   *  further out so the arc fans like a sunburst. */
+  function arcCoord(side: 'left' | 'right', index: number, total: number, weight: number) {
+    const baseRadius = 285;
+    const radiusJitter = 18 - weight * 22;       // heavier → slightly smaller r → closer to centre
+    const r = baseRadius + radiusJitter;
+    const startDeg = side === 'left' ? 110 : -70;
+    const endDeg = side === 'left' ? 250 : 70;
+    const span = endDeg - startDeg;
+    const t = total <= 1 ? 0.5 : index / (total - 1);
+    const angle = ((startDeg + span * t) * Math.PI) / 180;
+    const x = CX + Math.cos(angle) * r;
+    const y = CY + Math.sin(angle) * (r * 0.95);  // slight vertical compression so it fits 720px
+    return { x: Math.max(120, Math.min(1080, x)), y: Math.max(70, Math.min(VIEW_H - 70, y)) };
+  }
 
   detectedSignals.forEach((signal, index) => {
-    const y = sigCount === 1
-      ? VIEW_H / 2
-      : verticalPad + ((VIEW_H - 2 * verticalPad) / (sigCount - 1)) * index;
+    const weight = Math.max(0.18, signal.count / maxMentions);
+    const { x, y } = arcCoord('left', index, detectedSignals.length, weight);
     nodes.push({
       id: signal.id,
       label: signal.label,
       kind: 'signal',
-      x: LEFT_X,
+      x,
       y,
-      weight: Math.max(0.18, signal.count / maxMentions),
+      weight,
       subtitle: `${signal.count}회 언급`,
     });
   });
 
   detectedTopics.forEach((topic, index) => {
-    const y = topCount === 1
-      ? VIEW_H / 2
-      : verticalPad + ((VIEW_H - 2 * verticalPad) / (topCount - 1)) * index;
+    const weight = Math.max(0.18, topic.count / maxMentions);
+    const { x, y } = arcCoord('right', index, detectedTopics.length, weight);
     nodes.push({
       id: topic.id,
       label: topic.label,
       kind: 'topic',
-      x: RIGHT_X,
+      x,
       y,
-      weight: Math.max(0.18, topic.count / maxMentions),
+      weight,
       subtitle: `${topic.count}회 언급`,
     });
   });
