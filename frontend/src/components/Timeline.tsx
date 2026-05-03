@@ -41,8 +41,10 @@ export default function Timeline({ dates, currentDate, onChange }: TimelineProps
   return (
     <div className="timeline-container timeline-container--calendar">
       <div className="timeline-current-card">
-        <span className="timeline-current-kicker">현재 주차 · CURRENT</span>
-        <strong>{curYear}-W{String(curWeek).padStart(2, '0')}</strong>
+        <div className="timeline-current-top">
+          <span className="timeline-current-kicker">현재 주차 · CURRENT</span>
+          <strong>{curYear}-W{String(curWeek).padStart(2, '0')}</strong>
+        </div>
         <span className="timeline-current-range">{fmtMD(curStart)} – {fmtMD(curEnd)}</span>
       </div>
 
