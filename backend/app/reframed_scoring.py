@@ -14,9 +14,9 @@ SIGNAL_GROUPS = {
 DEFAULT_SCORING_CONFIG: dict = {
     "signals": {
         "notifiable_disease": {
-            "label": "Notifiable disease",
-            "description": "KDCA reported respiratory notifiable disease activity.",
-            "source": "KDCA notifiable disease API",
+            "label": "Notifiable Disease (KDCA API)",
+            "description": "Respiratory activity from Notifiable Disease (KDCA API).",
+            "source": "Notifiable Disease (KDCA API)",
             "enabled": True,
         },
         "influenza_like": {

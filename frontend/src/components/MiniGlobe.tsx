@@ -288,7 +288,7 @@ export default function MiniGlobe({
         ringPropagationSpeed={(d: any) => 0.6 + (d.koreaRelevance?.score ?? 0.35)}
         ringRepeatPeriod={(d: any) => Math.max(420, 1200 - (d.koreaRelevance?.score ?? 0.35) * 620)}
       />
-      {!isExpanded && <div className="mini-globe-label">KOREA</div>}
+      {!isExpanded && <div className="mini-globe-label">GLOBAL</div>}
     </div>
   );
 }

@@ -57,14 +57,14 @@ const PIPELINE_STAGES: PipelineStage[] = [
     id: 'ingest',
     title: { ko: '소스 수집', en: 'Source ingest' },
     subtitle: {
-      ko: '질병청 중심 감시자료와 국내 뉴스/검색 트렌드를 우선 수집하고, WHO/국제 뉴스는 Globe 참고 패널로 분리합니다.',
+    ko: 'KDCA 중심 감시자료와 국내 뉴스/검색 트렌드를 우선 수집하고, WHO/국제 뉴스는 Globe 참고 패널로 분리합니다.',
       en: 'Prioritize KDCA surveillance plus Korea news/trends; keep international signals as a separate support layer.',
     },
     artifact: 'raw_signal',
     tone: 'blue',
     lanes: [
-      { ko: '질병청 ILI/SARI 표', en: 'KDCA ILI/SARI tables' },
-      { ko: 'KDCA PeriodRegion 법정감염병 API', en: 'KDCA PeriodRegion notifiable API' },
+      { ko: 'KDCA ILI/SARI 표', en: 'KDCA ILI/SARI tables' },
+      { ko: 'Notifiable Disease (KDCA API)', en: 'Notifiable Disease (KDCA API)' },
       { ko: '폐하수 PDF 공보', en: 'Wastewater PDF bulletin' },
       { ko: '국내 뉴스', en: 'Korea news feeds' },
       { ko: '국내 검색 트렌드', en: 'Korea search trends' },
@@ -73,7 +73,7 @@ const PIPELINE_STAGES: PipelineStage[] = [
       {
         id: 'refresh-official',
         label: { ko: '공식 감시 갱신', en: 'Refresh official lane' },
-        description: { ko: '질병청 감시 신호와 법정감염병 API 보조 신호를 다시 불러옵니다.', en: 'Reload KDCA surveillance plus the notifiable API corroboration lane.' },
+        description: { ko: 'KDCA 감시 신호와 Notifiable Disease (KDCA API) 보조 신호를 다시 불러옵니다.', en: 'Reload KDCA surveillance plus the Notifiable Disease (KDCA API) corroboration lane.' },
         endpoints: ['/ingestion/refresh-korea', '/ingestion/refresh-kdca-notifiable'],
         result: { ko: '공식 감시 신호 갱신 완료. PeriodRegion은 PeriodBasic으로 검산됩니다.', en: 'Official surveillance lane refreshed. PeriodRegion was validated against PeriodBasic.' },
       },

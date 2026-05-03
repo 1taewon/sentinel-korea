@@ -21,8 +21,8 @@ DEFAULT_SCORING_CONFIG: dict = {
     # Human-readable description of each signal source
     "signals": {
         "notifiable_disease": {
-            "label": "전수감시 감염병 (Notifiable Disease)",
-            "description": "KDCA 법정 전수신고 감염병 발생률",
+            "label": "Notifiable Disease (KDCA API)",
+            "description": "Respiratory activity from Notifiable Disease (KDCA API).",
             "source": "KDCA API",
             "enabled": True,
         },
@@ -162,7 +162,7 @@ def build_explanation(
     messages: list[str] = []
 
     if (signals.get("notifiable_disease") or 0) >= 0.6:
-        messages.append("전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).")
+        messages.append("Notifiable Disease (KDCA API) activity is elevated against baseline.")
     if (signals.get("influenza_like") or 0) >= 0.6:
         messages.append("인플루엔자 유사질환 활동 상승 (ILI activity above baseline).")
     if (signals.get("wastewater_pathogen") or 0) >= threshold:

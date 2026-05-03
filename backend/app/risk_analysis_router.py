@@ -11,8 +11,10 @@ from datetime import datetime, date
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+
+from .auth import require_admin
 
 router = APIRouter(prefix="/risk-analysis", tags=["risk-analysis"])
 
@@ -81,7 +83,7 @@ TRENDS_DIGEST_PROMPT = """아래는 최근 수집된 한국의 검색 트렌드 
 - 반드시 JSON만 반환하세요
 """
 
-KDCA_DIGEST_PROMPT = """아래는 KDCA(질병관리청) 공식 감시 데이터입니다 (법정감염병 신고, ILI/SARI 감시, 하수 병원체 감시).
+KDCA_DIGEST_PROMPT = """아래는 KDCA 공식 감시 데이터입니다 (Notifiable Disease (KDCA API), ILI/SARI 감시, 하수 병원체 감시).
 
 KDCA 데이터만 분석하여 아래 JSON 형식으로 요약 보고서를 작성하세요:
 {{
@@ -378,7 +380,7 @@ def _update_snapshot(analysis_result: dict, mode: str = "news_trends") -> str:
 # ── Endpoints ────────────────────────────────────────────────────────
 
 @router.post("/analyze-news-trends", response_model=AnalysisResponse)
-async def run_news_trends_analysis(req: AnalysisRequest | None = None) -> dict[str, Any]:
+async def run_news_trends_analysis(req: AnalysisRequest | None = None, _: dict = Depends(require_admin)) -> dict[str, Any]:
     """Stage 1: Analyze news + trends data only → news_trends_risk."""
     req = req or AnalysisRequest()
     client = _get_client()
@@ -425,7 +427,7 @@ async def run_news_trends_analysis(req: AnalysisRequest | None = None) -> dict[s
 
 
 @router.post("/analyze", response_model=AnalysisResponse)
-async def run_full_analysis(req: AnalysisRequest | None = None) -> dict[str, Any]:
+async def run_full_analysis(req: AnalysisRequest | None = None, _: dict = Depends(require_admin)) -> dict[str, Any]:
     """Stage 2: Full integration analysis (News+Trends+KDCA) → total_risk."""
     req = req or AnalysisRequest(include_kdca=True)
     client = _get_client()
@@ -548,7 +550,7 @@ def _build_trends_only_context() -> tuple[str, list[str]]:
 
 
 @router.post("/news-digest")
-async def generate_news_digest() -> dict[str, Any]:
+async def generate_news_digest(_: dict = Depends(require_admin)) -> dict[str, Any]:
     """NEWS-only AI digest summary."""
     client = _get_client()
     model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
@@ -597,7 +599,7 @@ async def get_news_digest() -> dict[str, Any]:
 
 
 @router.post("/trends-digest")
-async def generate_trends_digest() -> dict[str, Any]:
+async def generate_trends_digest(_: dict = Depends(require_admin)) -> dict[str, Any]:
     """TRENDS-only AI digest summary."""
     client = _get_client()
     model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
@@ -635,7 +637,7 @@ async def get_trends_digest() -> dict[str, Any]:
 
 
 @router.post("/kdca-digest")
-async def generate_kdca_digest() -> dict[str, Any]:
+async def generate_kdca_digest(_: dict = Depends(require_admin)) -> dict[str, Any]:
     """KDCA-only AI digest summary."""
     client = _get_client()
     model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")

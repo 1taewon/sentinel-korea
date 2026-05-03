@@ -16,7 +16,7 @@ interface GeminiChatbotProps {
 const QUICK_ACTIONS = [
   { label: 'Dashboard Analysis', action: 'interpret', prompt: '현재 대시보드 상황을 설명해줘' },
   { label: 'News Summary', action: 'summarize', prompt: '최근 호흡기 관련 뉴스를 요약해줘' },
-  { label: 'Weekly Report', action: 'report', prompt: '이번 주 호흡기 감시 보고서 초안을 작성해줘' },
+  { label: 'Weekly Brief', action: 'chat', prompt: 'Give me a read-only weekly Sentinel brief from the currently loaded dashboard signals.' },
   { label: 'Risk Regions', action: 'chat', prompt: '현재 가장 위험한 지역과 그 이유를 알려줘' },
   { label: 'Trend Analysis', action: 'chat', prompt: '검색 트렌드 데이터를 어떻게 해석해야 할까?' },
 ];

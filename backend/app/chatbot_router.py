@@ -101,7 +101,7 @@ Sentinel Korea는 대한민국 17개 시도의 호흡기 감염병 조기 경보
 - G1 (Guarded, 노랑): 점수 ≥ 0.25 — 주의
 - G0 (Low, 초록): 점수 < 0.25 — 정상
 
-신호 소스: KDCA 법정감염병(notifiable_disease), ILI/SARI 감시(influenza_like), 하수 병원체(wastewater_pathogen)
+신호 소스: Notifiable Disease (KDCA API)(notifiable_disease), ILI/SARI 감시(influenza_like), 하수 병원체(wastewater_pathogen)
 
 항상 한국어로 답변하세요. 의학적 진단은 하지 않으며, 역학·감시 데이터 해석에 집중하세요."""
 

@@ -96,7 +96,7 @@ interface Props {
 }
 
 const SIGNAL_LABELS: Record<string, string> = {
-  notifiable_disease: '법정감염병',
+  notifiable_disease: 'Notifiable Disease (KDCA API)',
   influenza_like: 'ILI/SARI',
   wastewater_pathogen: '폐수 감시',
   clinical_cxr_aware: 'CXR (예정)',

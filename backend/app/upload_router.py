@@ -7,8 +7,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from dotenv import load_dotenv
+
+from .auth import require_admin
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -49,7 +51,7 @@ def _load_processed_json(filename: str, default: Any) -> Any:
 
 
 @router.post("/upload-kdca")
-async def upload_kdca_file(file: UploadFile = File(...)) -> dict[str, Any]:
+async def upload_kdca_file(_: dict = Depends(require_admin), file: UploadFile = File(...)) -> dict[str, Any]:
     """KDCA 엑셀/CSV 파일을 업로드하고 파싱합니다."""
     if not file.filename:
         raise HTTPException(status_code=400, detail="파일명이 없습니다.")
@@ -93,7 +95,7 @@ async def upload_kdca_file(file: UploadFile = File(...)) -> dict[str, Any]:
 
 
 @router.post("/process-folder")
-async def process_sentinel_folder() -> dict[str, Any]:
+async def process_sentinel_folder(_: dict = Depends(require_admin)) -> dict[str, Any]:
     """SENTINEL_DATA_DIR 폴더를 스캔하여 미처리 파일을 처리합니다."""
     try:
         import importlib.util
@@ -115,18 +117,18 @@ async def process_sentinel_folder() -> dict[str, Any]:
 
 
 @router.post("/refresh-kdca-notifiable")
-async def refresh_kdca_notifiable(year: int | None = None) -> dict[str, Any]:
+async def refresh_kdca_notifiable(_: dict = Depends(require_admin), year: int | None = None) -> dict[str, Any]:
     """KDCA EIDAPI PeriodRegion 데이터를 수집하고 PeriodBasic으로 검산합니다."""
     try:
         module = __import_script("fetch_kdca_api")
         return module.main(year=year)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"KDCA 법정감염병 API 갱신 실패: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Notifiable Disease (KDCA API) refresh failed: {str(e)}")
 
 
 @router.get("/kdca-notifiable")
 async def get_kdca_notifiable(include_records: bool = False) -> dict[str, Any]:
-    """주차별 법정감염병 원자료와 호흡기 subset 요약을 반환합니다."""
+    """Return Notifiable Disease (KDCA API) weekly source data and respiratory subset summaries."""
     all_payload = _load_processed_json("kdca_notifiable_all_period_region.json", {})
     respiratory_payload = _load_processed_json("kdca_notifiable_weekly.json", {})
     virus_payload = _load_processed_json("kdca_notifiable_respiratory_virus_weekly.json", {})
@@ -135,7 +137,7 @@ async def get_kdca_notifiable(include_records: bool = False) -> dict[str, Any]:
     if not all_payload and not respiratory_payload:
         return {
             "status": "empty",
-            "definition": "KDCA 법정감염병 API가 아직 갱신되지 않았습니다.",
+            "definition": "Notifiable Disease (KDCA API) has not been refreshed yet.",
             "all_weekly": [],
             "respiratory_weekly": [],
             "respiratory_virus_weekly": [],
@@ -167,7 +169,7 @@ async def get_kdca_notifiable(include_records: bool = False) -> dict[str, Any]:
 
 
 @router.post("/refresh-global")
-async def refresh_global_signals() -> dict[str, Any]:
+async def refresh_global_signals(_: dict = Depends(require_admin)) -> dict[str, Any]:
     """Run all outbreak fetchers — WHO DON + 5 agency feeds + Gemini grounded search + global news.
 
     Each fetcher is independent: if one fails, the others still run.
@@ -222,7 +224,7 @@ async def refresh_global_signals() -> dict[str, Any]:
 
 
 @router.post("/refresh-korea")
-async def refresh_korea_signals() -> dict[str, Any]:
+async def refresh_korea_signals(_: dict = Depends(require_admin)) -> dict[str, Any]:
     """한국 뉴스를 새로 수집합니다 (네이버 + NewsAPI)."""
     results = {}
 
@@ -253,7 +255,7 @@ async def refresh_korea_signals() -> dict[str, Any]:
 
 
 @router.post("/refresh-trends")
-async def refresh_trends() -> dict[str, Any]:
+async def refresh_trends(_: dict = Depends(require_admin)) -> dict[str, Any]:
     """Google Trends + Naver Trends 데이터를 새로 수집합니다."""
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     results = {}

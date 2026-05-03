@@ -44,9 +44,11 @@ interface KdcaUploadPanelProps {
   // 'console'  → 업로드/리포트/수신자 탭 + raw data 만 표시 (우측 콘솔 영역 용)
   // 'full'(기본) → 기존과 동일하게 전부 표시
   view?: 'summary' | 'console' | 'full';
+  readOnly?: boolean;
+  getAdminHeaders?: (json?: boolean) => Promise<HeadersInit>;
 }
 
-export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps) {
+export default function KdcaUploadPanel({ view = 'full', readOnly = false, getAdminHeaders }: KdcaUploadPanelProps) {
   const [activeTab, setActiveTab] = useState<TabType>('upload');
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -80,9 +82,13 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
   };
 
   const generateDigest = async () => {
+    if (readOnly) {
+      setStatus('Read-only mode. Only the Sentinel operator can refresh AI analysis.', 'error');
+      return;
+    }
     setDigestLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/risk-analysis/kdca-digest`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/risk-analysis/kdca-digest`, { method: 'POST', headers: await getAdminHeaders?.(false) });
       if (res.ok) {
         const data = await res.json();
         setDigest(data);
@@ -103,13 +109,17 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
   useEffect(() => { fetchData(); fetchDigest(); }, []);
 
   const handleFile = async (file: File) => {
+    if (readOnly) {
+      setStatus('Read-only mode. Only the Sentinel operator can upload source files.', 'error');
+      return;
+    }
     setUploading(true);
     setUploadResult(null);
     setStatusMsg('');
     const form = new FormData();
     form.append('file', file);
     try {
-      const res = await fetch(`${API_BASE}/ingestion/upload-kdca`, { method: 'POST', body: form });
+      const res = await fetch(`${API_BASE}/ingestion/upload-kdca`, { method: 'POST', body: form, headers: await getAdminHeaders?.(false) });
       const data = await res.json();
       setUploadResult(data);
       if (data.success) {
@@ -140,10 +150,14 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
   };
 
   const handleScanFolder = async () => {
+    if (readOnly) {
+      setStatus('Read-only mode. Only the Sentinel operator can scan source folders.', 'error');
+      return;
+    }
     setUploading(true);
     setStatus('Scanning folder...', 'pending');
     try {
-      const res = await fetch(`${API_BASE}/ingestion/process-folder`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/ingestion/process-folder`, { method: 'POST', headers: await getAdminHeaders?.(false) });
       const data = await res.json();
       setStatus(`${data.files_processed} files processed successfully.`, 'ok');
       fetchData();
@@ -158,10 +172,14 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
   // AI ANALYZE > KDCA DATA ANALYZE button in the right console (App.tsx).
 
   const handleSendReport = async () => {
+    if (readOnly) {
+      setStatus('Read-only mode. Only the Sentinel operator can send reports.', 'error');
+      return;
+    }
     setSendingEmail(true);
     setStatus('Sending email...', 'pending');
     try {
-      const res = await fetch(`${API_BASE}/reports/send`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/reports/send`, { method: 'POST', headers: await getAdminHeaders?.(false) });
       const data = await res.json();
       if (res.ok) {
         setStatus(`Sent to ${data.recipients?.length} recipients.`, 'ok');
@@ -427,7 +445,7 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
                 onDragOver={e => { e.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={onDrop}
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => readOnly ? setStatus('Read-only mode. Operator login is required to upload files.', 'error') : fileInputRef.current?.click()}
                 id="kdca-dropzone"
               >
                 <input
@@ -446,9 +464,9 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
                 ) : (
                   <>
                     <div className="kdca-dropzone-text">
-                      Drop KDCA file here or click to upload
+                      {readOnly ? 'KDCA upload is operator-only' : 'Drop KDCA file here or click to upload'}
                     </div>
-                    <div className="kdca-dropzone-hint">CSV, XLSX, PDF supported</div>
+                    <div className="kdca-dropzone-hint">{readOnly ? 'Public users can inspect source status and history only.' : 'CSV, XLSX, PDF supported'}</div>
                     <div className="kdca-dropzone-hint">PDF supported: 하수기반 / 표본감시 주간소식지 / 전 세계 감염병 발생 동향</div>
                     <div className="kdca-dropzone-hint" style={{ marginTop: 4, color: '#6366f1' }}>
                       Filename must contain: 급성호흡기, 인플루엔자, 중증급성, 하수기반, 표본감시, or 전 세계 감염병
@@ -458,8 +476,8 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
               </div>
 
               {/* 폴더 스캔 */}
-              <button className="kdca-btn kdca-btn--secondary" onClick={handleScanFolder} disabled={uploading}>
-                Scan Sentinel_data folder
+              <button className="kdca-btn kdca-btn--secondary" onClick={handleScanFolder} disabled={uploading || readOnly}>
+                {readOnly ? 'Operator only · Scan disabled' : 'Scan Sentinel_data folder'}
               </button>
 
               {/* 업로드 결과 */}
@@ -509,10 +527,10 @@ export default function KdcaUploadPanel({ view = 'full' }: KdcaUploadPanelProps)
                 <button
                   className="kdca-send-btn"
                   onClick={handleSendReport}
-                  disabled={sendingEmail}
+                  disabled={sendingEmail || readOnly}
                   id="send-report-btn"
                 >
-                  {sendingEmail ? 'Sending...' : 'Send Email'}
+                  {readOnly ? 'Operator only' : sendingEmail ? 'Sending...' : 'Send Email'}
                 </button>
               </div>
               <pre className="kdca-report-text">{reportContent}</pre>

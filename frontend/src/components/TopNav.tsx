@@ -12,6 +12,9 @@ interface TopNavProps {
   snapshotDate?: string;
   availableDates?: string[];
   onDateChange?: (date: string) => void;
+  isAdmin?: boolean;
+  isAuthEnabled?: boolean;
+  onAdminLogin?: () => void;
 }
 
 const TABS: { key: NavTab; label: string; labelEn: string }[] = [
@@ -24,7 +27,7 @@ const TABS: { key: NavTab; label: string; labelEn: string }[] = [
 
 export default function TopNav({
   activeTab, onTabChange, userEmail, onSignOut, theme, onToggleTheme,
-  snapshotDate, availableDates, onDateChange,
+  snapshotDate, availableDates, onDateChange, isAdmin = false, isAuthEnabled = false, onAdminLogin,
 }: TopNavProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const dateRef = useRef<HTMLDivElement>(null);
@@ -117,6 +120,9 @@ export default function TopNav({
         >
           {theme === 'light' ? '◐' : '◑'}
         </button>
+        <span className={`top-nav-role ${isAdmin ? 'top-nav-role--admin' : ''}`}>
+          {isAdmin ? 'ADMIN' : 'READ ONLY'}
+        </span>
         {userEmail && (
           <div className="top-nav-user">
             <span className="top-nav-user-email">{userEmail}</span>
@@ -124,6 +130,11 @@ export default function TopNav({
               ⏻
             </button>
           </div>
+        )}
+        {!userEmail && isAuthEnabled && (
+          <button className="top-nav-admin-hint" type="button" onClick={onAdminLogin} title="Operator sign-in is configured through Firebase Auth">
+            OPERATOR LOGIN
+          </button>
         )}
       </div>
     </header>

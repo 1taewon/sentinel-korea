@@ -55,7 +55,12 @@ function diseaseSummary(row?: WeeklyRow, empty = '발생 없음') {
   return diseases.map((item) => `${item.disease} ${fmt(item.total)}`).join(' · ');
 }
 
-export default function KdcaNotifiablePanel() {
+type KdcaNotifiablePanelProps = {
+  readOnly?: boolean;
+  getAdminHeaders?: (json?: boolean) => Promise<HeadersInit>;
+};
+
+export default function KdcaNotifiablePanel({ readOnly = false, getAdminHeaders }: KdcaNotifiablePanelProps) {
   const [data, setData] = useState<NotifiablePayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -69,7 +74,7 @@ export default function KdcaNotifiablePanel() {
       if (!res.ok) throw new Error(payload?.detail || 'KDCA notifiable fetch failed');
       setData(payload);
     } catch {
-      setError('KDCA 법정감염병 주차별 데이터를 불러오지 못했습니다.');
+      setError('Could not load Notifiable Disease (KDCA API) weekly data.');
     } finally {
       setLoading(false);
     }
@@ -80,15 +85,19 @@ export default function KdcaNotifiablePanel() {
   }, []);
 
   const refresh = async () => {
+    if (readOnly) {
+      setError('Read-only mode. Only the Sentinel operator can refresh Notifiable Disease (KDCA API) data.');
+      return;
+    }
     setRefreshing(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/ingestion/refresh-kdca-notifiable`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/ingestion/refresh-kdca-notifiable`, { method: 'POST', headers: await getAdminHeaders?.(false) });
       const payload = await res.json();
       if (!res.ok) throw new Error(payload?.detail || 'KDCA API refresh failed');
       await fetchData();
     } catch {
-      setError('KDCA 법정감염병 API 갱신에 실패했습니다. API key, 네트워크, 공공데이터포털 상태를 확인하세요.');
+      setError('Notifiable Disease (KDCA API) refresh failed. Check the API key, network, and public data endpoint status.');
     } finally {
       setRefreshing(false);
     }
@@ -110,7 +119,7 @@ export default function KdcaNotifiablePanel() {
     return (
       <div className="notifiable-panel notifiable-panel--loading">
         <div className="news-spinner" />
-        <span>KDCA 법정감염병 real data 로딩 중...</span>
+        <span>Loading Notifiable Disease (KDCA API) data...</span>
       </div>
     );
   }
@@ -119,11 +128,11 @@ export default function KdcaNotifiablePanel() {
     <div className="notifiable-panel">
       <div className="notifiable-header">
         <div>
-          <span className="notifiable-kicker">KDCA EIDAPI REAL DATA</span>
-          <h4>법정감염병(Notifiable disease) 주차별 원자료</h4>
+          <span className="notifiable-kicker">KDCA EIDAPI</span>
+          <h4>Notifiable Disease (KDCA API)</h4>
           <p>
             {data?.definition ||
-              '법정감염병은 법률에 따라 신고·감시되는 감염병입니다. Sentinel은 전체 원자료를 보관하고 호흡기 관련 subset만 별도 파싱합니다.'}
+              'Notifiable Disease (KDCA API) contains weekly legally notifiable infectious disease records. Sentinel keeps the full source payload and separately parses respiratory subsets.'}
           </p>
         </div>
         <button className="notifiable-refresh-btn" onClick={refresh} disabled={refreshing}>
@@ -147,7 +156,7 @@ export default function KdcaNotifiablePanel() {
           <strong>{data?.latest_period || data?.latest_epiweek || 'n/a'}</strong>
         </div>
         <div>
-          <span>전체 법정감염병 rows</span>
+          <span>All Notifiable Disease (KDCA API) rows</span>
           <strong>{fmt(data?.all_record_count)}</strong>
         </div>
         <div>
@@ -180,7 +189,7 @@ export default function KdcaNotifiablePanel() {
           <thead>
             <tr>
               <th>주차</th>
-              <th>전체 법정감염병</th>
+              <th>All Notifiable Disease (KDCA API)</th>
               <th>호흡기 관련</th>
               <th>호흡기/공기전파 바이러스</th>
               <th>해외유입</th>
@@ -207,8 +216,8 @@ export default function KdcaNotifiablePanel() {
         </table>
         {rows.length === 0 && (
           <div className="trends-empty">
-            <p>아직 KDCA 법정감염병 API real data가 없습니다.</p>
-            <p className="news-empty-hint">Real data 갱신 버튼을 눌러 PeriodRegion 데이터를 수집하세요.</p>
+            <p>No Notifiable Disease (KDCA API) data is available yet.</p>
+            <p className="news-empty-hint">Use Refresh Notifiable Disease (KDCA API) to collect PeriodRegion data.</p>
           </div>
         )}
       </div>

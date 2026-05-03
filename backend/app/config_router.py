@@ -1,7 +1,9 @@
 import json
 from pathlib import Path
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+
+from .auth import require_admin
 
 router = APIRouter()
 
@@ -24,7 +26,7 @@ def get_keywords_config():
     return data
 
 @router.post("/config/keywords")
-def update_keywords_config(config: KeywordsConfigModel):
+def update_keywords_config(config: KeywordsConfigModel, _: dict = Depends(require_admin)):
     CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
     CONFIG_FILE.write_text(config.model_dump_json(indent=2), encoding="utf-8")
     return {"status": "ok", "message": "Keywords configuration updated successfully."}

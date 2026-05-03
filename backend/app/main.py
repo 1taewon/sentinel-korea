@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 # .env 로드
@@ -33,6 +33,7 @@ from .schemas import (
     ScoringConfigModel,
     TimelinePointModel,
 )
+from .auth import require_admin
 
 app = FastAPI(title="Sentinel Korea API", version="0.3.0")
 
@@ -106,7 +107,7 @@ REGION_METADATA = {
 
 SIGNAL_METADATA = {
     "notifiable_disease": {
-        "label": "Notifiable disease",
+        "label": "Notifiable Disease (KDCA API)",
         "source_type": "notifiable_disease",
         "unit": "normalized weekly incidence",
         "baseline_mean": 0.35,
@@ -377,7 +378,7 @@ async def get_scoring_config() -> dict[str, Any]:
 
 
 @app.post("/scoring/config", response_model=ScoringConfigModel)
-async def update_scoring_config(config: dict[str, Any]) -> dict[str, Any]:
+async def update_scoring_config(config: dict[str, Any], _: dict = Depends(require_admin)) -> dict[str, Any]:
     app.state.scoring_config = merge_scoring_config(app.state.scoring_config, config)
     return app.state.scoring_config
 
@@ -423,7 +424,11 @@ async def alerts_combined(date: str | None = Query(default=None)) -> dict[str, A
 
 
 @app.post("/alerts/korea/rescore", response_model=list[AlertResponseModel])
-async def rescore_korea(config: dict[str, Any], date: str | None = Query(default=None)) -> list[dict[str, Any]]:
+async def rescore_korea(
+    config: dict[str, Any],
+    date: str | None = Query(default=None),
+    _: dict = Depends(require_admin),
+) -> list[dict[str, Any]]:
     effective_config = merge_scoring_config(app.state.scoring_config, config)
     return load_enriched_snapshot(date, config=effective_config)
 
@@ -436,7 +441,7 @@ async def get_ingestion_status() -> dict[str, Any]:
         "available_snapshots": list_snapshot_dates(),
         "sources": [
             {
-                "source": "KDCA notifiable disease",
+                "source": "Notifiable Disease (KDCA API)",
                 "status": "active",
                 "latest_snapshot": latest_snapshot,
                 "cadence": "weekly",
@@ -510,7 +515,7 @@ async def get_keywords_config() -> dict[str, Any]:
 
 
 @app.post("/config/keywords")
-async def update_keywords_config(config: dict[str, list[str]]) -> dict[str, Any]:
+async def update_keywords_config(config: dict[str, list[str]], _: dict = Depends(require_admin)) -> dict[str, Any]:
     config_path = DATA_DIR / "keywords_config.json"
     config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
     return {"status": "ok", "config": config}

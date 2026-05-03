@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import AdminLoginModal from './components/AdminLoginModal';
 import FlowDiagram from './components/FlowDiagram';
 import GeminiChatbot from './components/GeminiChatbot';
 import KdcaNotifiablePanel from './components/KdcaNotifiablePanel';
 import KdcaUploadPanel from './components/KdcaUploadPanel';
 import KoreaMap from './components/KoreaMap';
-import LoginPage from './components/LoginPage';
 import MiniGlobe from './components/MiniGlobe';
 import NewsPanel from './components/NewsPanel';
 import RegionPanel from './components/RegionPanel';
@@ -14,14 +14,15 @@ import StatisticsView from './components/StatisticsView';
 import Timeline from './components/Timeline';
 import TopNav, { type NavTab } from './components/TopNav';
 import TrendsChart from './components/TrendsChart';
+import WelcomeNotice from './components/WelcomeNotice';
 import { useAuth } from './contexts/AuthContext';
 import { relevanceLabel, scoreInternationalRelevance } from './lib/internationalRelevance';
 import type { CombinedData, GlobalSignal, IngestionStatus, KoreaAlert, ScoringConfig } from './types';
+import type { User } from 'firebase/auth';
 import './index.css';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-// Auth is only enforced when Supabase keys are configured
-const AUTH_ENABLED = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+const NOTICE_VERSION = 'sentinel-notice-2026-05-v1';
 
 type Layer = 'respiratory' | 'wastewater_covid' | 'wastewater_flu' | 'news_trends_risk' | 'total_risk';
 type AggregationMode = 'max' | 'weighted';
@@ -135,26 +136,47 @@ const formatSource = (key: string) => SOURCE_LABELS[key] || key.replace(/_/g, ' 
 
 const formatPercent = (value: number) => `${Math.round(value * 100)}%`;
 const formatDistance = (value: number) => `${Math.round(value).toLocaleString()} km`;
+const formatIsoWeek = (value: string) => {
+  if (!value) return '';
+  const dt = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(dt.getTime())) return value;
+  const tmp = new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+  const dayNum = tmp.getUTCDay() || 7;
+  tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((tmp.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `${tmp.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+};
 
 export default function App() {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading, signOut, isAdmin, isAuthEnabled, getIdToken } = useAuth();
 
   // Auth gate — show login if auth is enabled and user is not signed in
-  if (AUTH_ENABLED && authLoading) {
+  if (authLoading) {
     return (
       <div style={{ minHeight: '100vh', background: '#0B1120', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ color: '#38BDF8', fontSize: '14px' }}>로딩 중...</div>
       </div>
     );
   }
-  if (AUTH_ENABLED && !user) {
-    return <LoginPage />;
-  }
-
-  return <AppInner user={user} signOut={signOut} />;
+  return <AppInner user={user} signOut={signOut} isAdmin={isAdmin} isAuthEnabled={isAuthEnabled} getIdToken={getIdToken} />;
 }
 
-function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').User | null; signOut: () => Promise<void> }) {
+function AppInner({
+  user,
+  signOut,
+  isAdmin,
+  isAuthEnabled,
+  getIdToken,
+}: {
+  user: User | null;
+  signOut: () => Promise<void>;
+  isAdmin: boolean;
+  isAuthEnabled: boolean;
+  getIdToken: () => Promise<string | null>;
+}) {
+  const [noticeAccepted, setNoticeAccepted] = useState(() => localStorage.getItem('sentinel-notice-version') === NOTICE_VERSION);
+  const [adminLoginOpen, setAdminLoginOpen] = useState(false);
   const [koreaAlerts, setKoreaAlerts] = useState<KoreaAlert[]>([]);
   const [globalSignals, setGlobalSignals] = useState<GlobalSignal[]>([]);
   // Phase 3-A: archive replay
@@ -186,6 +208,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   };
   const [availableDates, setAvailableDates] = useState<string[]>([]);
   const [currentDate, setCurrentDate] = useState('2026-03-15');
+  const [dismissedUpdateId, setDismissedUpdateId] = useState(() => localStorage.getItem('sentinel-dismissed-update') || '');
   const [, setIngestionStatus] = useState<IngestionStatus | null>(null);
   const [meta, setMeta] = useState<CombinedData['meta']>();
 
@@ -226,6 +249,9 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
 
   // What the World outbreak modal renders — archive replay if a past date is picked, otherwise live signals.
   const displayedSignals = selectedArchiveDate ? archiveSignals : globalSignals;
+  const latestAvailableDate = availableDates.length ? availableDates[availableDates.length - 1] : '';
+  const hasNewUpdate = Boolean(latestAvailableDate && latestAvailableDate !== currentDate && dismissedUpdateId !== latestAvailableDate);
+  const latestUpdateWeek = formatIsoWeek(latestAvailableDate);
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
@@ -256,6 +282,20 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     finished: false,
   });
   const [lastPipelineRun, setLastPipelineRun] = useState<Record<OperationKey, string | undefined>>(createEmptyPipelineRuns);
+
+  const getAdminHeaders = useCallback(async (json = true): Promise<HeadersInit> => {
+    const headers: Record<string, string> = {};
+    if (json) headers['Content-Type'] = 'application/json';
+    const token = await getIdToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return headers;
+  }, [getIdToken]);
+
+  const requireAdminAction = useCallback((label = 'This pipeline action') => {
+    if (isAdmin) return true;
+    setOperationError(`${label} is available only to the Sentinel operator. Public users can inspect the pipeline in read-only mode.`);
+    return false;
+  }, [isAdmin]);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -326,10 +366,11 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   }, []);
 
   const handleScoringApply = useCallback(async (config: ScoringConfig) => {
+    if (!requireAdminAction('Scoring changes')) return;
     try {
       const res = await fetch(`${API_BASE}/alerts/korea/rescore?date=${currentDate}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAdminHeaders(),
         body: JSON.stringify(config),
       });
       const rescored: KoreaAlert[] = await res.json();
@@ -341,7 +382,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     } catch {
       // Keep the current snapshot if the backend is unavailable.
     }
-  }, [currentDate, selectedKorea]);
+  }, [currentDate, selectedKorea, getAdminHeaders, requireAdminAction]);
 
   const refreshIngestionStatus = async (snapshotDate?: string) => {
     try {
@@ -355,12 +396,13 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
 
   // OSINT analysis (News+Trends → map update + save OSINT daily report)
   const handleRunOsintAnalysis = async (options?: { rethrow?: boolean }) => {
+    if (!requireAdminAction('OSINT analysis')) return;
     setAnalyzingOsint(true);
     setOsintResult(null);
     try {
       const res = await fetch(`${API_BASE}/risk-analysis/analyze-news-trends`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAdminHeaders(),
         body: JSON.stringify({}),
       });
       const data = await res.json();
@@ -372,7 +414,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       }
       // Save OSINT daily report
       try {
-        const rep = await fetch(`${API_BASE}/reports/generate-osint`, { method: 'POST' });
+        const rep = await fetch(`${API_BASE}/reports/generate-osint`, { method: 'POST', headers: await getAdminHeaders(false) });
         const repData = await rep.json();
         if (!rep.ok) throw new Error(repData?.detail || 'OSINT report generation failed');
         data.summary = (data.summary || '') + `\n\nOSINT daily report saved: ${repData.report_filename}`;
@@ -392,12 +434,13 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
 
   // Sentinel Analysis — Full integration (OSINT+KDCA → alert snapshot)
   const handleRunFullAnalysis = async (options?: { rethrow?: boolean }) => {
+    if (!requireAdminAction('Sentinel integrated analysis')) return;
     setAnalyzingFull(true);
     setFullResult(null);
     try {
       const res = await fetch(`${API_BASE}/risk-analysis/analyze`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAdminHeaders(),
         body: JSON.stringify({ include_kdca: true }),
       });
       const data = await res.json();
@@ -423,10 +466,11 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
 
   // KDCA weekly AI report generation (uses /reports/generate-kdca)
   const handleGenerateKdcaReport = async () => {
+    if (!requireAdminAction('KDCA report generation')) return;
     setGeneratingKdcaReport(true);
     setKdcaReportResult(null);
     try {
-      const res = await fetch(`${API_BASE}/reports/generate-kdca?snapshot_date=${currentDate}`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/reports/generate-kdca?snapshot_date=${currentDate}`, { method: 'POST', headers: await getAdminHeaders(false) });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'KDCA report generation failed');
       setKdcaReportResult({
@@ -442,9 +486,10 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   };
 
   const handleGenerateFinalReport = async (options?: { rethrow?: boolean }) => {
+    if (!requireAdminAction('Final report generation')) return;
     setGeneratingFinalReport(true);
     try {
-      const res = await fetch(`${API_BASE}/reports/generate-final?snapshot_date=${currentDate}`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/reports/generate-final?snapshot_date=${currentDate}`, { method: 'POST', headers: await getAdminHeaders(false) });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Final report generation failed');
       setFullResult((prev) => ({
@@ -469,21 +514,22 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   };
 
   const runOperation = async (key: OperationKey): Promise<boolean> => {
+    if (!requireAdminAction('Pipeline execution')) return false;
     setRunningPipeline(key);
     setOperationError(null);
     try {
       if (key === 'korea_news') {
-        const res = await fetch(`${API_BASE}/ingestion/refresh-korea`, { method: 'POST' });
+        const res = await fetch(`${API_BASE}/ingestion/refresh-korea`, { method: 'POST', headers: await getAdminHeaders(false) });
         if (!res.ok) throw new Error('Korea news refresh failed');
       } else if (key === 'trends') {
-        const res = await fetch(`${API_BASE}/ingestion/refresh-trends`, { method: 'POST' });
+        const res = await fetch(`${API_BASE}/ingestion/refresh-trends`, { method: 'POST', headers: await getAdminHeaders(false) });
         const data = await res.json();
         const googleError = data?.results?.google?.error || data?.results?.google_korea?.error || data?.results?.google_global?.error;
         if (!res.ok || googleError || data?.status === 'error') {
           throw new Error(googleError || data?.detail || 'Google Trends refresh failed');
         }
       } else if (key === 'global') {
-        const res = await fetch(`${API_BASE}/ingestion/refresh-global`, { method: 'POST' });
+        const res = await fetch(`${API_BASE}/ingestion/refresh-global`, { method: 'POST', headers: await getAdminHeaders(false) });
         const data = await res.json();
         if (!res.ok || data?.status === 'error' || data?.status === 'empty') {
           throw new Error(data?.details || data?.detail || 'WHO DON / overseas news refresh failed');
@@ -492,7 +538,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       } else if (key === 'kdca_api') {
         await handleRefreshKdcaNotifiable({ rethrow: true });
       } else if (key === 'kdca_digest') {
-        const res = await fetch(`${API_BASE}/risk-analysis/kdca-digest`, { method: 'POST' });
+        const res = await fetch(`${API_BASE}/risk-analysis/kdca-digest`, { method: 'POST', headers: await getAdminHeaders(false) });
         if (!res.ok) throw new Error('KDCA digest failed');
         setKdcaDigestStatus(await res.json());
       } else if (key === 'osint') {
@@ -517,10 +563,11 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   };
 
   const handleRefreshKdcaNotifiable = async (options?: { rethrow?: boolean }) => {
+    if (!requireAdminAction('KDCA API refresh')) return;
     setRefreshingKdcaApi(true);
     setKdcaApiResult(null);
     try {
-      const res = await fetch(`${API_BASE}/ingestion/refresh-kdca-notifiable`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/ingestion/refresh-kdca-notifiable`, { method: 'POST', headers: await getAdminHeaders(false) });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'KDCA API refresh failed');
       const mismatchCount = data.validation?.mismatch_count ?? 0;
@@ -528,8 +575,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
         summary: `KDCA PeriodRegion ${data.year} 갱신 완료: 전체 ${data.all_notifiable_record_count || 0} rows, 호흡기 관련 ${data.record_count} rows, 호흡기/공기전파 바이러스 ${data.respiratory_virus_record_count || 0} rows, latest ${data.latest_epiweek || data.latest_period || 'n/a'}, PeriodBasic 검산 mismatch ${mismatchCount}.`,
       });
     } catch {
-      setKdcaApiResult({ summary: 'KDCA 법정감염병 API 갱신 실패. API key, 네트워크, 공공데이터포털 endpoint 상태를 확인하세요.' });
-      if (options?.rethrow) throw new Error('KDCA 법정감염병 API 갱신 실패');
+      setKdcaApiResult({ summary: 'Notifiable Disease (KDCA API) refresh failed. Check the API key, network, and public data endpoint status.' });
+      if (options?.rethrow) throw new Error('Notifiable Disease (KDCA API) refresh failed');
     } finally {
       setRefreshingKdcaApi(false);
     }
@@ -552,6 +599,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   };
 
   const runFullFinalPipeline = async () => {
+    if (!requireAdminAction('Full pipeline execution')) return;
     if (runningPipeline || pipelineBatch.active) return;
     setPipelineFlowOpen(true);
     setOperationError(null);
@@ -700,7 +748,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       title: 'KDCA 파일 업로드/파싱',
       detail: latestUpload
         ? `${latestUpload.file_type} / ${latestUpload.records_parsed || 0} records / ${latestUpload.snapshot_count || 0} snapshots`
-        : '질병청 주간 xlsx/pdf 원자료를 업로드하면 지역별 감시 신호로 정규화합니다.',
+        : 'KDCA weekly xlsx/pdf source files are normalized into regional surveillance signals after upload.',
       status: runningPipeline === 'kdca_upload' ? 'running' : latestUpload ? 'ready' : 'needs-run',
       updatedAt: latestUpload?.uploaded_at,
       primaryAction: '업로드',
@@ -708,8 +756,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     {
       key: 'kdca_api',
       lane: 'KDCA',
-      title: 'KDCA 법정감염병 API',
-      detail: kdcaApiResult?.summary || '공공데이터 PeriodRegion/PeriodBasic API를 갱신해 법정감염병 보조 신호를 확인합니다.',
+      title: 'Notifiable Disease (KDCA API)',
+      detail: kdcaApiResult?.summary || 'Refreshes KDCA PeriodRegion/PeriodBasic data to update the Notifiable Disease (KDCA API) signal lane.',
       status: runningPipeline === 'kdca_api' || refreshingKdcaApi ? 'running' : lastPipelineRun.kdca_api ? 'ready' : 'needs-run',
       updatedAt: lastPipelineRun.kdca_api,
       primaryAction: 'API 실행',
@@ -729,7 +777,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
       title: 'KDCA 감시자료 요약',
       detail: kdcaDigestStatus?.status === 'ok'
         ? `${kdcaDigestStatus.sources_used?.length || 0} source files summarized.`
-        : '업로드된 질병청 원자료를 AI가 요약해 Sentinel 통합 분석의 공식 감시 맥락으로 넘깁니다.',
+        : 'AI summarizes uploaded KDCA source files and passes the official surveillance context into Sentinel synthesis.',
       status: runningPipeline === 'kdca_digest' ? 'running' : kdcaDigestStatus?.status === 'ok' ? 'ready' : 'needs-run',
       updatedAt: kdcaDigestStatus?.generated_at,
       primaryAction: '요약',
@@ -881,8 +929,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
   const sourceOverviewCards = [
     {
       label: 'OFFICIAL',
-      title: 'KDCA 표본감시 + 법정감염병 API',
-      description: 'ILI/ARI/SARI xlsx/csv는 핵심 지역 감시 신호로, EIDAPI PeriodRegion은 주차별 법정감염병 국내/해외유입 보조 신호로 사용합니다.',
+      title: 'KDCA surveillance + Notifiable Disease (KDCA API)',
+      description: 'ILI/ARI/SARI xlsx/csv files are the core regional signal; EIDAPI PeriodRegion supports weekly domestic/imported Notifiable Disease (KDCA API) context.',
       cadence: '주간 / epiweek',
       output: 'normalized_signal + period_region',
       metric: `${koreaAlerts.length || 17} 시도`,
@@ -934,6 +982,17 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
     );
   }
 
+  if (!noticeAccepted) {
+    return (
+      <WelcomeNotice
+        onAccept={() => {
+          localStorage.setItem('sentinel-notice-version', NOTICE_VERSION);
+          setNoticeAccepted(true);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="kas-app">
       <TopNav
@@ -946,7 +1005,11 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
         snapshotDate={meta?.snapshot_date || currentDate}
         availableDates={availableDates}
         onDateChange={setCurrentDate}
+        isAdmin={isAdmin}
+        isAuthEnabled={isAuthEnabled}
+        onAdminLogin={() => setAdminLoginOpen(true)}
       />
+      {adminLoginOpen && <AdminLoginModal onClose={() => setAdminLoginOpen(false)} />}
 
       {/* === MAP TAB (default) === */}
       {navTab === 'map' && (
@@ -956,7 +1019,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
               <span>Sentinel Korea structure</span>
               <strong>공식 감시자료, OSINT, 검색 트렌드, 해외 보조 신호를 한 지도에서 합성합니다.</strong>
               <p>
-                KDCA 주간 감시와 법정감염병 API가 기준선을 만들고, 국내 뉴스/검색 트렌드가 이상 징후를 보조합니다.
+                KDCA weekly surveillance and Notifiable Disease (KDCA API) data form the baseline; domestic news and search trends add anomaly context.
                 WHO DON과 해외 뉴스는 국내 경보를 대체하지 않고, 한국 관련성이 있는 외부 outbreak 맥락을 globe에서 따로 보여줍니다.
               </p>
             </div>
@@ -1039,6 +1102,55 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
 
           {/* Right-side vertical stack: legend (toolbar removed — actions live in MAP guide cards) */}
           <div className="kas-right-stack">
+            {hasNewUpdate && (
+              <section className="map-update-card" aria-live="polite">
+                <div>
+                  <span>NEW UPDATE</span>
+                  <strong>{latestUpdateWeek || latestAvailableDate}</strong>
+                  <p>Latest Sentinel weekly release is available.</p>
+                </div>
+                <div className="map-update-actions">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentDate(latestAvailableDate);
+                      localStorage.setItem('sentinel-dismissed-update', latestAvailableDate);
+                      setDismissedUpdateId(latestAvailableDate);
+                    }}
+                  >
+                    View update
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      localStorage.setItem('sentinel-dismissed-update', latestAvailableDate);
+                      setDismissedUpdateId(latestAvailableDate);
+                    }}
+                    aria-label="Dismiss update notice"
+                  >
+                    ×
+                  </button>
+                </div>
+              </section>
+            )}
+            <section className="map-mini-globe-card" onClick={() => setIsGlobeExpanded(true)} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === 'Enter') setIsGlobeExpanded(true); }}>
+              <div className="map-mini-globe-copy">
+                <span>GLOBAL OUTBREAK</span>
+                <strong>{globalSignals.length} signals</strong>
+                <p>Click to inspect overseas outbreak context.</p>
+              </div>
+              <MiniGlobe
+                signals={displayedSignals}
+                koreaAlerts={koreaAlerts}
+                activeLayers={activeLayers}
+                aggregationMode={aggregationMode}
+                onGlobalSignalClick={(signal) => {
+                  setSelectedGlobal(signal);
+                  setIsGlobeExpanded(true);
+                }}
+                selectedGlobalId={selectedGlobal?.id || null}
+              />
+            </section>
             {showRunPanel && (
               <section className="run-control-panel" aria-label="Run analyze status center">
                 <button className="run-control-close" onClick={() => setShowRunPanel(false)} title="닫기" type="button">×</button>
@@ -1082,7 +1194,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                   <div className="run-control-batch-actions">
                     <button
                       className="run-control-batch-btn run-control-batch-btn--primary"
-                      disabled={!!runningPipeline || pipelineBatch.active}
+                      disabled={!isAdmin || !!runningPipeline || pipelineBatch.active}
                       onClick={runFullFinalPipeline}
                       type="button"
                     >
@@ -1090,7 +1202,7 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                     </button>
                     <button
                       className="run-control-batch-btn"
-                      disabled={!!runningPipeline || pipelineBatch.active}
+                      disabled={!isAdmin || !!runningPipeline || pipelineBatch.active}
                       onClick={resetFullPipeline}
                       type="button"
                     >
@@ -1178,8 +1290,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                       </div>
                       <button
                         className="run-control-action"
-                        disabled={!!runningPipeline}
-                        onClick={() => runOperation(row.key)}
+                        disabled={!isAdmin || !!runningPipeline}
+                        onClick={() => { if (isAdmin) runOperation(row.key); }}
                         type="button"
                       >
                         {runningPipeline === row.key ? 'Running...' : row.primaryAction}
@@ -1732,16 +1844,16 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
               <section className="kas-sources-card">
                 <h3>KDCA 감시자료 분석</h3>
                 <p className="source-section-helper">
-                  질병관리청에서 제공하는 주간보고서를 기반으로 AI가 통합분석하여 요약 및 위험도 분석을 제공합니다.
+                  KDCA weekly surveillance sources are summarized by AI to support integrated risk interpretation.
                 </p>
-                <KdcaUploadPanel view="summary" />
+                <KdcaUploadPanel view="summary" readOnly={!isAdmin} getAdminHeaders={getAdminHeaders} />
               </section>
               <section className="kas-sources-card">
-                <h3>KDCA 법정감염병 real data</h3>
+                <h3>Notifiable Disease (KDCA API)</h3>
                 <p className="source-section-helper">
                   EIDAPI PeriodRegion 원자료를 주차별로 보여주고, Sentinel이 호흡기 관련 질환과 호흡기/공기전파 바이러스 subset을 어떻게 파싱했는지 확인합니다.
                 </p>
-                <KdcaNotifiablePanel />
+                <KdcaNotifiablePanel readOnly={!isAdmin} getAdminHeaders={getAdminHeaders} />
               </section>
             </div>
 
@@ -1763,18 +1875,18 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
 
                 <div className="kas-console-subcard">
                   <div className="kas-console-subcard-title">KDCA 데이터 입력</div>
-                  <p className="console-card-desc">질병청 원천자료 업로드와 보고서 수신자 관리를 담당합니다.</p>
-                  <KdcaUploadPanel view="console" />
+                <p className="console-card-desc">Manage KDCA source uploads and report recipients.</p>
+                  <KdcaUploadPanel view="console" readOnly={!isAdmin} getAdminHeaders={getAdminHeaders} />
                 </div>
 
                 <div className="kas-console-subcard">
-                  <div className="kas-console-subcard-title">KDCA 법정감염병 API</div>
+                  <div className="kas-console-subcard-title">Notifiable Disease (KDCA API)</div>
                   <p className="console-card-desc">
-                    PeriodRegion을 기본으로 주차별 법정감염병 국내/해외유입 값을 수집하고, PeriodBasic으로 총합을 검산합니다.
+                    PeriodRegion provides weekly domestic/imported Notifiable Disease (KDCA API) values; PeriodBasic is used for total-count validation.
                     17개 시도 지역 신호는 업로드 xlsx/csv 감시자료가 담당합니다.
                   </p>
-                  <button className="console-action-btn console-neutral-btn" onClick={() => handleRefreshKdcaNotifiable()} disabled={refreshingKdcaApi}>
-                    <span className="console-btn-title">{refreshingKdcaApi ? 'KDCA API 갱신 중...' : '법정감염병 API 갱신'}</span>
+                  <button className="console-action-btn console-neutral-btn" onClick={() => handleRefreshKdcaNotifiable()} disabled={!isAdmin || refreshingKdcaApi}>
+                    <span className="console-btn-title">{refreshingKdcaApi ? 'Refreshing KDCA API...' : 'Refresh Notifiable Disease (KDCA API)'}</span>
                     <span className="console-btn-sub">PeriodRegion primary · PeriodBasic validation</span>
                   </button>
                   {kdcaApiResult?.summary && (
@@ -1791,15 +1903,15 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 <h3 className="kas-console-group-title">분석 실행 / AI ANALYZE</h3>
                 <p className="console-card-desc">각 분석 버튼은 map, report, pipeline control의 산출물을 갱신합니다.</p>
 
-                <button className="osint-analysis-btn console-action-btn" onClick={() => handleRunOsintAnalysis()} disabled={analyzingOsint}>
+                <button className="osint-analysis-btn console-action-btn" onClick={() => handleRunOsintAnalysis()} disabled={!isAdmin || analyzingOsint}>
                   <span className="console-btn-title">{analyzingOsint ? 'OSINT 실행 중...' : 'OSINT 분석'}</span>
                   <span className="console-btn-sub">국내 뉴스 + 검색 트렌드 보조 신호 분석</span>
                 </button>
-                <button className="kdca-report-btn console-action-btn" onClick={handleGenerateKdcaReport} disabled={generatingKdcaReport}>
+                <button className="kdca-report-btn console-action-btn" onClick={handleGenerateKdcaReport} disabled={!isAdmin || generatingKdcaReport}>
                   <span className="console-btn-title">{generatingKdcaReport ? 'KDCA 분석 중...' : 'KDCA 감시자료 분석'}</span>
                   <span className="console-btn-sub">공식 감시자료 기반 주간 AI report</span>
                 </button>
-                <button className="sentinel-analysis-btn console-action-btn" onClick={() => handleRunFullAnalysis()} disabled={analyzingFull}>
+                <button className="sentinel-analysis-btn console-action-btn" onClick={() => handleRunFullAnalysis()} disabled={!isAdmin || analyzingFull}>
                   <span className="console-btn-title">{analyzingFull ? 'Sentinel 실행 중...' : 'Sentinel 통합 분석'}</span>
                   <span className="console-btn-sub">KDCA + OSINT + trend를 결합해 alert snapshot 계산</span>
                 </button>
@@ -1839,10 +1951,10 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 <p>각 노드를 클릭하면 해당 단계를 실행합니다. 진행 중인 노드는 펄스로, 흐름은 점선 애니메이션으로 표시됩니다.</p>
               </div>
               <div className="pipeline-flow-header-actions">
-                <button disabled={!!runningPipeline || pipelineBatch.active} onClick={runFullFinalPipeline} type="button">
+                <button disabled={!isAdmin || !!runningPipeline || pipelineBatch.active} onClick={runFullFinalPipeline} type="button">
                   {pipelineBatch.active ? '전체 실행 중...' : '전체 실행'}
                 </button>
-                <button disabled={!!runningPipeline || pipelineBatch.active} onClick={resetFullPipeline} type="button">
+                <button disabled={!isAdmin || !!runningPipeline || pipelineBatch.active} onClick={resetFullPipeline} type="button">
                   전체 되돌리기
                 </button>
               </div>
@@ -1902,8 +2014,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                       <circle
                         r="28"
                         fill="transparent"
-                        style={{ cursor: runningPipeline ? 'wait' : 'pointer' }}
-                        onClick={() => { if (!runningPipeline) runOperation(row.key); }}
+                        style={{ cursor: !isAdmin ? 'not-allowed' : runningPipeline ? 'wait' : 'pointer' }}
+                        onClick={() => { if (isAdmin && !runningPipeline) runOperation(row.key); }}
                       >
                         <title>{row.primaryAction} — {row.title}</title>
                       </circle>
@@ -1936,8 +2048,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                       )}
                       <button
                         className="pipeline-flow-detail-btn"
-                        disabled={!!runningPipeline}
-                        onClick={() => runOperation(row.key)}
+                        disabled={!isAdmin || !!runningPipeline}
+                        onClick={() => { if (isAdmin) runOperation(row.key); }}
                         type="button"
                       >
                         {isRunning ? '실행 중...' : row.primaryAction}
@@ -1978,10 +2090,10 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                 <p>각 노드를 클릭하면 해당 단계를 실행합니다. 진행 중인 노드는 펄스로, 흐름은 점선 애니메이션으로 표시됩니다.</p>
               </div>
               <div className="pipeline-flow-header-actions">
-                <button disabled={!!runningPipeline || pipelineBatch.active} onClick={runFullFinalPipeline} type="button">
+                <button disabled={!isAdmin || !!runningPipeline || pipelineBatch.active} onClick={runFullFinalPipeline} type="button">
                   {pipelineBatch.active ? '전체 실행 중...' : '전체 실행'}
                 </button>
-                <button disabled={!!runningPipeline || pipelineBatch.active} onClick={resetFullPipeline} type="button">
+                <button disabled={!isAdmin || !!runningPipeline || pipelineBatch.active} onClick={resetFullPipeline} type="button">
                   전체 되돌리기
                 </button>
               </div>
@@ -2052,8 +2164,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                       <circle
                         r="28"
                         fill="transparent"
-                        style={{ cursor: runningPipeline ? 'wait' : 'pointer' }}
-                        onClick={() => { if (!runningPipeline) runOperation(row.key); }}
+                        style={{ cursor: !isAdmin ? 'not-allowed' : runningPipeline ? 'wait' : 'pointer' }}
+                        onClick={() => { if (isAdmin && !runningPipeline) runOperation(row.key); }}
                       >
                         <title>{row.primaryAction} — {row.title}</title>
                       </circle>
@@ -2086,8 +2198,8 @@ function AppInner({ user, signOut }: { user: import('@supabase/supabase-js').Use
                       )}
                       <button
                         className="pipeline-flow-detail-btn"
-                        disabled={!!runningPipeline}
-                        onClick={() => runOperation(row.key)}
+                        disabled={!isAdmin || !!runningPipeline}
+                        onClick={() => { if (isAdmin) runOperation(row.key); }}
                         type="button"
                       >
                         {isRunning ? '실행 중...' : row.primaryAction}

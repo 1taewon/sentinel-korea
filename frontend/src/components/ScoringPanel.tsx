@@ -6,9 +6,9 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const fallbackConfig: ScoringConfig = {
   signals: {
     notifiable_disease: {
-      label: '법정감염병 신고',
-      description: '질병관리청 법정감염병 신고 자료에서 호흡기 관련 이상 증가를 확인합니다.',
-      source: 'KDCA notifiable disease API',
+    label: 'Notifiable Disease (KDCA API)',
+    description: 'Checks respiratory-related increases in Notifiable Disease (KDCA API) records.',
+    source: 'Notifiable Disease (KDCA API)',
       enabled: true,
     },
     influenza_like: {

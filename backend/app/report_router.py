@@ -7,8 +7,10 @@ from datetime import datetime, date
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
+
+from .auth import require_admin
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -148,7 +150,7 @@ def _build_contract_sections(
 
 ## Why it matters
 - 이 보고서는 {report_scope}입니다.
-- Sentinel의 목적은 질병청 자료를 단순 재표시하는 것이 아니라, 어떤 시도(region)가 평소보다 이상한지와 그 근거를 빠르게 설명하는 것입니다.
+- Sentinel의 목적은 KDCA 자료를 단순 재표시하는 것이 아니라, 어떤 시도(region)가 평소보다 이상한지와 그 근거를 빠르게 설명하는 것입니다.
 - 국내 뉴스/검색 신호는 증상탐색행동(OSINT 신호)으로 해석하며, 공식 감시자료와 수렴할 때 경보 설명력이 올라갑니다.
 
 ## Confidence
@@ -702,23 +704,23 @@ class RecipientModel(BaseModel):
 
 # ── 라우트 ───────────────────────────────────────────────────────────
 @router.post("/generate")
-async def generate_report(snapshot_date: str | None = None) -> dict[str, Any]:
+async def generate_report(snapshot_date: str | None = None, _: dict = Depends(require_admin)) -> dict[str, Any]:
     """하위 호환: KDCA 주간 리포트 생성."""
     return generate_kdca_report(snapshot_date)
 
 
 @router.post("/generate-osint")
-async def generate_osint_endpoint() -> dict[str, Any]:
+async def generate_osint_endpoint(_: dict = Depends(require_admin)) -> dict[str, Any]:
     return generate_osint_report()
 
 
 @router.post("/generate-kdca")
-async def generate_kdca_endpoint(snapshot_date: str | None = None) -> dict[str, Any]:
+async def generate_kdca_endpoint(snapshot_date: str | None = None, _: dict = Depends(require_admin)) -> dict[str, Any]:
     return generate_kdca_report(snapshot_date)
 
 
 @router.post("/generate-final")
-async def generate_final_endpoint(snapshot_date: str | None = None) -> dict[str, Any]:
+async def generate_final_endpoint(snapshot_date: str | None = None, _: dict = Depends(require_admin)) -> dict[str, Any]:
     return generate_final_report(snapshot_date)
 
 
@@ -768,6 +770,7 @@ async def get_report(filename: str) -> dict[str, Any]:
 async def send_report(
     background_tasks: BackgroundTasks,
     filename: str | None = None,
+    _: dict = Depends(require_admin),
 ) -> dict[str, Any]:
     recipients = _load_recipients()
     if not recipients:
@@ -855,7 +858,7 @@ async def list_recipients() -> list[dict]:
 
 
 @router.post("/recipients/add")
-async def add_recipient(recipient: RecipientModel) -> dict[str, Any]:
+async def add_recipient(recipient: RecipientModel, _: dict = Depends(require_admin)) -> dict[str, Any]:
     recipients = _load_recipients()
     if recipient.email in [r["email"] for r in recipients]:
         raise HTTPException(status_code=400, detail="이미 등록된 이메일입니다.")
@@ -865,7 +868,7 @@ async def add_recipient(recipient: RecipientModel) -> dict[str, Any]:
 
 
 @router.delete("/recipients/{email}")
-async def remove_recipient(email: str) -> dict[str, Any]:
+async def remove_recipient(email: str, _: dict = Depends(require_admin)) -> dict[str, Any]:
     recipients = _load_recipients()
     new_list = [r for r in recipients if r["email"] != email]
     if len(new_list) == len(recipients):

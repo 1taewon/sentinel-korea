@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -78,7 +79,7 @@ const TYPE_META: Record<ReportType, { label: string; color: string; cadence: str
 const TYPE_ORDER: Array<'all' | ReportType> = ['all', 'final', 'kdca', 'osint'];
 
 const SIGNAL_TERMS = [
-  { id: 'signal-kdca', label: 'KDCA 공식감시', terms: ['KDCA', '질병청', '공식 감시', 'baseline', '감시자료'] },
+  { id: 'signal-kdca', label: 'KDCA official surveillance', terms: ['KDCA', '공식 감시', 'baseline', '감시자료'] },
   { id: 'signal-trends', label: '검색 트렌드', terms: ['Google Trends', '검색 트렌드', 'pneumonia', 'flu', '검색량'] },
   { id: 'signal-news', label: '국내 뉴스', terms: ['뉴스', '보도', '언론', '기사'] },
   { id: 'signal-global', label: '국제/WHO 맥락', terms: ['글로벌', '국제', 'WHO', '해외', '유입'] },
@@ -493,6 +494,7 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
 }
 
 export default function ReportView() {
+  const { isAdmin, getIdToken } = useAuth();
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [typeFilter, setTypeFilter] = useState<'all' | ReportType>('all');
   const [selected, setSelected] = useState<ReportItem | null>(null);
@@ -510,6 +512,20 @@ export default function ReportView() {
     () => (typeFilter === 'all' ? reports : reports.filter((report) => report.type === typeFilter)),
     [reports, typeFilter],
   );
+
+  const adminHeaders = async (json = true): Promise<HeadersInit> => {
+    const headers: Record<string, string> = {};
+    if (json) headers['Content-Type'] = 'application/json';
+    const token = await getIdToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return headers;
+  };
+
+  const requireAdmin = (label: string) => {
+    if (isAdmin) return true;
+    setStatus(`${label} is available only to the Sentinel operator. Public users can read the report archive.`);
+    return false;
+  };
 
   const briefSections = useMemo(() => buildReportBrief(selected, markdown), [selected, markdown]);
   const relationshipFigure = useMemo(
@@ -569,10 +585,11 @@ export default function ReportView() {
   }, []);
 
   const generateFinalReport = async () => {
+    if (!requireAdmin('Report generation')) return;
     setGenerating(true);
     setStatus('Generating Sentinel intelligence report...');
     try {
-      const res = await fetch(`${API_BASE}/reports/generate-final`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/reports/generate-final`, { method: 'POST', headers: await adminHeaders(false) });
       const data = await res.json();
       if (!res.ok) {
         setStatus(data.detail || 'Report generation failed.');
@@ -589,12 +606,13 @@ export default function ReportView() {
   };
 
   const addRecipient = async () => {
+    if (!requireAdmin('Recipient management')) return;
     if (!newEmail.trim()) return;
     setStatus('');
     try {
       const res = await fetch(`${API_BASE}/reports/recipients/add`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await adminHeaders(),
         body: JSON.stringify({ email: newEmail.trim(), name: newName.trim() }),
       });
       if (res.ok) {
@@ -612,8 +630,9 @@ export default function ReportView() {
   };
 
   const removeRecipient = async (email: string) => {
+    if (!requireAdmin('Recipient management')) return;
     try {
-      await fetch(`${API_BASE}/reports/recipients/${encodeURIComponent(email)}`, { method: 'DELETE' });
+      await fetch(`${API_BASE}/reports/recipients/${encodeURIComponent(email)}`, { method: 'DELETE', headers: await adminHeaders(false) });
       await fetchRecipients();
     } catch {
       setStatus('Recipient could not be removed.');
@@ -621,6 +640,7 @@ export default function ReportView() {
   };
 
   const sendEmail = async () => {
+    if (!requireAdmin('Report email sending')) return;
     if (!selected) return;
     if (recipients.length === 0) {
       setStatus('Add at least one recipient before sending.');
@@ -631,6 +651,7 @@ export default function ReportView() {
     try {
       const res = await fetch(`${API_BASE}/reports/send?filename=${encodeURIComponent(selected.filename)}`, {
         method: 'POST',
+        headers: await adminHeaders(false),
       });
       const data = await res.json();
       if (res.ok) {
@@ -654,7 +675,7 @@ export default function ReportView() {
           <p>Reports are organized as evidence for regional respiratory watch decisions, not as standalone prediction outputs.</p>
         </div>
 
-        <button className="report-generate-btn" onClick={generateFinalReport} disabled={generating}>
+        <button className="report-generate-btn" onClick={generateFinalReport} disabled={!isAdmin || generating}>
           {generating ? 'Generating...' : 'Generate Sentinel report'}
         </button>
 
