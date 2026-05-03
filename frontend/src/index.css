@@ -1612,7 +1612,18 @@ button, input, textarea, select { font: inherit; }
   display: flex;
   flex-direction: column;
   gap: 3px;
+  /* Show ~4 weeks without scroll; older weeks reachable via scrollbar.
+     Each row ≈ 24-26 px (padding 4 × 2 + content + border) + 3 px gap →
+     4 rows ≈ 108-118 px. */
+  max-height: 118px;
+  overflow-y: auto;
+  /* hide native scrollbar arrow on Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
+.timeline-week-list::-webkit-scrollbar { width: 4px; }
+.timeline-week-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.timeline-week-list::-webkit-scrollbar-track { background: transparent; }
 
 .timeline-week-row {
   display: grid;

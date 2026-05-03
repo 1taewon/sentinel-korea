@@ -519,6 +519,22 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
             }}
             onNodeClick={handleNodeClick}
             onBackgroundClick={() => setSelectedId(null)}
+            onEngineStop={() => {
+              // Pin every node at its settled position so future drags only
+              // move the grabbed node — the rest of the web stays still
+              // (RadAssist/Cliverad behaviour).
+              graphData.nodes.forEach((n: any) => {
+                if (typeof n.x === 'number' && typeof n.y === 'number') {
+                  n.fx = n.x;
+                  n.fy = n.y;
+                }
+              });
+            }}
+            onNodeDragEnd={(node: any) => {
+              // Keep dragged node fixed where the user dropped it.
+              node.fx = node.x;
+              node.fy = node.y;
+            }}
             linkColor={() => 'rgba(56, 189, 248, 0.45)'}
             linkWidth={(l: any) => 0.8 + (l.strength || 0.4) * 2.4}
             linkDirectionalArrowLength={0}
