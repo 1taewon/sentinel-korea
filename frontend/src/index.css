@@ -6686,6 +6686,24 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
+/* Single confirmation row spanning the full width below the bilingual grid. */
+.welcome-notice-check--single {
+  margin: 0;
+  padding: 14px 24px;
+  border-radius: 0;
+  border-top: 1px solid var(--border);
+  border-bottom: none;
+  border-left: none;
+  border-right: none;
+  background: var(--bg-secondary);
+}
+.welcome-notice-check--single:hover {
+  background: var(--bg-soft);
+}
+.welcome-notice-check--single span {
+  font-size: 13px;
+  font-weight: 600;
+}
 .welcome-notice-check:hover {
   border-color: #38bdf8;
   background: var(--bg-soft);
