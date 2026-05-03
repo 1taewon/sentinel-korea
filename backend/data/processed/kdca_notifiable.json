@@ -2,11 +2,11 @@
   "status": "ok",
   "source": "KDCA EIDAPIService/PeriodRegion",
   "year": 2026,
-  "latest_epiweek": "2026-W18",
-  "latest_period": "2026년 18주",
-  "latest_normalized_score": 0.2531,
-  "record_count": 198,
-  "all_notifiable_record_count": 1206,
-  "respiratory_virus_record_count": 90,
+  "latest_epiweek": "2026-W19",
+  "latest_period": "2026년 19주",
+  "latest_normalized_score": 0.0,
+  "record_count": 209,
+  "all_notifiable_record_count": 1273,
+  "respiratory_virus_record_count": 95,
   "note": "national weekly notifiable respiratory subset; PeriodRegion separates domestic/imported counts, not 17 sido regions"
 }

@@ -4,7 +4,7 @@
   "source": "KDCA EIDAPIService/PeriodRegion",
   "definition": "법정감염병은 감염병의 예방 및 관리에 관한 법률에 따라 신고·감시 대상이 되는 감염병입니다. Sentinel은 KDCA EIDAPI PeriodRegion의 weekly resultVal, dmstcVal, outnatnVal을 원자료로 보관하고, 그중 호흡기 관련 질환과 호흡기/공기전파 바이러스 질환을 별도 subset으로 파싱합니다.",
   "summary": {
-    "record_count": 90,
+    "record_count": 95,
     "weekly": [
       {
         "epiweek": "2026-W01",
@@ -239,10 +239,20 @@
         "weighted_total": 0.0,
         "diseases": [],
         "normalized_score": 0.0
+      },
+      {
+        "epiweek": "2026-W19",
+        "period": "2026년 19주",
+        "total": 0.0,
+        "domestic": 0.0,
+        "imported": 0.0,
+        "weighted_total": 0.0,
+        "diseases": [],
+        "normalized_score": 0.0
       }
     ],
-    "latest_epiweek": "2026-W18",
-    "latest_period": "2026년 18주",
+    "latest_epiweek": "2026-W19",
+    "latest_period": "2026년 19주",
     "latest_normalized_score": 0.0,
     "disease_totals": {
       "동물인플루엔자 인체감염증": 0.0,
@@ -276,7 +286,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -294,7 +304,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -312,7 +322,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -330,7 +340,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -348,7 +358,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -366,7 +376,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -384,7 +394,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -402,7 +412,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -420,7 +430,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -438,7 +448,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -456,7 +466,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -474,7 +484,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -492,7 +502,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -510,7 +520,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -528,7 +538,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -546,7 +556,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -564,7 +574,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -582,7 +592,25 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
+    },
+    {
+      "source_type": "kdca_period_region",
+      "period": "2026년 19주",
+      "year": 2026,
+      "week": 19,
+      "epiweek": "2026-W19",
+      "icd_group": "제1급",
+      "disease": "중증급성호흡기증후군(SARS)",
+      "category": "emerging_respiratory_virus",
+      "weight": 1.0,
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
+      "raw_value": 0.0,
+      "domestic_value": 0.0,
+      "imported_value": 0.0,
+      "unit": "weekly reported cases",
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -600,7 +628,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -618,7 +646,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -636,7 +664,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -654,7 +682,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -672,7 +700,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -690,7 +718,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -708,7 +736,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -726,7 +754,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -744,7 +772,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -762,7 +790,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -780,7 +808,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -798,7 +826,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -816,7 +844,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -834,7 +862,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -852,7 +880,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -870,7 +898,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -888,7 +916,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -906,7 +934,25 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
+    },
+    {
+      "source_type": "kdca_period_region",
+      "period": "2026년 19주",
+      "year": 2026,
+      "week": 19,
+      "epiweek": "2026-W19",
+      "icd_group": "제1급",
+      "disease": "중동호흡기증후군(MERS)",
+      "category": "emerging_respiratory_virus",
+      "weight": 1.0,
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
+      "raw_value": 0.0,
+      "domestic_value": 0.0,
+      "imported_value": 0.0,
+      "unit": "weekly reported cases",
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -924,7 +970,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -942,7 +988,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -960,7 +1006,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -978,7 +1024,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -996,7 +1042,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1014,7 +1060,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1032,7 +1078,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1050,7 +1096,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1068,7 +1114,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1086,7 +1132,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1104,7 +1150,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1122,7 +1168,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1140,7 +1186,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1158,7 +1204,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1176,7 +1222,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1194,7 +1240,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1212,7 +1258,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1230,7 +1276,25 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
+    },
+    {
+      "source_type": "kdca_period_region",
+      "period": "2026년 19주",
+      "year": 2026,
+      "week": 19,
+      "epiweek": "2026-W19",
+      "icd_group": "제1급",
+      "disease": "동물인플루엔자 인체감염증",
+      "category": "zoonotic_influenza",
+      "weight": 1.0,
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
+      "raw_value": 0.0,
+      "domestic_value": 0.0,
+      "imported_value": 0.0,
+      "unit": "weekly reported cases",
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1248,7 +1312,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1266,7 +1330,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1284,7 +1348,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1302,7 +1366,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1320,7 +1384,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1338,7 +1402,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1356,7 +1420,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1374,7 +1438,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1392,7 +1456,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1410,7 +1474,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1428,7 +1492,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1446,7 +1510,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1464,7 +1528,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1482,7 +1546,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1500,7 +1564,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1518,7 +1582,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1536,7 +1600,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1554,7 +1618,25 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
+    },
+    {
+      "source_type": "kdca_period_region",
+      "period": "2026년 19주",
+      "year": 2026,
+      "week": 19,
+      "epiweek": "2026-W19",
+      "icd_group": "제1급",
+      "disease": "신종인플루엔자",
+      "category": "novel_influenza",
+      "weight": 1.0,
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
+      "raw_value": 0.0,
+      "domestic_value": 0.0,
+      "imported_value": 0.0,
+      "unit": "weekly reported cases",
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1572,7 +1654,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1590,7 +1672,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1608,7 +1690,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1626,7 +1708,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1644,7 +1726,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1662,7 +1744,7 @@
       "domestic_value": 1.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1680,7 +1762,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1698,7 +1780,7 @@
       "domestic_value": 1.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1716,7 +1798,7 @@
       "domestic_value": 0.0,
       "imported_value": 1.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1734,7 +1816,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1752,7 +1834,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1770,7 +1852,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1788,7 +1870,7 @@
       "domestic_value": 0.0,
       "imported_value": 1.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1806,7 +1888,7 @@
       "domestic_value": 0.0,
       "imported_value": 1.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1824,7 +1906,7 @@
       "domestic_value": 0.0,
       "imported_value": 1.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1842,7 +1924,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1860,7 +1942,7 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     },
     {
       "source_type": "kdca_period_region",
@@ -1878,7 +1960,25 @@
       "domestic_value": 0.0,
       "imported_value": 0.0,
       "unit": "weekly reported cases",
-      "updated_at": "2026-05-01T02:56:33.902843+00:00"
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
+    },
+    {
+      "source_type": "kdca_period_region",
+      "period": "2026년 19주",
+      "year": 2026,
+      "week": 19,
+      "epiweek": "2026-W19",
+      "icd_group": "제2급",
+      "disease": "홍역",
+      "category": "airborne_viral",
+      "weight": 0.45,
+      "is_respiratory_related": true,
+      "is_respiratory_virus": true,
+      "raw_value": 0.0,
+      "domestic_value": 0.0,
+      "imported_value": 0.0,
+      "unit": "weekly reported cases",
+      "updated_at": "2026-05-03T13:48:37.859492+00:00"
     }
   ]
 }

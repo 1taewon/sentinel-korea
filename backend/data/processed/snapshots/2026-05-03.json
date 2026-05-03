@@ -1,0 +1,691 @@
+[
+  {
+    "region_id": "11",
+    "region_name_en": "Seoul",
+    "region_name_kr": "서울특별시",
+    "lat": 37.5665,
+    "lng": 126.978,
+    "date": "2026-05-03",
+    "score": 0.6497,
+    "level": "G2",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 1.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 2,
+    "confidence": "High Confidence",
+    "explanation": [
+      "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
+      "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
+      "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련 뉴스 보도 및 검색량 이상 징후 없음. 호흡기 감염병 검색 트렌드 하락 추세 반영."
+    },
+    "total_risk": {
+      "score": 0.4,
+      "level": "G1",
+      "reason": "하수 기반 감시에서 독감 지표가 G2를 유지했으나, 네이버 트렌드 검색량 급감과 급성 호흡기 질환 관련 특이 뉴스 부재로 위험도 완화"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "26",
+    "region_name_en": "Busan",
+    "region_name_kr": "부산광역시",
+    "lat": 35.1796,
+    "lng": 129.0756,
+    "date": "2026-05-03",
+    "score": 0.3825,
+    "level": "G1",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.75,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 2,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "호흡기 질환 확산과 관련된 지역 내 특이 보도가 없으며, 포털 검색량도 안정적임."
+    },
+    "total_risk": {
+      "score": 0.42,
+      "level": "G1",
+      "reason": "과거 하수 데이터상 독감 G3에서 G2로 하락하는 추세이며, 전국적인 인플루엔자 발생률 감소세에 동조함"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "27",
+    "region_name_en": "Daegu",
+    "region_name_kr": "대구광역시",
+    "lat": 35.8714,
+    "lng": 128.6014,
+    "date": "2026-05-03",
+    "score": 0.57,
+    "level": "G2",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 1.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 2,
+    "confidence": "High Confidence",
+    "explanation": [
+      "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
+      "인플루엔자 유사질환 활동 상승 (ILI activity above baseline).",
+      "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
+      "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "과거 코로나19 유행에 대한 언급만 존재할 뿐, 현재의 호흡기 감염병 확산 보도나 검색량 증가는 없음."
+    },
+    "total_risk": {
+      "score": 0.35,
+      "level": "G1",
+      "reason": "하수 감시 코로나19 및 독감 지표가 모두 G1으로 안정화되었고, 관련 확산 보도 없음"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "28",
+    "region_name_en": "Incheon",
+    "region_name_kr": "인천광역시",
+    "lat": 37.4563,
+    "lng": 126.7052,
+    "date": "2026-05-03",
+    "score": 0.225,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 1,
+    "confidence": "High Confidence",
+    "explanation": [
+      "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
+      "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
+      "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "지역 내 유행 징후나 감염병 관련 보도가 없으며 트렌드가 감소세를 보임."
+    },
+    "total_risk": {
+      "score": 0.38,
+      "level": "G1",
+      "reason": "수도권 전반의 검색 트렌드 하락(-17 등) 반영, 특이 호흡기 질환 위험 신호 미발견"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "29",
+    "region_name_en": "Gwangju",
+    "region_name_kr": "광주광역시",
+    "lat": 35.1595,
+    "lng": 126.8526,
+    "date": "2026-05-03",
+    "score": 0.09,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련 병원성 호흡기 감염병 이슈가 발견되지 않음."
+    },
+    "total_risk": {
+      "score": 0.3,
+      "level": "G1",
+      "reason": "지역 내 감염병 이슈 보도 부재 및 전국 KDCA 발생 지표 감소와 동일한 흐름"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "30",
+    "region_name_en": "Daejeon",
+    "region_name_kr": "대전광역시",
+    "lat": 36.3504,
+    "lng": 127.3845,
+    "date": "2026-05-03",
+    "score": 0.135,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련 병원성 호흡기 감염병 이슈가 발견되지 않음."
+    },
+    "total_risk": {
+      "score": 0.3,
+      "level": "G1",
+      "reason": "구글 및 네이버 호흡기 증상 검색량 감소 지표를 기반으로 안정적 상황 유지"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "31",
+    "region_name_en": "Ulsan",
+    "region_name_kr": "울산광역시",
+    "lat": 35.5384,
+    "lng": 129.3114,
+    "date": "2026-05-03",
+    "score": 0.099,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련 병원성 호흡기 감염병 이슈가 발견되지 않음."
+    },
+    "total_risk": {
+      "score": 0.3,
+      "level": "G1",
+      "reason": "호흡기 감염병 확산 관련 지역 뉴스가 없으며, 국가 SARI 환자 감소세에 부합함"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "36",
+    "region_name_en": "Sejong",
+    "region_name_kr": "세종특별자치시",
+    "lat": 36.48,
+    "lng": 127.289,
+    "date": "2026-05-03",
+    "score": 0.081,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련 병원성 호흡기 감염병 이슈가 발견되지 않음."
+    },
+    "total_risk": {
+      "score": 0.3,
+      "level": "G1",
+      "reason": "검색 트렌드 안정화 및 인플루엔자 유행주의보 완화 기조 반영"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "41",
+    "region_name_en": "Gyeonggi",
+    "region_name_kr": "경기도",
+    "lat": 37.4138,
+    "lng": 127.5183,
+    "date": "2026-05-03",
+    "score": 0.261,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 1,
+    "confidence": "High Confidence",
+    "explanation": [
+      "전수신고 감염병 발생이 기준선 대비 상승 (Notifiable disease activity elevated).",
+      "폐하수 병원체 농도 계절 평균 초과 (Wastewater pathogen above seasonal average).",
+      "3개 독립 소스 수렴 — 높은 복합 신뢰도 (3 independent sources converging)."
+    ],
+    "news_trends_risk": {
+      "score": 0.15,
+      "level": "G0",
+      "reason": "하남시에서 하절기 수인성·식품매개 및 호흡기 질환 예방을 위한 비상방역체계 가동 보도가 있으나, 이는 예방적 차원이며 유행을 의미하지 않음."
+    },
+    "total_risk": {
+      "score": 0.45,
+      "level": "G1",
+      "reason": "하남시에서 하절기 비상방역체계를 가동했으나 수인성 중심의 예방적 조치이며 호흡기 환자 급증 신호는 아님"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "42",
+    "region_name_en": "Gangwon",
+    "region_name_kr": "강원특별자치도",
+    "lat": 37.8228,
+    "lng": 128.1555,
+    "date": "2026-05-03",
+    "score": 0.126,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "관련 병원성 호흡기 감염병 이슈가 발견되지 않음."
+    },
+    "total_risk": {
+      "score": 0.3,
+      "level": "G1",
+      "reason": "관광객 이동에도 불구하고 지역 내 유행을 지시하는 검색어 급증이나 의료기관 데이터 증가 없음"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "43",
+    "region_name_en": "Chungbuk",
+    "region_name_kr": "충청북도",
+    "lat": 36.6357,
+    "lng": 127.4917,
+    "date": "2026-05-03",
+    "score": 0.1125,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "지역 내 감염병 확산 보도가 전혀 없음."
+    },
+    "total_risk": {
+      "score": 0.3,
+      "level": "G1",
+      "reason": "전국적 인플루엔자 의사환자분율 하락세(17.4)에 따라 국지적 위험도 낮음"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "44",
+    "region_name_en": "Chungnam",
+    "region_name_kr": "충청남도",
+    "lat": 36.5184,
+    "lng": 126.8,
+    "date": "2026-05-03",
+    "score": 0.126,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "지역 내 감염병 확산 보도가 전혀 없음."
+    },
+    "total_risk": {
+      "score": 0.3,
+      "level": "G1",
+      "reason": "주요 뉴스 및 포털 검색량에서 호흡기 감염 관련 특이사항 발견되지 않음"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "45",
+    "region_name_en": "Jeonbuk",
+    "region_name_kr": "전북특별자치도",
+    "lat": 35.7175,
+    "lng": 127.153,
+    "date": "2026-05-03",
+    "score": 0.099,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "지역 내 감염병 확산 보도가 전혀 없음."
+    },
+    "total_risk": {
+      "score": 0.3,
+      "level": "G1",
+      "reason": "코로나19, 독감 등 주요 호흡기 질환 포털 검색량이 전반적으로 저조함"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "46",
+    "region_name_en": "Jeonnam",
+    "region_name_kr": "전라남도",
+    "lat": 34.8679,
+    "lng": 126.991,
+    "date": "2026-05-03",
+    "score": 0.09,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "지역 내 감염병 확산 보도가 전혀 없음."
+    },
+    "total_risk": {
+      "score": 0.3,
+      "level": "G1",
+      "reason": "특이 감염병 확산 징후가 보이지 않으며 국가적 감염병 하락 추세와 동일함"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "47",
+    "region_name_en": "Gyeongbuk",
+    "region_name_kr": "경상북도",
+    "lat": 36.4919,
+    "lng": 128.8889,
+    "date": "2026-05-03",
+    "score": 0.18,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 1,
+    "confidence": "Low Confidence",
+    "explanation": [
+      "폐하수 병원체 농도 계절 평균 근접 (Wastewater pathogen near seasonal threshold)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "지역 내 감염병 확산 보도가 전혀 없음."
+    },
+    "total_risk": {
+      "score": 0.3,
+      "level": "G1",
+      "reason": "인접한 대구권 하수 데이터 안정화 흐름과 동조하며 지역 사회 유행 징후 없음"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "48",
+    "region_name_en": "Gyeongnam",
+    "region_name_kr": "경상남도",
+    "lat": 35.4606,
+    "lng": 128.2132,
+    "date": "2026-05-03",
+    "score": 0.153,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 1,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "지역 내 감염병 확산 보도가 전혀 없음."
+    },
+    "total_risk": {
+      "score": 0.35,
+      "level": "G1",
+      "reason": "부산권의 점진적 안정화 추세의 영향을 받으며 별도의 지역적 확산세 미존재"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  },
+  {
+    "region_id": "50",
+    "region_name_en": "Jeju",
+    "region_name_kr": "제주특별자치도",
+    "lat": 33.4996,
+    "lng": 126.5312,
+    "date": "2026-05-03",
+    "score": 0.0675,
+    "level": "G0",
+    "source_type": "korea_deep",
+    "signals": {
+      "notifiable_disease": 1.0,
+      "influenza_like": 0.0047,
+      "wastewater_pathogen": 0.0,
+      "clinical_cxr_aware": null,
+      "sari_pneumonia": 0.9851,
+      "sari_influenza": 0.0352
+    },
+    "active_sources": 0,
+    "confidence": "Watch",
+    "explanation": [
+      "강한 개별 신호 없음, 복합 점수 기준선 근처 (No strong single signal, near baseline)."
+    ],
+    "news_trends_risk": {
+      "score": 0.1,
+      "level": "G0",
+      "reason": "과거 코로나19 시기 관광 영향을 언급하는 보도 외에 현재 감염병 확산 징후 없음."
+    },
+    "total_risk": {
+      "score": 0.3,
+      "level": "G1",
+      "reason": "관광 관련 논의는 있으나, 실제 감염병 급증을 의미하는 보도나 트렌드 지표 증가는 없음"
+    },
+    "signal_scope": {
+      "influenza_like": "national_uploaded_kdca",
+      "notifiable_disease": "national_uploaded_kdca",
+      "sari_pneumonia": "national_uploaded_kdca",
+      "sari_influenza": "national_uploaded_kdca"
+    }
+  }
+]
