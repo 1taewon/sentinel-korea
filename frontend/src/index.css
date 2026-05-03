@@ -81,14 +81,6 @@
 ══════════════════════════════════════════════════════ */
 * { box-sizing: border-box; }
 
-/* Initial zoom — Sentinel UI is content-dense; 75% gives a desktop "control room"
-   feel where the whole dashboard fits without horizontal cropping on standard
-   laptops. Users can override with browser zoom (Ctrl/Cmd +/-). Chromium and
-   WebKit support `zoom`; Firefox ignores it gracefully. */
-html {
-  zoom: 0.75;
-}
-
 html, body, #root {
   width: 100%; height: 100%; margin: 0; overflow: hidden;
   background: var(--bg-primary);
@@ -1620,11 +1612,7 @@ button, input, textarea, select { font: inherit; }
   display: flex;
   flex-direction: column;
   gap: 3px;
-  max-height: 30vh;
-  overflow-y: auto;
 }
-.timeline-week-list::-webkit-scrollbar { width: 4px; }
-.timeline-week-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 .timeline-week-row {
   display: grid;

@@ -49,7 +49,7 @@ export default function Timeline({ dates, currentDate, onChange }: TimelineProps
       </div>
 
       <div className="timeline-week-list">
-        {[...dates].slice().reverse().slice(0, 16).map((date) => {
+        {[...dates].slice().reverse().slice(0, 4).map((date) => {
           const isActive = date === currentDate;
           const { year, week } = epiWeekOf(date);
           const { start, end } = isoWeekRange(date);
