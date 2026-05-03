@@ -501,21 +501,6 @@ async def get_timeline(region: str) -> list[dict[str, Any]]:
     return timeline
 
 
-@app.get("/config/keywords")
-async def get_keywords_config() -> dict[str, Any]:
-    config_path = DATA_DIR / "keywords_config.json"
-    if config_path.exists():
-        return json.loads(config_path.read_text(encoding="utf-8"))
-    return {
-        "korea_keywords": ["폐렴", "호흡기 감염", "마이코플라스마", "독감", "코로나19"],
-        "korea_exclusions": ["-주가", "-증시", "-종목"],
-        "global_keywords": ["pneumonia outbreak", "respiratory surge", "mycoplasma", "flu surge", "COVID-19 variant"],
-        "global_exclusions": ["-nature.com", "-plos", "-biorxiv", "-medrxiv", "-stocks", "-market"]
-    }
-
-
-@app.post("/config/keywords")
-async def update_keywords_config(config: dict[str, list[str]], _: dict = Depends(require_admin)) -> dict[str, Any]:
-    config_path = DATA_DIR / "keywords_config.json"
-    config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
-    return {"status": "ok", "config": config}
+# Note: /config/keywords routes live in config_router.py — the previous
+# duplicate definitions here used a different (incompatible) JSON shape and
+# were unreachable because config_router is included first.
