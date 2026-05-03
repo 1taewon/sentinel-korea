@@ -3428,6 +3428,123 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .kas-right-stack::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 .kas-right-stack::-webkit-scrollbar-track { background: transparent; }
 
+/* New update banner — surfaced when a newer snapshot/release becomes available */
+.map-update-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(135deg, rgba(56, 189, 248, 0.16), rgba(56, 189, 248, 0.04) 60%),
+    var(--bg-card);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.12) inset, 0 6px 18px -10px rgba(56, 189, 248, 0.45);
+  position: relative;
+  overflow: hidden;
+}
+.map-update-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #38bdf8, rgba(56, 189, 248, 0.2));
+}
+.map-update-card > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.map-update-card span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.18);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  font-family: var(--font-mono, monospace);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.map-update-card span::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+  animation: sentinel-update-pulse 2s ease-in-out infinite;
+}
+@keyframes sentinel-update-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(0.85); }
+}
+.map-update-card strong {
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 0.4px;
+}
+.map-update-card p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+.map-update-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.map-update-actions button {
+  font-family: var(--font-mono, monospace);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.map-update-actions button:first-child {
+  padding: 6px 10px;
+  border: 1px solid #38bdf8;
+  border-radius: var(--radius-sm);
+  background: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+}
+.map-update-actions button:first-child:hover {
+  background: rgba(56, 189, 248, 0.32);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+}
+.map-update-actions button:last-child {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1;
+}
+.map-update-actions button:last-child:hover {
+  border-color: rgba(248, 113, 113, 0.45);
+  background: rgba(248, 113, 113, 0.12);
+  color: #fecaca;
+}
+
 /* Mini Globe card — Global outbreak entry */
 .map-mini-globe-card {
   display: flex;
