@@ -2538,10 +2538,43 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .kdca-history-scroll::-webkit-scrollbar-track { background: transparent; }
 .kdca-history-item {
   background: var(--bg-soft); border-radius: var(--radius-sm);
-  padding: 5px 7px; display: flex; flex-direction: column; gap: 1px;
+  padding: 5px 7px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
 }
-.kdca-history-name { font-size: 10px; color: var(--text-primary); }
+.kdca-history-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.kdca-history-name { font-size: 10px; color: var(--text-primary); word-break: break-all; }
 .kdca-history-meta { font-size: 9px; color: var(--text-muted); }
+.kdca-history-remove {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.kdca-history-remove:hover {
+  border-color: rgba(248, 113, 113, 0.45);
+  background: rgba(248, 113, 113, 0.12);
+  color: #fecaca;
+}
 
 .kdca-report-section { display: flex; flex-direction: column; gap: 5px; }
 .kdca-report-preview {

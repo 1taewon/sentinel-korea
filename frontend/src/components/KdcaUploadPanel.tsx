@@ -508,8 +508,37 @@ export default function KdcaUploadPanel({ view = 'full', readOnly = false, getAd
                   <div className="kdca-history-scroll">
                     {history.slice().reverse().map((h, i) => (
                       <div key={i} className="kdca-history-item">
-                        <span className="kdca-history-name">{h.filename}</span>
-                        <span className="kdca-history-meta">{h.file_type} · {h.snapshot_count} snapshots</span>
+                        <div className="kdca-history-text">
+                          <span className="kdca-history-name">{h.filename}</span>
+                          <span className="kdca-history-meta">{h.file_type} · {h.snapshot_count} snapshots</span>
+                        </div>
+                        {!readOnly && (
+                          <button
+                            type="button"
+                            className="kdca-history-remove"
+                            aria-label={`Remove ${h.filename} from upload history`}
+                            title="Remove from history (re-uploadable)"
+                            onClick={async () => {
+                              if (!confirm(`이 항목을 업로드 이력에서 제거할까요?\n\n${h.filename}\n\n파싱된 데이터는 그대로 유지됩니다. 같은 파일을 다시 업로드/스캔할 수 있게만 처리됩니다.`)) return;
+                              try {
+                                const res = await fetch(
+                                  `${API_BASE}/ingestion/upload-history/${encodeURIComponent(h.filename)}`,
+                                  { method: 'DELETE', headers: await getAdminHeaders?.(false) },
+                                );
+                                if (res.ok) {
+                                  fetchData();
+                                } else {
+                                  const err = await res.json().catch(() => ({}));
+                                  setStatus(`삭제 실패: ${err.detail || res.statusText}`, 'error');
+                                }
+                              } catch (e: any) {
+                                setStatus(`삭제 실패: ${e.message}`, 'error');
+                              }
+                            }}
+                          >
+                            ×
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>

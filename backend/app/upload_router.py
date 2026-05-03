@@ -320,6 +320,39 @@ async def get_upload_history() -> list[dict]:
     return []
 
 
+@router.delete("/upload-history/{filename:path}")
+async def delete_upload_history_entry(
+    filename: str,
+    _: dict = Depends(require_admin),
+) -> dict[str, Any]:
+    """Remove a single entry from upload history by filename.
+
+    The parsed data files in `data/processed/` are NOT touched — only the
+    history record. After deletion, the same file can be re-uploaded
+    (Scan Sentinel_data folder will pick it up again).
+    """
+    if not UPLOAD_HISTORY_FILE.exists():
+        return {"status": "ok", "removed": 0}
+
+    try:
+        history = json.loads(UPLOAD_HISTORY_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        history = []
+
+    before = len(history)
+    history = [h for h in history if h.get("filename") != filename]
+    after = len(history)
+    removed = before - after
+
+    if removed > 0:
+        UPLOAD_HISTORY_FILE.write_text(
+            json.dumps(history, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+    return {"status": "ok", "removed": removed, "remaining": after}
+
+
 def __import_script(script_name: str):
     """scripts/ 폴더의 모듈을 동적으로 임포트합니다."""
     import importlib.util

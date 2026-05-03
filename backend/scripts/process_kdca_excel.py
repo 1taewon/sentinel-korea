@@ -738,6 +738,11 @@ def process_file(file_path: Path, content_bytes: bytes | None = None) -> dict[st
 
 
 def scan_sentinel_data_dir() -> list[dict[str, Any]]:
+    """Recursively scan SENTINEL_DATA_DIR for KDCA files.
+
+    Walks every subdirectory (e.g. 17wk/, 18wk/) so the user can keep
+    weekly downloads grouped by epi-week without flattening.
+    """
     if not SENTINEL_DATA_DIR.exists():
         print(f"[KDCA] 데이터 폴더 없음: {SENTINEL_DATA_DIR}", file=sys.stderr)
         return []
@@ -752,12 +757,13 @@ def scan_sentinel_data_dir() -> list[dict[str, Any]]:
 
     results: list[dict[str, Any]] = []
     for ext in ["*.csv", "*.xlsx", "*.pdf"]:
-        for file_path in SENTINEL_DATA_DIR.glob(ext):
+        # rglob = recursive — picks up files under 17wk/, 18wk/, ...
+        for file_path in SENTINEL_DATA_DIR.rglob(ext):
             if file_path.name in processed_files:
                 continue
             if detect_file_type(file_path.name) is None:
                 continue
-            print(f"[KDCA] 처리 중: {file_path.name}")
+            print(f"[KDCA] 처리 중: {file_path.relative_to(SENTINEL_DATA_DIR)}")
             result = process_file(file_path)
             results.append(result)
             if result.get("success"):
