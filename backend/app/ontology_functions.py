@@ -1096,36 +1096,6 @@ _ENTRY_POINTS = {
         "primary_zones": ["26", "48"],  # Busan, Gyeongnam
         "lat": 35.1796, "lng": 128.9382,
     },
-    "CJU": {
-        "label": "제주국제공항",
-        "label_en": "Jeju International Airport",
-        "primary_zones": ["50"],  # Jeju
-        "lat": 33.5104, "lng": 126.4914,
-    },
-    "TAE": {
-        "label": "대구국제공항",
-        "label_en": "Daegu International Airport",
-        "primary_zones": ["27", "47"],  # Daegu, Gyeongbuk
-        "lat": 35.8941, "lng": 128.6589,
-    },
-    "MWX": {
-        "label": "무안국제공항",
-        "label_en": "Muan International Airport",
-        "primary_zones": ["46"],  # Jeonnam
-        "lat": 34.9914, "lng": 126.3828,
-    },
-    "CJJ": {
-        "label": "청주국제공항",
-        "label_en": "Cheongju International Airport",
-        "primary_zones": ["43", "44"],  # Chungbuk, Chungnam
-        "lat": 36.7166, "lng": 127.4991,
-    },
-    "YNY": {
-        "label": "양양국제공항",
-        "label_en": "Yangyang International Airport",
-        "primary_zones": ["42"],  # Gangwon
-        "lat": 38.0613, "lng": 128.6690,
-    },
 }
 
 _REGION_COORDS = {

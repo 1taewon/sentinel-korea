@@ -1451,11 +1451,6 @@ export default function OntologyView() {
 const ENTRY_POINTS = [
   { code: 'ICN', label: '인천국제공항', desc: '수도권 (서울/인천/경기)' },
   { code: 'PUS', label: '김해국제공항', desc: '부산/경남' },
-  { code: 'CJU', label: '제주국제공항', desc: '제주' },
-  { code: 'TAE', label: '대구국제공항', desc: '대구/경북' },
-  { code: 'MWX', label: '무안국제공항', desc: '전남' },
-  { code: 'CJJ', label: '청주국제공항', desc: '충북/충남' },
-  { code: 'YNY', label: '양양국제공항', desc: '강원' },
 ];
 
 function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
