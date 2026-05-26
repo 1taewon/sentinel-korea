@@ -1,37 +1,9 @@
 [build]
-builder = "nixpacks"
-
-# Use apt (Ubuntu) python everything — avoids the Nix-store/system libc mismatch
-# that was causing `libz.so.1: cannot open shared object file` and then
-# `__tunable_is_initialized` glibc errors.
-[build.nixpacksPlan.phases.setup]
-nixPkgs = []
-aptPkgs = [
-  "python3",
-  "python3-venv",
-  "python3-pip",
-  "gcc",
-  "gfortran",
-  "zlib1g",
-  "libstdc++6",
-  "build-essential",
-  "libopenblas-dev",
-  "liblapack-dev",
-]
-
-[build.nixpacksPlan.phases.install]
-# rootDirectory=backend in Railway settings, so requirements.txt is at ./requirements.txt
-cmds = [
-  "python3 -m venv /opt/venv && . /opt/venv/bin/activate && pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt && python -c 'import numpy, pandas, pytrends; print(\"numpy\", numpy.__version__, \"pandas\", pandas.__version__)'"
-]
-
-[build.nixpacksPlan.start]
-# Railway rootDirectory=backend → container working dir is already /app (= repo's backend/).
-# No `cd backend` needed — `app.main` resolves directly.
-cmd = ". /opt/venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = ". /opt/venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+startCommand = "bash /app/start.sh"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
