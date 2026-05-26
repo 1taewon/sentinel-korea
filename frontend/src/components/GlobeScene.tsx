@@ -160,7 +160,7 @@ export default function GlobeScene({ koreaAlerts, globalSignals, onKoreaClick, o
     ringLat: 'lat',
     ringLng: 'lng',
     ringColor: 'color',
-    ringMaxRadius: 3,
+    ringMaxRadius: 1.5,
     ringPropagationSpeed: 1.5,
     ringRepeatPeriod: 1200,
     onRingClick: handleRingClick,
