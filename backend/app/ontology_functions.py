@@ -1108,6 +1108,24 @@ _ENTRY_POINTS = {
         "primary_zones": ["27", "47"],  # Daegu, Gyeongbuk
         "lat": 35.8941, "lng": 128.6589,
     },
+    "MWX": {
+        "label": "무안국제공항",
+        "label_en": "Muan International Airport",
+        "primary_zones": ["46"],  # Jeonnam
+        "lat": 34.9914, "lng": 126.3828,
+    },
+    "CJJ": {
+        "label": "청주국제공항",
+        "label_en": "Cheongju International Airport",
+        "primary_zones": ["43", "44"],  # Chungbuk, Chungnam
+        "lat": 36.7166, "lng": 127.4991,
+    },
+    "YNY": {
+        "label": "양양국제공항",
+        "label_en": "Yangyang International Airport",
+        "primary_zones": ["42"],  # Gangwon
+        "lat": 38.0613, "lng": 128.6690,
+    },
 }
 
 _REGION_COORDS = {
@@ -1179,7 +1197,14 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
 
     entry_point = _ENTRY_POINTS.get(entry_code)
     if not entry_point:
-        return {"error": f"Unknown entry_point: {entry_code}. Available: {list(_ENTRY_POINTS.keys())}"}
+        # Fallback for custom/unknown entry: use Korea center, no primary zones, all distance-based
+        entry_point = {
+            "label": entry_code,
+            "label_en": entry_code,
+            "primary_zones": [],
+            "lat": 36.5,  # Korea geographic center
+            "lng": 127.8,
+        }
 
     # Base lift from severity × country proximity
     base_lift = _SEVERITY_LIFT.get(severity, 0.03)

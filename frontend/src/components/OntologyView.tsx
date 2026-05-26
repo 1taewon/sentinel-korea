@@ -548,13 +548,14 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
   const g = result.gemini_scenario;
   const ep = result.entry_point;
 
-  // Build before/after maps from region results
-  const baselineLevels = result.regions.map((r) => ({ code: r.region_id, level: r.baseline_level }));
-  const scenarioLevels = result.regions.map((r) => ({ code: r.region_id, level: r.scenario_level }));
+  // Build before/after maps from region results (null-safe)
+  const regions = result.regions || [];
+  const baselineLevels = regions.map((r) => ({ code: r.region_id, level: r.baseline_level }));
+  const scenarioLevels = regions.map((r) => ({ code: r.region_id, level: r.scenario_level }));
   // Highlight all primary zone + escalated regions on the "after" map
   const highlightCodes = new Set([
-    ...ep.primary_zones,
-    ...result.regions.filter((r) => r.level_changed).map((r) => r.region_id),
+    ...(ep?.primary_zones || []),
+    ...regions.filter((r) => r.level_changed).map((r) => r.region_id),
   ]);
 
   return (
@@ -571,15 +572,15 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
       {/* Summary bar */}
       <div className="national-summary-bar">
         <div className="national-summary-stat">
-          <span className="national-summary-num">{result.summary.escalated_count}</span>
+          <span className="national-summary-num">{result.summary?.escalated_count ?? 0}</span>
           <span className="national-summary-label">G-level 상향 지역</span>
         </div>
         <div className="national-summary-stat">
-          <span className="national-summary-num">+{result.summary.total_delta.toFixed(3)}</span>
+          <span className="national-summary-num">+{(result.summary?.total_delta ?? 0).toFixed(3)}</span>
           <span className="national-summary-label">전국 총 Delta</span>
         </div>
         <div className="national-summary-stat">
-          <span className="national-summary-num">{ep.primary_zones.length}</span>
+          <span className="national-summary-num">{ep?.primary_zones?.length ?? 0}</span>
           <span className="national-summary-label">1차 영향 지역</span>
         </div>
       </div>
@@ -602,7 +603,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
           <div className="national-region-header">
             <span>지역</span><span>현재</span><span>시나리오</span><span>Delta</span><span>Spread</span>
           </div>
-          {result.regions.map((r) => (
+          {regions.map((r) => (
             <div key={r.region_id} className={`national-region-row ${r.level_changed ? 'escalated' : ''} ${r.is_primary_zone ? 'primary' : ''}`}>
               <span className="national-region-name">
                 {r.is_primary_zone && <span className="national-primary-badge">1차</span>}
@@ -1452,6 +1453,9 @@ const ENTRY_POINTS = [
   { code: 'PUS', label: '김해국제공항', desc: '부산/경남' },
   { code: 'CJU', label: '제주국제공항', desc: '제주' },
   { code: 'TAE', label: '대구국제공항', desc: '대구/경북' },
+  { code: 'MWX', label: '무안국제공항', desc: '전남' },
+  { code: 'CJJ', label: '청주국제공항', desc: '충북/충남' },
+  { code: 'YNY', label: '양양국제공항', desc: '강원' },
 ];
 
 function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
@@ -1492,11 +1496,13 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       </div>
       <div className="whatif-row">
         <label>유입 거점</label>
-        <select value={entryPoint} onChange={(e) => setEntryPoint(e.target.value)} className="whatif-select">
+        <input list="entry-point-list" value={entryPoint} onChange={(e) => setEntryPoint(e.target.value)}
+          className="whatif-input" placeholder="공항 코드 또는 직접 입력 (예: ICN, PUS, 무안공항)" />
+        <datalist id="entry-point-list">
           {ENTRY_POINTS.map((ep) => (
-            <option key={ep.code} value={ep.code}>{ep.label} ({ep.desc})</option>
+            <option key={ep.code} value={ep.code}>{ep.label} — {ep.desc}</option>
           ))}
-        </select>
+        </datalist>
       </div>
       <div className="whatif-row">
         <label>Disease</label>
