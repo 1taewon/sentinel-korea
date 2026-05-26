@@ -9,11 +9,9 @@
  *
  * Required Vercel Environment Variables:
  *   CRON_SECRET           — Vercel cron auth secret
- *   RAILWAY_BACKEND_URL   — e.g. https://sentinel-korea-production-430b.up.railway.app
+ *   RAILWAY_BACKEND_URL   — e.g. https://sentinel-korea-production.up.railway.app
  *   SENTINEL_ADMIN_TOKEN  — Admin bearer token for backend auth
  */
-
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 interface PipelineStep {
   name: string;
@@ -32,8 +30,8 @@ interface StepResult {
 }
 
 export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
+  req: any,
+  res: any
 ) {
   // Verify cron secret
   const authHeader = req.headers["authorization"];
