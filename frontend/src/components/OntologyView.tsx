@@ -442,26 +442,35 @@ const WHAT_IF_PRESETS = [
   { disease: 'H7N9 Influenza', country: 'Vietnam', severity: 'high' },
 ];
 
-function WhatIfPanel({ regionId, isAdmin, adminHeaders }: {
+function WhatIfPanel({ regionId, isAdmin, adminHeaders, onResult }: {
   regionId: string; isAdmin: boolean; adminHeaders: () => Promise<Record<string, string>>;
+  onResult?: (result: WhatIfResult, regionId: string) => void;
 }) {
-  const [result, setResult] = useState<WhatIfResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [disease, setDisease] = useState('H5N1 Avian Influenza');
   const [country, setCountry] = useState('China');
   const [severity, setSeverity] = useState('high');
+  const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const runScenario = async () => {
-    setLoading(true); setResult(null);
+    setLoading(true); setStatusMsg(null);
     try {
       const r = await fetch(`${API_BASE}/ontology/functions/whatIfOutbreak`, {
         method: 'POST', headers: await adminHeaders(),
         body: JSON.stringify({ inputs: { region_id: regionId, disease, country, severity, weeks: 4 } }),
       });
       const d = await r.json();
-      setResult(d.result || d);
+      const res: WhatIfResult = d.result || d;
+      if (res.error) {
+        setStatusMsg({ type: 'error', text: res.error });
+      } else {
+        setStatusMsg({ type: 'success', text: 'Scenario complete — see results →' });
+      }
+      onResult?.(res, regionId);
     } catch (e: any) {
-      setResult({ region_id: regionId, scenario: { disease, country, severity, hypothetical_lift: 0, proximity_multiplier: 0 }, comparison: [], level_escalation: false, max_delta: 0, narrative: '', error: String(e?.message || e) });
+      const errResult: WhatIfResult = { region_id: regionId, scenario: { disease, country, severity, hypothetical_lift: 0, proximity_multiplier: 0 }, comparison: [], level_escalation: false, max_delta: 0, narrative: '', error: String(e?.message || e) };
+      setStatusMsg({ type: 'error', text: String(e?.message || e) });
+      onResult?.(errResult, regionId);
     } finally { setLoading(false); }
   };
 
@@ -499,86 +508,216 @@ function WhatIfPanel({ regionId, isAdmin, adminHeaders }: {
         </button>
       </div>
 
-      {result && !result.error && (
-        <div className="whatif-result">
-          <div className="ontology-decision-narrative">{result.narrative}</div>
+      {statusMsg && (
+        <div className={`whatif-status-msg whatif-status-${statusMsg.type}`}>
+          {statusMsg.text}
+        </div>
+      )}
+    </div>
+  );
+}
 
-          {/* Score comparison table */}
-          <div className="whatif-comparison">
-            <div className="whatif-comp-header">
-              <span>Week</span><span>Baseline</span><span>Scenario</span><span>Delta</span>
-            </div>
-            {result.comparison.map((c) => (
-              <div key={c.weeks_ahead} className={`whatif-comp-row ${c.level_changed ? 'escalated' : ''}`}>
-                <span className="whatif-comp-week">+{c.weeks_ahead}w</span>
-                <span><LevelPill level={c.baseline_level} /> {c.baseline_score.toFixed(3)}</span>
-                <span><LevelPill level={c.scenario_level} /> {c.scenario_score.toFixed(3)}</span>
-                <span className={`whatif-comp-delta ${c.delta > 0 ? 'up' : ''}`}>
-                  {c.delta > 0 ? '+' : ''}{c.delta.toFixed(3)}
-                  {c.level_changed && ' ⚠'}
-                </span>
-              </div>
-            ))}
+// ─── Scenario Mini Map (SVG bubble map) ──────────────────────────────────
+
+const SCENARIO_REGION_DATA = [
+  { code: '11', abbr: '서울', lat: 37.5665, lng: 126.9780, isMetro: true },
+  { code: '26', abbr: '부산', lat: 35.1796, lng: 129.0756, isMetro: true },
+  { code: '27', abbr: '대구', lat: 35.8714, lng: 128.6014, isMetro: true },
+  { code: '28', abbr: '인천', lat: 37.4563, lng: 126.7052, isMetro: true },
+  { code: '29', abbr: '광주', lat: 35.1595, lng: 126.8526, isMetro: true },
+  { code: '30', abbr: '대전', lat: 36.3504, lng: 127.3845, isMetro: true },
+  { code: '31', abbr: '울산', lat: 35.5384, lng: 129.3114, isMetro: true },
+  { code: '36', abbr: '세종', lat: 36.4800, lng: 127.2890, isMetro: true },
+  { code: '41', abbr: '경기', lat: 37.2750, lng: 127.0094, isMetro: false },
+  { code: '42', abbr: '강원', lat: 37.8228, lng: 128.1555, isMetro: false },
+  { code: '43', abbr: '충북', lat: 36.6357, lng: 127.4917, isMetro: false },
+  { code: '44', abbr: '충남', lat: 36.5184, lng: 126.8000, isMetro: false },
+  { code: '45', abbr: '전북', lat: 35.7175, lng: 127.1530, isMetro: false },
+  { code: '46', abbr: '전남', lat: 34.8161, lng: 126.4629, isMetro: false },
+  { code: '47', abbr: '경북', lat: 36.4919, lng: 128.8889, isMetro: false },
+  { code: '48', abbr: '경남', lat: 35.4606, lng: 128.2132, isMetro: false },
+  { code: '50', abbr: '제주', lat: 33.4890, lng: 126.4983, isMetro: true },
+];
+
+const GLEVEL_COLORS: Record<string, string> = {
+  G0: '#34d399', G1: '#f6e05e', G2: '#ff9f43', G3: '#ff4d4f',
+};
+
+function mercatorProject(lat: number, lng: number, vw: number, vh: number): [number, number] {
+  // Korea bounding box (approx)
+  const minLng = 125.8, maxLng = 130.0, minLat = 33.0, maxLat = 38.5;
+  const x = ((lng - minLng) / (maxLng - minLng)) * vw;
+  const latRad = (lat * Math.PI) / 180;
+  const minLatRad = (minLat * Math.PI) / 180;
+  const maxLatRad = (maxLat * Math.PI) / 180;
+  const yNorm = (Math.log(Math.tan(Math.PI / 4 + latRad / 2)) - Math.log(Math.tan(Math.PI / 4 + minLatRad / 2)))
+    / (Math.log(Math.tan(Math.PI / 4 + maxLatRad / 2)) - Math.log(Math.tan(Math.PI / 4 + minLatRad / 2)));
+  const y = vh - yNorm * vh;
+  return [x, y];
+}
+
+function ScenarioMiniMap({ regionLevels, targetCode, title }: {
+  regionLevels: { code: string; level: string }[];
+  targetCode?: string;
+  title: string;
+}) {
+  const vw = 200, vh = 260, pad = 20;
+  const levelMap = new Map(regionLevels.map((r) => [r.code, r.level]));
+
+  return (
+    <div className="scenario-minimap">
+      <div className="scenario-minimap-title">{title}</div>
+      <svg viewBox={`${-pad} ${-pad} ${vw + pad * 2} ${vh + pad * 2}`} width="100%" height="100%"
+        className="scenario-minimap-svg">
+        {SCENARIO_REGION_DATA.map((reg) => {
+          const [cx, cy] = mercatorProject(reg.lat, reg.lng, vw, vh);
+          const level = levelMap.get(reg.code) || 'G0';
+          const color = GLEVEL_COLORS[level] || GLEVEL_COLORS.G0;
+          const baseR = reg.isMetro ? 14 : 20;
+          const isTarget = reg.code === targetCode;
+          const r = isTarget ? baseR + 4 : baseR;
+          return (
+            <g key={reg.code}>
+              {isTarget && (
+                <circle cx={cx} cy={cy} r={r + 6}
+                  fill="none" stroke={color} strokeWidth={2}
+                  className="scenario-minimap-pulse" />
+              )}
+              <circle cx={cx} cy={cy} r={r} fill={color}
+                stroke={isTarget ? '#fff' : 'rgba(0,0,0,0.2)'}
+                strokeWidth={isTarget ? 2 : 1}
+                opacity={0.9} />
+              <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="central"
+                fontSize={reg.isMetro ? 7 : 8} fontWeight={700}
+                fill={level === 'G1' ? '#1c2435' : '#fff'}
+                style={{ pointerEvents: 'none' }}>
+                {reg.abbr}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+// ─── What-If Analysis Panel (results in analysis area) ────────────────────
+
+function WhatIfAnalysisPanel({ result, regionId, allRegions }: {
+  result: WhatIfResult;
+  regionId: string;
+  allRegions: { code: string; name_kr: string; level: string; score: number }[];
+}) {
+  // Baseline levels for mini map
+  const baselineLevels = allRegions.map((r) => ({ code: r.code, level: r.level }));
+
+  // After-scenario levels: target region gets last week's scenario_level
+  const lastWeek = result.comparison.length > 0
+    ? result.comparison[result.comparison.length - 1]
+    : null;
+  const scenarioLevels = allRegions.map((r) => {
+    if (r.code === regionId && lastWeek) {
+      return { code: r.code, level: lastWeek.scenario_level };
+    }
+    return { code: r.code, level: r.level };
+  });
+
+  const targetName = allRegions.find((r) => r.code === regionId)?.name_kr || regionId;
+
+  return (
+    <div className="whatif-analysis-panel">
+      <div className="whatif-analysis-header">
+        <span className="whatif-analysis-tag">OUTBREAK SCENARIO RESULTS</span>
+        <span className="whatif-analysis-region">{targetName}</span>
+        <span className="whatif-analysis-scenario">
+          {result.scenario.disease} / {result.scenario.country} / {result.scenario.severity}
+        </span>
+      </div>
+
+      {/* Before/After Mini Maps */}
+      <div className="whatif-minimap-pair">
+        <ScenarioMiniMap regionLevels={baselineLevels} title="현재 (Baseline)" />
+        <ScenarioMiniMap regionLevels={scenarioLevels} targetCode={regionId}
+          title="시나리오 적용 후" />
+      </div>
+
+      {/* Narrative */}
+      <div className="ontology-decision-narrative">{result.narrative}</div>
+
+      {/* Score comparison table */}
+      <div className="whatif-comparison">
+        <div className="whatif-comp-header">
+          <span>Week</span><span>Baseline</span><span>Scenario</span><span>Delta</span>
+        </div>
+        {result.comparison.map((c) => (
+          <div key={c.weeks_ahead} className={`whatif-comp-row ${c.level_changed ? 'escalated' : ''}`}>
+            <span className="whatif-comp-week">+{c.weeks_ahead}w</span>
+            <span><LevelPill level={c.baseline_level} /> {c.baseline_score.toFixed(3)}</span>
+            <span><LevelPill level={c.scenario_level} /> {c.scenario_score.toFixed(3)}</span>
+            <span className={`whatif-comp-delta ${c.delta > 0 ? 'up' : ''}`}>
+              {c.delta > 0 ? '+' : ''}{c.delta.toFixed(3)}
+              {c.level_changed && ' ⚠'}
+            </span>
           </div>
+        ))}
+      </div>
 
-          {/* Gemini scenario narrative */}
-          {result.gemini_scenario && !result.gemini_scenario.error && !result.gemini_scenario.parse_error && (
-            <div className="whatif-gemini">
-              {result.gemini_scenario.impact_summary && (
-                <div className="whatif-section">
-                  <div className="whatif-section-title">Impact Summary</div>
-                  <p>{result.gemini_scenario.impact_summary}</p>
+      {/* Gemini scenario narrative */}
+      {result.gemini_scenario && !result.gemini_scenario.error && !result.gemini_scenario.parse_error && (
+        <div className="whatif-gemini">
+          {result.gemini_scenario.impact_summary && (
+            <div className="whatif-section">
+              <div className="whatif-section-title">Impact Summary</div>
+              <p>{result.gemini_scenario.impact_summary}</p>
+            </div>
+          )}
+          {result.gemini_scenario.timeline && result.gemini_scenario.timeline.length > 0 && (
+            <div className="whatif-section">
+              <div className="whatif-section-title">Timeline Scenario</div>
+              {result.gemini_scenario.timeline.map((t, i) => (
+                <div key={i} className="whatif-timeline-item">
+                  {t.week != null && <span className="whatif-timeline-week">+{t.week}w</span>}
+                  <span>{t.description}</span>
                 </div>
+              ))}
+            </div>
+          )}
+          {result.gemini_scenario.response_actions && (
+            <div className="whatif-section">
+              <div className="whatif-section-title">Response Actions</div>
+              {result.gemini_scenario.response_actions.map((a, i) => (
+                <div key={i} className="whatif-action-item">
+                  {a.priority && <span className={`ontology-pill ontology-rec-priority-${a.priority?.toUpperCase()}`}>{a.priority}</span>}
+                  <span className="whatif-action-text">{a.action}</span>
+                  {a.timing && <span className="whatif-action-timing">{a.timing}</span>}
+                </div>
+              ))}
+            </div>
+          )}
+          {(result.gemini_scenario.best_case || result.gemini_scenario.worst_case) && (
+            <div className="whatif-section whatif-cases">
+              {result.gemini_scenario.best_case && (
+                <div className="whatif-case best">Best case: {result.gemini_scenario.best_case}</div>
               )}
-              {result.gemini_scenario.timeline && result.gemini_scenario.timeline.length > 0 && (
-                <div className="whatif-section">
-                  <div className="whatif-section-title">Timeline Scenario</div>
-                  {result.gemini_scenario.timeline.map((t, i) => (
-                    <div key={i} className="whatif-timeline-item">
-                      {t.week != null && <span className="whatif-timeline-week">+{t.week}w</span>}
-                      <span>{t.description}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {result.gemini_scenario.response_actions && (
-                <div className="whatif-section">
-                  <div className="whatif-section-title">Response Actions</div>
-                  {result.gemini_scenario.response_actions.map((a, i) => (
-                    <div key={i} className="whatif-action-item">
-                      {a.priority && <span className={`ontology-pill ontology-rec-priority-${a.priority?.toUpperCase()}`}>{a.priority}</span>}
-                      <span className="whatif-action-text">{a.action}</span>
-                      {a.timing && <span className="whatif-action-timing">{a.timing}</span>}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {(result.gemini_scenario.best_case || result.gemini_scenario.worst_case) && (
-                <div className="whatif-section whatif-cases">
-                  {result.gemini_scenario.best_case && (
-                    <div className="whatif-case best">Best case: {result.gemini_scenario.best_case}</div>
-                  )}
-                  {result.gemini_scenario.worst_case && (
-                    <div className="whatif-case worst">Worst case: {result.gemini_scenario.worst_case}</div>
-                  )}
-                </div>
-              )}
-              {result.gemini_scenario.risk_factors && (
-                <div className="whatif-section">
-                  <div className="whatif-section-title">Risk Factors</div>
-                  <ul className="whatif-risk-list">
-                    {result.gemini_scenario.risk_factors.map((rf, i) => <li key={i}>{rf}</li>)}
-                  </ul>
-                </div>
+              {result.gemini_scenario.worst_case && (
+                <div className="whatif-case worst">Worst case: {result.gemini_scenario.worst_case}</div>
               )}
             </div>
           )}
-          {result.gemini_scenario?.error && (
-            <div className="ontology-decision-error">{result.gemini_scenario.error}</div>
+          {result.gemini_scenario.risk_factors && (
+            <div className="whatif-section">
+              <div className="whatif-section-title">Risk Factors</div>
+              <ul className="whatif-risk-list">
+                {result.gemini_scenario.risk_factors.map((rf, i) => <li key={i}>{rf}</li>)}
+              </ul>
+            </div>
           )}
         </div>
       )}
-      {result?.error && <div className="ontology-decision-error">{result.error}</div>}
+      {result.gemini_scenario?.error && (
+        <div className="ontology-decision-error">{result.gemini_scenario.error}</div>
+      )}
+      {result.error && <div className="ontology-decision-error">{result.error}</div>}
     </div>
   );
 }
@@ -940,6 +1079,11 @@ export default function OntologyView() {
   const [filterText, setFilterText] = useState('');
   const [whatIfMode, setWhatIfMode] = useState(false);
 
+  // What-If result state (lifted from WhatIfPanel)
+  const [whatIfResult, setWhatIfResult] = useState<WhatIfResult | null>(null);
+  const [whatIfRegionId, setWhatIfRegionId] = useState<string>('11');
+  const [allRegionLevels, setAllRegionLevels] = useState<{ code: string; name_kr: string; level: string; score: number }[]>([]);
+
   // Decision state
   const [decomposition, setDecomposition] = useState<DecompositionResult | null>(null);
   const [forecastEMA, setForecastEMA] = useState<ForecastResult | null>(null);
@@ -974,6 +1118,20 @@ export default function OntologyView() {
     }
     if (selectedType === 'WhatIf') {
       setWhatIfMode(true); setInstances([]); setSelectedInstance(null); resetDecision();
+      setWhatIfResult(null);
+      // Fetch all region levels for the mini map
+      fetch(`${API_BASE}/ontology/objects/Region`)
+        .then((r) => r.json())
+        .then((d) => {
+          const list = (d.instances || []).map((r: any) => ({
+            code: String(r.code || r.id),
+            name_kr: r.name_kr || r.name_en || r.id,
+            level: r.current_level || 'G0',
+            score: r.current_score ?? 0,
+          }));
+          setAllRegionLevels(list);
+        })
+        .catch(() => setAllRegionLevels([]));
       return;
     }
     setWhatIfMode(false);
@@ -1156,7 +1314,8 @@ export default function OntologyView() {
             </div>
           </div>
           {whatIfMode ? (
-            <WhatIfStandalonePanel isAdmin={isAdmin} adminHeaders={adminHeaders} />
+            <WhatIfStandalonePanel isAdmin={isAdmin} adminHeaders={adminHeaders}
+              onResult={(result, rid) => { setWhatIfResult(result); setWhatIfRegionId(rid); }} />
           ) : selectedType ? (
             <>
               <input className="ontology-filter-input" placeholder="Filter..."
@@ -1207,7 +1366,15 @@ export default function OntologyView() {
         <div className="ontology-analysis-area">
           <div className="ontology-main-title">FORECASTING & ANALYSIS</div>
           {whatIfMode ? (
-            <div className="ontology-pane-empty">위 Outbreak Scenario 패널에서 시나리오를 실행하세요.</div>
+            whatIfResult && !whatIfResult.error ? (
+              <WhatIfAnalysisPanel result={whatIfResult} regionId={whatIfRegionId} allRegions={allRegionLevels} />
+            ) : whatIfResult?.error ? (
+              <div className="ontology-pane-empty">
+                <div className="ontology-decision-error">{whatIfResult.error}</div>
+              </div>
+            ) : (
+              <div className="ontology-pane-empty">시나리오를 실행하면 결과가 여기에 표시됩니다.</div>
+            )
           ) : loadingInstance ? <div className="ontology-pane-loading">Loading...</div>
           : !selectedInstance ? (
             <div className="ontology-pane-empty">Select an instance to see forecasting + analysis.</div>
@@ -1328,8 +1495,9 @@ export default function OntologyView() {
 
 // ─── Standalone Outbreak Scenario panel (fills instances pane) ───────────────
 
-function WhatIfStandalonePanel({ isAdmin, adminHeaders }: {
+function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   isAdmin: boolean; adminHeaders: () => Promise<Record<string, string>>;
+  onResult?: (result: WhatIfResult, regionId: string) => void;
 }) {
   const [regionId, setRegionId] = useState('11');
   const [regions, setRegions] = useState<{ id: string; name_kr: string }[]>([]);
@@ -1362,7 +1530,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders }: {
           ))}
         </select>
       </div>
-      <WhatIfPanel regionId={regionId} isAdmin={isAdmin} adminHeaders={adminHeaders} />
+      <WhatIfPanel regionId={regionId} isAdmin={isAdmin} adminHeaders={adminHeaders} onResult={onResult} />
     </div>
   );
 }

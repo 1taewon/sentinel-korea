@@ -8773,6 +8773,108 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   line-height: 1.6;
 }
 
+/* ── WhatIf Analysis Panel (right side) ── */
+.whatif-analysis-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.whatif-analysis-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.whatif-analysis-tag {
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: rgba(251,113,133,0.15);
+  color: #fb7185;
+  text-transform: uppercase;
+}
+.whatif-analysis-region {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.whatif-analysis-scenario {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* ── Scenario Mini Map Pair ── */
+.whatif-minimap-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.scenario-minimap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+.scenario-minimap-title {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.scenario-minimap-svg {
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+}
+.scenario-minimap-svg text {
+  font-size: 7px;
+  font-weight: 700;
+  fill: rgba(0,0,0,0.7);
+  pointer-events: none;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* Pulse effect for changed region */
+@keyframes scenario-pulse {
+  0%, 100% { stroke-opacity: 1; r: inherit; }
+  50% { stroke-opacity: 0.4; }
+}
+.scenario-minimap-pulse {
+  stroke: #fff;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 6px rgba(255,77,79,0.6));
+  animation: scenario-pulse 1.5s ease-in-out infinite;
+}
+
+/* ── Status message in input panel ── */
+.whatif-status-msg {
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  line-height: 1.5;
+}
+.whatif-status-success {
+  background: rgba(52,211,153,0.08);
+  border: 1px solid rgba(52,211,153,0.25);
+  color: #34d399;
+}
+.whatif-status-error {
+  background: rgba(251,113,133,0.08);
+  border: 1px solid rgba(251,113,133,0.25);
+  color: #fb7185;
+}
+
 /* ── Signal Lead-Lag panel ── */
 .leadlag-pairs {
   display: flex;
