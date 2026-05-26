@@ -77,15 +77,28 @@ interface WhatIfComparison {
   weeks_ahead: number; baseline_score: number; baseline_level: string;
   scenario_score: number; scenario_level: string; delta: number; level_changed: boolean;
 }
-interface WhatIfResult {
-  region_id: string;
-  scenario: { disease: string; country: string; severity: string; hypothetical_lift: number; proximity_multiplier: number };
+// WhatIfResult removed — replaced by NationalOutbreakResult for national spread model.
+
+// National outbreak spread result
+interface NationalRegionResult {
+  region_id: string; region_name: string;
+  is_primary_zone?: boolean; spread_multiplier: number; lift: number;
+  baseline_level: string; baseline_score: number;
+  scenario_level: string; scenario_score: number;
+  max_delta: number; level_changed: boolean;
   comparison: WhatIfComparison[];
-  level_escalation: boolean;
-  max_delta: number;
+  error?: string;
+}
+interface NationalOutbreakResult {
+  entry_point: { code: string; label: string; primary_zones: string[] };
+  scenario: { disease: string; country: string; severity: string; base_lift: number; proximity_multiplier: number };
+  regions: NationalRegionResult[];
+  summary: { total_regions: number; escalated_count: number; escalated_regions: string[]; total_delta: number };
   gemini_scenario?: {
-    impact_summary?: string; timeline?: { week?: number; description?: string }[];
+    impact_summary?: string; spread_pattern?: string;
+    timeline?: { week?: number; description?: string }[];
     response_actions?: { priority?: string; action?: string; timing?: string }[];
+    high_risk_regions?: { region?: string; reason?: string }[];
     risk_factors?: string[]; best_case?: string; worst_case?: string;
     error?: string; raw?: string; parse_error?: boolean;
   } | null;
@@ -442,80 +455,7 @@ const WHAT_IF_PRESETS = [
   { disease: 'H7N9 Influenza', country: 'Vietnam', severity: 'high' },
 ];
 
-function WhatIfPanel({ regionId, isAdmin, adminHeaders, onResult }: {
-  regionId: string; isAdmin: boolean; adminHeaders: () => Promise<Record<string, string>>;
-  onResult?: (result: WhatIfResult, regionId: string) => void;
-}) {
-  const [loading, setLoading] = useState(false);
-  const [disease, setDisease] = useState('H5N1 Avian Influenza');
-  const [country, setCountry] = useState('China');
-  const [severity, setSeverity] = useState('high');
-  const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
-  const runScenario = async () => {
-    setLoading(true); setStatusMsg(null);
-    try {
-      const r = await fetch(`${API_BASE}/ontology/functions/whatIfOutbreak`, {
-        method: 'POST', headers: await adminHeaders(),
-        body: JSON.stringify({ inputs: { region_id: regionId, disease, country, severity, weeks: 4 } }),
-      });
-      const d = await r.json();
-      const res: WhatIfResult = d.result || d;
-      if (res.error) {
-        setStatusMsg({ type: 'error', text: res.error });
-      } else {
-        setStatusMsg({ type: 'success', text: 'Scenario complete — see results →' });
-      }
-      onResult?.(res, regionId);
-    } catch (e: any) {
-      const errResult: WhatIfResult = { region_id: regionId, scenario: { disease, country, severity, hypothetical_lift: 0, proximity_multiplier: 0 }, comparison: [], level_escalation: false, max_delta: 0, narrative: '', error: String(e?.message || e) };
-      setStatusMsg({ type: 'error', text: String(e?.message || e) });
-      onResult?.(errResult, regionId);
-    } finally { setLoading(false); }
-  };
-
-  return (
-    <div className="ontology-decision-block">
-      <div className="whatif-inputs">
-        <div className="whatif-row">
-          <label>Disease</label>
-          <input value={disease} onChange={(e) => setDisease(e.target.value)} className="whatif-input" />
-        </div>
-        <div className="whatif-row">
-          <label>Country</label>
-          <input value={country} onChange={(e) => setCountry(e.target.value)} className="whatif-input" />
-        </div>
-        <div className="whatif-row">
-          <label>Severity</label>
-          <select value={severity} onChange={(e) => setSeverity(e.target.value)} className="whatif-select">
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </select>
-        </div>
-        <div className="whatif-presets">
-          {WHAT_IF_PRESETS.map((p, i) => (
-            <button key={i} type="button" className="whatif-preset-btn"
-              onClick={() => { setDisease(p.disease); setCountry(p.country); setSeverity(p.severity); }}>
-              {p.disease.split(' ')[0]} / {p.country}
-            </button>
-          ))}
-        </div>
-        <button type="button" className="ontology-generate-btn" onClick={runScenario}
-          disabled={!isAdmin || loading}>
-          {loading ? 'Simulating...' : isAdmin ? 'Run Scenario (Gemini)' : 'Admin only'}
-        </button>
-      </div>
-
-      {statusMsg && (
-        <div className={`whatif-status-msg whatif-status-${statusMsg.type}`}>
-          {statusMsg.text}
-        </div>
-      )}
-    </div>
-  );
-}
+// WhatIfPanel (single-region) removed — replaced by WhatIfStandalonePanel (national).
 
 // ─── Scenario Mini Map (SVG bubble map) ──────────────────────────────────
 
@@ -558,11 +498,12 @@ function mercatorProject(lat: number, lng: number, vw: number, vh: number): [num
 
 function ScenarioMiniMap({ regionLevels, targetCode, title }: {
   regionLevels: { code: string; level: string }[];
-  targetCode?: string;
+  targetCode?: string;  // comma-separated codes for multi-highlight
   title: string;
 }) {
   const vw = 200, vh = 260, pad = 20;
   const levelMap = new Map(regionLevels.map((r) => [r.code, r.level]));
+  const targetSet = new Set((targetCode || '').split(',').filter(Boolean));
 
   return (
     <div className="scenario-minimap">
@@ -574,8 +515,8 @@ function ScenarioMiniMap({ regionLevels, targetCode, title }: {
           const level = levelMap.get(reg.code) || 'G0';
           const color = GLEVEL_COLORS[level] || GLEVEL_COLORS.G0;
           const baseR = reg.isMetro ? 14 : 20;
-          const isTarget = reg.code === targetCode;
-          const r = isTarget ? baseR + 4 : baseR;
+          const isTarget = targetSet.has(reg.code);
+          const r = isTarget ? baseR + 3 : baseR;
           return (
             <g key={reg.code}>
               {isTarget && (
@@ -601,80 +542,102 @@ function ScenarioMiniMap({ regionLevels, targetCode, title }: {
   );
 }
 
-// ─── What-If Analysis Panel (results in analysis area) ────────────────────
+// ─── National Outbreak Analysis Panel (results in analysis area) ──────────
 
-function WhatIfAnalysisPanel({ result, regionId, allRegions }: {
-  result: WhatIfResult;
-  regionId: string;
-  allRegions: { code: string; name_kr: string; level: string; score: number }[];
-}) {
-  // Baseline levels for mini map
-  const baselineLevels = allRegions.map((r) => ({ code: r.code, level: r.level }));
+function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
+  const g = result.gemini_scenario;
+  const ep = result.entry_point;
 
-  // After-scenario levels: target region gets last week's scenario_level
-  const lastWeek = result.comparison.length > 0
-    ? result.comparison[result.comparison.length - 1]
-    : null;
-  const scenarioLevels = allRegions.map((r) => {
-    if (r.code === regionId && lastWeek) {
-      return { code: r.code, level: lastWeek.scenario_level };
-    }
-    return { code: r.code, level: r.level };
-  });
-
-  const targetName = allRegions.find((r) => r.code === regionId)?.name_kr || regionId;
+  // Build before/after maps from region results
+  const baselineLevels = result.regions.map((r) => ({ code: r.region_id, level: r.baseline_level }));
+  const scenarioLevels = result.regions.map((r) => ({ code: r.region_id, level: r.scenario_level }));
+  // Highlight all primary zone + escalated regions on the "after" map
+  const highlightCodes = new Set([
+    ...ep.primary_zones,
+    ...result.regions.filter((r) => r.level_changed).map((r) => r.region_id),
+  ]);
 
   return (
     <div className="whatif-analysis-panel">
+      {/* Header */}
       <div className="whatif-analysis-header">
-        <span className="whatif-analysis-tag">OUTBREAK SCENARIO RESULTS</span>
-        <span className="whatif-analysis-region">{targetName}</span>
+        <span className="whatif-analysis-tag">NATIONAL SPREAD SCENARIO</span>
+        <span className="whatif-analysis-region">{ep.label}</span>
         <span className="whatif-analysis-scenario">
           {result.scenario.disease} / {result.scenario.country} / {result.scenario.severity}
         </span>
       </div>
 
-      {/* Before/After Mini Maps */}
+      {/* Summary bar */}
+      <div className="national-summary-bar">
+        <div className="national-summary-stat">
+          <span className="national-summary-num">{result.summary.escalated_count}</span>
+          <span className="national-summary-label">G-level 상향 지역</span>
+        </div>
+        <div className="national-summary-stat">
+          <span className="national-summary-num">+{result.summary.total_delta.toFixed(3)}</span>
+          <span className="national-summary-label">전국 총 Delta</span>
+        </div>
+        <div className="national-summary-stat">
+          <span className="national-summary-num">{ep.primary_zones.length}</span>
+          <span className="national-summary-label">1차 영향 지역</span>
+        </div>
+      </div>
+
+      {/* Before/After Mini Maps — all regions shown */}
       <div className="whatif-minimap-pair">
         <ScenarioMiniMap regionLevels={baselineLevels} title="현재 (Baseline)" />
-        <ScenarioMiniMap regionLevels={scenarioLevels} targetCode={regionId}
+        <ScenarioMiniMap regionLevels={scenarioLevels}
+          targetCode={Array.from(highlightCodes).join(',')}
           title="시나리오 적용 후" />
       </div>
 
       {/* Narrative */}
       <div className="ontology-decision-narrative">{result.narrative}</div>
 
-      {/* Score comparison table */}
-      <div className="whatif-comparison">
-        <div className="whatif-comp-header">
-          <span>Week</span><span>Baseline</span><span>Scenario</span><span>Delta</span>
-        </div>
-        {result.comparison.map((c) => (
-          <div key={c.weeks_ahead} className={`whatif-comp-row ${c.level_changed ? 'escalated' : ''}`}>
-            <span className="whatif-comp-week">+{c.weeks_ahead}w</span>
-            <span><LevelPill level={c.baseline_level} /> {c.baseline_score.toFixed(3)}</span>
-            <span><LevelPill level={c.scenario_level} /> {c.scenario_score.toFixed(3)}</span>
-            <span className={`whatif-comp-delta ${c.delta > 0 ? 'up' : ''}`}>
-              {c.delta > 0 ? '+' : ''}{c.delta.toFixed(3)}
-              {c.level_changed && ' ⚠'}
-            </span>
+      {/* Region ranking table (all 17) */}
+      <div className="whatif-section">
+        <div className="whatif-section-title">지역별 위험도 변화 (Delta 순)</div>
+        <div className="national-region-table">
+          <div className="national-region-header">
+            <span>지역</span><span>현재</span><span>시나리오</span><span>Delta</span><span>Spread</span>
           </div>
-        ))}
+          {result.regions.map((r) => (
+            <div key={r.region_id} className={`national-region-row ${r.level_changed ? 'escalated' : ''} ${r.is_primary_zone ? 'primary' : ''}`}>
+              <span className="national-region-name">
+                {r.is_primary_zone && <span className="national-primary-badge">1차</span>}
+                {r.region_name}
+              </span>
+              <span><LevelPill level={r.baseline_level} /> {r.baseline_score.toFixed(3)}</span>
+              <span><LevelPill level={r.scenario_level} /> {r.scenario_score.toFixed(3)}</span>
+              <span className={`whatif-comp-delta ${r.max_delta > 0 ? 'up' : ''}`}>
+                +{r.max_delta.toFixed(3)}{r.level_changed && ' ⚠'}
+              </span>
+              <span className="national-spread-mult">×{r.spread_multiplier.toFixed(2)}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Gemini scenario narrative */}
-      {result.gemini_scenario && !result.gemini_scenario.error && !result.gemini_scenario.parse_error && (
+      {/* Gemini national narrative */}
+      {g && !g.error && !g.parse_error && (
         <div className="whatif-gemini">
-          {result.gemini_scenario.impact_summary && (
+          {g.impact_summary && (
             <div className="whatif-section">
               <div className="whatif-section-title">Impact Summary</div>
-              <p>{result.gemini_scenario.impact_summary}</p>
+              <p>{g.impact_summary}</p>
             </div>
           )}
-          {result.gemini_scenario.timeline && result.gemini_scenario.timeline.length > 0 && (
+          {g.spread_pattern && (
+            <div className="whatif-section">
+              <div className="whatif-section-title">Spread Pattern</div>
+              <p>{g.spread_pattern}</p>
+            </div>
+          )}
+          {g.timeline && g.timeline.length > 0 && (
             <div className="whatif-section">
               <div className="whatif-section-title">Timeline Scenario</div>
-              {result.gemini_scenario.timeline.map((t, i) => (
+              {g.timeline.map((t, i) => (
                 <div key={i} className="whatif-timeline-item">
                   {t.week != null && <span className="whatif-timeline-week">+{t.week}w</span>}
                   <span>{t.description}</span>
@@ -682,10 +645,21 @@ function WhatIfAnalysisPanel({ result, regionId, allRegions }: {
               ))}
             </div>
           )}
-          {result.gemini_scenario.response_actions && (
+          {g.high_risk_regions && g.high_risk_regions.length > 0 && (
+            <div className="whatif-section">
+              <div className="whatif-section-title">High Risk Regions</div>
+              {g.high_risk_regions.map((hr, i) => (
+                <div key={i} className="whatif-action-item">
+                  <span className="ontology-pill ontology-rec-priority-HIGH">{hr.region}</span>
+                  <span className="whatif-action-text">{hr.reason}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {g.response_actions && (
             <div className="whatif-section">
               <div className="whatif-section-title">Response Actions</div>
-              {result.gemini_scenario.response_actions.map((a, i) => (
+              {g.response_actions.map((a, i) => (
                 <div key={i} className="whatif-action-item">
                   {a.priority && <span className={`ontology-pill ontology-rec-priority-${a.priority?.toUpperCase()}`}>{a.priority}</span>}
                   <span className="whatif-action-text">{a.action}</span>
@@ -694,30 +668,23 @@ function WhatIfAnalysisPanel({ result, regionId, allRegions }: {
               ))}
             </div>
           )}
-          {(result.gemini_scenario.best_case || result.gemini_scenario.worst_case) && (
+          {(g.best_case || g.worst_case) && (
             <div className="whatif-section whatif-cases">
-              {result.gemini_scenario.best_case && (
-                <div className="whatif-case best">Best case: {result.gemini_scenario.best_case}</div>
-              )}
-              {result.gemini_scenario.worst_case && (
-                <div className="whatif-case worst">Worst case: {result.gemini_scenario.worst_case}</div>
-              )}
+              {g.best_case && <div className="whatif-case best">Best case: {g.best_case}</div>}
+              {g.worst_case && <div className="whatif-case worst">Worst case: {g.worst_case}</div>}
             </div>
           )}
-          {result.gemini_scenario.risk_factors && (
+          {g.risk_factors && (
             <div className="whatif-section">
               <div className="whatif-section-title">Risk Factors</div>
               <ul className="whatif-risk-list">
-                {result.gemini_scenario.risk_factors.map((rf, i) => <li key={i}>{rf}</li>)}
+                {g.risk_factors.map((rf, i) => <li key={i}>{rf}</li>)}
               </ul>
             </div>
           )}
         </div>
       )}
-      {result.gemini_scenario?.error && (
-        <div className="ontology-decision-error">{result.gemini_scenario.error}</div>
-      )}
-      {result.error && <div className="ontology-decision-error">{result.error}</div>}
+      {g?.error && <div className="ontology-decision-error">{g.error}</div>}
     </div>
   );
 }
@@ -1079,10 +1046,8 @@ export default function OntologyView() {
   const [filterText, setFilterText] = useState('');
   const [whatIfMode, setWhatIfMode] = useState(false);
 
-  // What-If result state (lifted from WhatIfPanel)
-  const [whatIfResult, setWhatIfResult] = useState<WhatIfResult | null>(null);
-  const [whatIfRegionId, setWhatIfRegionId] = useState<string>('11');
-  const [allRegionLevels, setAllRegionLevels] = useState<{ code: string; name_kr: string; level: string; score: number }[]>([]);
+  // What-If result state (national outbreak)
+  const [whatIfResult, setWhatIfResult] = useState<NationalOutbreakResult | null>(null);
 
   // Decision state
   const [decomposition, setDecomposition] = useState<DecompositionResult | null>(null);
@@ -1119,19 +1084,6 @@ export default function OntologyView() {
     if (selectedType === 'WhatIf') {
       setWhatIfMode(true); setInstances([]); setSelectedInstance(null); resetDecision();
       setWhatIfResult(null);
-      // Fetch all region levels for the mini map
-      fetch(`${API_BASE}/ontology/objects/Region`)
-        .then((r) => r.json())
-        .then((d) => {
-          const list = (d.instances || []).map((r: any) => ({
-            code: String(r.code || r.id),
-            name_kr: r.name_kr || r.name_en || r.id,
-            level: r.current_level || 'G0',
-            score: r.current_score ?? 0,
-          }));
-          setAllRegionLevels(list);
-        })
-        .catch(() => setAllRegionLevels([]));
       return;
     }
     setWhatIfMode(false);
@@ -1315,7 +1267,7 @@ export default function OntologyView() {
           </div>
           {whatIfMode ? (
             <WhatIfStandalonePanel isAdmin={isAdmin} adminHeaders={adminHeaders}
-              onResult={(result, rid) => { setWhatIfResult(result); setWhatIfRegionId(rid); }} />
+              onResult={(result) => { setWhatIfResult(result); }} />
           ) : selectedType ? (
             <>
               <input className="ontology-filter-input" placeholder="Filter..."
@@ -1367,7 +1319,7 @@ export default function OntologyView() {
           <div className="ontology-main-title">FORECASTING & ANALYSIS</div>
           {whatIfMode ? (
             whatIfResult && !whatIfResult.error ? (
-              <WhatIfAnalysisPanel result={whatIfResult} regionId={whatIfRegionId} allRegions={allRegionLevels} />
+              <NationalAnalysisPanel result={whatIfResult} />
             ) : whatIfResult?.error ? (
               <div className="ontology-pane-empty">
                 <div className="ontology-decision-error">{whatIfResult.error}</div>
@@ -1493,44 +1445,93 @@ export default function OntologyView() {
   );
 }
 
-// ─── Standalone Outbreak Scenario panel (fills instances pane) ───────────────
+// ─── National Outbreak Scenario panel (fills instances pane) ───────────────
+
+const ENTRY_POINTS = [
+  { code: 'ICN', label: '인천국제공항', desc: '수도권 (서울/인천/경기)' },
+  { code: 'PUS', label: '김해국제공항', desc: '부산/경남' },
+  { code: 'CJU', label: '제주국제공항', desc: '제주' },
+  { code: 'TAE', label: '대구국제공항', desc: '대구/경북' },
+];
 
 function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   isAdmin: boolean; adminHeaders: () => Promise<Record<string, string>>;
-  onResult?: (result: WhatIfResult, regionId: string) => void;
+  onResult?: (result: NationalOutbreakResult) => void;
 }) {
-  const [regionId, setRegionId] = useState('11');
-  const [regions, setRegions] = useState<{ id: string; name_kr: string }[]>([]);
+  const [entryPoint, setEntryPoint] = useState('ICN');
+  const [disease, setDisease] = useState('H5N1 Avian Influenza');
+  const [country, setCountry] = useState('China');
+  const [severity, setSeverity] = useState('high');
+  const [loading, setLoading] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  useEffect(() => {
-    fetch(`${API_BASE}/ontology/objects/Region`)
-      .then((r) => r.json())
-      .then((d) => {
-        const list = (d.instances || []).map((r: any) => ({
-          id: String(r.code || r.id),
-          name_kr: r.name_kr || r.name_en || r.id,
-        }));
-        setRegions(list);
-        if (list.length > 0) setRegionId(list[0].id);
+  const runNationalScenario = async () => {
+    setLoading(true); setStatusMsg(null);
+    try {
+      const r = await fetch(`${API_BASE}/ontology/functions/whatIfOutbreakNational`, {
+        method: 'POST', headers: await adminHeaders(),
+        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, weeks: 4 } }),
       });
-  }, []);
+      const d = await r.json();
+      const result = d.result || d;
+      if (result.error) {
+        setStatusMsg({ ok: false, text: result.error });
+      } else {
+        setStatusMsg({ ok: true, text: `${result.summary?.escalated_count || 0}개 지역 G-level 상향 예상 — 결과 확인 →` });
+        onResult?.(result);
+      }
+    } catch (e: any) {
+      setStatusMsg({ ok: false, text: String(e?.message || e) });
+    } finally { setLoading(false); }
+  };
 
   return (
     <div className="whatif-standalone">
       <div className="whatif-standalone-desc">
-        <strong>Outbreak Scenario Analysis</strong> — 해외에서 신종 감염병이 발생한다면?
-        한국 각 지역에 미치는 영향을 proximity-weighted exogenous lift 모델로 시뮬레이션합니다.
-        지역을 선택하고 시나리오를 설정한 뒤 "Run Scenario"를 클릭하세요.
+        <strong>전국 확산 시나리오</strong> — 해외 감염병이 한국에 유입된다면? 선택한 공항 거점에서 전국 17개 시도로의 확산 패턴을 시뮬레이션합니다.
       </div>
       <div className="whatif-row">
-        <label>Region</label>
-        <select value={regionId} onChange={(e) => setRegionId(e.target.value)} className="whatif-select">
-          {regions.map((r) => (
-            <option key={r.id} value={r.id}>{r.name_kr}</option>
+        <label>유입 거점</label>
+        <select value={entryPoint} onChange={(e) => setEntryPoint(e.target.value)} className="whatif-select">
+          {ENTRY_POINTS.map((ep) => (
+            <option key={ep.code} value={ep.code}>{ep.label} ({ep.desc})</option>
           ))}
         </select>
       </div>
-      <WhatIfPanel regionId={regionId} isAdmin={isAdmin} adminHeaders={adminHeaders} onResult={onResult} />
+      <div className="whatif-row">
+        <label>Disease</label>
+        <input value={disease} onChange={(e) => setDisease(e.target.value)} className="whatif-input" />
+      </div>
+      <div className="whatif-row">
+        <label>Country</label>
+        <input value={country} onChange={(e) => setCountry(e.target.value)} className="whatif-input" />
+      </div>
+      <div className="whatif-row">
+        <label>Severity</label>
+        <select value={severity} onChange={(e) => setSeverity(e.target.value)} className="whatif-select">
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
+      </div>
+      <div className="whatif-presets">
+        {WHAT_IF_PRESETS.map((p, i) => (
+          <button key={i} type="button" className="whatif-preset-btn"
+            onClick={() => { setDisease(p.disease); setCountry(p.country); setSeverity(p.severity); }}>
+            {p.disease.split(' ')[0]} / {p.country}
+          </button>
+        ))}
+      </div>
+      <button type="button" className="ontology-generate-btn" onClick={runNationalScenario}
+        disabled={!isAdmin || loading}>
+        {loading ? 'Simulating...' : isAdmin ? 'Run National Scenario (Gemini)' : 'Admin only'}
+      </button>
+      {statusMsg && (
+        <div className={`whatif-status-msg ${statusMsg.ok ? 'whatif-status-success' : 'whatif-status-error'}`}>
+          {statusMsg.text}
+        </div>
+      )}
     </div>
   );
 }

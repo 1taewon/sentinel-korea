@@ -1079,6 +1079,339 @@ register(FunctionSpec(
 
 
 # ═════════════════════════════════════════════════════════════════════════════
+# Function 7b — whatIfOutbreakNational (all-region spread from airport entry)
+# ═════════════════════════════════════════════════════════════════════════════
+
+# Airport entry points with primary-zone regions
+_ENTRY_POINTS = {
+    "ICN": {
+        "label": "인천국제공항",
+        "label_en": "Incheon International Airport",
+        "primary_zones": ["11", "28", "41"],  # Seoul, Incheon, Gyeonggi (수도권)
+        "lat": 37.4602, "lng": 126.4407,
+    },
+    "PUS": {
+        "label": "김해국제공항",
+        "label_en": "Gimhae International Airport",
+        "primary_zones": ["26", "48"],  # Busan, Gyeongnam
+        "lat": 35.1796, "lng": 128.9382,
+    },
+    "CJU": {
+        "label": "제주국제공항",
+        "label_en": "Jeju International Airport",
+        "primary_zones": ["50"],  # Jeju
+        "lat": 33.5104, "lng": 126.4914,
+    },
+    "TAE": {
+        "label": "대구국제공항",
+        "label_en": "Daegu International Airport",
+        "primary_zones": ["27", "47"],  # Daegu, Gyeongbuk
+        "lat": 35.8941, "lng": 128.6589,
+    },
+}
+
+_REGION_COORDS = {
+    "11": {"name": "서울", "lat": 37.5665, "lng": 126.9780},
+    "26": {"name": "부산", "lat": 35.1796, "lng": 129.0756},
+    "27": {"name": "대구", "lat": 35.8714, "lng": 128.6014},
+    "28": {"name": "인천", "lat": 37.4563, "lng": 126.7052},
+    "29": {"name": "광주", "lat": 35.1595, "lng": 126.8526},
+    "30": {"name": "대전", "lat": 36.3504, "lng": 127.3845},
+    "31": {"name": "울산", "lat": 35.5384, "lng": 129.3114},
+    "36": {"name": "세종", "lat": 36.4800, "lng": 127.2890},
+    "41": {"name": "경기", "lat": 37.2750, "lng": 127.0094},
+    "42": {"name": "강원", "lat": 37.8228, "lng": 128.1555},
+    "43": {"name": "충북", "lat": 36.6357, "lng": 127.4917},
+    "44": {"name": "충남", "lat": 36.5184, "lng": 126.8000},
+    "45": {"name": "전북", "lat": 35.7175, "lng": 127.1530},
+    "46": {"name": "전남", "lat": 34.8161, "lng": 126.4629},
+    "47": {"name": "경북", "lat": 36.4919, "lng": 128.8889},
+    "48": {"name": "경남", "lat": 35.4606, "lng": 128.2132},
+    "50": {"name": "제주", "lat": 33.4890, "lng": 126.4983},
+}
+
+
+def _haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Great-circle distance between two points in km."""
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlng = math.radians(lng2 - lng1)
+    a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlng / 2) ** 2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def _spread_multiplier(region_code: str, entry_point: dict) -> float:
+    """Compute spread multiplier for a region based on distance from entry point.
+
+    Primary zones: 1.0 (full lift)
+    Others: exponential decay based on distance from nearest primary zone region.
+    Minimum: 0.15 (even remote regions have some baseline risk from travel/logistics).
+    """
+    if region_code in entry_point["primary_zones"]:
+        return 1.0
+
+    rc = _REGION_COORDS.get(region_code)
+    if not rc:
+        return 0.15
+
+    # Distance from the nearest primary zone region
+    min_dist = float("inf")
+    for pz_code in entry_point["primary_zones"]:
+        pz = _REGION_COORDS.get(pz_code)
+        if pz:
+            d = _haversine_km(rc["lat"], rc["lng"], pz["lat"], pz["lng"])
+            min_dist = min(min_dist, d)
+
+    if min_dist == float("inf"):
+        return 0.15
+
+    # Exponential decay: e^(-d/150) — halves at ~100km, floor at 0.15
+    decay = math.exp(-min_dist / 150.0)
+    return max(0.15, decay)
+
+
+def _what_if_outbreak_national(inputs: dict) -> dict:
+    entry_code = str(inputs.get("entry_point") or "ICN").upper()
+    disease_name = str(inputs.get("disease") or "novel respiratory pathogen")
+    country = str(inputs.get("country") or "China")
+    severity = str(inputs.get("severity") or "high").lower()
+    weeks = max(1, min(int(inputs.get("weeks") or 4), 12))
+
+    entry_point = _ENTRY_POINTS.get(entry_code)
+    if not entry_point:
+        return {"error": f"Unknown entry_point: {entry_code}. Available: {list(_ENTRY_POINTS.keys())}"}
+
+    # Base lift from severity × country proximity
+    base_lift = _SEVERITY_LIFT.get(severity, 0.03)
+    prox = _PROXIMITY_MULT.get(country.lower(), 0.5)
+    full_lift = min(0.15, base_lift * prox)
+
+    # Real outbreak context
+    outbreaks = _all_outbreaks()
+    real_exo = min(0.05, len([o for o in outbreaks if _korea_relevance(o) >= 0.6]) * 0.005)
+
+    # Compute per-region scenarios
+    region_results = []
+    for code, meta in sorted(_REGION_COORDS.items()):
+        spread_mult = _spread_multiplier(code, entry_point)
+        region_lift = full_lift * spread_mult
+        total_exo = real_exo + region_lift
+
+        # Get baseline forecast for this region
+        baseline = _forecast_region_score({"region_id": code, "weeks": weeks})
+        if "error" in baseline:
+            region_results.append({
+                "region_id": code, "region_name": meta["name"],
+                "spread_multiplier": round(spread_mult, 3),
+                "lift": round(region_lift, 4),
+                "error": baseline["error"],
+            })
+            continue
+
+        history = baseline["history"]
+        scores = [p["score"] for p in history if p.get("score") is not None]
+        if not scores:
+            region_results.append({
+                "region_id": code, "region_name": meta["name"],
+                "spread_multiplier": round(spread_mult, 3),
+                "lift": round(region_lift, 4),
+                "error": "No score history",
+            })
+            continue
+
+        alpha = 0.4
+        ema = scores[0]
+        for s in scores[1:]:
+            ema = alpha * s + (1 - alpha) * ema
+
+        if len(scores) >= 8:
+            momentum = statistics.mean(scores[-4:]) - statistics.mean(scores[-8:-4])
+        elif len(scores) >= 4:
+            momentum = statistics.mean(scores[-4:]) - statistics.mean(scores[:-4] or scores[:1])
+        else:
+            momentum = 0
+
+        residuals = []
+        e = scores[0]
+        for s in scores[1:]:
+            residuals.append(s - e)
+            e = alpha * s + (1 - alpha) * e
+        vol = statistics.stdev(residuals) if len(residuals) > 1 else 0.1
+        vol = max(0.04, min(0.20, vol))
+
+        last_date = _date.fromisoformat(history[-1]["date"])
+        baseline_pts = baseline["forecast"]
+        scenario_pts: list[dict] = []
+        for i in range(1, weeks + 1):
+            dt = last_date.fromordinal(last_date.toordinal() + i * 7)
+            decayed_m = momentum * (0.7 ** (i - 1))
+            proj = max(0.0, min(1.0, ema + decayed_m + total_exo))
+            band = vol * (1 + 0.25 * (i - 1))
+            scenario_pts.append({
+                "date": dt.isoformat(), "weeks_ahead": i,
+                "score": round(proj, 4), "level": _level_for(proj),
+                "low": round(max(0, proj - band), 4),
+                "high": round(min(1, proj + band), 4),
+            })
+
+        comparison = []
+        for b, s in zip(baseline_pts, scenario_pts):
+            comparison.append({
+                "weeks_ahead": b["weeks_ahead"],
+                "baseline_score": b["score"], "baseline_level": b["level"],
+                "scenario_score": s["score"], "scenario_level": s["level"],
+                "delta": round(s["score"] - b["score"], 4),
+                "level_changed": b["level"] != s["level"],
+            })
+
+        # Use last week's data for summary
+        last_b = baseline_pts[-1] if baseline_pts else {}
+        last_s = scenario_pts[-1] if scenario_pts else {}
+
+        region_results.append({
+            "region_id": code,
+            "region_name": meta["name"],
+            "is_primary_zone": code in entry_point["primary_zones"],
+            "spread_multiplier": round(spread_mult, 3),
+            "lift": round(region_lift, 4),
+            "baseline_level": last_b.get("level", "G0"),
+            "baseline_score": last_b.get("score", 0),
+            "scenario_level": last_s.get("level", "G0"),
+            "scenario_score": last_s.get("score", 0),
+            "max_delta": round(max(c["delta"] for c in comparison), 4),
+            "level_changed": any(c["level_changed"] for c in comparison),
+            "comparison": comparison,
+        })
+
+    # Sort by max_delta descending for ranking
+    region_results.sort(key=lambda r: r.get("max_delta", 0), reverse=True)
+
+    # Summary stats
+    escalated_regions = [r for r in region_results if r.get("level_changed")]
+    total_delta = sum(r.get("max_delta", 0) for r in region_results if "error" not in r)
+
+    # Gemini national scenario narrative
+    gemini_scenario = None
+    api_key = os.getenv("GEMINI_API_KEY")
+    if api_key:
+        try:
+            from google import genai
+            client = genai.Client(api_key=api_key)
+            model = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
+
+            top5 = region_results[:5]
+            summary_lines = []
+            for r in top5:
+                if "error" in r:
+                    continue
+                spread = "PRIMARY ZONE" if r.get("is_primary_zone") else "spread x{:.2f}".format(r.get("spread_multiplier", 0))
+                summary_lines.append(
+                    "  - {}({}): baseline {} -> scenario {} (delta +{:.3f}, {})".format(
+                        r["region_name"], r["region_id"],
+                        r.get("baseline_level", "?"), r.get("scenario_level", "?"),
+                        r.get("max_delta", 0), spread
+                    )
+                )
+            region_summary = "\n".join(summary_lines)
+
+            prompt = f"""당신은 한국 호흡기 감염병 감시 시스템 Sentinel의 전국 확산 시나리오 분석 AI입니다.
+
+## 가상 시나리오
+- 발생 국가: {country}
+- 질병: {disease_name}
+- 심각도: {severity}
+- 유입 거점: {entry_point['label']} ({entry_code})
+- 1차 영향권: {', '.join(entry_point['primary_zones'])} ({', '.join(_REGION_COORDS[c]['name'] for c in entry_point['primary_zones'] if c in _REGION_COORDS)})
+
+## 전국 확산 분석 결과 (위험도 상승 상위 5개 지역)
+{region_summary}
+
+## 전체 통계
+- G-level 상향된 지역: {len(escalated_regions)}/{len(region_results)}개
+- 전국 총 delta 합: +{total_delta:.3f}
+
+## 요청
+전국 확산 관점에서 다음을 JSON으로 작성하세요:
+1. "impact_summary": 이 시나리오의 전국적 영향 요약 (3-4문장, 한국어). 유입 거점에서의 1차 영향과 주변 지역으로의 확산 패턴을 설명.
+2. "spread_pattern": 확산 경로 설명 (유입 거점 → 인접 지역 → 전국, 2-3문장)
+3. "timeline": 주차별 예상 전개 시나리오 (전국 관점, 배열 [{{"week": 1, "description": "..."}}])
+4. "response_actions": 정책결정자가 취해야 할 선제 대응 조치 4-6개 (유입 거점 + 전국 단위, priority/action/timing 포함)
+5. "high_risk_regions": 특별 주의 필요 지역 목록과 이유 (배열 [{{"region": "...", "reason": "..."}}])
+6. "risk_factors": 상황을 악화시킬 수 있는 추가 위험 요인 3-4개
+7. "best_case": 최선의 시나리오 (1문장)
+8. "worst_case": 최악의 시나리오 (1문장)
+
+JSON 외 다른 텍스트 금지. 하나의 JSON object로만 응답.
+"""
+            resp = client.models.generate_content(model=model, contents=prompt)
+            raw = (resp.text or "").strip()
+            cleaned = raw
+            if cleaned.startswith("```"):
+                cleaned = cleaned.strip("`")
+                if cleaned.startswith("json"):
+                    cleaned = cleaned[4:]
+                cleaned = cleaned.strip()
+            try:
+                gemini_scenario = json.loads(cleaned)
+            except Exception:
+                gemini_scenario = {"raw": raw[:1200], "parse_error": True}
+        except Exception as e:
+            gemini_scenario = {"error": f"Gemini call failed: {type(e).__name__}: {e}"}
+
+    return {
+        "entry_point": {
+            "code": entry_code,
+            "label": entry_point["label"],
+            "primary_zones": entry_point["primary_zones"],
+        },
+        "scenario": {
+            "disease": disease_name,
+            "country": country,
+            "severity": severity,
+            "base_lift": round(full_lift, 4),
+            "proximity_multiplier": round(prox, 2),
+        },
+        "regions": region_results,
+        "summary": {
+            "total_regions": len(region_results),
+            "escalated_count": len(escalated_regions),
+            "escalated_regions": [r["region_name"] for r in escalated_regions],
+            "total_delta": round(total_delta, 4),
+        },
+        "gemini_scenario": gemini_scenario,
+        "narrative": (
+            f"전국 확산 시나리오: {country}에서 {disease_name} ({severity}) 발생 → "
+            f"{entry_point['label']} 유입. "
+            f"{len(escalated_regions)}개 지역 G-level 상향 예상. "
+            f"1차 영향권: {', '.join(_REGION_COORDS[c]['name'] for c in entry_point['primary_zones'] if c in _REGION_COORDS)}"
+        ),
+    }
+
+
+register(FunctionSpec(
+    name="whatIfOutbreakNational",
+    label="National outbreak spread simulation",
+    inputs=[
+        {"name": "entry_point", "type": "string", "required": False, "default": "ICN",
+         "description": "Airport entry code: ICN (인천), PUS (김해), CJU (제주), TAE (대구)"},
+        {"name": "disease", "type": "string", "required": False, "default": "novel respiratory pathogen"},
+        {"name": "country", "type": "string", "required": False, "default": "China"},
+        {"name": "severity", "type": "string", "required": False, "default": "high",
+         "description": "low | medium | high | critical"},
+        {"name": "weeks", "type": "integer", "required": False, "default": 4},
+    ],
+    output="object<{entry_point, scenario, regions[], summary, gemini_scenario, narrative}>",
+    affects_objects=["Region"],
+    requires_admin=True,
+    description="National outbreak spread simulation: models disease entry through a selected "
+                "airport and computes proximity-weighted spread to all 17 Korean regions. "
+                "Primary zones (e.g. 수도권 for Incheon) get full lift; other regions decay by distance. "
+                "Gemini generates a national spread narrative with response recommendations.",
+    fn=_what_if_outbreak_national,
+))
+
+
+# ═════════════════════════════════════════════════════════════════════════════
 # Function 8 — signalLeadLag  (cross-correlation between signals)
 # ═════════════════════════════════════════════════════════════════════════════
 

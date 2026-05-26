@@ -8875,6 +8875,99 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   color: #fb7185;
 }
 
+/* ── National Summary Bar ── */
+.national-summary-bar {
+  display: flex;
+  gap: 12px;
+}
+.national-summary-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+}
+.national-summary-num {
+  font-family: var(--font-mono, monospace);
+  font-size: 20px;
+  font-weight: 700;
+  color: #fb7185;
+}
+.national-summary-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* ── National Region Table ── */
+.national-region-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.national-region-header {
+  display: grid;
+  grid-template-columns: 90px 1fr 1fr 80px 60px;
+  gap: 6px;
+  padding: 4px 8px;
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  background: var(--bg-main);
+  z-index: 1;
+}
+.national-region-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 1fr 80px 60px;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-card);
+  font-size: 11px;
+  align-items: center;
+}
+.national-region-row.escalated {
+  border-color: rgba(251, 113, 133, 0.4);
+  background: rgba(251, 113, 133, 0.06);
+}
+.national-region-row.primary {
+  border-left: 3px solid #fb7185;
+}
+.national-region-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.national-primary-badge {
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(251,113,133,0.2);
+  color: #fb7185;
+  letter-spacing: 0.3px;
+}
+.national-spread-mult {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
 /* ── Signal Lead-Lag panel ── */
 .leadlag-pairs {
   display: flex;
