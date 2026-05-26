@@ -1457,10 +1457,10 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   isAdmin: boolean; adminHeaders: () => Promise<Record<string, string>>;
   onResult?: (result: NationalOutbreakResult) => void;
 }) {
-  const [entryPoint, setEntryPoint] = useState('ICN');
-  const [disease, setDisease] = useState('H5N1 Avian Influenza');
-  const [country, setCountry] = useState('China');
-  const [severity, setSeverity] = useState('high');
+  const [entryPoint, setEntryPoint] = useState('');
+  const [disease, setDisease] = useState('');
+  const [country, setCountry] = useState('');
+  const [severity, setSeverity] = useState('');
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -1501,15 +1501,16 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       </div>
       <div className="whatif-row">
         <label>Disease</label>
-        <input value={disease} onChange={(e) => setDisease(e.target.value)} className="whatif-input" />
+        <input value={disease} onChange={(e) => setDisease(e.target.value)} className="whatif-input" placeholder="예: H5N1 Avian Influenza" />
       </div>
       <div className="whatif-row">
         <label>Country</label>
-        <input value={country} onChange={(e) => setCountry(e.target.value)} className="whatif-input" />
+        <input value={country} onChange={(e) => setCountry(e.target.value)} className="whatif-input" placeholder="예: China" />
       </div>
       <div className="whatif-row">
         <label>Severity</label>
         <select value={severity} onChange={(e) => setSeverity(e.target.value)} className="whatif-select">
+          <option value="" disabled>선택</option>
           <option value="low">Low</option>
           <option value="medium">Medium</option>
           <option value="high">High</option>
