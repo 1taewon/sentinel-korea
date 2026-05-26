@@ -1404,6 +1404,7 @@ register(FunctionSpec(
                 "Gemini generates a national spread narrative with response recommendations.",
     fn=_what_if_outbreak_national,
 ))
+print(f"[ontology_functions] whatIfOutbreakNational registered OK. Total: {len(_REGISTRY)}")
 
 
 # ═════════════════════════════════════════════════════════════════════════════
