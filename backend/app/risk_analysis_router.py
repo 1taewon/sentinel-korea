@@ -426,23 +426,21 @@ async def run_news_trends_analysis(req: AnalysisRequest | None = None, _: dict =
     }
 
 
-@router.post("/analyze", response_model=AnalysisResponse)
-async def run_full_analysis(req: AnalysisRequest | None = None, _: dict = Depends(require_admin)) -> dict[str, Any]:
-    """Stage 2: Full integration analysis (News+Trends+KDCA) → total_risk."""
-    req = req or AnalysisRequest(include_kdca=True)
+def perform_full_analysis(custom_prompt: str | None = None) -> dict[str, Any]:
+    """Sync core of /risk-analysis/analyze — usable from outside FastAPI
+    (e.g. ontology Action runtime). Raises HTTPException on hard errors so
+    the caller can decide how to surface them."""
     client = _get_client()
     model = _risk_model()
 
-    # Combine news/trends + KDCA
     nt_context, nt_sources = _build_news_trends_context()
     kdca_context, kdca_sources = _build_kdca_context()
     data_context = "\n\n".join(filter(None, [nt_context, kdca_context]))
-    sources = nt_sources + kdca_sources
 
     if not data_context:
         raise HTTPException(status_code=404, detail="No data available. Collect news/trends and upload KDCA data first.")
 
-    prompt = f"{req.custom_prompt or FULL_ANALYSIS_PROMPT}\n\n--- Data ---\n\n{data_context}"
+    prompt = f"{custom_prompt or FULL_ANALYSIS_PROMPT}\n\n--- Data ---\n\n{data_context}"
 
     try:
         response = client.models.generate_content(model=model, contents=prompt)
@@ -476,6 +474,13 @@ async def run_full_analysis(req: AnalysisRequest | None = None, _: dict = Depend
         "snapshot_date": snapshot_date,
         "analyzed_at": datetime.utcnow().isoformat(),
     }
+
+
+@router.post("/analyze", response_model=AnalysisResponse)
+async def run_full_analysis(req: AnalysisRequest | None = None, _: dict = Depends(require_admin)) -> dict[str, Any]:
+    """Stage 2: Full integration analysis (News+Trends+KDCA) → total_risk."""
+    req = req or AnalysisRequest(include_kdca=True)
+    return perform_full_analysis(custom_prompt=req.custom_prompt)
 
 
 def _build_news_only_context() -> tuple[str, list[str]]:

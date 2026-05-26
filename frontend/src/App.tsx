@@ -11,6 +11,7 @@ import RegionPanel from './components/RegionPanel';
 import RegionDetailInline from './components/RegionDetailInline';
 import ReportView from './components/ReportView';
 import StatisticsView from './components/StatisticsView';
+import OntologyView from './components/OntologyView';
 import Timeline from './components/Timeline';
 import TopNav, { type NavTab } from './components/TopNav';
 import TrendsChart from './components/TrendsChart';
@@ -2093,6 +2094,21 @@ function AppInner({
       {navTab === 'report' && (
         <main className="kas-tab-view">
           <ReportView />
+        </main>
+      )}
+
+      {/* === ONTOLOGY TAB (admin only) === */}
+      {navTab === 'ontology' && (
+        <main className="kas-tab-view">
+          {isAdmin ? (
+            <OntologyView />
+          ) : (
+            <div className="ontology-view">
+              <div className="ontology-loading">
+                FORECASTING tab is operator-only. Please OPERATOR LOGIN to access forecasting & analysis.
+              </div>
+            </div>
+          )}
         </main>
       )}
 

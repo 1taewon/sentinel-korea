@@ -9,15 +9,10 @@
       "destination": "/index.html"
     }
   ],
-  "experimentalServices": {
-    "frontend": {
-      "entrypoint": "frontend",
-      "routePrefix": "/",
-      "framework": "vite"
-    },
-    "backend": {
-      "entrypoint": "backend",
-      "routePrefix": "/_/backend"
+  "crons": [
+    {
+      "path": "/api/cron/weekly-refresh",
+      "schedule": "0 22 * * 0"
     }
-  }
+  ]
 }

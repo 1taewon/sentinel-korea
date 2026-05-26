@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-export type NavTab = 'map' | 'statistics' | 'data_sources' | 'pathway' | 'report';
+export type NavTab = 'map' | 'statistics' | 'data_sources' | 'pathway' | 'report' | 'ontology';
 
 interface TopNavProps {
   activeTab: NavTab;
@@ -17,12 +17,13 @@ interface TopNavProps {
   onAdminLogin?: () => void;
 }
 
-const TABS: { key: NavTab; label: string; labelEn: string }[] = [
+const TABS: { key: NavTab; label: string; labelEn: string; adminOnly?: boolean }[] = [
   { key: 'map', label: '지도', labelEn: 'MAP' },
   { key: 'statistics', label: '통계', labelEn: 'STATISTICS' },
   { key: 'data_sources', label: '데이터 소스', labelEn: 'DATA SOURCES' },
   { key: 'pathway', label: 'Control', labelEn: 'PIPELINE' },
   { key: 'report', label: '리포트', labelEn: 'REPORT' },
+  { key: 'ontology', label: '예측분석', labelEn: 'FORECASTING' },
 ];
 
 export default function TopNav({
@@ -58,9 +59,9 @@ export default function TopNav({
         <span className="top-nav-logo-sub">KOREA</span>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs — adminOnly tabs (ONTOLOGY) hidden from read-only users */}
       <nav className="top-nav-tabs">
-        {TABS.map((tab) => (
+        {TABS.filter((tab) => !tab.adminOnly || isAdmin).map((tab) => (
           <button
             key={tab.key}
             className={`top-nav-tab ${activeTab === tab.key ? 'top-nav-tab--active' : ''}`}

@@ -613,8 +613,134 @@ def generate_kdca_report(target_date: str | None = None) -> dict[str, Any]:
     }
 
 
+def _build_forecast_beta_section(snapshot: list[dict]) -> str:
+    """Build a BETA forecasting outlook section appended to the FINAL report.
+
+    Pulls EMA, SARIMAX, and Lead-Lag results from ontology_functions for the
+    top-5 elevated regions.  All output is explicitly marked as experimental.
+    """
+    try:
+        from . import ontology_functions as fns
+    except Exception:
+        return ""
+
+    elevated = sorted(
+        snapshot,
+        key=lambda r: float(r.get("score", 0) or 0),
+        reverse=True,
+    )[:5]
+
+    if not elevated:
+        return ""
+
+    lines: list[str] = [
+        "",
+        "---",
+        "",
+        "## Forecasting Outlook (BETA)",
+        "",
+        "> **BETA 고지:** 이 섹션의 예측은 실험적(experimental)이며, 정식 통계적 검증 절차 또는 전문가 검토를 거치지 않았습니다.",
+        "> EMA + Momentum Decay 및 SARIMAX(1,1,1) 모델의 시험적 적용 결과로, 의사결정의 보조 참고 자료로만 활용하시기 바랍니다.",
+        "> 정식 예측을 위해서는 충분한 시계열 축적과 모델 검증이 필요합니다.",
+        "",
+    ]
+
+    def _trend_arrow(points: list[dict], key: str = "score") -> str:
+        if not points or len(points) < 2:
+            return "→"
+        first = float(points[0].get(key, 0) or 0)
+        last = float(points[-1].get(key, 0) or 0)
+        if first == 0:
+            return "→"
+        if last > first * 1.05:
+            return "↑ 상승"
+        if last < first * 0.95:
+            return "↓ 하강"
+        return "→ 유지"
+
+    for r in elevated:
+        region_id = r.get("region_id") or r.get("region_code") or ""
+        region_name = r.get("region_name_kr") or region_id
+        level = r.get("level", "G0")
+        score = float(r.get("score", 0) or 0)
+
+        lines.append(f"### {region_name} (현재 {level}, {score:.2f})")
+
+        # EMA forecast
+        try:
+            ema_spec = fns.get_spec("forecastEMA")
+            if ema_spec:
+                ema = ema_spec.fn({"region_id": region_id, "weeks": 4})
+                ema_pts = ema.get("forecast", [])
+                if ema_pts:
+                    last_score = float(ema_pts[-1].get("score", 0) or 0)
+                    lines.append(
+                        f"- **EMA 4주 전망:** {_trend_arrow(ema_pts)} "
+                        f"(최종 예측 score: {last_score:.2f})"
+                    )
+                else:
+                    lines.append("- **EMA:** 시계열 데이터 부족")
+            else:
+                lines.append("- **EMA:** 함수 미등록")
+        except Exception:
+            lines.append("- **EMA:** 데이터 부족으로 산출 불가")
+
+        # SARIMAX forecast
+        try:
+            sx_spec = fns.get_spec("forecastSARIMAX")
+            if sx_spec:
+                sx = sx_spec.fn({"region_id": region_id, "weeks": 4})
+                sx_pts = sx.get("forecast", [])
+                if sx_pts:
+                    last_sx = float(sx_pts[-1].get("score", 0) or 0)
+                    lines.append(
+                        f"- **SARIMAX 4주 전망:** {_trend_arrow(sx_pts)} "
+                        f"(최종 예측 score: {last_sx:.2f})"
+                    )
+                else:
+                    lines.append("- **SARIMAX:** 시계열 데이터 부족")
+            else:
+                lines.append("- **SARIMAX:** 함수 미등록")
+        except Exception:
+            lines.append("- **SARIMAX:** 데이터 부족으로 산출 불가")
+
+        lines.append("")
+
+    # Lead-Lag summary for top region
+    try:
+        ll_spec = fns.get_spec("leadLagAllPairs")
+        if ll_spec and elevated:
+            top_id = elevated[0].get("region_id") or elevated[0].get("region_code") or ""
+            ll = ll_spec.fn({"region_id": top_id})
+            pairs = ll.get("pairs", [])
+            significant = [
+                p for p in pairs
+                if abs(p.get("lag", 0)) >= 1 and abs(p.get("correlation", 0)) >= 0.5
+            ]
+            if significant:
+                lines.append("### 주요 Signal Lead-Lag 관계")
+                lines.append(
+                    f"> 아래는 {elevated[0].get('region_name_kr', '')} 기준 "
+                    "신호 간 시차 상관 분석 결과입니다."
+                )
+                lines.append("")
+                for p in significant[:5]:
+                    lag_val = p.get("lag", 0)
+                    direction = "선행" if lag_val > 0 else "후행"
+                    corr = p.get("correlation", 0)
+                    lines.append(
+                        f"- {p.get('signal_a', '')} → {p.get('signal_b', '')}: "
+                        f"{abs(lag_val)}주 {direction} (r={corr:.2f})"
+                    )
+                lines.append("")
+    except Exception:
+        pass
+
+    return "\n".join(lines)
+
+
 def generate_final_report(target_date: str | None = None) -> dict[str, Any]:
-    """FINAL 통합 주간 리포트 — OSINT + KDCA 통합."""
+    """FINAL 통합 주간 리포트 — OSINT + KDCA 통합 + Forecasting BETA."""
     client = _get_client()
     model = _model_name()
 
@@ -673,6 +799,12 @@ def generate_final_report(target_date: str | None = None) -> dict[str, Any]:
         target_date=actual_date,
         contract_sections=contract_sections,
     )
+
+    # Append BETA forecasting outlook section
+    forecast_section = _build_forecast_beta_section(snapshot)
+    if forecast_section:
+        report_text = report_text + "\n" + forecast_section
+
     stem = epiweek.replace("/", "-")
     path = _save_report("final", stem, report_text)
     return {
