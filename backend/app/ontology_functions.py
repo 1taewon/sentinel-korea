@@ -1383,13 +1383,12 @@ JSON 외 다른 텍스트 금지. 하나의 JSON object로만 응답.
     }
 
 
-try:
-  register(FunctionSpec(
+register(FunctionSpec(
     name="whatIfOutbreakNational",
     label="National outbreak spread simulation",
     inputs=[
         {"name": "entry_point", "type": "string", "required": False, "default": "ICN",
-         "description": "Airport entry code: ICN (인천), PUS (김해), CJU (제주), TAE (대구)"},
+         "description": "Airport entry code (e.g. ICN, PUS) or free-text airport name"},
         {"name": "disease", "type": "string", "required": False, "default": "novel respiratory pathogen"},
         {"name": "country", "type": "string", "required": False, "default": "China"},
         {"name": "severity", "type": "string", "required": False, "default": "high",
@@ -1404,10 +1403,7 @@ try:
                 "Primary zones (e.g. 수도권 for Incheon) get full lift; other regions decay by distance. "
                 "Gemini generates a national spread narrative with response recommendations.",
     fn=_what_if_outbreak_national,
-  ))
-  print(f"[ontology_functions] whatIfOutbreakNational registered OK. Total: {len(_REGISTRY)}")
-except Exception as e:
-  print(f"[ontology_functions] FAILED to register whatIfOutbreakNational: {type(e).__name__}: {e}")
+))
 
 
 # ═════════════════════════════════════════════════════════════════════════════
