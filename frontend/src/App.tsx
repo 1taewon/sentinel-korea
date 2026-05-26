@@ -957,19 +957,19 @@ function AppInner({
     {
       label: 'OFFICIAL',
       title: 'KDCA surveillance + Notifiable Disease (KDCA API)',
-      description: 'ILI/ARI/SARI xlsx/csv files are the core regional signal; EIDAPI PeriodRegion supports weekly domestic/imported Notifiable Disease (KDCA API) context.',
+      description: 'ILI/ARI/SARI 표본감시는 전국 수준 신호로 활용 (시/도별 제공 불가 - KDCA 확인). 전수감시 시/도별 API는 2026년 Q4 개발 검토 예정. 현재 지역별 위험도는 하수감시 데이터로만 산출됩니다.',
       cadence: '주간 / epiweek',
       output: 'normalized_signal + period_region',
       metric: `${koreaAlerts.length || 17} 시도`,
       tone: 'green',
     },
     {
-      label: 'DOCUMENT',
-      title: 'KDCA 폐하수감시 공보',
-      description: '현재는 문서-only 보조 신호입니다. 자동 표 추출과 검수 모드는 다음 단계로 둡니다.',
-      cadence: '주간 PDF',
-      output: 'corroboration lane',
-      metric: 'deferred',
+      label: 'WASTEWATER',
+      title: 'KDCA 하수감시 (COVID-19 / Influenza)',
+      description: '17개 시/도별 G0-G3 위험 수준을 제공하는 현재 유일한 지역별 데이터 소스. 호흡기 병원체(COVID-19, Influenza)만 추적하며, Norovirus 등 비호흡기 병원체는 제외됩니다. API 미제공으로 주간 PDF 수동 업로드 운영.',
+      cadence: '주간 PDF 수동',
+      output: 'regional G0-G3',
+      metric: '17 시도',
       tone: 'amber',
     },
     {
@@ -1395,17 +1395,20 @@ function AppInner({
             <div className="kas-layer-panel">
               <button className="kas-layer-panel-close" onClick={() => setShowLayerPanel(false)} title="닫기" type="button">×</button>
               <div className="kas-layer-panel-title">레이어 선택</div>
+              <div className="kas-layer-data-note">
+                시/도별 위험도는 KDCA 하수감시 데이터(COVID-19, Influenza) 기반입니다. ARI/ILI/SARI 표본감시의 시/도별 데이터는 표본 대표성 검증 문제로 KDCA에서 제공 불가합니다.
+              </div>
               <label className={`kas-layer-item ${activeLayers.includes('respiratory') ? 'active' : ''}`}>
                 <input type="checkbox" checked={activeLayers.includes('respiratory')} onChange={() => toggleLayer('respiratory')} />
                 <span>종합 호흡기</span>
               </label>
               <label className={`kas-layer-item ${activeLayers.includes('wastewater_covid') ? 'active' : ''}`}>
                 <input type="checkbox" checked={activeLayers.includes('wastewater_covid')} onChange={() => toggleLayer('wastewater_covid')} />
-                <span>폐수 (COVID)</span>
+                <span>하수감시 COVID-19</span>
               </label>
               <label className={`kas-layer-item ${activeLayers.includes('wastewater_flu') ? 'active' : ''}`}>
                 <input type="checkbox" checked={activeLayers.includes('wastewater_flu')} onChange={() => toggleLayer('wastewater_flu')} />
-                <span>폐수 (독감)</span>
+                <span>하수감시 Influenza</span>
               </label>
               <label className={`kas-layer-item ${activeLayers.includes('news_trends_risk') ? 'active' : ''}`}>
                 <input type="checkbox" checked={activeLayers.includes('news_trends_risk')} onChange={() => toggleLayer('news_trends_risk')} />
@@ -1848,6 +1851,36 @@ function AppInner({
                   </div>
                 </article>
               ))}
+            </div>
+          </section>
+
+          {/* Regional data limitation notice — based on KDCA official response */}
+          <section className="data-source-limitation-banner">
+            <div className="limitation-banner-header">시/도별 데이터 가용성 안내 (KDCA 공식 답변 기반)</div>
+            <div className="limitation-banner-grid">
+              <div className="limitation-item limitation-available">
+                <strong>하수감시 (COVID-19 / Influenza)</strong>
+                <span>17개 시/도별 G0-G3 수준 제공 — 현재 유일한 지역별 위험도 데이터 소스</span>
+                <span className="limitation-tag">주간 PDF 수동 업로드</span>
+              </div>
+              <div className="limitation-item limitation-unavailable">
+                <strong>ARI/ILI/SARI 표본감시</strong>
+                <span>시/도별 제공 불가 — 표본감시기관 지정 운영 체계로, 표본의 대표성 검증 필요 (KDCA 답변)</span>
+                <span className="limitation-tag">전국 수준만 가용</span>
+              </div>
+              <div className="limitation-item limitation-pending">
+                <strong>전수감시 (법정감염병) 시/도별 API</strong>
+                <span>2026년 Q4 이후 개발 검토 예정 — 현재는 감염병포털 웹에서만 시/도별 조회 가능</span>
+                <span className="limitation-tag">API 개발 대기</span>
+              </div>
+              <div className="limitation-item limitation-unavailable">
+                <strong>하수감시 API</strong>
+                <span>공공데이터에 연계되어 있지 않아 API 제공 불가 — 수동 PDF 업로드로 대체</span>
+                <span className="limitation-tag">미연계</span>
+              </div>
+            </div>
+            <div className="limitation-banner-footer">
+              Sentinel Korea의 시/도별 지도 위험도는 하수감시 호흡기 병원체(COVID-19, Influenza) 데이터에 기반합니다. 다른 표본감시 지표(ARI, ILI, SARI)는 전국 수준 종합 신호로만 활용됩니다.
             </div>
           </section>
 

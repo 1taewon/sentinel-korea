@@ -11,9 +11,12 @@ aptPkgs = [
   "python3-venv",
   "python3-pip",
   "gcc",
+  "gfortran",
   "zlib1g",
   "libstdc++6",
   "build-essential",
+  "libopenblas-dev",
+  "liblapack-dev",
 ]
 
 [build.nixpacksPlan.phases.install]

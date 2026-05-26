@@ -534,10 +534,13 @@ def parse_wastewater_pdf(filename: str, pages: list[dict[str, Any]]) -> tuple[di
     all_text = "\n".join(page["text"] for page in pages)
     week_match = re.search(r"(\d{4})년도\s*(\d+)주차\(([^)]+)\)", all_text)
     facility_match = re.search(r"하수처리장\((\d+)개소\)", all_text)
-    pathogens = []
-    for pathogen in ["SARS-CoV-2", "Influenza virus", "Norovirus"]:
-        if pathogen in all_text:
-            pathogens.append(pathogen)
+    # ── 호흡기 감염병만 추적 (COVID-19 + Influenza) ──
+    # KDCA 하수감시 PDF에는 Norovirus 등 비호흡기 병원체도 포함되지만,
+    # Sentinel Korea는 호흡기 감염병 감시 플랫폼이므로 COVID-19/Influenza만 사용합니다.
+    RESPIRATORY_PATHOGENS = ["SARS-CoV-2", "Influenza virus"]
+    OTHER_PATHOGENS = ["Norovirus"]  # 감지는 하되 스코어링에서 제외
+    respiratory_pathogens = [p for p in RESPIRATORY_PATHOGENS if p in all_text]
+    other_detected = [p for p in OTHER_PATHOGENS if p in all_text]
 
     region_sections = []
     for page in pages:
@@ -557,7 +560,10 @@ def parse_wastewater_pdf(filename: str, pages: list[dict[str, Any]]) -> tuple[di
         "week": int(week_match.group(2)) if week_match else None,
         "period": week_match.group(3) if week_match else None,
         "facilities": int(facility_match.group(1)) if facility_match else None,
-        "pathogens": pathogens,
+        "respiratory_pathogens": respiratory_pathogens,
+        "other_pathogens_detected": other_detected,
+        "scope": "respiratory_only",
+        "scope_note": "Sentinel Korea는 호흡기 감염병(COVID-19, Influenza)만 추적합니다. Norovirus 등 비호흡기 병원체는 감지만 하고 스코어링에서 제외됩니다.",
         "extraction_mode": "text_metadata_only",
         "data_quality": "needs_review",
         "note": "지역별 농도/범주 차트는 PDF 이미지로 제공되어 자동 수치화는 검수 모드에서 처리해야 합니다.",
