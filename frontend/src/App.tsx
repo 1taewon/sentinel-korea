@@ -2097,18 +2097,10 @@ function AppInner({
         </main>
       )}
 
-      {/* === ONTOLOGY TAB (admin only) === */}
+      {/* === ONTOLOGY / FORECASTING TAB === */}
       {navTab === 'ontology' && (
         <main className="kas-tab-view">
-          {isAdmin ? (
-            <OntologyView />
-          ) : (
-            <div className="ontology-view">
-              <div className="ontology-loading">
-                FORECASTING tab is operator-only. Please OPERATOR LOGIN to access forecasting & analysis.
-              </div>
-            </div>
-          )}
+          <OntologyView />
         </main>
       )}
 
