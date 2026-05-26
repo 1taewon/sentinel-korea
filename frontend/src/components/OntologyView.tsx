@@ -563,9 +563,9 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
       {/* Header */}
       <div className="whatif-analysis-header">
         <span className="whatif-analysis-tag">NATIONAL SPREAD SCENARIO</span>
-        <span className="whatif-analysis-region">{ep.label}</span>
+        <span className="whatif-analysis-region">{ep?.label || ep?.code || '—'}</span>
         <span className="whatif-analysis-scenario">
-          {result.scenario.disease} / {result.scenario.country} / {result.scenario.severity}
+          {result.scenario?.disease} / {result.scenario?.country} / {result.scenario?.severity}
         </span>
       </div>
 
@@ -1472,6 +1472,10 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
         body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, weeks: 4 } }),
       });
       const d = await r.json();
+      if (!r.ok) {
+        setStatusMsg({ ok: false, text: d.detail || d.error || `Server error (${r.status})` });
+        return;
+      }
       const result = d.result || d;
       if (result.error) {
         setStatusMsg({ ok: false, text: result.error });
