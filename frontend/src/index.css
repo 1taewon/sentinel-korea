@@ -8833,28 +8833,17 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 }
 .scenario-minimap-svg {
   width: 100%;
-  max-width: 260px;
+  max-width: 400px;
   height: auto;
 }
-.scenario-minimap-svg text {
-  font-size: 7px;
-  font-weight: 700;
-  fill: rgba(0,0,0,0.7);
-  pointer-events: none;
-  text-anchor: middle;
-  dominant-baseline: central;
+/* GeoJSON map paths */
+.korea-geo-svg path {
+  transition: fill-opacity 0.2s, stroke-width 0.2s;
 }
-
-/* Pulse effect for changed region */
-@keyframes scenario-pulse {
-  0%, 100% { stroke-opacity: 1; r: inherit; }
-  50% { stroke-opacity: 0.4; }
-}
-.scenario-minimap-pulse {
-  stroke: #fff;
-  stroke-width: 2.5;
-  filter: drop-shadow(0 0 6px rgba(255,77,79,0.6));
-  animation: scenario-pulse 1.5s ease-in-out infinite;
+.korea-geo-svg path:hover {
+  fill-opacity: 1 !important;
+  stroke: rgba(255,255,255,0.7);
+  stroke-width: 1px;
 }
 
 /* ── Status message in input panel ── */

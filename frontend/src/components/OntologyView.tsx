@@ -457,86 +457,128 @@ const WHAT_IF_PRESETS = [
 
 // WhatIfPanel (single-region) removed — replaced by WhatIfStandalonePanel (national).
 
-// ─── Scenario Mini Map (SVG bubble map) ──────────────────────────────────
+// ─── Korea GeoJSON Map for Outbreak Scenario ─────────────────────────────
 
-const SCENARIO_REGION_DATA = [
-  { code: '11', abbr: '서울', lat: 37.5665, lng: 126.9780, isMetro: true },
-  { code: '26', abbr: '부산', lat: 35.1796, lng: 129.0756, isMetro: true },
-  { code: '27', abbr: '대구', lat: 35.8714, lng: 128.6014, isMetro: true },
-  { code: '28', abbr: '인천', lat: 37.4563, lng: 126.7052, isMetro: true },
-  { code: '29', abbr: '광주', lat: 35.1595, lng: 126.8526, isMetro: true },
-  { code: '30', abbr: '대전', lat: 36.3504, lng: 127.3845, isMetro: true },
-  { code: '31', abbr: '울산', lat: 35.5384, lng: 129.3114, isMetro: true },
-  { code: '36', abbr: '세종', lat: 36.4800, lng: 127.2890, isMetro: true },
-  { code: '41', abbr: '경기', lat: 37.2750, lng: 127.0094, isMetro: false },
-  { code: '42', abbr: '강원', lat: 37.8228, lng: 128.1555, isMetro: false },
-  { code: '43', abbr: '충북', lat: 36.6357, lng: 127.4917, isMetro: false },
-  { code: '44', abbr: '충남', lat: 36.5184, lng: 126.8000, isMetro: false },
-  { code: '45', abbr: '전북', lat: 35.7175, lng: 127.1530, isMetro: false },
-  { code: '46', abbr: '전남', lat: 34.8161, lng: 126.4629, isMetro: false },
-  { code: '47', abbr: '경북', lat: 36.4919, lng: 128.8889, isMetro: false },
-  { code: '48', abbr: '경남', lat: 35.4606, lng: 128.2132, isMetro: false },
-  { code: '50', abbr: '제주', lat: 33.4890, lng: 126.4983, isMetro: true },
-];
+// GeoJSON SIG_CD prefix (2 digits) → Backend sido code
+const GEOJSON_TO_BACKEND: Record<string, string> = {
+  '11': '11', '21': '26', '22': '27', '23': '28',
+  '24': '29', '25': '30', '26': '31', '29': '36',
+  '31': '41', '32': '42', '33': '43', '34': '44',
+  '35': '45', '36': '46', '37': '47', '38': '48',
+  '39': '50',
+};
+
+// Module-level GeoJSON cache (shared across all instances)
+let _koreaGeoCache: any[] | null = null;
+let _koreaGeoPromise: Promise<any[]> | null = null;
+
+function useKoreaGeoJSON() {
+  const [features, setFeatures] = useState<any[]>(_koreaGeoCache || []);
+  useEffect(() => {
+    if (_koreaGeoCache) { setFeatures(_koreaGeoCache); return; }
+    if (!_koreaGeoPromise) {
+      _koreaGeoPromise = fetch('/korea-sig.geojson')
+        .then(r => r.json())
+        .then(data => { _koreaGeoCache = data.features; return data.features; })
+        .catch(() => []);
+    }
+    _koreaGeoPromise.then(f => setFeatures(f));
+  }, []);
+  return features;
+}
 
 const GLEVEL_COLORS: Record<string, string> = {
   G0: '#34d399', G1: '#f6e05e', G2: '#ff9f43', G3: '#ff4d4f',
 };
 
-function mercatorProject(lat: number, lng: number, vw: number, vh: number): [number, number] {
-  // Korea bounding box (approx)
-  const minLng = 125.8, maxLng = 130.0, minLat = 33.0, maxLat = 38.5;
-  const x = ((lng - minLng) / (maxLng - minLng)) * vw;
-  const latRad = (lat * Math.PI) / 180;
-  const minLatRad = (minLat * Math.PI) / 180;
-  const maxLatRad = (maxLat * Math.PI) / 180;
-  const yNorm = (Math.log(Math.tan(Math.PI / 4 + latRad / 2)) - Math.log(Math.tan(Math.PI / 4 + minLatRad / 2)))
-    / (Math.log(Math.tan(Math.PI / 4 + maxLatRad / 2)) - Math.log(Math.tan(Math.PI / 4 + minLatRad / 2)));
-  const y = vh - yNorm * vh;
-  return [x, y];
-}
+const SIDO_LABELS = [
+  { code: '11', abbr: '서울', lat: 37.5665, lng: 126.9780 },
+  { code: '26', abbr: '부산', lat: 35.1796, lng: 129.0756 },
+  { code: '27', abbr: '대구', lat: 35.8714, lng: 128.6014 },
+  { code: '28', abbr: '인천', lat: 37.4563, lng: 126.7052 },
+  { code: '29', abbr: '광주', lat: 35.1595, lng: 126.8526 },
+  { code: '30', abbr: '대전', lat: 36.3504, lng: 127.3845 },
+  { code: '31', abbr: '울산', lat: 35.5384, lng: 129.3114 },
+  { code: '36', abbr: '세종', lat: 36.4800, lng: 127.2890 },
+  { code: '41', abbr: '경기', lat: 37.2750, lng: 127.0094 },
+  { code: '42', abbr: '강원', lat: 37.8228, lng: 128.1555 },
+  { code: '43', abbr: '충북', lat: 36.6357, lng: 127.4917 },
+  { code: '44', abbr: '충남', lat: 36.5184, lng: 126.8000 },
+  { code: '45', abbr: '전북', lat: 35.7175, lng: 127.1530 },
+  { code: '46', abbr: '전남', lat: 34.8161, lng: 126.4629 },
+  { code: '47', abbr: '경북', lat: 36.4919, lng: 128.8889 },
+  { code: '48', abbr: '경남', lat: 35.4606, lng: 128.2132 },
+  { code: '50', abbr: '제주', lat: 33.4890, lng: 126.4983 },
+];
 
 function ScenarioMiniMap({ regionLevels, targetCode, title }: {
   regionLevels: { code: string; level: string }[];
-  targetCode?: string;  // comma-separated codes for multi-highlight
+  targetCode?: string;
   title: string;
 }) {
-  const vw = 200, vh = 260, pad = 20;
-  const levelMap = new Map(regionLevels.map((r) => [r.code, r.level]));
-  const targetSet = new Set((targetCode || '').split(',').filter(Boolean));
+  const features = useKoreaGeoJSON();
+  const levelMap = useMemo(() => new Map(regionLevels.map(r => [r.code, r.level])), [regionLevels]);
+  const targetSet = useMemo(() => new Set((targetCode || '').split(',').filter(Boolean)), [targetCode]);
+
+  // d3 Mercator projection centered on Korea
+  const projection = useMemo(() =>
+    d3.geoMercator().center([127.8, 36.0]).scale(4800).translate([200, 240]),
+  []);
+  const pathGen = useMemo(() => d3.geoPath().projection(projection), [projection]);
+
+  // Pre-compute SVG paths + styling
+  const polys = useMemo(() => {
+    if (!features.length) return [];
+    return features.map((f: any, i: number) => {
+      const sigCode = f.properties?.code || '';
+      const sidoPrefix = sigCode.substring(0, 2);
+      const backendCode = GEOJSON_TO_BACKEND[sidoPrefix] || '';
+      const level = levelMap.get(backendCode) || 'G0';
+      const color = GLEVEL_COLORS[level] || GLEVEL_COLORS.G0;
+      const isTarget = targetSet.has(backendCode);
+      return { key: i, d: pathGen(f) || '', color, isTarget, level };
+    });
+  }, [features, levelMap, targetSet, pathGen]);
+
+  // Sido label positions
+  const labels = useMemo(() =>
+    SIDO_LABELS.map(s => {
+      const pt = projection([s.lng, s.lat]) || [0, 0];
+      return { ...s, x: pt[0], y: pt[1], level: levelMap.get(s.code) || 'G0' };
+    }),
+  [projection, levelMap]);
 
   return (
     <div className="scenario-minimap">
       <div className="scenario-minimap-title">{title}</div>
-      <svg viewBox={`${-pad} ${-pad} ${vw + pad * 2} ${vh + pad * 2}`} width="100%" height="100%"
-        className="scenario-minimap-svg">
-        {SCENARIO_REGION_DATA.map((reg) => {
-          const [cx, cy] = mercatorProject(reg.lat, reg.lng, vw, vh);
-          const level = levelMap.get(reg.code) || 'G0';
-          const color = GLEVEL_COLORS[level] || GLEVEL_COLORS.G0;
-          const baseR = reg.isMetro ? 14 : 20;
-          const isTarget = targetSet.has(reg.code);
-          const r = isTarget ? baseR + 3 : baseR;
-          return (
-            <g key={reg.code}>
-              {isTarget && (
-                <circle cx={cx} cy={cy} r={r + 6}
-                  fill="none" stroke={color} strokeWidth={2}
-                  className="scenario-minimap-pulse" />
-              )}
-              <circle cx={cx} cy={cy} r={r} fill={color}
-                stroke={isTarget ? '#fff' : 'rgba(0,0,0,0.2)'}
-                strokeWidth={isTarget ? 2 : 1}
-                opacity={0.9} />
-              <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="central"
-                fontSize={reg.isMetro ? 7 : 8} fontWeight={700}
-                fill={level === 'G1' ? '#1c2435' : '#fff'}
-                style={{ pointerEvents: 'none' }}>
-                {reg.abbr}
-              </text>
-            </g>
-          );
-        })}
+      <svg viewBox="0 0 400 480" className="scenario-minimap-svg korea-geo-svg">
+        <defs>
+          <filter id={`glow-${title.replace(/\s/g, '')}`}>
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+        {/* SiGunGu polygons colored by parent Sido level */}
+        {polys.map(p => (
+          <path key={p.key} d={p.d}
+            fill={p.color}
+            fillOpacity={p.isTarget ? 0.95 : 0.6}
+            stroke={p.isTarget ? 'rgba(255,255,255,0.8)' : 'rgba(100,150,200,0.25)'}
+            strokeWidth={p.isTarget ? 1 : 0.3}
+            filter={p.isTarget ? `url(#glow-${title.replace(/\s/g, '')})` : undefined}
+          />
+        ))}
+        {/* Sido name labels */}
+        {labels.map(l => (
+          <text key={l.code} x={l.x} y={l.y}
+            textAnchor="middle" dominantBaseline="central"
+            fontSize={12} fontWeight={700}
+            fill={l.level === 'G1' ? '#1c2435' : '#fff'}
+            stroke="rgba(0,0,0,0.6)" strokeWidth={2.5} paintOrder="stroke"
+            style={{ pointerEvents: 'none' }}>
+            {l.abbr}
+          </text>
+        ))}
       </svg>
     </div>
   );
