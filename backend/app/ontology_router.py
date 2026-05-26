@@ -446,6 +446,16 @@ async def list_functions() -> dict[str, Any]:
     return {"functions": fns.list_specs()}
 
 
+@router.get("/ontology/debug-registry")
+async def debug_registry() -> dict[str, Any]:
+    """Debug: show raw registry state."""
+    return {
+        "registry_keys": list(fns._REGISTRY.keys()),
+        "total": len(fns._REGISTRY),
+        "has_national": "whatIfOutbreakNational" in fns._REGISTRY,
+    }
+
+
 @router.post("/ontology/functions/{name}")
 async def invoke_function(
     name: str,

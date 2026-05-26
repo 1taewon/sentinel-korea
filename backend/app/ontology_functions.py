@@ -1383,7 +1383,8 @@ JSON 외 다른 텍스트 금지. 하나의 JSON object로만 응답.
     }
 
 
-register(FunctionSpec(
+try:
+  register(FunctionSpec(
     name="whatIfOutbreakNational",
     label="National outbreak spread simulation",
     inputs=[
@@ -1403,8 +1404,10 @@ register(FunctionSpec(
                 "Primary zones (e.g. 수도권 for Incheon) get full lift; other regions decay by distance. "
                 "Gemini generates a national spread narrative with response recommendations.",
     fn=_what_if_outbreak_national,
-))
-print(f"[ontology_functions] whatIfOutbreakNational registered OK. Total: {len(_REGISTRY)}")
+  ))
+  print(f"[ontology_functions] whatIfOutbreakNational registered OK. Total: {len(_REGISTRY)}")
+except Exception as e:
+  print(f"[ontology_functions] FAILED to register whatIfOutbreakNational: {type(e).__name__}: {e}")
 
 
 # ═════════════════════════════════════════════════════════════════════════════
