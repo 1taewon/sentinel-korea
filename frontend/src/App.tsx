@@ -829,8 +829,12 @@ function AppInner({
       title: 'Sentinel 통합 분석',
       detail: fullResult?.snapshot_date
         ? `final snapshot ${fullResult.snapshot_date}`
-        : `KDCA, OSINT, 해외 보조 신호를 결합한 통합 위험 지역 ${koreaAlerts.filter((alert) => alert.total_risk).length}개.`,
-      status: runningPipeline === 'sentinel' || analyzingFull ? 'running' : koreaAlerts.some((alert) => alert.total_risk) || fullResult ? 'ready' : 'needs-run',
+        : `KDCA, OSINT, 해외 보조 신호를 결합한 통합 위험 지역 ${koreaAlerts.filter((alert) => alert.total_risk != null).length}개.`,
+      status: runningPipeline === 'sentinel' || analyzingFull
+        ? 'running'
+        : koreaAlerts.some((alert) => alert.total_risk != null) || fullResult || (meta?.snapshot_date && koreaAlerts.length > 0)
+          ? 'ready'
+          : 'needs-run',
       updatedAt: lastPipelineRun.sentinel,
       epiweek: fullResult?.snapshot_date || currentDate,
       primaryAction: '분석',
