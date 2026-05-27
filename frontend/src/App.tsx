@@ -1854,35 +1854,10 @@ function AppInner({
             </div>
           </section>
 
-          {/* Regional data limitation notice — based on KDCA official response */}
-          <section className="data-source-limitation-banner">
-            <div className="limitation-banner-header">시/도별 데이터 가용성 안내 (KDCA 공식 답변 기반)</div>
-            <div className="limitation-banner-grid">
-              <div className="limitation-item limitation-available">
-                <strong>하수감시 (COVID-19 / Influenza)</strong>
-                <span>17개 시/도별 G0-G3 수준 제공 — 현재 유일한 지역별 위험도 데이터 소스</span>
-                <span className="limitation-tag">주간 PDF 수동 업로드</span>
-              </div>
-              <div className="limitation-item limitation-unavailable">
-                <strong>ARI/ILI/SARI 표본감시</strong>
-                <span>시/도별 제공 불가 — 표본감시기관 지정 운영 체계로, 표본의 대표성 검증 필요 (KDCA 답변)</span>
-                <span className="limitation-tag">전국 수준만 가용</span>
-              </div>
-              <div className="limitation-item limitation-pending">
-                <strong>전수감시 (법정감염병) 시/도별 API</strong>
-                <span>2026년 Q4 이후 개발 검토 예정 — 현재는 감염병포털 웹에서만 시/도별 조회 가능</span>
-                <span className="limitation-tag">API 개발 대기</span>
-              </div>
-              <div className="limitation-item limitation-unavailable">
-                <strong>하수감시 API</strong>
-                <span>공공데이터에 연계되어 있지 않아 API 제공 불가 — 수동 PDF 업로드로 대체</span>
-                <span className="limitation-tag">미연계</span>
-              </div>
-            </div>
-            <div className="limitation-banner-footer">
-              Sentinel Korea의 시/도별 지도 위험도는 하수감시 호흡기 병원체(COVID-19, Influenza) 데이터에 기반합니다. 다른 표본감시 지표(ARI, ILI, SARI)는 전국 수준 종합 신호로만 활용됩니다.
-            </div>
-          </section>
+          {/* Regional data note */}
+          <p className="data-source-regional-note">
+            Sentinel Korea의 시/도별 지도 위험도는 하수감시 호흡기 병원체(COVID-19, Influenza) 데이터에 기반합니다. 다른 표본감시 지표(ARI, ILI, SARI)는 전국 수준 종합 신호로만 활용됩니다.
+          </p>
 
           <div className="kas-sources-layout">
             {/* LEFT — analysis result displays */}
