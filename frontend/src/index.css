@@ -3031,13 +3031,13 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .pipeline-status-bar {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   margin-left: auto;
-  margin-right: 8px;
-  padding: 4px 14px;
+  margin-right: 4px;
+  padding: 3px 10px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md, 8px);
-  background: rgba(15, 23, 42, 0.5);
+  border-radius: 6px;
+  background: var(--bg-card);
   flex-shrink: 1;
   min-width: 0;
   overflow: hidden;
@@ -3045,38 +3045,49 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .pipeline-status-item {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   white-space: nowrap;
 }
 .pipeline-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   flex-shrink: 0;
 }
-.pipeline-dot--cron { background: #38bdf8; box-shadow: 0 0 5px rgba(56,189,248,0.5); }
-.pipeline-dot--snapshot { background: #34d399; box-shadow: 0 0 5px rgba(52,211,153,0.5); }
-.pipeline-dot--upload { background: #f59e0b; box-shadow: 0 0 5px rgba(245,158,11,0.5); }
+.pipeline-dot--cron { background: #38bdf8; box-shadow: 0 0 4px rgba(56,189,248,0.5); }
+.pipeline-dot--snapshot { background: #34d399; box-shadow: 0 0 4px rgba(52,211,153,0.5); }
+.pipeline-dot--upload { background: #f59e0b; box-shadow: 0 0 4px rgba(245,158,11,0.5); }
 .pipeline-label {
   font-family: var(--font-mono, monospace);
   font-size: 9px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 .pipeline-value {
   font-family: var(--font-mono, monospace);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text-primary);
 }
 .pipeline-sep {
   width: 1px;
-  height: 16px;
+  height: 14px;
   background: var(--border);
   flex-shrink: 0;
-  margin: 0 4px;
+  margin: 0 2px;
+}
+/* Light theme fix */
+[data-theme="light"] .pipeline-status-bar {
+  background: rgba(241, 245, 249, 0.95);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+[data-theme="light"] .pipeline-label {
+  color: #475569;
+}
+[data-theme="light"] .pipeline-value {
+  color: #0f172a;
 }
 
 .top-nav-right {
