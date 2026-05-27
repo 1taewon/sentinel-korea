@@ -507,6 +507,30 @@ export default function KdcaUploadPanel({ view = 'full', readOnly = false, getAd
                   <div className="kdca-section-title">
                     Upload History
                     <span className="kdca-history-count">{history.length}</span>
+                    {!readOnly && history.length > 1 && (
+                      <button
+                        type="button"
+                        className="kdca-history-clear-all"
+                        onClick={async () => {
+                          if (!confirm(`업로드 이력 ${history.length}건을 전체 삭제할까요?\n\n파싱된 데이터는 그대로 유지됩니다.\nScan 시 모든 파일이 다시 처리됩니다.`)) return;
+                          try {
+                            const res = await fetch(
+                              `${API_BASE}/ingestion/upload-history`,
+                              { method: 'DELETE', headers: await getAdminHeaders?.(false) },
+                            );
+                            if (res.ok) fetchData();
+                            else {
+                              const err = await res.json().catch(() => ({}));
+                              setStatus(`삭제 실패: ${err.detail || res.statusText}`, 'error');
+                            }
+                          } catch (e: any) {
+                            setStatus(`삭제 실패: ${e.message}`, 'error');
+                          }
+                        }}
+                      >
+                        전체 삭제
+                      </button>
+                    )}
                   </div>
                   <div className="kdca-history-scroll">
                     {history.slice().reverse().map((h, i) => {

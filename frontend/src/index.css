@@ -2522,6 +2522,20 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   font-weight: 800;
   letter-spacing: 0.4px;
 }
+.kdca-history-clear-all {
+  margin-left: auto;
+  padding: 2px 8px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--alert-g3);
+  background: transparent;
+  border: 1px solid var(--alert-g3);
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+.kdca-history-clear-all:hover { opacity: 1; background: rgba(220,53,69,0.08); }
 /* Scrollable history list — show ~5 rows, scroll for the rest */
 .kdca-history-scroll {
   display: flex;

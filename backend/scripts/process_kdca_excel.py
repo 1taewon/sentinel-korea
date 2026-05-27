@@ -743,39 +743,95 @@ def process_file(file_path: Path, content_bytes: bytes | None = None) -> dict[st
         return {"success": False, "filename": filename, "file_type": file_type, "error": str(e)}
 
 
+def _extract_week_number(filename: str) -> int | None:
+    """Extract epi-week number from filename (e.g. '17wk', '20주차' → 17, 20)."""
+    m = re.search(r'(\d{1,2})\s*(?:wk|주차)', filename, re.IGNORECASE)
+    return int(m.group(1)) if m else None
+
+
 def scan_sentinel_data_dir() -> list[dict[str, Any]]:
     """Recursively scan SENTINEL_DATA_DIR for KDCA files.
 
     Walks every subdirectory (e.g. 17wk/, 18wk/) so the user can keep
     weekly downloads grouped by epi-week without flattening.
+
+    Auto-supersede: When a newer week file exists for the same file_type,
+    older week entries are removed from upload history so only the latest
+    week per type is kept.
     """
     if not SENTINEL_DATA_DIR.exists():
         print(f"[KDCA] 데이터 폴더 없음: {SENTINEL_DATA_DIR}", file=sys.stderr)
         return []
 
-    processed_files = set()
+    # Load existing history
+    history: list[dict[str, Any]] = []
     if UPLOAD_HISTORY_FILE.exists():
         try:
             history = json.loads(UPLOAD_HISTORY_FILE.read_text(encoding="utf-8"))
-            processed_files = {h["filename"] for h in history}
         except Exception:
-            pass
+            history = []
+    processed_files = {h["filename"] for h in history}
 
-    results: list[dict[str, Any]] = []
+    # Discover all scannable files and their week numbers
+    candidates: list[tuple[Path, str, int | None]] = []
     for ext in ["*.csv", "*.xlsx", "*.pdf"]:
-        # rglob = recursive — picks up files under 17wk/, 18wk/, ...
         for file_path in SENTINEL_DATA_DIR.rglob(ext):
-            if file_path.name in processed_files:
+            ftype = detect_file_type(file_path.name)
+            if ftype is None:
                 continue
-            if detect_file_type(file_path.name) is None:
-                continue
-            print(f"[KDCA] 처리 중: {file_path.relative_to(SENTINEL_DATA_DIR)}")
-            result = process_file(file_path)
-            results.append(result)
-            if result.get("success"):
-                print(f"[KDCA] 완료: {result.get('records_parsed', 0)} records, {result.get('snapshots_updated', 0)} snapshots")
-            else:
-                print(f"[KDCA] 실패: {result.get('error')}", file=sys.stderr)
+            week = _extract_week_number(file_path.name)
+            candidates.append((file_path, ftype, week))
+
+    # Find the max week per file_type among ALL files (existing + new)
+    max_week_per_type: dict[str, int] = {}
+    for h in history:
+        w = _extract_week_number(h.get("filename", ""))
+        ft = h.get("file_type", "")
+        if w is not None and ft:
+            max_week_per_type[ft] = max(max_week_per_type.get(ft, 0), w)
+    for _, ftype, week in candidates:
+        if week is not None:
+            max_week_per_type[ftype] = max(max_week_per_type.get(ftype, 0), week)
+
+    # Remove older-week entries from history (auto-supersede)
+    superseded: list[str] = []
+    new_history: list[dict[str, Any]] = []
+    for h in history:
+        ft = h.get("file_type", "")
+        w = _extract_week_number(h.get("filename", ""))
+        if w is not None and ft in max_week_per_type and w < max_week_per_type[ft]:
+            superseded.append(h.get("filename", ""))
+            print(f"[KDCA] 자동 교체: {h.get('filename')} (W{w}) → 최신 W{max_week_per_type[ft]} 존재")
+        else:
+            new_history.append(h)
+
+    if superseded:
+        history = new_history
+        UPLOAD_HISTORY_FILE.write_text(
+            json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        processed_files = {h["filename"] for h in history}
+
+    # Process new files (skip already processed)
+    results: list[dict[str, Any]] = []
+    for file_path, ftype, week in candidates:
+        if file_path.name in processed_files:
+            continue
+        # Skip files from older weeks (don't process superseded files)
+        if week is not None and ftype in max_week_per_type and week < max_week_per_type[ftype]:
+            print(f"[KDCA] 건너뜀 (구버전): {file_path.name} (W{week} < W{max_week_per_type[ftype]})")
+            continue
+        print(f"[KDCA] 처리 중: {file_path.relative_to(SENTINEL_DATA_DIR)}")
+        result = process_file(file_path)
+        results.append(result)
+        if result.get("success"):
+            print(f"[KDCA] 완료: {result.get('records_parsed', 0)} records, {result.get('snapshots_updated', 0)} snapshots")
+        else:
+            print(f"[KDCA] 실패: {result.get('error')}", file=sys.stderr)
+
+    if superseded:
+        for r in results:
+            r["superseded"] = superseded
 
     return results
 

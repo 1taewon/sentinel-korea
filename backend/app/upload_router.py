@@ -353,6 +353,22 @@ async def delete_upload_history_entry(
     return {"status": "ok", "removed": removed, "remaining": after}
 
 
+@router.delete("/upload-history")
+async def clear_all_upload_history(
+    _: dict = Depends(require_admin),
+) -> dict[str, Any]:
+    """Clear entire upload history. Parsed data in processed/ is NOT touched."""
+    if not UPLOAD_HISTORY_FILE.exists():
+        return {"status": "ok", "removed": 0}
+    try:
+        history = json.loads(UPLOAD_HISTORY_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        history = []
+    count = len(history)
+    UPLOAD_HISTORY_FILE.write_text("[]", encoding="utf-8")
+    return {"status": "ok", "removed": count}
+
+
 def __import_script(script_name: str):
     """scripts/ 폴더의 모듈을 동적으로 임포트합니다."""
     import importlib.util
