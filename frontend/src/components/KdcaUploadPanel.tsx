@@ -111,44 +111,60 @@ export default function KdcaUploadPanel({ view = 'full', readOnly = false, getAd
 
   useEffect(() => { fetchData(); fetchDigest(); }, []);
 
-  const handleFile = async (file: File) => {
+  const handleFiles = async (files: File[]) => {
     if (readOnly) {
       setStatus('Read-only mode. Only the Sentinel operator can upload source files.', 'error');
       return;
     }
+    if (files.length === 0) return;
     setUploading(true);
     setUploadResult(null);
     setStatusMsg('');
-    const form = new FormData();
-    form.append('file', file);
-    try {
-      const res = await fetch(`${API_BASE}/ingestion/upload-kdca`, { method: 'POST', body: form, headers: await getAdminHeaders?.(false) });
-      const data = await res.json();
-      setUploadResult(data);
-      if (data.success) {
-        setStatus(`${data.snapshots_updated} snapshots updated. Generating AI analysis...`, 'pending');
-        fetchData();
-        generateDigest().then(() => setStatus('Upload complete. AI analysis generated.', 'ok'));
-      } else {
-        setStatus(data.error || 'Processing failed', 'error');
+
+    let successCount = 0;
+    let failCount = 0;
+    let totalSnapshots = 0;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      setStatus(`업로드 중 ${i + 1}/${files.length}: ${file.name}`, 'pending');
+      const form = new FormData();
+      form.append('file', file);
+      try {
+        const res = await fetch(`${API_BASE}/ingestion/upload-kdca`, { method: 'POST', body: form, headers: await getAdminHeaders?.(false) });
+        const data = await res.json();
+        if (data.success) {
+          successCount++;
+          totalSnapshots += data.snapshots_updated || 0;
+        } else {
+          failCount++;
+        }
+        if (i === files.length - 1) setUploadResult(data);
+      } catch {
+        failCount++;
       }
-    } catch {
-      setStatus('Upload failed — check server connection.', 'error');
-    } finally {
-      setUploading(false);
     }
+
+    fetchData();
+    if (failCount === 0) {
+      setStatus(`${successCount}개 파일 완료 · ${totalSnapshots} snapshots. AI 분석 생성 중...`, 'pending');
+      generateDigest().then(() => setStatus(`${successCount}개 파일 업로드 완료.`, 'ok'));
+    } else {
+      setStatus(`${successCount}개 성공, ${failCount}개 실패`, failCount > 0 && successCount === 0 ? 'error' : 'ok');
+    }
+    setUploading(false);
   };
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) handleFiles(files);
   };
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file);
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) handleFiles(files);
     e.target.value = '';
   };
 
@@ -455,6 +471,7 @@ export default function KdcaUploadPanel({ view = 'full', readOnly = false, getAd
                   ref={fileInputRef}
                   type="file"
                   accept=".csv,.xlsx,.pdf"
+                  multiple
                   onChange={onFileChange}
                   style={{ display: 'none' }}
                   id="kdca-file-input"
@@ -467,9 +484,9 @@ export default function KdcaUploadPanel({ view = 'full', readOnly = false, getAd
                 ) : (
                   <>
                     <div className="kdca-dropzone-text">
-                      {readOnly ? 'KDCA upload is operator-only' : 'Drop KDCA file here or click to upload'}
+                      {readOnly ? 'KDCA upload is operator-only' : 'Drop KDCA files here or click to upload'}
                     </div>
-                    <div className="kdca-dropzone-hint">{readOnly ? 'Public users can inspect source status and history only.' : 'CSV, XLSX, PDF supported'}</div>
+                    <div className="kdca-dropzone-hint">{readOnly ? 'Public users can inspect source status and history only.' : 'CSV, XLSX, PDF supported · 여러 파일 동시 업로드 가능'}</div>
                     <div className="kdca-dropzone-hint">PDF supported: 하수기반 / 표본감시 주간소식지 / 전 세계 감염병 발생 동향</div>
                     <div className="kdca-dropzone-hint" style={{ marginTop: 4, color: '#6366f1' }}>
                       Filename must contain: 급성호흡기, 인플루엔자, 중증급성, 하수기반, 표본감시, or 전 세계 감염병
