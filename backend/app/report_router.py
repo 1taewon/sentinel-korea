@@ -908,12 +908,11 @@ async def send_report(
     if not recipients:
         raise HTTPException(status_code=400, detail="등록된 수신자가 없습니다. /reports/recipients/add 로 추가해주세요.")
 
-    smtp_user = os.getenv("SMTP_USERNAME", "")
-    smtp_pass = os.getenv("SMTP_PASSWORD", "")
-    if not smtp_user or not smtp_pass:
+    resend_key = os.getenv("RESEND_API_KEY", "")
+    if not resend_key:
         raise HTTPException(
             status_code=503,
-            detail="이메일 미설정. .env에 SMTP_USERNAME, SMTP_PASSWORD를 설정해주세요."
+            detail="이메일 미설정. RESEND_API_KEY 환경변수를 설정해주세요."
         )
 
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -936,8 +935,7 @@ async def send_report(
         recipients=recipients,
         subject=f"[Sentinel Korea] 주간 호흡기 감시 보고서 - {report_path.stem}",
         report_content=report_path.read_text(encoding="utf-8"),
-        smtp_user=smtp_user,
-        smtp_pass=smtp_pass,
+        resend_key=resend_key,
     )
 
     return {
@@ -947,11 +945,9 @@ async def send_report(
     }
 
 
-async def _send_emails(recipients, subject, report_content, smtp_user, smtp_pass):
-    import aiosmtplib
+async def _send_emails(recipients, subject, report_content, resend_key):
+    import httpx
     import markdown as md
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
 
     html_body = md.markdown(report_content, extensions=["tables", "fenced_code"])
     html_full = f"""<html><body style="font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px">
@@ -964,23 +960,32 @@ async def _send_emails(recipients, subject, report_content, smtp_user, smtp_pass
     <p style="color:#64748b;font-size:11px">본 보고서는 Sentinel Korea AI에 의해 자동 생성되었습니다.</p>
     </body></html>"""
 
-    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    sender_name = os.getenv("REPORT_SENDER_NAME", "Sentinel Korea")
+    sender = os.getenv("RESEND_FROM", "Sentinel Korea <onboarding@resend.dev>")
 
-    for recipient in recipients:
-        try:
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = subject
-            msg["From"] = f"{sender_name} <{smtp_user}>"
-            msg["To"] = recipient["email"]
-            msg.attach(MIMEText(report_content, "plain", "utf-8"))
-            msg.attach(MIMEText(html_full, "html", "utf-8"))
-            await aiosmtplib.send(msg, hostname=smtp_host, port=smtp_port,
-                                  username=smtp_user, password=smtp_pass, start_tls=True)
-            print(f"[Email] 전송 완료: {recipient['email']}")
-        except Exception as e:
-            print(f"[Email] 전송 실패 {recipient['email']}: {e}")
+    async with httpx.AsyncClient() as client:
+        for recipient in recipients:
+            try:
+                res = await client.post(
+                    "https://api.resend.com/emails",
+                    headers={
+                        "Authorization": f"Bearer {resend_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "from": sender,
+                        "to": [recipient["email"]],
+                        "subject": subject,
+                        "html": html_full,
+                        "text": report_content,
+                    },
+                    timeout=30,
+                )
+                if res.status_code == 200:
+                    print(f"[Email] 전송 완료: {recipient['email']}")
+                else:
+                    print(f"[Email] 전송 실패 {recipient['email']}: {res.status_code} {res.text}")
+            except Exception as e:
+                print(f"[Email] 전송 실패 {recipient['email']}: {e}")
 
 
 # ── 수신자 엔드포인트 ────────────────────────────────────────────────
