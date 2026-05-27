@@ -21,6 +21,13 @@ interface Recipient {
   name?: string;
 }
 
+interface RecipientInfo {
+  count: number;
+  max: number;
+  remaining: number;
+  is_registered?: boolean;
+}
+
 type SectionKey = 'changed' | 'matters' | 'confidence' | 'actions';
 
 type IntelligenceSection = {
@@ -616,10 +623,12 @@ export default function ReportView() {
   const [generating, setGenerating] = useState(false);
 
   const [recipients, setRecipients] = useState<Recipient[]>([]);
+  const [recipientInfo, setRecipientInfo] = useState<RecipientInfo>({ count: 0, max: 100, remaining: 100 });
   const [newEmail, setNewEmail] = useState('');
   const [newName, setNewName] = useState('');
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState<string>('');
+  const [myEmail, setMyEmail] = useState(() => localStorage.getItem('sentinel-subscribed-email') || '');
 
   const filtered = useMemo(
     () => (typeFilter === 'all' ? reports : reports.filter((report) => report.type === typeFilter)),
@@ -646,14 +655,31 @@ export default function ReportView() {
     [selected, markdown, briefSections],
   );
 
-  const fetchRecipients = async () => {
+  const fetchRecipientInfo = async (checkEmail?: string) => {
     try {
-      const res = await fetch(`${API_BASE}/reports/recipients/list`);
+      const emailParam = checkEmail || myEmail;
+      const qs = emailParam ? `?email=${encodeURIComponent(emailParam)}` : '';
+      const res = await fetch(`${API_BASE}/reports/recipients/info${qs}`);
       const data = await res.json();
-      setRecipients(Array.isArray(data) ? data : []);
+      setRecipientInfo(data);
     } catch {
-      setRecipients([]);
+      // keep defaults
     }
+  };
+
+  const fetchRecipients = async () => {
+    // Admin: fetch full list + info
+    if (isAdmin) {
+      try {
+        const headers = await adminHeaders(false);
+        const res = await fetch(`${API_BASE}/reports/recipients/list`, { headers });
+        const data = await res.json();
+        setRecipients(Array.isArray(data) ? data : []);
+      } catch {
+        setRecipients([]);
+      }
+    }
+    await fetchRecipientInfo();
   };
 
   const loadReport = async (item: ReportItem) => {
@@ -719,26 +745,29 @@ export default function ReportView() {
   };
 
   const addRecipient = async () => {
-    if (!requireAdmin('Recipient management')) return;
     if (!newEmail.trim()) return;
     setStatus('');
     try {
       const res = await fetch(`${API_BASE}/reports/recipients/add`, {
         method: 'POST',
-        headers: await adminHeaders(),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: newEmail.trim(), name: newName.trim() }),
       });
       if (res.ok) {
+        const registered = newEmail.trim().toLowerCase();
+        setMyEmail(registered);
+        localStorage.setItem('sentinel-subscribed-email', registered);
         setNewEmail('');
         setNewName('');
-        setStatus('Recipient added.');
-        await fetchRecipients();
+        setStatus('등록 완료! 매주 월요일 보고서가 이메일로 발송됩니다.');
+        await fetchRecipientInfo(registered);
+        if (isAdmin) await fetchRecipients();
       } else {
         const err = await res.json();
-        setStatus(err.detail || 'Recipient could not be added.');
+        setStatus(err.detail || '등록에 실패했습니다.');
       }
     } catch {
-      setStatus('Recipient could not be added.');
+      setStatus('등록에 실패했습니다.');
     }
   };
 
@@ -841,31 +870,68 @@ export default function ReportView() {
         )}
 
         <div className="report-recipients">
-          <div className="report-recipients-title">Email recipients ({recipients.length})</div>
-          <div className="report-recipients-add">
-            <input
-              type="email"
-              placeholder="email@example.com"
-              value={newEmail}
-              onChange={(event) => setNewEmail(event.target.value)}
-              className="report-recipient-input"
-            />
-            <input
-              type="text"
-              placeholder="name optional"
-              value={newName}
-              onChange={(event) => setNewName(event.target.value)}
-              className="report-recipient-input"
-            />
-            <button className="report-recipient-add-btn" onClick={addRecipient} type="button">Add</button>
+          <div className="report-recipients-title">
+            주간 이메일 구독
+            <span className="report-recipients-slots">
+              {recipientInfo.remaining > 0
+                ? `${recipientInfo.remaining}/${recipientInfo.max} 자리 남음`
+                : '정원 마감'}
+            </span>
           </div>
-          {recipients.map((recipient) => (
-            <div key={recipient.email} className="report-recipient-row">
-              <span className="report-recipient-email">{recipient.email}</span>
-              {recipient.name && <span className="report-recipient-name">{recipient.name}</span>}
-              <button className="report-recipient-remove" onClick={() => removeRecipient(recipient.email)} type="button">x</button>
+          <div className="report-recipients-capacity">
+            <div
+              className="report-recipients-capacity-bar"
+              style={{ width: `${Math.min(100, (recipientInfo.count / recipientInfo.max) * 100)}%` }}
+            />
+          </div>
+
+          {recipientInfo.is_registered ? (
+            <div className="report-recipient-registered">
+              <span className="report-recipient-check">&#10003;</span>
+              등록됨 &mdash; 매주 월요일 보고서가 발송됩니다
             </div>
-          ))}
+          ) : (
+            <div className="report-recipients-add">
+              <input
+                type="email"
+                placeholder="이메일 주소"
+                value={newEmail}
+                onChange={(event) => setNewEmail(event.target.value)}
+                className="report-recipient-input"
+                disabled={recipientInfo.remaining <= 0}
+              />
+              <input
+                type="text"
+                placeholder="이름 (선택)"
+                value={newName}
+                onChange={(event) => setNewName(event.target.value)}
+                className="report-recipient-input"
+                disabled={recipientInfo.remaining <= 0}
+              />
+              <button
+                className="report-recipient-add-btn"
+                onClick={addRecipient}
+                disabled={recipientInfo.remaining <= 0 || !newEmail.trim()}
+                type="button"
+              >
+                구독
+              </button>
+            </div>
+          )}
+
+          {/* Admin: full recipient list */}
+          {isAdmin && recipients.length > 0 && (
+            <div className="report-recipients-admin">
+              <div className="report-recipients-admin-title">등록자 목록 (Admin)</div>
+              {recipients.map((recipient) => (
+                <div key={recipient.email} className="report-recipient-row">
+                  <span className="report-recipient-email">{recipient.email}</span>
+                  {recipient.name && <span className="report-recipient-name">{recipient.name}</span>}
+                  <button className="report-recipient-remove" onClick={() => removeRecipient(recipient.email)} type="button">x</button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

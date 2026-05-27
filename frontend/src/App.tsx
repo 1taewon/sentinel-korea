@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import AboutModal from './components/AboutModal';
 import AdminLoginModal from './components/AdminLoginModal';
 import FlowDiagram from './components/FlowDiagram';
 import GeminiChatbot from './components/GeminiChatbot';
@@ -178,6 +179,7 @@ function AppInner({
 }) {
   const [noticeAccepted, setNoticeAccepted] = useState(() => localStorage.getItem('sentinel-notice-version') === NOTICE_VERSION);
   const [adminLoginOpen, setAdminLoginOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [koreaAlerts, setKoreaAlerts] = useState<KoreaAlert[]>([]);
   const [globalSignals, setGlobalSignals] = useState<GlobalSignal[]>([]);
   // Phase 3-A: archive replay
@@ -1023,8 +1025,10 @@ function AppInner({
         isAdmin={isAdmin}
         isAuthEnabled={isAuthEnabled}
         onAdminLogin={() => setAdminLoginOpen(true)}
+        onAboutOpen={() => setAboutOpen(true)}
       />
       {adminLoginOpen && <AdminLoginModal onClose={() => setAdminLoginOpen(false)} />}
+      <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
 
       {/* === MAP TAB (default) === */}
       {navTab === 'map' && (

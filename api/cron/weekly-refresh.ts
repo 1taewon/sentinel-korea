@@ -107,6 +107,13 @@ export default async function handler(
       method: "POST",
       timeoutMs: 180_000,
     },
+    // Phase 4: Auto-send email to all registered recipients
+    {
+      name: "email_send",
+      url: `${BACKEND}/reports/send-weekly`,
+      method: "POST",
+      timeoutMs: 60_000,
+    },
   ];
 
   const results: StepResult[] = [];

@@ -17,6 +17,7 @@ interface TopNavProps {
   isAdmin?: boolean;
   isAuthEnabled?: boolean;
   onAdminLogin?: () => void;
+  onAboutOpen?: () => void;
 }
 
 const TABS: { key: NavTab; label: string; labelEn: string; adminOnly?: boolean }[] = [
@@ -113,7 +114,7 @@ function PipelineStatusBar() {
 
 export default function TopNav({
   activeTab, onTabChange, userEmail, onSignOut, theme, onToggleTheme,
-  isAdmin = false, isAuthEnabled = false, onAdminLogin,
+  isAdmin = false, isAuthEnabled = false, onAdminLogin, onAboutOpen,
 }: TopNavProps) {
   return (
     <header className="top-nav">
@@ -143,6 +144,14 @@ export default function TopNav({
 
       {/* Right controls */}
       <div className="top-nav-right">
+        <button
+          className="top-nav-icon-btn top-nav-about-btn"
+          onClick={onAboutOpen}
+          title="About Sentinel Korea"
+          type="button"
+        >
+          &#9432;
+        </button>
         <button
           className="top-nav-icon-btn"
           onClick={onToggleTheme}

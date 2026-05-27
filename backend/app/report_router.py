@@ -829,6 +829,9 @@ def _save_recipients(recipients: list[dict]) -> None:
     RECIPIENTS_FILE.write_text(json.dumps(recipients, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+MAX_RECIPIENTS = 100
+
+
 class RecipientModel(BaseModel):
     email: str
     name: str = ""
@@ -990,25 +993,99 @@ async def _send_emails(recipients, subject, report_content, resend_key):
 
 # ── 수신자 엔드포인트 ────────────────────────────────────────────────
 @router.get("/recipients/list")
-async def list_recipients() -> list[dict]:
+async def list_recipients(_: dict = Depends(require_admin)) -> list[dict]:
+    """Full recipient list — admin only."""
     return _load_recipients()
 
 
-@router.post("/recipients/add")
-async def add_recipient(recipient: RecipientModel, _: dict = Depends(require_admin)) -> dict[str, Any]:
+@router.get("/recipients/info")
+async def recipients_info(email: str | None = None) -> dict[str, Any]:
+    """Public endpoint: returns count, max, remaining slots, and
+    whether a specific email is already registered (if provided)."""
     recipients = _load_recipients()
-    if recipient.email in [r["email"] for r in recipients]:
+    count = len(recipients)
+    result: dict[str, Any] = {
+        "count": count,
+        "max": MAX_RECIPIENTS,
+        "remaining": max(0, MAX_RECIPIENTS - count),
+    }
+    if email:
+        result["is_registered"] = email.strip().lower() in [r["email"].lower() for r in recipients]
+    return result
+
+
+@router.post("/recipients/add")
+async def add_recipient(recipient: RecipientModel) -> dict[str, Any]:
+    """Public self-registration — anyone can register their email (max 100)."""
+    recipients = _load_recipients()
+    if len(recipients) >= MAX_RECIPIENTS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"등록 인원이 최대 {MAX_RECIPIENTS}명에 도달했습니다. 빈 자리가 생기면 다시 시도해주세요.",
+        )
+    if recipient.email.strip().lower() in [r["email"].lower() for r in recipients]:
         raise HTTPException(status_code=400, detail="이미 등록된 이메일입니다.")
-    recipients.append({"email": recipient.email, "name": recipient.name, "added_at": datetime.utcnow().isoformat()})
+    recipients.append({
+        "email": recipient.email.strip().lower(),
+        "name": recipient.name.strip(),
+        "added_at": datetime.utcnow().isoformat(),
+    })
     _save_recipients(recipients)
-    return {"status": "added", "email": recipient.email, "total": len(recipients)}
+    count = len(recipients)
+    return {
+        "status": "added",
+        "email": recipient.email,
+        "total": count,
+        "remaining": max(0, MAX_RECIPIENTS - count),
+    }
 
 
 @router.delete("/recipients/{email}")
 async def remove_recipient(email: str, _: dict = Depends(require_admin)) -> dict[str, Any]:
     recipients = _load_recipients()
-    new_list = [r for r in recipients if r["email"] != email]
+    new_list = [r for r in recipients if r["email"].lower() != email.lower()]
     if len(new_list) == len(recipients):
         raise HTTPException(status_code=404, detail="등록되지 않은 이메일입니다.")
     _save_recipients(new_list)
-    return {"status": "removed", "email": email, "total": len(new_list)}
+    count = len(new_list)
+    return {"status": "removed", "email": email, "total": count, "remaining": max(0, MAX_RECIPIENTS - count)}
+
+
+@router.post("/send-weekly")
+async def send_weekly_report(
+    background_tasks: BackgroundTasks,
+    _: dict = Depends(require_admin),
+) -> dict[str, Any]:
+    """Cron-triggered: send the latest FINAL report to all recipients.
+    Auth is via SENTINEL_ADMIN_TOKEN header (set by Vercel cron function)."""
+    recipients = _load_recipients()
+    if not recipients:
+        return {"status": "skipped", "reason": "등록된 수신자 없음"}
+
+    resend_key = os.getenv("RESEND_API_KEY", "")
+    if not resend_key:
+        return {"status": "skipped", "reason": "RESEND_API_KEY 미설정"}
+
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    # Pick the latest FINAL report
+    final_reports = sorted(
+        [p for p in REPORTS_DIR.glob("final_*.md")],
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+    if not final_reports:
+        return {"status": "skipped", "reason": "FINAL 리포트 없음"}
+
+    report_path = final_reports[0]
+    background_tasks.add_task(
+        _send_emails,
+        recipients=recipients,
+        subject=f"[Sentinel Korea] 주간 호흡기 감시 보고서 - {report_path.stem}",
+        report_content=report_path.read_text(encoding="utf-8"),
+        resend_key=resend_key,
+    )
+    return {
+        "status": "sending",
+        "report": report_path.name,
+        "recipient_count": len(recipients),
+    }

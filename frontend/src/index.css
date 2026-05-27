@@ -6189,10 +6189,30 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   background: var(--bg-secondary);
 }
 .report-recipients-title {
+  display: flex; align-items: center; justify-content: space-between;
   font-size: 11px; font-weight: 700; letter-spacing: 1px;
   color: var(--text-secondary); margin-bottom: 8px;
   font-family: var(--font-mono, inherit);
 }
+.report-recipients-slots {
+  font-size: 10px; font-weight: 600; color: #38bdf8;
+  letter-spacing: 0;
+}
+.report-recipients-capacity {
+  height: 4px; background: var(--border); border-radius: 2px;
+  margin-bottom: 10px; overflow: hidden;
+}
+.report-recipients-capacity-bar {
+  height: 100%; background: linear-gradient(90deg, #34d399, #38bdf8);
+  border-radius: 2px; transition: width 0.3s;
+}
+.report-recipient-registered {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 10px; border-radius: var(--radius-sm);
+  background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3);
+  font-size: 11px; color: #34d399; font-weight: 600;
+}
+.report-recipient-check { font-size: 14px; }
 .report-recipients-add {
   display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;
 }
@@ -6205,6 +6225,7 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   font-size: 11px;
 }
 .report-recipient-input:focus { outline: none; border-color: #00d4ff; }
+.report-recipient-input:disabled { opacity: 0.5; cursor: not-allowed; }
 .report-recipient-add-btn {
   padding: 6px 10px;
   background: var(--accent, #6366f1);
@@ -6213,6 +6234,16 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   font-size: 11px; font-weight: 600; cursor: pointer;
 }
 .report-recipient-add-btn:hover { opacity: 0.9; }
+.report-recipient-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.report-recipients-admin {
+  margin-top: 10px; padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+.report-recipients-admin-title {
+  font-size: 10px; font-weight: 700; color: var(--text-muted);
+  letter-spacing: 0.5px; margin-bottom: 4px;
+  font-family: var(--font-mono, inherit);
+}
 .report-recipient-row {
   display: flex; align-items: center; gap: 6px;
   padding: 4px 0;
@@ -9340,4 +9371,139 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 }
 .ontology-detail-props-toggle[open] > summary {
   margin-bottom: 6px;
+}
+
+/* ── About Modal ─────────────────────────────────────────── */
+.about-modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+.about-modal {
+  background: var(--bg-primary, #0d1b2a);
+  border: 1px solid var(--border, #1e293b);
+  border-radius: 12px;
+  max-width: 720px; width: 100%;
+  max-height: 85vh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+.about-modal-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid var(--border, #1e293b);
+}
+.about-modal-header h2 {
+  font-size: 18px; font-weight: 700; color: var(--text-primary, #e0f2fe);
+  margin: 4px 0 2px;
+}
+.about-modal-header p {
+  font-size: 12px; color: var(--text-muted, #64748b); margin: 0;
+}
+.about-modal-kicker {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  color: #38bdf8;
+  font-family: var(--font-mono, inherit);
+}
+.about-modal-close {
+  background: transparent; border: 1px solid var(--border, #1e293b);
+  color: var(--text-muted, #64748b);
+  font-size: 20px; width: 32px; height: 32px;
+  border-radius: 6px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.about-modal-close:hover { color: var(--text-primary, #e0f2fe); border-color: #38bdf8; }
+.about-modal-tabs {
+  display: flex; gap: 0;
+  border-bottom: 1px solid var(--border, #1e293b);
+  padding: 0 28px;
+}
+.about-modal-tabs button {
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--text-muted, #64748b);
+  padding: 10px 16px; font-size: 12px; font-weight: 600;
+  cursor: pointer; letter-spacing: 0.5px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.about-modal-tabs button:hover { color: var(--text-primary, #e0f2fe); }
+.about-modal-tabs button.active {
+  color: #38bdf8; border-bottom-color: #38bdf8;
+}
+.about-modal-body {
+  padding: 20px 28px 28px;
+  overflow-y: auto; flex: 1;
+}
+.about-modal-body section {
+  margin-bottom: 20px;
+}
+.about-modal-body section:last-child { margin-bottom: 0; }
+.about-modal-body h3 {
+  font-size: 13px; font-weight: 700;
+  color: var(--text-primary, #e0f2fe);
+  margin: 0 0 8px; letter-spacing: 0.3px;
+}
+.about-modal-body p {
+  font-size: 12px; line-height: 1.7;
+  color: var(--text-secondary, #94a3b8);
+  margin: 0 0 6px;
+}
+.about-modal-body ul {
+  list-style: none; padding: 0; margin: 0;
+}
+.about-modal-body li {
+  font-size: 12px; line-height: 1.7;
+  color: var(--text-secondary, #94a3b8);
+  padding: 4px 0 4px 16px;
+  position: relative;
+}
+.about-modal-body li::before {
+  content: ''; position: absolute;
+  left: 0; top: 11px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #38bdf8;
+}
+.about-modal-body li strong {
+  color: var(--text-primary, #e0f2fe);
+}
+.about-data-table {
+  display: flex; flex-direction: column; gap: 1px;
+  border: 1px solid var(--border, #1e293b);
+  border-radius: 8px; overflow: hidden;
+  margin-top: 8px;
+}
+.about-data-row {
+  display: grid; grid-template-columns: 1.4fr 0.6fr 0.8fr 2fr;
+  gap: 8px; padding: 8px 12px;
+  font-size: 11px; color: var(--text-secondary, #94a3b8);
+  background: var(--bg-secondary, #0f1d2e);
+}
+.about-data-row:nth-child(odd) { background: var(--bg-primary, #0d1b2a); }
+.about-data-header {
+  font-weight: 700; color: var(--text-muted, #64748b);
+  letter-spacing: 0.5px; font-size: 10px;
+  text-transform: uppercase;
+  background: var(--bg-tertiary, #162336) !important;
+}
+.about-version {
+  font-size: 10px; color: var(--text-muted, #475569);
+  font-family: var(--font-mono, inherit);
+  margin-top: 12px;
+}
+/* About button in nav */
+.top-nav-about-btn {
+  font-size: 18px;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .about-modal { max-height: 90vh; border-radius: 8px; }
+  .about-modal-header { padding: 16px 16px 12px; }
+  .about-modal-body { padding: 16px; }
+  .about-modal-tabs { padding: 0 16px; }
+  .about-data-row { grid-template-columns: 1fr; gap: 2px; }
 }
