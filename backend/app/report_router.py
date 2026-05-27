@@ -668,7 +668,7 @@ def _build_forecast_beta_section(snapshot: list[dict]) -> str:
 
         # EMA forecast
         try:
-            ema_spec = fns.get_spec("forecastEMA")
+            ema_spec = fns.get_spec("forecastRegionScore")
             if ema_spec:
                 ema = ema_spec.fn({"region_id": region_id, "weeks": 4})
                 ema_pts = ema.get("forecast", [])
@@ -687,7 +687,7 @@ def _build_forecast_beta_section(snapshot: list[dict]) -> str:
 
         # SARIMAX forecast
         try:
-            sx_spec = fns.get_spec("forecastSARIMAX")
+            sx_spec = fns.get_spec("forecastRegionSARIMAX")
             if sx_spec:
                 sx = sx_spec.fn({"region_id": region_id, "weeks": 4})
                 sx_pts = sx.get("forecast", [])
@@ -708,7 +708,7 @@ def _build_forecast_beta_section(snapshot: list[dict]) -> str:
 
     # Lead-Lag summary for top region
     try:
-        ll_spec = fns.get_spec("leadLagAllPairs")
+        ll_spec = fns.get_spec("signalLeadLag")
         if ll_spec and elevated:
             top_id = elevated[0].get("region_id") or elevated[0].get("region_code") or ""
             ll = ll_spec.fn({"region_id": top_id})
