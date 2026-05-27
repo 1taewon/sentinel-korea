@@ -37,6 +37,9 @@ export default function StatisticsView({ koreaAlerts, onScoringApply, onRegionCl
           아래 순위표는 어느 시·도가 상대적으로 더 이상한지 비교합니다. 오른쪽 가중치 설정은
           공식 감시자료, 폐하수, 뉴스/트렌드 같은 신호가 최종 경보에 미치는 영향도를 조정하는 실험 도구입니다.
         </p>
+        <p className="stats-regional-note">
+          시/도별 지도 위험도는 하수감시 호흡기 병원체(COVID-19, Influenza) 데이터에 기반합니다. 다른 표본감시 지표(ARI, ILI, SARI)는 전국 수준 종합 신호로만 활용됩니다.
+        </p>
       </section>
 
       <div className="stats-grid">

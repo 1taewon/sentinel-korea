@@ -1346,6 +1346,9 @@ function AppInner({
                   <b>날짜 패널</b>은 실제 오늘 날짜가 아니라 백엔드가 보관한 snapshot_date/epiweek를 선택하는 컨트롤입니다.
                   과거 주차를 선택하면 당시 기준의 경보와 설명을 다시 재생합니다.
                 </p>
+                <p className="map-regional-note">
+                  시/도별 위험도는 하수감시 호흡기 병원체(COVID-19, Influenza) 데이터 기반. 표본감시(ARI, ILI, SARI)는 전국 수준 신호로만 활용.
+                </p>
               </div>
               <div className="map-tool-guide-list">
                 {mapToolGuides.map((tool) => (
@@ -1853,11 +1856,6 @@ function AppInner({
               ))}
             </div>
           </section>
-
-          {/* Regional data note */}
-          <p className="data-source-regional-note">
-            Sentinel Korea의 시/도별 지도 위험도는 하수감시 호흡기 병원체(COVID-19, Influenza) 데이터에 기반합니다. 다른 표본감시 지표(ARI, ILI, SARI)는 전국 수준 종합 신호로만 활용됩니다.
-          </p>
 
           <div className="kas-sources-layout">
             {/* LEFT — analysis result displays */}
