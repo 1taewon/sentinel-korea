@@ -4637,11 +4637,59 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 }
 .map-tool-guide-list {
   display: grid;
-  grid-template-columns: 1fr 1fr;     /* 2x2 grid */
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   padding-bottom: 12px;
   margin-bottom: 10px;
   border-bottom: 1px solid var(--border);
+}
+.map-tool-guide-list--row {
+  grid-template-columns: 1fr 1fr 1fr;  /* 1x3 row */
+}
+
+/* Inline layer selector (left panel) */
+.kas-inline-layers {
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+.kas-inline-layers-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.kas-inline-layers-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.kas-inline-layer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.12s;
+  color: var(--text-secondary);
+  background: var(--bg-soft);
+}
+.kas-inline-layer:hover { border-color: var(--accent); }
+.kas-inline-layer.active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 600;
+}
+.kas-inline-layer input[type="checkbox"] {
+  width: 12px; height: 12px; margin: 0; accent-color: var(--accent);
 }
 .map-tool-guide {
   display: flex;

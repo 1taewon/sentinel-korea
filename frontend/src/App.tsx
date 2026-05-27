@@ -914,18 +914,6 @@ function AppInner({
       ),
     },
     {
-      title: '레이어 선택',
-      text: 'KDCA, OSINT, 폐하수, 통합 위험도를 켜고 끄며 지도 색의 근거를 비교합니다.',
-      action: () => setShowLayerPanel(true),
-      active: showLayerPanel,
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter">
-          <rect x="4" y="4" width="12" height="12" />
-          <rect x="8" y="8" width="12" height="12" />
-        </svg>
-      ),
-    },
-    {
       title: 'Query console',
       text: '현재 snapshot과 원천자료를 기준으로 질문하고, 지역/신호 해석을 빠르게 확인합니다.',
       action: () => {
@@ -1350,7 +1338,42 @@ function AppInner({
                   시/도별 위험도는 하수감시 호흡기 병원체(COVID-19, Influenza) 데이터 기반. 표본감시(ARI, ILI, SARI)는 전국 수준 신호로만 활용.
                 </p>
               </div>
-              <div className="map-tool-guide-list">
+
+              {/* Inline layer selector */}
+              <div className="kas-inline-layers">
+                <div className="kas-inline-layers-title">레이어 선택</div>
+                <div className="kas-inline-layers-grid">
+                  <label className={`kas-inline-layer ${activeLayers.includes('respiratory') ? 'active' : ''}`}>
+                    <input type="checkbox" checked={activeLayers.includes('respiratory')} onChange={() => toggleLayer('respiratory')} />
+                    <span>종합 호흡기</span>
+                  </label>
+                  <label className={`kas-inline-layer ${activeLayers.includes('wastewater_covid') ? 'active' : ''}`}>
+                    <input type="checkbox" checked={activeLayers.includes('wastewater_covid')} onChange={() => toggleLayer('wastewater_covid')} />
+                    <span>하수 COVID-19</span>
+                  </label>
+                  <label className={`kas-inline-layer ${activeLayers.includes('wastewater_flu') ? 'active' : ''}`}>
+                    <input type="checkbox" checked={activeLayers.includes('wastewater_flu')} onChange={() => toggleLayer('wastewater_flu')} />
+                    <span>하수 Influenza</span>
+                  </label>
+                  <label className={`kas-inline-layer ${activeLayers.includes('news_trends_risk') ? 'active' : ''}`}>
+                    <input type="checkbox" checked={activeLayers.includes('news_trends_risk')} onChange={() => toggleLayer('news_trends_risk')} />
+                    <span>OSINT 위험도</span>
+                  </label>
+                  <label className={`kas-inline-layer ${activeLayers.includes('total_risk') ? 'active' : ''}`}>
+                    <input type="checkbox" checked={activeLayers.includes('total_risk')} onChange={() => toggleLayer('total_risk')} />
+                    <span>총 위험도</span>
+                  </label>
+                </div>
+                {activeLayers.length > 1 && (
+                  <div className="kas-aggregation" style={{ marginTop: 6 }}>
+                    <span className="kas-aggregation-label">집계:</span>
+                    <button className={`kas-agg-btn ${aggregationMode === 'max' ? 'kas-agg-btn--active' : ''}`} onClick={() => setAggregationMode('max')} type="button">MAX</button>
+                    <button className={`kas-agg-btn ${aggregationMode === 'weighted' ? 'kas-agg-btn--active' : ''}`} onClick={() => setAggregationMode('weighted')} type="button">Weighted</button>
+                  </div>
+                )}
+              </div>
+
+              <div className="map-tool-guide-list map-tool-guide-list--row">
                 {mapToolGuides.map((tool) => (
                   <button
                     className={`map-tool-guide ${tool.active ? 'is-active' : ''}`}
