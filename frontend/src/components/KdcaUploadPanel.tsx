@@ -15,8 +15,11 @@ interface UploadResult {
 interface HistoryItem {
   filename: string;
   file_type: string;
+  label?: string;
   uploaded_at: string;
   snapshot_count: number;
+  records_parsed?: number;
+  updated_dates?: string[];
 }
 
 interface ReportItem {
@@ -506,11 +509,26 @@ export default function KdcaUploadPanel({ view = 'full', readOnly = false, getAd
                     <span className="kdca-history-count">{history.length}</span>
                   </div>
                   <div className="kdca-history-scroll">
-                    {history.slice().reverse().map((h, i) => (
+                    {history.slice().reverse().map((h, i) => {
+                      /* Extract week number from filename (e.g. "17wk", "20주차", "20wk") */
+                      const weekMatch = h.filename.match(/(\d{1,2})\s*(?:wk|주차)/i);
+                      const weekLabel = weekMatch ? `W${weekMatch[1]}` : null;
+                      /* Format upload timestamp */
+                      const uploadTime = h.uploaded_at
+                        ? h.uploaded_at.replace('T', ' ').slice(0, 16)
+                        : '';
+                      return (
                       <div key={i} className="kdca-history-item">
                         <div className="kdca-history-text">
-                          <span className="kdca-history-name">{h.filename}</span>
-                          <span className="kdca-history-meta">{h.file_type} · {h.snapshot_count} snapshots</span>
+                          <span className="kdca-history-name">
+                            {h.label || h.file_type}
+                            {weekLabel && <span className="kdca-history-week">{weekLabel}</span>}
+                          </span>
+                          <span className="kdca-history-meta">
+                            {uploadTime && <>{uploadTime} · </>}
+                            {h.snapshot_count} snapshots
+                            {h.records_parsed ? ` · ${h.records_parsed} records` : ''}
+                          </span>
                         </div>
                         {!readOnly && (
                           <button
@@ -540,7 +558,8 @@ export default function KdcaUploadPanel({ view = 'full', readOnly = false, getAd
                           </button>
                         )}
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

@@ -2551,7 +2551,18 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   flex-direction: column;
   gap: 1px;
 }
-.kdca-history-name { font-size: 10px; color: var(--text-primary); word-break: break-all; }
+.kdca-history-name { font-size: 11px; color: var(--text-primary); word-break: break-all; display: flex; align-items: center; gap: 6px; }
+.kdca-history-week {
+  display: inline-block;
+  padding: 1px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
 .kdca-history-meta { font-size: 9px; color: var(--text-muted); }
 .kdca-history-remove {
   flex-shrink: 0;
