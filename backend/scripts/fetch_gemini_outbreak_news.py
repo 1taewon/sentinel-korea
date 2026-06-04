@@ -134,7 +134,7 @@ def fetch_gemini_outbreak_news() -> list[dict[str, Any]]:
         return []
 
     client = genai.Client(api_key=api_key)
-    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
     cutoff = datetime.utcnow() - timedelta(days=LOOKBACK_DAYS)
 
     raw_items: list[dict[str, Any]] = []

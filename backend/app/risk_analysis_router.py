@@ -172,7 +172,7 @@ def _get_client():
 
 
 def _risk_model() -> str:
-    return os.getenv("RISK_ANALYSIS_MODEL", "gemini-2.5-flash")
+    return os.getenv("RISK_ANALYSIS_MODEL", "gemini-3.5-flash")
 
 
 class AnalysisRequest(BaseModel):
@@ -558,7 +558,7 @@ def _build_trends_only_context() -> tuple[str, list[str]]:
 async def generate_news_digest(_: dict = Depends(require_admin)) -> dict[str, Any]:
     """NEWS-only AI digest summary."""
     client = _get_client()
-    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 
     context, sources = _build_news_only_context()
     if not context:
@@ -607,7 +607,7 @@ async def get_news_digest() -> dict[str, Any]:
 async def generate_trends_digest(_: dict = Depends(require_admin)) -> dict[str, Any]:
     """TRENDS-only AI digest summary."""
     client = _get_client()
-    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 
     context, sources = _build_trends_only_context()
     if not context:
@@ -645,7 +645,7 @@ async def get_trends_digest() -> dict[str, Any]:
 async def generate_kdca_digest(_: dict = Depends(require_admin)) -> dict[str, Any]:
     """KDCA-only AI digest summary."""
     client = _get_client()
-    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 
     context, sources = _build_kdca_context()
     if not context:

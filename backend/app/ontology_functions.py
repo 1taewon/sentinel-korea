@@ -527,7 +527,7 @@ JSON 외 다른 텍스트(설명, 코드블록 마커 등) 금지. 배열 형태
     try:
         from google import genai
         client = genai.Client(api_key=api_key)
-        model = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
+        model = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
         resp = client.models.generate_content(model=model, contents=prompt)
         raw = (resp.text or "").strip()
     except Exception as e:
@@ -982,7 +982,7 @@ def _what_if_outbreak(inputs: dict) -> dict:
         try:
             from google import genai
             client = genai.Client(api_key=api_key)
-            model = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
+            model = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
 
             snap_date = baseline.get("history", [{}])[-1].get("date", "")
             current_score = scores[-1] if scores else 0
@@ -1292,7 +1292,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         try:
             from google import genai
             client = genai.Client(api_key=api_key)
-            model = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
+            model = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
 
             top5 = region_results[:5]
             summary_lines = []
@@ -1783,7 +1783,7 @@ JSON 외 다른 텍스트 금지.
     try:
         from google import genai
         client = genai.Client(api_key=api_key)
-        model_name = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
+        model_name = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
         resp = client.models.generate_content(model=model_name, contents=prompt)
         raw = (resp.text or "").strip()
     except Exception as e:
@@ -1899,7 +1899,7 @@ JSON 외 다른 텍스트 금지.
     try:
         from google import genai
         client = genai.Client(api_key=api_key)
-        model_name = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
+        model_name = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
         resp = client.models.generate_content(model=model_name, contents=prompt)
         raw = (resp.text or "").strip()
     except Exception as e:

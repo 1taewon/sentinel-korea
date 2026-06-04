@@ -31,7 +31,7 @@ def _get_client():
 
 
 def _model_name() -> str:
-    return os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    return os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 
 
 def _load(path: Path) -> Any:
