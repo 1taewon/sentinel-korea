@@ -412,61 +412,116 @@ def _load_top_outbreaks_for_korea(top_n: int = 3, min_score: float = 0.6) -> lis
     return qualified[:top_n]
 
 
+_FORECAST_DISEASES = [
+    ("influenza_ili", "ILI 의사환자분율"),
+    ("sari_pneumonia", "SARI 폐렴"),
+    ("sari_influenza", "SARI 인플루엔자"),
+    ("rsv", "RSV"),
+    ("hmpv", "hMPV"),
+    ("adenovirus", "아데노바이러스"),
+    ("covid19", "COVID-19"),
+]
+
+
 def _collect_forecast_context(snapshot: list[dict]) -> str:
-    """Collect EMA, SARIMAX, and Lead-Lag results for top elevated regions
-    and format as text context for the Gemini FINAL report prompt."""
+    """Collect forecasting results for the Gemini FINAL report prompt.
+
+    - Region-level: EMA + SARIMAX for the top-3 elevated regions
+    - Disease-level: EMA + SARIMAX for ALL 7 disease categories
+    - Lead-Lag: signal cross-correlation for the top region
+    """
     try:
         from . import ontology_functions as fns
     except Exception:
         return ""
 
+    lines: list[str] = []
+
+    # ── Part A: Top-3 regions by composite score ──
     elevated = sorted(
         snapshot,
         key=lambda r: float(r.get("score", 0) or 0),
         reverse=True,
-    )[:5]
+    )[:3]
 
-    if not elevated:
-        return ""
+    if elevated:
+        lines.append("[ 지역별 예측 — 위험도 상위 3개 시도 ]")
+        for r in elevated:
+            region_id = r.get("region_id") or r.get("region_code") or ""
+            region_name = r.get("region_name_kr") or region_id
+            level = r.get("level", "G0")
+            score = float(r.get("score", 0) or 0)
 
-    lines: list[str] = []
+            region_lines = [f"- {region_name} (현재 {level}, score {score:.2f}):"]
 
-    for r in elevated:
-        region_id = r.get("region_id") or r.get("region_code") or ""
-        region_name = r.get("region_name_kr") or region_id
-        level = r.get("level", "G0")
-        score = float(r.get("score", 0) or 0)
+            # EMA
+            try:
+                ema_spec = fns.get_spec("forecastRegionScore")
+                if ema_spec:
+                    ema = ema_spec.fn({"region_id": region_id, "weeks": 4})
+                    ema_pts = ema.get("forecast", [])
+                    if ema_pts:
+                        scores = [f"{p.get('week','')}: {float(p.get('score',0)):.2f}" for p in ema_pts]
+                        region_lines.append(f"  EMA 4주: {', '.join(scores)}")
+            except Exception:
+                pass
 
-        region_lines = [f"- {region_name} (현재 {level}, score {score:.2f}):"]
+            # SARIMAX
+            try:
+                sx_spec = fns.get_spec("forecastRegionSARIMAX")
+                if sx_spec:
+                    sx = sx_spec.fn({"region_id": region_id, "weeks": 4})
+                    sx_pts = sx.get("forecast", [])
+                    if sx_pts:
+                        scores = [f"{p.get('week','')}: {float(p.get('score',0)):.2f}" for p in sx_pts]
+                        region_lines.append(f"  SARIMAX 4주: {', '.join(scores)}")
+            except Exception:
+                pass
 
-        # EMA
-        try:
-            ema_spec = fns.get_spec("forecastRegionScore")
-            if ema_spec:
-                ema = ema_spec.fn({"region_id": region_id, "weeks": 4})
-                ema_pts = ema.get("forecast", [])
-                if ema_pts:
-                    scores = [f"{p.get('week','')}: {float(p.get('score',0)):.2f}" for p in ema_pts]
-                    region_lines.append(f"  EMA 4주 전망: {', '.join(scores)}")
-        except Exception:
-            pass
+            if len(region_lines) > 1:
+                lines.extend(region_lines)
 
-        # SARIMAX
-        try:
-            sx_spec = fns.get_spec("forecastRegionSARIMAX")
-            if sx_spec:
-                sx = sx_spec.fn({"region_id": region_id, "weeks": 4})
-                sx_pts = sx.get("forecast", [])
-                if sx_pts:
-                    scores = [f"{p.get('week','')}: {float(p.get('score',0)):.2f}" for p in sx_pts]
-                    region_lines.append(f"  SARIMAX 4주 전망: {', '.join(scores)}")
-        except Exception:
-            pass
+    # ── Part B: ALL disease forecasts ──
+    lines.append("")
+    lines.append("[ 질병별 예측 — 전체 7개 질병 ]")
 
-        if len(region_lines) > 1:
-            lines.extend(region_lines)
+    ema_disease_spec = fns.get_spec("forecastDiseaseTrend")
+    sx_disease_spec = fns.get_spec("forecastDiseaseSARIMAX")
 
-    # Lead-Lag for top region
+    for disease_id, disease_label in _FORECAST_DISEASES:
+        disease_lines: list[str] = [f"- {disease_label} ({disease_id}):"]
+
+        # Disease EMA
+        if ema_disease_spec:
+            try:
+                ema = ema_disease_spec.fn({"disease_id": disease_id, "weeks": 4})
+                if not ema.get("error"):
+                    ema_pts = ema.get("forecast", [])
+                    if ema_pts:
+                        vals = [f"{p.get('week','')}: {float(p.get('value',0)):.1f}" for p in ema_pts]
+                        trend = ema.get("trend", "")
+                        disease_lines.append(f"  EMA 4주: {', '.join(vals)} (추세: {trend})")
+            except Exception:
+                pass
+
+        # Disease SARIMAX
+        if sx_disease_spec:
+            try:
+                sx = sx_disease_spec.fn({"disease_id": disease_id, "weeks": 4})
+                if not sx.get("error"):
+                    sx_pts = sx.get("forecast", [])
+                    if sx_pts:
+                        vals = [f"{p.get('week','')}: {float(p.get('value',0)):.1f}" for p in sx_pts]
+                        disease_lines.append(f"  SARIMAX 4주: {', '.join(vals)}")
+            except Exception:
+                pass
+
+        if len(disease_lines) > 1:
+            lines.extend(disease_lines)
+        else:
+            lines.append(f"- {disease_label}: 시계열 데이터 부족")
+
+    # ── Part C: Lead-Lag for top region ──
     try:
         ll_spec = fns.get_spec("signalLeadLag")
         if ll_spec and elevated:
@@ -478,13 +533,14 @@ def _collect_forecast_context(snapshot: list[dict]) -> str:
                 if abs(p.get("lag", 0)) >= 1 and abs(p.get("correlation", 0)) >= 0.5
             ]
             if significant:
-                lines.append(f"- Lead-Lag ({elevated[0].get('region_name_kr','')}):")
+                lines.append("")
+                lines.append(f"[ Lead-Lag 신호 시차 — {elevated[0].get('region_name_kr', '')} ]")
                 for p in significant[:5]:
                     lag_val = p.get("lag", 0)
                     direction = "선행" if lag_val > 0 else "후행"
                     corr = p.get("correlation", 0)
                     lines.append(
-                        f"  {p.get('signal_a','')} → {p.get('signal_b','')}: "
+                        f"- {p.get('signal_a','')} → {p.get('signal_b','')}: "
                         f"{abs(lag_val)}주 {direction} (r={corr:.2f})"
                     )
     except Exception:
@@ -714,7 +770,7 @@ def _build_forecast_beta_section(snapshot: list[dict]) -> str:
         snapshot,
         key=lambda r: float(r.get("score", 0) or 0),
         reverse=True,
-    )[:5]
+    )[:3]
 
     if not elevated:
         return ""
