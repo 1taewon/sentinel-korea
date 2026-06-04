@@ -412,7 +412,88 @@ def _load_top_outbreaks_for_korea(top_n: int = 3, min_score: float = 0.6) -> lis
     return qualified[:top_n]
 
 
-def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, trends, kdca_data, target_date) -> str:
+def _collect_forecast_context(snapshot: list[dict]) -> str:
+    """Collect EMA, SARIMAX, and Lead-Lag results for top elevated regions
+    and format as text context for the Gemini FINAL report prompt."""
+    try:
+        from . import ontology_functions as fns
+    except Exception:
+        return ""
+
+    elevated = sorted(
+        snapshot,
+        key=lambda r: float(r.get("score", 0) or 0),
+        reverse=True,
+    )[:5]
+
+    if not elevated:
+        return ""
+
+    lines: list[str] = []
+
+    for r in elevated:
+        region_id = r.get("region_id") or r.get("region_code") or ""
+        region_name = r.get("region_name_kr") or region_id
+        level = r.get("level", "G0")
+        score = float(r.get("score", 0) or 0)
+
+        region_lines = [f"- {region_name} (현재 {level}, score {score:.2f}):"]
+
+        # EMA
+        try:
+            ema_spec = fns.get_spec("forecastRegionScore")
+            if ema_spec:
+                ema = ema_spec.fn({"region_id": region_id, "weeks": 4})
+                ema_pts = ema.get("forecast", [])
+                if ema_pts:
+                    scores = [f"{p.get('week','')}: {float(p.get('score',0)):.2f}" for p in ema_pts]
+                    region_lines.append(f"  EMA 4주 전망: {', '.join(scores)}")
+        except Exception:
+            pass
+
+        # SARIMAX
+        try:
+            sx_spec = fns.get_spec("forecastRegionSARIMAX")
+            if sx_spec:
+                sx = sx_spec.fn({"region_id": region_id, "weeks": 4})
+                sx_pts = sx.get("forecast", [])
+                if sx_pts:
+                    scores = [f"{p.get('week','')}: {float(p.get('score',0)):.2f}" for p in sx_pts]
+                    region_lines.append(f"  SARIMAX 4주 전망: {', '.join(scores)}")
+        except Exception:
+            pass
+
+        if len(region_lines) > 1:
+            lines.extend(region_lines)
+
+    # Lead-Lag for top region
+    try:
+        ll_spec = fns.get_spec("signalLeadLag")
+        if ll_spec and elevated:
+            top_id = elevated[0].get("region_id") or elevated[0].get("region_code") or ""
+            ll = ll_spec.fn({"region_id": top_id})
+            pairs = ll.get("pairs", [])
+            significant = [
+                p for p in pairs
+                if abs(p.get("lag", 0)) >= 1 and abs(p.get("correlation", 0)) >= 0.5
+            ]
+            if significant:
+                lines.append(f"- Lead-Lag ({elevated[0].get('region_name_kr','')}):")
+                for p in significant[:5]:
+                    lag_val = p.get("lag", 0)
+                    direction = "선행" if lag_val > 0 else "후행"
+                    corr = p.get("correlation", 0)
+                    lines.append(
+                        f"  {p.get('signal_a','')} → {p.get('signal_b','')}: "
+                        f"{abs(lag_val)}주 {direction} (r={corr:.2f})"
+                    )
+    except Exception:
+        pass
+
+    return "\n".join(lines) if lines else ""
+
+
+def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, trends, kdca_data, target_date, forecast_context: str = "") -> str:
     epiweek = _get_epiweek_for(target_date)
     level_map: dict[str, list[str]] = {"G3": [], "G2": [], "G1": [], "G0": []}
     prev_map = {r.get("region_name_en", ""): r.get("level", "G0") for r in prev_snapshot}
@@ -474,8 +555,12 @@ def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, tre
 ### KDCA 감시 데이터 (공식)
 {kdca_section}
 
+### Forecasting 분석 결과 (BETA — EMA + SARIMAX + Lead-Lag)
+{forecast_context if forecast_context else '예측 데이터 없음 (시계열 부족)'}
+
 다음 구조를 반드시 지켜 한국어 **통합 리포트**를 작성하세요. 첫 네 섹션 제목은 영어 그대로 사용하고, OSINT와 KDCA 신호가 수렴하는지/충돌하는지 명시하세요.
 **중요:** 위 "한국 관련성 ≥70% outbreak" 섹션은 모든 outbreak source(WHO DON / CDC / ECDC / HealthMap / Gemini / Google News)에서 자동 점수화로 선정된 high-tier imported-risk 후보입니다. **"Why it matters"** 섹션에서 이 항목들을 반드시 언급하고, 한국 입국 가능성·항공 노선·환자 표현형 측면에서 의미를 풀어 쓰세요. 항목이 비어 있으면 "이번 주 한국 관련성 70%를 넘는 해외 신호 없음"이라고 명시하세요.
+**중요:** 위 "Forecasting 분석 결과"가 있을 경우, **"## Forecasting Outlook (BETA)"** 섹션을 반드시 포함하세요. 각 지역의 EMA/SARIMAX 4주 전망을 해석하고, 향후 위험이 상승/하강/유지 추세인지 설명하세요. Lead-Lag 결과가 있으면 어떤 신호가 선행 지표인지 해석하세요. 이 예측은 실험적(BETA)임을 반드시 고지하세요.
 
 # Sentinel Korea — 통합 최종 리포트 (FINAL)
 ## Period: {epiweek} ({target_date})
@@ -484,6 +569,7 @@ def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, tre
 ## Why it matters
 ## Confidence
 ## Recommended watch actions
+## Forecasting Outlook (BETA)
 ## Signal relationship figure
 ## Evidence appendix
 ### 1. OSINT vs KDCA 신호 수렴도
@@ -776,7 +862,13 @@ def generate_final_report(target_date: str | None = None) -> dict[str, Any]:
             except Exception:
                 pass
 
-    prompt = _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, trends, kdca_summary, actual_date)
+    # Collect forecasting data for Gemini analysis
+    forecast_context = _collect_forecast_context(snapshot)
+
+    prompt = _build_final_prompt(
+        snapshot, prev_snapshot, korea_news, global_signals, trends,
+        kdca_summary, actual_date, forecast_context=forecast_context,
+    )
     try:
         response = client.models.generate_content(model=model, contents=prompt)
         report_text = response.text.strip()
@@ -800,10 +892,11 @@ def generate_final_report(target_date: str | None = None) -> dict[str, Any]:
         contract_sections=contract_sections,
     )
 
-    # Append BETA forecasting outlook section
-    forecast_section = _build_forecast_beta_section(snapshot)
-    if forecast_section:
-        report_text = report_text + "\n" + forecast_section
+    # Fallback: if Gemini didn't include Forecasting section, append raw data
+    if "## Forecasting" not in report_text and forecast_context:
+        forecast_section = _build_forecast_beta_section(snapshot)
+        if forecast_section:
+            report_text = report_text + "\n" + forecast_section
 
     stem = epiweek.replace("/", "-")
     path = _save_report("final", stem, report_text)
