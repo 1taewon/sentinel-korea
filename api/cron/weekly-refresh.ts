@@ -107,6 +107,13 @@ export default async function handler(
       method: "POST",
       timeoutMs: 180_000,
     },
+    // Phase 3.5: Disease forecast reports (all 8 diseases × Gemini)
+    {
+      name: "disease_forecast_reports",
+      url: `${BACKEND}/ontology/disease-forecast-reports/generate-all`,
+      method: "POST",
+      timeoutMs: 300_000,
+    },
     // Phase 4: Auto-send email to all registered recipients
     {
       name: "email_send",

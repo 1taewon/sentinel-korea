@@ -439,6 +439,9 @@ async def disease_timeseries(disease_id: str) -> dict[str, Any]:
 
 from . import ontology_functions as fns  # noqa: E402
 
+# Directory for cached disease forecast reports
+DISEASE_FORECAST_DIR = PROCESSED_DIR / "disease_forecast_reports"
+
 
 @router.get("/ontology/functions")
 async def list_functions() -> dict[str, Any]:
@@ -467,3 +470,83 @@ async def invoke_function(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{spec.name} failed: {type(e).__name__}: {e}")
     return {"name": name, "inputs": inputs, "result": result}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Disease Forecast Reports — batch generate + cache + retrieve
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/ontology/disease-forecast-reports")
+async def list_disease_forecast_reports() -> dict[str, Any]:
+    """Return all cached disease forecast reports."""
+    if not DISEASE_FORECAST_DIR.exists():
+        return {"reports": [], "count": 0}
+    reports: list[dict] = []
+    for path in sorted(DISEASE_FORECAST_DIR.glob("*.json")):
+        data = _load_json(path)
+        if data:
+            reports.append(data)
+    return {"reports": reports, "count": len(reports)}
+
+
+@router.get("/ontology/disease-forecast-reports/{disease_id}")
+async def get_disease_forecast_report(disease_id: str) -> dict[str, Any]:
+    """Return a cached disease forecast report, or 404 if not yet generated."""
+    path = DISEASE_FORECAST_DIR / f"{disease_id}.json"
+    data = _load_json(path)
+    if not data:
+        raise HTTPException(status_code=404, detail=f"No cached report for {disease_id}")
+    return data
+
+
+@router.post("/ontology/disease-forecast-reports/generate-all")
+async def generate_all_disease_forecast_reports() -> dict[str, Any]:
+    """Generate integrated forecast reports for ALL diseases and cache to disk.
+
+    Called by the weekly cron pipeline after Sentinel analysis completes.
+    Each disease runs: EMA + SARIMAX + Lead-Lag → Gemini synthesis.
+    """
+    from datetime import datetime as _dt
+
+    DISEASE_FORECAST_DIR.mkdir(parents=True, exist_ok=True)
+
+    spec = fns.get_spec("generateDiseaseForecastReport")
+    if spec is None:
+        raise HTTPException(status_code=500, detail="generateDiseaseForecastReport function not registered")
+
+    results: list[dict] = []
+    generated_at = _dt.utcnow().isoformat() + "Z"
+
+    for disease_def in DISEASE_REGISTRY:
+        disease_id = disease_def["id"]
+        try:
+            result = spec.fn({"disease_id": disease_id})
+            result["generated_at"] = generated_at
+            # Cache to disk
+            out_path = DISEASE_FORECAST_DIR / f"{disease_id}.json"
+            out_path.write_text(
+                json.dumps(result, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            results.append({
+                "disease_id": disease_id,
+                "name_kr": disease_def["name_kr"],
+                "status": "error" if result.get("error") else "ok",
+                "error": result.get("error"),
+            })
+        except Exception as e:
+            results.append({
+                "disease_id": disease_id,
+                "name_kr": disease_def["name_kr"],
+                "status": "error",
+                "error": str(e),
+            })
+
+    ok_count = sum(1 for r in results if r["status"] == "ok")
+    return {
+        "status": "ok" if ok_count == len(results) else "partial" if ok_count > 0 else "error",
+        "generated_at": generated_at,
+        "total": len(results),
+        "success": ok_count,
+        "results": results,
+    }

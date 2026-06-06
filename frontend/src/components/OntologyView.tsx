@@ -990,9 +990,26 @@ function DiseaseForecastReportPanel({ diseaseId, isAdmin, adminHeaders }: {
 }) {
   const [report, setReport] = useState<ForecastReport | null>(null);
   const [loading, setLoading] = useState(false);
+  const [cachedAt, setCachedAt] = useState<string | null>(null);
+
+  // Auto-load cached report on mount / disease change
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(`${API_BASE}/ontology/disease-forecast-reports/${diseaseId}`);
+        if (r.ok && !cancelled) {
+          const d = await r.json();
+          setReport(d);
+          setCachedAt(d.generated_at || null);
+        }
+      } catch { /* no cached report — that's fine */ }
+    })();
+    return () => { cancelled = true; };
+  }, [diseaseId]);
 
   const generate = async () => {
-    setLoading(true); setReport(null);
+    setLoading(true); setReport(null); setCachedAt(null);
     try {
       const r = await fetch(`${API_BASE}/ontology/functions/generateDiseaseForecastReport`, {
         method: 'POST', headers: await adminHeaders(),
@@ -1032,6 +1049,11 @@ function DiseaseForecastReportPanel({ diseaseId, isAdmin, adminHeaders }: {
   const rpt = report.report;
   return (
     <div className="ontology-decision-block forecast-report">
+      {cachedAt && (
+        <div className="forecast-report-cached-badge">
+          Auto-generated: {new Date(cachedAt).toLocaleString('ko-KR')}
+        </div>
+      )}
       {rpt.executive_summary && (
         <div className="forecast-report-section">
           <div className="forecast-report-label">EXECUTIVE SUMMARY</div>
@@ -1070,8 +1092,12 @@ function DiseaseForecastReportPanel({ diseaseId, isAdmin, adminHeaders }: {
           <p>{rpt.outlook}</p>
         </div>
       )}
-      <button className="ontology-generate-btn ontology-generate-btn--regen"
-        onClick={generate} disabled={loading}>Regenerate</button>
+      {isAdmin && (
+        <button className="ontology-generate-btn ontology-generate-btn--regen"
+          onClick={generate} disabled={loading}>
+          {loading ? 'Regenerating...' : 'Regenerate'}
+        </button>
+      )}
     </div>
   );
 }
