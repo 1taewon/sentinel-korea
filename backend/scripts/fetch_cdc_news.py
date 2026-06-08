@@ -55,6 +55,7 @@ def _from_rss(items: list[dict[str, str]], cutoff: datetime) -> list[dict[str, A
             date_str=item.get("pubDate", ""),
             cutoff_date=cutoff,
             id_prefix=ID_PREFIX,
+            allow_non_respiratory=True,
         )
         if normalized:
             out.append(normalized)
@@ -88,6 +89,7 @@ def _scrape_fallback(cutoff: datetime) -> list[dict[str, Any]]:
             date_str=datetime.utcnow().strftime("%Y-%m-%d"),
             cutoff_date=cutoff,
             id_prefix=ID_PREFIX,
+            allow_non_respiratory=True,
         )
         if normalized:
             out.append(normalized)
@@ -118,7 +120,7 @@ def fetch_cdc_news() -> list[dict[str, Any]]:
             results.extend(_from_rss(items, cutoff))
 
     unique = dedupe_by_id(results)
-    log("CDC", f"final {len(unique)} respiratory items")
+    log("CDC", f"final {len(unique)} items (all infectious diseases)")
     return unique
 
 

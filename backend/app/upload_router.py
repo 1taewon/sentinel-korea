@@ -183,7 +183,6 @@ async def refresh_global_signals(_: dict = Depends(require_admin)) -> dict[str, 
         ("global_cdc.json",                "fetch_cdc_news",                "fetch_cdc_news",                "cdc"),
         ("global_ecdc.json",               "fetch_ecdc_news",               "fetch_ecdc_news",               "ecdc"),
         ("global_healthmap.json",          "fetch_healthmap",               "fetch_healthmap",               "healthmap"),
-        ("global_gemini_outbreak.json",    "fetch_gemini_outbreak_news",    "fetch_gemini_outbreak_news",    "gemini_outbreak"),
         ("global_google_outbreak.json",    "fetch_google_news_outbreak",    "fetch_google_news_outbreak",    "google_news_outbreak"),
         ("global_news.json",               "fetch_global_news",             "fetch_global_news",             "global_news"),
     ]

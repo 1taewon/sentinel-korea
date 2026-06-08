@@ -67,6 +67,7 @@ def _normalize(item: dict[str, Any], cutoff: datetime) -> dict[str, Any] | None:
         date_str=str(date_str),
         cutoff_date=cutoff,
         id_prefix="who",
+        allow_non_respiratory=True,
     )
 
 
@@ -136,7 +137,7 @@ def fetch_who_don() -> list[dict]:
         log("WHO DON", f"scraper collected {len(results)} items")
 
     unique = dedupe_by_id(results)
-    log("WHO DON", f"final {len(unique)} items (last 6 months)")
+    log("WHO DON", f"final {len(unique)} items (last {LOOKBACK_DAYS}d, all infectious diseases)")
     return unique
 
 
