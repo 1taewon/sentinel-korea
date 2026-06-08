@@ -289,6 +289,12 @@ function AppInner({
     message: '전체 실행 대기 중',
     finished: false,
   });
+  // Server-side pipeline run (POST /scheduler/run-now) — runs on Railway, no 300s
+  // limit, browser can be closed. Distinct from the browser-driven 전체 실행 above.
+  const [serverRun, setServerRun] = useState<{ active: boolean; message: string }>({
+    active: false,
+    message: '',
+  });
   const [lastPipelineRun, setLastPipelineRun] = useState<Record<OperationKey, string | undefined>>(createEmptyPipelineRuns);
 
   const getAdminHeaders = useCallback(async (json = true): Promise<HeadersInit> => {
@@ -682,6 +688,69 @@ function AppInner({
       message: `전체 실행 완료 · FINAL 통합 리포트가 생성되었습니다.${skippedNote}`,
       finished: true,
     });
+  };
+
+  // Trigger the full pipeline ON THE SERVER (Railway) via /scheduler/run-now.
+  // No 300s limit, runs even if the browser is closed. Polls /scheduler/status
+  // so the operator can watch progress. Distinct from the browser-driven 전체 실행.
+  const runServerPipeline = async () => {
+    if (!requireAdminAction('Server-side pipeline execution')) return;
+    if (serverRun.active) return;
+    setServerRun({ active: true, message: '서버에 실행 요청 중...' });
+    try {
+      const res = await fetch(`${API_BASE}/scheduler/run-now`, {
+        method: 'POST',
+        headers: await getAdminHeaders(false),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setServerRun({ active: false, message: `요청 실패 (HTTP ${res.status})` });
+        return;
+      }
+      setServerRun({
+        active: true,
+        message:
+          data.status === 'already_running'
+            ? '이미 서버에서 실행 중입니다. 진행 상황을 확인합니다...'
+            : '서버에서 전체 파이프라인을 시작했습니다. 브라우저를 닫아도 됩니다.',
+      });
+
+      // Poll /scheduler/status every 10s until completion (~40 min cap).
+      let tries = 0;
+      const poll = async () => {
+        tries += 1;
+        try {
+          const sres = await fetch(`${API_BASE}/scheduler/status`);
+          const sdata = await sres.json();
+          const last = sdata.last_run || {};
+          const results: Array<{ step?: string; ok?: boolean }> = last.results || [];
+          const total = last.steps_total || 10;
+          if (sdata.currently_running) {
+            const recent = results[results.length - 1]?.step || '';
+            setServerRun({
+              active: true,
+              message: `서버 실행 중... ${results.length}/${total} 단계${recent ? ` (최근: ${recent})` : ''}`,
+            });
+          } else if (last.status === 'completed') {
+            setServerRun({
+              active: false,
+              message: `서버 실행 완료 · ${last.steps_ok ?? 0}/${total} 단계 성공${last.finished_at_kst ? ` · ${last.finished_at_kst}` : ''} · 새로고침하면 최신 분석이 반영됩니다`,
+            });
+            return;
+          }
+        } catch {
+          /* transient network error — keep polling */
+        }
+        if (tries < 240) {
+          window.setTimeout(poll, 10000);
+        } else {
+          setServerRun((prev) => ({ ...prev, active: false, message: `${prev.message} (상태 폴링 종료 — /scheduler/status 직접 확인)` }));
+        }
+      };
+      window.setTimeout(poll, 5000);
+    } catch (e) {
+      setServerRun({ active: false, message: `요청 실패: ${String(e)}` });
+    }
   };
 
   // Trigger NewsPanel's internal Keywords Settings modal from the console aside
@@ -1234,21 +1303,35 @@ function AppInner({
                   <div className="run-control-batch-actions">
                     <button
                       className="run-control-batch-btn run-control-batch-btn--primary"
-                      disabled={!isAdmin || !!runningPipeline || pipelineBatch.active}
+                      disabled={!isAdmin || !!runningPipeline || pipelineBatch.active || serverRun.active}
                       onClick={runFullFinalPipeline}
                       type="button"
                     >
-                      {pipelineBatch.active ? '전체 실행 중...' : '전체 실행'}
+                      {pipelineBatch.active ? '전체 실행 중...' : '전체 실행 (브라우저)'}
+                    </button>
+                    <button
+                      className="run-control-batch-btn run-control-batch-btn--server"
+                      disabled={!isAdmin || !!runningPipeline || pipelineBatch.active || serverRun.active}
+                      onClick={runServerPipeline}
+                      type="button"
+                      title="서버(Railway)에서 전체 파이프라인을 실행합니다. 300초 제한이 없고, 브라우저를 닫아도 계속 실행됩니다."
+                    >
+                      {serverRun.active ? '서버 실행 중...' : '서버에서 실행'}
                     </button>
                     <button
                       className="run-control-batch-btn"
-                      disabled={!isAdmin || !!runningPipeline || pipelineBatch.active}
+                      disabled={!isAdmin || !!runningPipeline || pipelineBatch.active || serverRun.active}
                       onClick={resetFullPipeline}
                       type="button"
                     >
                       전체 되돌리기
                     </button>
                   </div>
+                  {serverRun.message && (
+                    <div className={`run-control-server-status ${serverRun.active ? 'is-running' : ''}`}>
+                      {serverRun.message}
+                    </div>
+                  )}
                   <div className="run-control-batch-progress" aria-label={`전체 실행 진행률 ${batchProgressPercent}%`}>
                     <span style={{ width: `${batchProgressPercent}%` }} />
                   </div>
