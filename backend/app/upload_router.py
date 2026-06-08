@@ -259,29 +259,43 @@ async def refresh_trends(_: dict = Depends(require_admin)) -> dict[str, Any]:
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     results = {}
 
-    # Google Trends
+    # Google Trends (429 보호: 실패 시 기존 캐시 유지)
     try:
+        import time as _time, random as _random
         module = __import_script("fetch_google_trends")
 
         kr_data = module.fetch_korea_trends()
-        (PROCESSED_DIR / "google_trends_kr.json").write_text(
-            json.dumps(kr_data, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
-        results["google_korea"] = {
-            "status": "error" if kr_data.get("error") else "ok",
-            "keywords": kr_data.get("keywords", []),
-            **({"error": kr_data.get("error")} if kr_data.get("error") else {}),
-        }
+        kr_path = PROCESSED_DIR / "google_trends_kr.json"
+        if kr_data.get("series"):
+            kr_path.write_text(
+                json.dumps(kr_data, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            results["google_korea"] = {"status": "ok", "keywords": kr_data.get("keywords", [])}
+        else:
+            results["google_korea"] = {
+                "status": "error",
+                "keywords": kr_data.get("keywords", []),
+                "error": kr_data.get("error", "No data"),
+                "cache_kept": kr_path.exists(),
+            }
+
+        # Korea→Global 전환 대기 (429 방지)
+        _time.sleep(_random.uniform(15, 30))
 
         global_data = module.fetch_global_trends()
-        (PROCESSED_DIR / "google_trends_global.json").write_text(
-            json.dumps(global_data, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
-        results["google_global"] = {
-            "status": "error" if global_data.get("error") else "ok",
-            "keywords": global_data.get("keywords", []),
-            **({"error": global_data.get("error")} if global_data.get("error") else {}),
-        }
+        global_path = PROCESSED_DIR / "google_trends_global.json"
+        if global_data.get("series"):
+            global_path.write_text(
+                json.dumps(global_data, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            results["google_global"] = {"status": "ok", "keywords": global_data.get("keywords", [])}
+        else:
+            results["google_global"] = {
+                "status": "error",
+                "keywords": global_data.get("keywords", []),
+                "error": global_data.get("error", "No data"),
+                "cache_kept": global_path.exists(),
+            }
     except Exception as e:
         results["google"] = {"status": "error", "error": str(e)}
 
