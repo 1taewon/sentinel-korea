@@ -16,4 +16,5 @@ requests>=2.31.0
 pdfplumber>=0.11.0
 firebase-admin>=6.5.0
 statsmodels>=0.14.0
+apscheduler>=3.10.0
 # cache-bust 2026-05-26

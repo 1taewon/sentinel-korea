@@ -7,11 +7,5 @@
     { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
     { "source": "/robots.txt", "destination": "/robots.txt" },
     { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/weekly-refresh",
-      "schedule": "0 22 * * 0"
-    }
   ]
 }

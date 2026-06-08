@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 from copy import deepcopy
@@ -159,6 +160,93 @@ SIGNAL_METADATA = {
 }
 
 app.state.scoring_config = default_scoring_config()
+
+
+# ── Weekly pipeline scheduler (replaces Vercel cron; no 300s serverless limit) ──
+# The Vercel cron function timed out at 300s and never reached the analysis/report
+# steps. This in-process APScheduler runs the same pipeline inside the long-running
+# Railway web service with NO time limit. Enabled only when ENABLE_SCHEDULER is
+# truthy (set it on Railway, leave unset locally). See pipeline_runner.py.
+_scheduler: Any = None
+
+
+def _scheduler_enabled() -> bool:
+    return os.getenv("ENABLE_SCHEDULER", "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+@app.on_event("startup")
+async def _start_scheduler() -> None:
+    global _scheduler
+    if not _scheduler_enabled():
+        print("[scheduler] disabled (set ENABLE_SCHEDULER=true on Railway to enable)")
+        return
+    try:
+        from apscheduler.schedulers.asyncio import AsyncIOScheduler
+        from apscheduler.triggers.cron import CronTrigger
+
+        from .pipeline_runner import run_weekly_pipeline
+    except Exception as exc:
+        print(f"[scheduler] NOT started — import failed: {exc}")
+        return
+    _scheduler = AsyncIOScheduler(timezone="Asia/Seoul")
+    # Every Monday 07:00 KST
+    _scheduler.add_job(
+        run_weekly_pipeline,
+        CronTrigger(day_of_week="mon", hour=7, minute=0, timezone="Asia/Seoul"),
+        id="weekly_pipeline",
+        name="Weekly respiratory surveillance pipeline",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=3600,
+        kwargs={"trigger": "schedule"},
+    )
+    _scheduler.start()
+    job = _scheduler.get_job("weekly_pipeline")
+    nxt = job.next_run_time.isoformat() if job and job.next_run_time else "?"
+    print(f"[scheduler] started - weekly pipeline every Mon 07:00 KST (next run: {nxt})")
+
+
+@app.on_event("shutdown")
+async def _stop_scheduler() -> None:
+    global _scheduler
+    if _scheduler is not None:
+        _scheduler.shutdown(wait=False)
+        _scheduler = None
+
+
+@app.post("/scheduler/run-now")
+async def scheduler_run_now(_: dict = Depends(require_admin)) -> dict[str, Any]:
+    """Manually trigger the full weekly pipeline in the background (no time limit)."""
+    from .pipeline_runner import is_running, run_weekly_pipeline
+
+    if is_running():
+        return {
+            "status": "already_running",
+            "message": "파이프라인이 이미 실행 중입니다. /scheduler/status 로 진행 상황을 확인하세요.",
+        }
+    asyncio.create_task(run_weekly_pipeline(trigger="manual"))
+    return {
+        "status": "started",
+        "message": "주간 파이프라인을 백그라운드에서 시작했습니다. /scheduler/status 로 진행 상황을 확인하세요.",
+    }
+
+
+@app.get("/scheduler/status")
+async def scheduler_status() -> dict[str, Any]:
+    """Scheduler state + last/next run info. Public read-only."""
+    from .pipeline_runner import is_running, read_status
+
+    next_run = None
+    if _scheduler is not None:
+        job = _scheduler.get_job("weekly_pipeline")
+        if job and job.next_run_time:
+            next_run = job.next_run_time.isoformat()
+    return {
+        "scheduler_enabled": _scheduler is not None,
+        "currently_running": is_running(),
+        "next_run": next_run,
+        "last_run": read_status(),
+    }
 
 
 def load_json(path: Path) -> Any:
