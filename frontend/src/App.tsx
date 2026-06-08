@@ -621,11 +621,16 @@ function AppInner({
     setKdcaApiResult(null);
   };
 
+  // Steps that may fail without blocking the rest of the pipeline.
+  // Data-ingestion sources are best-effort; AI analysis + report steps are critical.
+  const NON_CRITICAL_STEPS = new Set<OperationKey>(['korea_news', 'trends', 'global', 'kdca_api']);
+
   const runFullFinalPipeline = async () => {
     if (!requireAdminAction('Full pipeline execution')) return;
     if (runningPipeline || pipelineBatch.active) return;
     setPipelineFlowOpen(true);
     setOperationError(null);
+    const skipped: string[] = [];
     setPipelineBatch({
       active: true,
       currentKey: FINAL_PIPELINE_SEQUENCE[0],
@@ -643,6 +648,17 @@ function AppInner({
       }));
       const ok = await runOperation(key);
       if (!ok) {
+        if (NON_CRITICAL_STEPS.has(key)) {
+          // Non-critical step failed — log and continue
+          skipped.push(row?.title || key);
+          setPipelineBatch((prev) => ({
+            ...prev,
+            completed: [...prev.completed.filter((doneKey) => doneKey !== key), key],
+          }));
+          await new Promise((resolve) => window.setTimeout(resolve, 260));
+          continue;
+        }
+        // Critical step failed — abort
         setPipelineBatch((prev) => ({
           ...prev,
           active: false,
@@ -659,10 +675,11 @@ function AppInner({
       await new Promise((resolve) => window.setTimeout(resolve, 260));
     }
 
+    const skippedNote = skipped.length > 0 ? ` (${skipped.join(', ')} 일부 실패, 건너뜀)` : '';
     setPipelineBatch({
       active: false,
       completed: [...FINAL_PIPELINE_SEQUENCE],
-      message: '전체 실행 완료 · FINAL 통합 리포트가 생성되었습니다.',
+      message: `전체 실행 완료 · FINAL 통합 리포트가 생성되었습니다.${skippedNote}`,
       finished: true,
     });
   };
