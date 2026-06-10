@@ -125,9 +125,25 @@ async def run_weekly_pipeline(trigger: str = "schedule") -> dict[str, Any]:
     _write_status(_snapshot("running"))
 
     try:
+        # Names of critical steps that failed — used to gate the email dispatch.
+        critical_failed: list[str] = []
         for step in STEPS:
             step_started = _now()
             entry: dict[str, Any] = {"step": step["name"], "critical": step["critical"]}
+
+            # Quality gate: never email a defective report. If any critical step
+            # (kdca_digest / osint / sentinel / final_report) failed, skip dispatch.
+            if step["name"] == "email_send" and critical_failed:
+                entry.update({
+                    "skipped": True,
+                    "reason": f"critical step(s) failed: {', '.join(critical_failed)}",
+                    "duration_s": 0.0,
+                })
+                results.append(entry)
+                print(f"[pipeline]   [SKIP] email_send - 발송 보류 (critical 실패: {critical_failed})")
+                _write_status(_snapshot("running"))
+                continue
+
             try:
                 async with httpx.AsyncClient(timeout=step["timeout"]) as client:
                     resp = await client.post(
@@ -141,6 +157,7 @@ async def run_weekly_pipeline(trigger: str = "schedule") -> dict[str, Any]:
                     entry["detail"] = resp.text[:300]
                     if step["critical"]:
                         entry["critical_failure"] = True
+                        critical_failed.append(step["name"])
                 tag = "[ok]" if ok else "[FAIL]"
                 print(f"[pipeline]   {tag} {step['name']} -> HTTP {resp.status_code} "
                       f"({(_now() - step_started).total_seconds():.0f}s)")
@@ -148,6 +165,7 @@ async def run_weekly_pipeline(trigger: str = "schedule") -> dict[str, Any]:
                 entry.update({"ok": False, "error": str(exc)})
                 if step["critical"]:
                     entry["critical_failure"] = True
+                    critical_failed.append(step["name"])
                 print(f"[pipeline]   [FAIL] {step['name']} -> ERROR: {exc} "
                       f"({(_now() - step_started).total_seconds():.0f}s)")
 

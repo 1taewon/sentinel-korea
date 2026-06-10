@@ -587,9 +587,33 @@ def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, tre
             diff = pts[-1].get("value", 0) - pts[-2].get("value", 0)
             trend_lines.append(f"- '{s.get('keyword','')}': {pts[-1].get('value',0)}/100 (전주 대비 {'+' if diff>=0 else ''}{diff})")
 
-    kdca_section = "KDCA 업로드 데이터 요약 없음"
+    kdca_section = "KDCA 공식 감시 데이터 없음 (이번 주 수집/요약 결과가 존재하지 않음)"
     if kdca_data:
-        kdca_section = json.dumps(kdca_data, ensure_ascii=False, indent=2)[:2000]
+        _parts: list[str] = []
+        _digest = kdca_data.get("digest") if isinstance(kdca_data, dict) else None
+        if _digest:
+            if _digest.get("kdca_summary"):
+                _parts.append(f"[종합 요약] {_digest['kdca_summary']}")
+            if _digest.get("risk_assessment"):
+                _parts.append(f"[위험 평가] {_digest['risk_assessment']}")
+            if _digest.get("key_indicators"):
+                _parts.append("[핵심 지표]")
+                for _ind in _digest["key_indicators"][:8]:
+                    _parts.append(f"- {_ind.get('indicator','')}: {_ind.get('trend','')} — {_ind.get('detail','')}")
+            if _digest.get("regional_highlights"):
+                _parts.append("[지역별 동향]")
+                for _r in _digest["regional_highlights"][:8]:
+                    _parts.append(f"- {_r.get('region','')}: {_r.get('finding','')} (severity={_r.get('severity','')})")
+        _notif = kdca_data.get("notifiable") if isinstance(kdca_data, dict) else None
+        if _notif:
+            _parts.append(
+                f"[전수감시(KDCA API)] {_notif.get('year')}년 최신 {_notif.get('latest_epiweek')}, "
+                f"호흡기 신고 {_notif.get('record_count')}건"
+            )
+        if _parts:
+            kdca_section = "\n".join(_parts)
+        else:
+            kdca_section = json.dumps(kdca_data, ensure_ascii=False, indent=2)[:3000]
 
     return f"""당신은 한국 감염병 역학 총괄 분석가입니다. OSINT(뉴스/트렌드)와 KDCA 공식 감시 데이터를 **통합**하여 최종 주간 리포트를 작성하세요.
 
@@ -907,16 +931,32 @@ def generate_final_report(target_date: str | None = None) -> dict[str, Any]:
         if p.exists():
             trends[key] = _load(p)
 
-    # KDCA 업로드 데이터 요약 (snapshots 폴더 최신)
+    # KDCA 공식 감시 데이터 — processed/ 의 실제 산출물에서 읽는다.
+    # (과거: 아무도 채우지 않는 data/kdca_uploads/ 를 읽어 모든 리포트가 항상 "데이터 부재"로 나갔음)
+    #   1) kdca_digest.json            : Gemini KDCA 요약(종합/지역/지표/위험평가)
+    #   2) kdca_notifiable_weekly.json : 전수감시(KDCA API) 최신 주간 원본 수치
     kdca_summary: dict = {}
-    kdca_dir = DATA_DIR / "kdca_uploads"
-    if kdca_dir.exists():
-        files = sorted(kdca_dir.glob("*.json"))[-3:]
-        for f in files:
-            try:
-                kdca_summary[f.stem] = json.loads(f.read_text(encoding="utf-8"))
-            except Exception:
-                pass
+    digest_path = PROCESSED_DIR / "kdca_digest.json"
+    if digest_path.exists():
+        try:
+            digest = json.loads(digest_path.read_text(encoding="utf-8"))
+            if digest.get("kdca_summary") or digest.get("status") == "ok":
+                kdca_summary["digest"] = digest
+        except Exception:
+            pass
+    notifiable_path = PROCESSED_DIR / "kdca_notifiable_weekly.json"
+    if notifiable_path.exists():
+        try:
+            notif = json.loads(notifiable_path.read_text(encoding="utf-8"))
+            notif_summary = notif.get("summary") or {}
+            kdca_summary["notifiable"] = {
+                "year": notif.get("year"),
+                "latest_epiweek": notif_summary.get("latest_epiweek"),
+                "record_count": notif_summary.get("record_count"),
+                "weekly": (notif_summary.get("weekly") or [])[-6:],
+            }
+        except Exception:
+            pass
 
     # Collect forecasting data for Gemini analysis
     forecast_context = _collect_forecast_context(snapshot)
