@@ -249,6 +249,49 @@ async def scheduler_status() -> dict[str, Any]:
     }
 
 
+@app.get("/pipeline/last-updated")
+async def pipeline_last_updated() -> dict[str, Any]:
+    """Per-step last-updated ISO timestamp, derived from each step's output file mtimes.
+
+    Lets the PIPELINE tab show when each step's data was last refreshed. Unlike the
+    in-browser session timestamps, this persists across reloads and is shared across
+    devices (it reflects the actual files on the server).
+    """
+    from datetime import datetime as _dt, timezone as _tz
+
+    reports_dir = DATA_DIR / "reports"
+
+    def _newest(filenames: list[str], base: Path = PROCESSED_DIR, pattern: str | None = None) -> str | None:
+        paths: list[Path] = [base / fn for fn in filenames]
+        if pattern:
+            try:
+                paths.extend(base.glob(pattern))
+            except Exception:
+                pass
+        mtimes = [p.stat().st_mtime for p in paths if p.exists()]
+        if not mtimes:
+            return None
+        return _dt.fromtimestamp(max(mtimes), tz=_tz.utc).isoformat()
+
+    return {
+        "korea_news": _newest(["korea_news.json", "naver_news_kr.json"]),
+        "trends": _newest(["google_trends_kr.json", "google_trends_global.json", "naver_trends_kr.json"]),
+        "global": _newest([
+            "global_who_don.json", "global_cdc.json", "global_ecdc.json",
+            "global_healthmap.json", "global_google_outbreak.json", "global_news.json",
+        ]),
+        "kdca_upload": _newest([
+            "upload_history.json", "kdca_ari_weekly.json", "kdca_influenza_ili_weekly.json",
+            "kdca_sari_pneumonia_weekly.json", "kdca_sari_influenza_weekly.json",
+        ]),
+        "kdca_api": _newest(["kdca_notifiable.json", "kdca_notifiable_weekly.json"]),
+        "kdca_digest": _newest(["kdca_digest.json"]),
+        "osint": _newest(["news_digest.json", "trends_digest.json"]),
+        "sentinel": _newest([], base=SNAPSHOT_DIR, pattern="*.json"),
+        "kdca_report": _newest([], base=reports_dir, pattern="final_*.md"),
+    }
+
+
 def load_json(path: Path) -> Any:
     if path.exists():
         with open(path, "r", encoding="utf-8") as file:

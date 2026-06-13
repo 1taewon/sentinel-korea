@@ -311,6 +311,28 @@ function AppInner({
     return false;
   }, [isAdmin]);
 
+  // Load real per-step last-updated timestamps (file mtimes) from the backend so the
+  // PIPELINE cards show when each step last ran. Persists across reloads, unlike the
+  // in-session timestamps set when a step is clicked.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_BASE}/pipeline/last-updated`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: Record<string, string | null> | null) => {
+        if (cancelled || !data) return;
+        setLastPipelineRun((prev) => {
+          const merged = { ...prev };
+          (Object.keys(data) as OperationKey[]).forEach((k) => {
+            const v = data[k];
+            if (v) merged[k] = v;
+          });
+          return merged;
+        });
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
   useEffect(() => {
     const fetchStatus = async () => {
       try {
@@ -2204,6 +2226,9 @@ function AppInner({
                       </div>
                       <strong className="pipeline-flow-detail-title">{row.title}</strong>
                       <p className="pipeline-flow-detail-text">{row.detail}</p>
+                      <span className="pipeline-flow-detail-updated">
+                        🕒 마지막 업데이트: {formatRunTime(row.updatedAt)}
+                      </span>
                       {(upstream.length > 0 || downstream.length > 0) && (
                         <div className="pipeline-flow-detail-links">
                           {upstream.length > 0 && <span>입력: {upstream.join(' + ')}</span>}
@@ -2361,6 +2386,9 @@ function AppInner({
                       </div>
                       <strong className="pipeline-flow-detail-title">{row.title}</strong>
                       <p className="pipeline-flow-detail-text">{row.detail}</p>
+                      <span className="pipeline-flow-detail-updated">
+                        🕒 마지막 업데이트: {formatRunTime(row.updatedAt)}
+                      </span>
                       {(upstream.length > 0 || downstream.length > 0) && (
                         <div className="pipeline-flow-detail-links">
                           {upstream.length > 0 && <span>입력: {upstream.join(' + ')}</span>}
