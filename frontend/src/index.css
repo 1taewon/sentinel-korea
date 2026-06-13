@@ -4078,6 +4078,8 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   gap: 8px;
   align-items: center;
   margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 .pipeline-flow-header-actions button {
   padding: 8px 10px;
@@ -4099,6 +4101,20 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .pipeline-flow-header-actions button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+.pipeline-flow-header-actions button.pipeline-flow-header-server-btn {
+  border-color: #34d399;
+  background: rgba(52, 211, 153, 0.14);
+  color: #34d399;
+}
+.pipeline-flow-header-server-msg {
+  width: 100%;
+  text-align: right;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 .pipeline-flow-modal-close {
   background: var(--bg-secondary);

@@ -2137,12 +2137,16 @@ function AppInner({
                 <p>각 노드를 클릭하면 해당 단계를 실행합니다. 진행 중인 노드는 펄스로, 흐름은 점선 애니메이션으로 표시됩니다.</p>
               </div>
               <div className="pipeline-flow-header-actions">
-                <button disabled={!isAdmin || !!runningPipeline || pipelineBatch.active} onClick={runFullFinalPipeline} type="button">
-                  {pipelineBatch.active ? '전체 실행 중...' : '전체 실행'}
+                <button disabled={!isAdmin || !!runningPipeline || pipelineBatch.active || serverRun.active} onClick={runFullFinalPipeline} type="button">
+                  {pipelineBatch.active ? '전체 실행 중...' : '전체 실행 (브라우저)'}
                 </button>
-                <button disabled={!isAdmin || !!runningPipeline || pipelineBatch.active} onClick={resetFullPipeline} type="button">
+                <button className="pipeline-flow-header-server-btn" disabled={!isAdmin || !!runningPipeline || pipelineBatch.active || serverRun.active} onClick={runServerPipeline} type="button" title="서버(Railway)에서 전체 파이프라인 실행 — 300초 제한 없고 브라우저 닫아도 계속 실행됩니다.">
+                  {serverRun.active ? '서버 실행 중...' : '서버에서 실행'}
+                </button>
+                <button disabled={!isAdmin || !!runningPipeline || pipelineBatch.active || serverRun.active} onClick={resetFullPipeline} type="button">
                   전체 되돌리기
                 </button>
+                {serverRun.message && <span className="pipeline-flow-header-server-msg">{serverRun.message}</span>}
               </div>
             </div>
 
@@ -2286,12 +2290,16 @@ function AppInner({
                 <p>각 노드를 클릭하면 해당 단계를 실행합니다. 진행 중인 노드는 펄스로, 흐름은 점선 애니메이션으로 표시됩니다.</p>
               </div>
               <div className="pipeline-flow-header-actions">
-                <button disabled={!isAdmin || !!runningPipeline || pipelineBatch.active} onClick={runFullFinalPipeline} type="button">
-                  {pipelineBatch.active ? '전체 실행 중...' : '전체 실행'}
+                <button disabled={!isAdmin || !!runningPipeline || pipelineBatch.active || serverRun.active} onClick={runFullFinalPipeline} type="button">
+                  {pipelineBatch.active ? '전체 실행 중...' : '전체 실행 (브라우저)'}
                 </button>
-                <button disabled={!isAdmin || !!runningPipeline || pipelineBatch.active} onClick={resetFullPipeline} type="button">
+                <button className="pipeline-flow-header-server-btn" disabled={!isAdmin || !!runningPipeline || pipelineBatch.active || serverRun.active} onClick={runServerPipeline} type="button" title="서버(Railway)에서 전체 파이프라인 실행 — 300초 제한 없고 브라우저 닫아도 계속 실행됩니다.">
+                  {serverRun.active ? '서버 실행 중...' : '서버에서 실행'}
+                </button>
+                <button disabled={!isAdmin || !!runningPipeline || pipelineBatch.active || serverRun.active} onClick={resetFullPipeline} type="button">
                   전체 되돌리기
                 </button>
+                {serverRun.message && <span className="pipeline-flow-header-server-msg">{serverRun.message}</span>}
               </div>
               <button className="pipeline-flow-modal-close" onClick={() => setPipelineFlowOpen(false)} type="button">×</button>
             </div>
