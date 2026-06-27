@@ -9566,8 +9566,8 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 /* ── Participatory symptom-report widget (optional, dismissible) ── */
 .symptom-widget {
   position: fixed;
-  right: 18px;
-  bottom: 18px;
+  left: 18px;
+  top: 32%;
   z-index: 1200;
   width: 300px;
   max-width: calc(100vw - 36px);
@@ -9657,5 +9657,5 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   padding: 14px 4px 6px;
 }
 @media (max-width: 480px) {
-  .symptom-widget { right: 10px; bottom: 10px; width: calc(100vw - 20px); }
+  .symptom-widget { left: 10px; right: 10px; top: auto; bottom: 10px; width: auto; }
 }
