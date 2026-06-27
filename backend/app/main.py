@@ -47,6 +47,7 @@ from .trends_router import router as trends_router
 from .risk_analysis_router import router as risk_analysis_router
 from .config_router import router as config_router
 from .ontology_router import router as ontology_router
+from .participatory_router import router as participatory_router
 app.include_router(chatbot_router)
 app.include_router(report_router)
 app.include_router(upload_router)
@@ -55,6 +56,7 @@ app.include_router(trends_router)
 app.include_router(risk_analysis_router)
 app.include_router(config_router)
 app.include_router(ontology_router)
+app.include_router(participatory_router)
 
 ALLOWED_ORIGINS = [
     "http://localhost:5173",

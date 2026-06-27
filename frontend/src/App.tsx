@@ -13,6 +13,7 @@ import RegionDetailInline from './components/RegionDetailInline';
 import ReportView from './components/ReportView';
 import StatisticsView from './components/StatisticsView';
 import OntologyView from './components/OntologyView';
+import SymptomReportWidget from './components/SymptomReportWidget';
 import Timeline from './components/Timeline';
 import TopNav, { type NavTab } from './components/TopNav';
 import TrendsChart from './components/TrendsChart';
@@ -2419,6 +2420,9 @@ function AppInner({
           </div>
         </div>
       )}
+
+      {/* Optional, dismissible participatory symptom-report widget (all viewers) */}
+      <SymptomReportWidget />
     </div>
   );
 }
