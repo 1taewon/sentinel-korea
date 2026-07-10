@@ -1654,17 +1654,20 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         lo = _run_total(seed=5.0 * 0.5 * aviation_mult); hi = _run_total(seed=5.0 * 3.0 * aviation_mult)
         sensitivity.append({"key": "aviation", "label": "항공 유입 규모", "unit": "×",
                             "low_val": 0.5, "cur_val": round(aviation_intensity, 2), "high_val": 3.0,
-                            "low_cases": lo[0], "cur_cases": total_cases, "high_cases": hi[0]})
+                            "low_cases": lo[0], "cur_cases": total_cases, "high_cases": hi[0],
+                            "low_deaths": lo[1], "cur_deaths": total_deaths, "high_deaths": hi[1]})
     if use_traffic:
         lo = _run_total(m=0.05); hi = _run_total(m=0.25)
         sensitivity.append({"key": "traffic", "label": "교통 이동 강도(m)", "unit": "",
                             "low_val": 0.05, "cur_val": round(traffic_intensity, 2), "high_val": 0.25,
-                            "low_cases": lo[0], "cur_cases": total_cases, "high_cases": hi[0]})
+                            "low_cases": lo[0], "cur_cases": total_cases, "high_cases": hi[0],
+                            "low_deaths": lo[1], "cur_deaths": total_deaths, "high_deaths": hi[1]})
     if use_weather:
         lo = _run_total(wi=0.0); hi = _run_total(wi=1.0)
         sensitivity.append({"key": "weather", "label": "기상 전파력 강도", "unit": "",
                             "low_val": 0.0, "cur_val": round(weather_intensity, 2), "high_val": 1.0,
-                            "low_cases": lo[0], "cur_cases": total_cases, "high_cases": hi[0]})
+                            "low_cases": lo[0], "cur_cases": total_cases, "high_cases": hi[0],
+                            "low_deaths": lo[1], "cur_deaths": total_deaths, "high_deaths": hi[1]})
     sensitivity.sort(key=lambda x: abs(x["high_cases"] - x["low_cases"]), reverse=True)
 
     origin_verb = "발생" if entry_type == "domestic" else "유입"
