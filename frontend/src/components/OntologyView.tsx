@@ -904,55 +904,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
         <div className="epi-region-caveat">각 시점 칸은 <strong>누적 확진</strong>(위) · <strong className="epi-death-word">누적 사망</strong>(아래, 빨강)이며, 치명률은 28일 기준입니다. 개입(백신·거리두기) 없는 자연확산 가정의 예시 시나리오이며 예보가 아닙니다. 인구: 행정안전부 주민등록 2026-06.</div>
       </div>
 
-      {/* 시기별 대응 방안 — AI (Gemini) 분석이 우선, 없으면 규칙 기반 fallback */}
-      {aiActions.length > 0 ? (
-        <div className="whatif-section">
-          <div className="whatif-section-title">시기별 대응 방안 및 Sentinel AI 분석</div>
-          <div className="epi-playbook">
-            {(['단기', '중기', '후기'] as const).map((key, idx) => {
-              const label = ['단기 (0~7일)', '중기 (1~3주)', '후기 (21~28일)'][idx];
-              const items = aiActions.filter((a) => aiBucket(a.timing) === key);
-              if (items.length === 0) return null;
-              return (
-                <div key={key} className="epi-playbook-stage">
-                  <div className="epi-playbook-head">
-                    <span className="epi-playbook-when">{label}</span>
-                  </div>
-                  <ul className="epi-playbook-actions">
-                    {items.map((a, j) => (
-                      <li key={j}>
-                        {a.priority && <span className="epi-ai-prio">{prioKr(a.priority)}</span>}
-                        {a.action}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
-          <div className="epi-region-caveat">Sentinel AI가 위 SEIR 시뮬레이션 결과(정점 시점·치명률·전파력)를 해석해 생성한 시기별 대응 권고 및 분석을 제공합니다.</div>
-        </div>
-      ) : (s?.response_playbook && s.response_playbook.length > 0 && (
-        <div className="whatif-section">
-          <div className="whatif-section-title">시기별 대응 방안 · 유행 단계별 권고</div>
-          <div className="epi-playbook">
-            {s.response_playbook.map((p, i) => (
-              <div key={i} className="epi-playbook-stage">
-                <div className="epi-playbook-head">
-                  <span className="epi-playbook-when">{p.stage}</span>
-                  <span className="epi-playbook-phase">{p.phase}</span>
-                </div>
-                <ul className="epi-playbook-actions">
-                  {p.actions.map((a, j) => <li key={j}>{a}</li>)}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="epi-region-caveat">AI 분석(Gemini)을 사용할 수 없어 규칙 기반 권고를 표시합니다. K-방역 3T · WHO 봉쇄–완화 단계 프레임워크 기반이며 정점 시점·치명률·전파력에 맞춰 조정됩니다.</div>
-        </div>
-      ))}
-
-      {/* AI 시나리오 분석 (Gemini) — 영향·확산 양상·전개·위험 (대응 방안은 위 전용 섹션) */}
+      {/* 시나리오 분석 (Gemini) — 영향·확산 양상·전개·위험 (대응 방안은 아래 전용 섹션) */}
       {g && !g.error && !g.parse_error && (g.impact_summary || g.spread_pattern || (g.timeline && g.timeline.length > 0) || (g.high_risk_regions && g.high_risk_regions.length > 0) || g.best_case || g.worst_case || g.risk_factors) && (
         <div className="whatif-gemini">
           <div className="whatif-section-title whatif-ai-head">시나리오 분석</div>
@@ -1006,6 +958,54 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
           )}
         </div>
       )}
+
+      {/* 시기별 대응 방안 — AI (Gemini) 분석이 우선, 없으면 규칙 기반 fallback */}
+      {aiActions.length > 0 ? (
+        <div className="whatif-section">
+          <div className="whatif-section-title">시기별 대응 방안 및 Sentinel AI 분석</div>
+          <div className="epi-playbook">
+            {(['단기', '중기', '후기'] as const).map((key, idx) => {
+              const label = ['단기 (0~7일)', '중기 (1~3주)', '후기 (21~28일)'][idx];
+              const items = aiActions.filter((a) => aiBucket(a.timing) === key);
+              if (items.length === 0) return null;
+              return (
+                <div key={key} className="epi-playbook-stage">
+                  <div className="epi-playbook-head">
+                    <span className="epi-playbook-when">{label}</span>
+                  </div>
+                  <ul className="epi-playbook-actions">
+                    {items.map((a, j) => (
+                      <li key={j}>
+                        {a.priority && <span className="epi-ai-prio">{prioKr(a.priority)}</span>}
+                        {a.action}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+          <div className="epi-region-caveat">Sentinel AI가 위 SEIR 시뮬레이션 결과(정점 시점·치명률·전파력)를 해석해 생성한 시기별 대응 권고 및 분석을 제공합니다. 최종 판단은 정책 결정자의 몫입니다.</div>
+        </div>
+      ) : (s?.response_playbook && s.response_playbook.length > 0 && (
+        <div className="whatif-section">
+          <div className="whatif-section-title">시기별 대응 방안 · 유행 단계별 권고</div>
+          <div className="epi-playbook">
+            {s.response_playbook.map((p, i) => (
+              <div key={i} className="epi-playbook-stage">
+                <div className="epi-playbook-head">
+                  <span className="epi-playbook-when">{p.stage}</span>
+                  <span className="epi-playbook-phase">{p.phase}</span>
+                </div>
+                <ul className="epi-playbook-actions">
+                  {p.actions.map((a, j) => <li key={j}>{a}</li>)}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="epi-region-caveat">AI 분석(Gemini)을 사용할 수 없어 규칙 기반 권고를 표시합니다. K-방역 3T · WHO 봉쇄–완화 단계 프레임워크 기반이며 정점 시점·치명률·전파력에 맞춰 조정됩니다.</div>
+        </div>
+      ))}
     </div>
   );
 }

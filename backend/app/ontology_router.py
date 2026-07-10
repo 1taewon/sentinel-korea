@@ -35,7 +35,7 @@ SNAPSHOT_DIR = PROCESSED_DIR / "snapshots"
 
 # Public demo — a pre-run H5N1/China scenario so non-admin visitors (competition
 # judges) can see the full Outbreak Scenario output without running it live.
-_SCENARIO_EXAMPLE_FILE = PROCESSED_DIR / "scenario_example_v11.json"  # {combo_key: result}
+_SCENARIO_EXAMPLE_FILE = PROCESSED_DIR / "scenario_example_v12.json"  # {combo_key: result}
 _example_lock = threading.Lock()
 
 
