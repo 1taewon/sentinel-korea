@@ -9711,7 +9711,7 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   background: rgba(52, 211, 153, 0.08);
 }
 .whatif-aviation-toggle input { accent-color: #34d399; cursor: pointer; }
-.whatif-aviation-label { font-weight: 800; color: var(--text-primary, #0f172a); }
+.whatif-aviation-label { font-weight: 500; color: var(--text-primary, #0f172a); }
 .whatif-aviation-hint { font-size: 10px; color: var(--text-muted, #94a3b8); flex-basis: 100%; }
 .whatif-traffic-refresh {
   display: flex;
@@ -9737,7 +9737,7 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .whatif-traffic-msg { font-size: 11px; color: #059669; font-weight: 600; }
 .whatif-traffic-controls { display: flex; flex-direction: column; gap: 6px; margin: -2px 0 4px; padding-left: 2px; }
 .whatif-traffic-base { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.whatif-traffic-base > label { font-size: 11px; font-weight: 700; color: var(--text-primary, #0f172a); }
+.whatif-traffic-base > label { font-size: 11px; font-weight: 500; color: var(--text-secondary, #475569); }
 .whatif-traffic-base-select { max-width: 220px; font-size: 12px; padding: 3px 8px; }
 .whatif-traffic-base-hint { font-size: 10px; color: var(--text-muted, #94a3b8); flex-basis: 100%; }
 .traffic-sensitivity {
@@ -9765,11 +9765,25 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .tsc-count { font-size: 16px; font-weight: 800; color: var(--text-primary, #0f172a); }
 .traffic-sensitivity-hint { display: block; margin-top: 6px; font-size: 10px; color: var(--text-muted, #94a3b8); }
 /* Connectivity base slider + presets + explanation */
-.whatif-base-val { color: #059669; font-variant-numeric: tabular-nums; }
-.whatif-traffic-base-slider { flex: 1 1 160px; min-width: 140px; accent-color: #34d399; cursor: pointer; }
+.whatif-base-val { color: #059669; font-weight: 600; font-variant-numeric: tabular-nums; }
+.whatif-traffic-base-slider {
+  flex: 1 1 160px; min-width: 140px; cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  height: 4px; border-radius: 999px; background: var(--border, #cbd5e1);
+}
+.whatif-traffic-base-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: #34d399; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.55);
+  cursor: pointer;
+}
+.whatif-traffic-base-slider::-moz-range-track { height: 4px; border-radius: 999px; background: var(--border, #cbd5e1); }
+.whatif-traffic-base-slider::-moz-range-thumb {
+  width: 13px; height: 13px; border: 2px solid #fff; border-radius: 50%; background: #34d399; cursor: pointer;
+}
 .whatif-base-presets { display: flex; gap: 6px; flex-basis: 100%; flex-wrap: wrap; }
 .whatif-base-preset {
-  font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 500; padding: 2px 10px; border-radius: 999px;
   border: 1px solid var(--border-color, #cbd5e1); background: var(--bg-soft, #f1f5f9);
   color: var(--text-secondary, #475569); cursor: pointer;
 }

@@ -1885,7 +1885,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       <label className={`whatif-aviation-toggle ${useWeather ? 'is-on' : ''}`}>
         <input type="checkbox" checked={useWeather} onChange={(e) => setUseWeather(e.target.checked)} />
         <span className="whatif-aviation-label">기상상황 add</span>
-        <span className="whatif-aviation-hint">기상청 단기예보 기온으로 계절 전파력을 반영 — 추울수록 확산↑. <strong>시나리오 실행 시 실시간 조회</strong>. 기온이 호흡기감염 최강 예측인자 (Shang 2026 메타분석, 108개 연구·922만 건 기반).</span>
+        <span className="whatif-aviation-hint">기상청 단기예보 기온으로 계절 전파력을 반영 — 추울수록 확산↑. 시나리오 실행 시 실시간 조회. 기온이 호흡기감염 최강 예측인자 (Shang 2026 메타분석, 108개 연구·922만 건 기반).</span>
       </label>
       {useWeather && (
         <div className="whatif-traffic-controls">
