@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import re
+import urllib.parse
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -43,13 +44,29 @@ PUBLISHER = "HealthMap"
 ID_PREFIX = "healthmap"
 
 ENDPOINT = "https://www.healthmap.org/getAlerts.php"
-PERMALINK = "https://www.healthmap.org/feedalert.php?alertid={alertid}&lang=en"
+# HealthMap retired durable per-alert permalinks: feedalert.php now 404s and
+# alertids expire from their system, so a stored permalink becomes a dead link.
+# We link to a Google News search of the alert title instead — see
+# _healthmap_source_url() — which reliably surfaces the underlying article.
 UA = {"User-Agent": "Mozilla/5.0 (compatible; SentinelKorea/1.0; research)"}
 
 # `javascript:b(11489664,'en','es',7)` → 11489664
 ALERTID_RE = re.compile(r"b\((\d+)\b")
 # "27 Apr 2026 - " or "1 May 2026 - "
 DATE_RE = re.compile(r"^\s*(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})\s*$")
+
+
+def _healthmap_source_url(title: str) -> str:
+    """Working 'original source' link for a HealthMap alert.
+
+    HealthMap no longer serves durable per-alert permalinks (feedalert.php → 404,
+    alertids expire), so a Google News search of the title reliably surfaces the
+    underlying article instead of a dead link.
+    """
+    query = title.rstrip(". ").strip()
+    if not query:
+        return "https://www.healthmap.org/en/"
+    return "https://news.google.com/search?q=" + urllib.parse.quote(query)
 
 
 def _pin_significance(pin: str) -> tuple[str, float]:
@@ -139,8 +156,9 @@ def _parse_marker(marker: dict[str, Any], cutoff: datetime) -> list[dict[str, An
         alertid_match = ALERTID_RE.search(link.get("href") or "")
         if not alertid_match:
             continue
-        alertid = alertid_match.group(1)
-        url = PERMALINK.format(alertid=alertid)
+        # alertid_match validates this is a real alert link; HealthMap dropped
+        # durable per-alert URLs, so link to a title search instead of a permalink.
+        url = _healthmap_source_url(title)
 
         # Body is the comma-separated disease labels for this place — gives the
         # respiratory/infectious filter a chance to accept the item even when
