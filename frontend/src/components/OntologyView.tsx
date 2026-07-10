@@ -763,6 +763,25 @@ function SensitivityChart({ items }: {
   );
 }
 
+// ─── Analyzing loader — shown in the analysis pane while the (slow) SEIR + AI run ──
+function WhatIfAnalyzing() {
+  const steps = ['SEIR 역학 시뮬레이션 실행', '항공·교통·기상 신호 반영', '강도 민감도 분석 계산', 'Sentinel AI 시나리오 분석 생성'];
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setStep((s) => (s + 1) % steps.length), 1400);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return (
+    <div className="whatif-analyzing">
+      <div className="whatif-analyzing-orbit"><span /><span /><span /></div>
+      <div className="whatif-analyzing-title">분석 중입니다</div>
+      <div className="whatif-analyzing-step">{steps[step]}…</div>
+      <div className="whatif-analyzing-sub">SEIR 시뮬레이션과 AI 시나리오 분석을 생성하고 있습니다. 수 초가 걸릴 수 있으니 잠시만 기다려 주세요.</div>
+    </div>
+  );
+}
+
 // ─── National Outbreak Analysis Panel (results in analysis area) ──────────
 
 function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
@@ -1395,6 +1414,7 @@ export default function OntologyView() {
 
   // What-If result state (national outbreak)
   const [whatIfResult, setWhatIfResult] = useState<NationalOutbreakResult | null>(null);
+  const [whatIfLoading, setWhatIfLoading] = useState(false);
 
   // Decision state
   const [decomposition, setDecomposition] = useState<DecompositionResult | null>(null);
@@ -1622,7 +1642,7 @@ export default function OntologyView() {
           </div>
           {whatIfMode ? (
             <WhatIfStandalonePanel isAdmin={isAdmin} adminHeaders={adminHeaders}
-              onResult={(result) => { setWhatIfResult(result); }} />
+              onResult={(result) => { setWhatIfResult(result); }} onLoading={setWhatIfLoading} />
           ) : selectedType ? (
             <>
               <input className="ontology-filter-input" placeholder="Filter..."
@@ -1673,7 +1693,9 @@ export default function OntologyView() {
         <div className="ontology-analysis-area">
           <div className="ontology-main-title">FORECASTING & ANALYSIS</div>
           {whatIfMode ? (
-            whatIfResult && !whatIfResult.error ? (
+            whatIfLoading ? (
+              <WhatIfAnalyzing />
+            ) : whatIfResult && !whatIfResult.error ? (
               <NationalAnalysisPanel result={whatIfResult} />
             ) : whatIfResult?.error ? (
               <div className="ontology-pane-empty">
@@ -1827,9 +1849,10 @@ function resolveDiseasePreset(name: string) {
   return DISEASE_PRESETS.find((p) => p.keys.some((k) => low.includes(k.toLowerCase()))) || null;
 }
 
-function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
+function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
   isAdmin: boolean; adminHeaders: () => Promise<Record<string, string>>;
   onResult?: (result: NationalOutbreakResult) => void;
+  onLoading?: (loading: boolean) => void;
 }) {
   const [entryPoint, setEntryPoint] = useState('');
   const [disease, setDisease] = useState('');
@@ -1868,7 +1891,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   }, [disease]);
 
   const runNationalScenario = async () => {
-    setLoading(true); setStatusMsg(null); setExampleMode(false);
+    setLoading(true); setStatusMsg(null); setExampleMode(false); onLoading?.(true);
     try {
       const r = await fetch(`${API_BASE}/ontology/functions/whatIfOutbreakNational`, {
         method: 'POST', headers: await adminHeaders(),
@@ -1891,13 +1914,13 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       }
     } catch (e: any) {
       setStatusMsg({ ok: false, text: String(e?.message || e) });
-    } finally { setLoading(false); }
+    } finally { setLoading(false); onLoading?.(false); }
   };
 
   // Public demo — fetch the pre-run H5N1/China scenario for the CURRENT toggle combo
   // so anyone (incl. non-admin / read-only judges) can see how each signal changes it.
   const fetchExample = async () => {
-    setExampleLoading(true); setStatusMsg(null);
+    setExampleLoading(true); setStatusMsg(null); onLoading?.(true);
     try {
       const q = `a=${useAviation ? 1 : 0}&t=${useTraffic ? 1 : 0}&w=${useWeather ? 1 : 0}`;
       const r = await fetch(`${API_BASE}/ontology/scenario-example?${q}`);
@@ -1910,7 +1933,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       setStatusMsg({ ok: true, text: `예시(H5N1/China) · 항공 ${useAviation ? 'ON' : 'OFF'} / 교통 ${useTraffic ? 'ON' : 'OFF'} / 기상 ${useWeather ? 'ON' : 'OFF'} — 누적 ${(d.summary?.total_cases ?? 0).toLocaleString()}명 확진 · ${(d.summary?.total_deaths ?? 0).toLocaleString()}명 사망` });
     } catch (e: any) {
       setStatusMsg({ ok: false, text: String(e?.message || e) });
-    } finally { setExampleLoading(false); }
+    } finally { setExampleLoading(false); onLoading?.(false); }
   };
 
   // Enter example mode: fill the inputs with the canonical demo (H5N1/China via ICN),
