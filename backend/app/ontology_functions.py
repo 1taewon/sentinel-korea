@@ -1488,15 +1488,15 @@ def _gemini_national_scenario(*, disease_name: str, canon: str, is_novel: bool, 
 - 최다 피해 지역: {worst_txt}
 - 누적 확진 추이: {curve_txt}
 
-## 요청 (반드시 한국어, JSON object 하나로만)
-1. "impact_summary": 이 결과의 의미와 파급 요약 (2-3문장)
-2. "spread_pattern": 예상 확산 양상 (거점→전국 경로, 1-2문장)
-3. "timeline": 주차별 전개 배열, 각 항목 {{"week": 정수(1~4), "description": "문자열"}}
-4. "response_actions": 시기별 대응 조치 4-6개 배열, 각 항목 {{"priority": "high|medium|low", "action": "구체적 조치", "timing": "단기(0~7일)|중기(1~3주)|후기(21~28일)"}}. 위 결과(정점 시점·치명률·전파력)에 근거해 구체적으로 작성.
-5. "high_risk_regions": 고위험 지역 2-3개 배열, 각 항목 {{"region": "지역명", "reason": "문자열"}}
-6. "risk_factors": 악화 위험 요인 2-3개 (문자열 배열)
-7. "best_case": 최선 시나리오 (1문장)
-8. "worst_case": 최악 시나리오 (1문장)
+## 요청 (반드시 한국어, JSON object 하나로만. 각 항목을 충분히 구체적이고 상세하게 작성)
+1. "impact_summary": 이 결과의 의미와 파급 요약 (4-5문장, 확진·사망·치명률·정점 수치를 인용)
+2. "spread_pattern": 예상 확산 양상 (거점→수도권→전국 경로, 어떤 신호가 어떻게 작용하는지 포함, 3-4문장)
+3. "timeline": 주차별 전개 배열, 각 항목 {{"week": 정수(1~4), "description": "각 주차의 확진 규모·전개·의료 부담을 2-3문장으로 구체적으로"}}
+4. "response_actions": 시기별 대응 조치 7-9개 배열(단기·중기·후기에 고르게 분배), 각 항목 {{"priority": "high|medium|low", "action": "누가 무엇을 어떻게 하는지 담은 구체적·실행가능한 조치(1-2문장)", "timing": "단기(0~7일)|중기(1~3주)|후기(21~28일)"}}. 위 결과(정점 시점·치명률·전파력·최다 피해 지역)에 근거해 작성.
+5. "high_risk_regions": 고위험 지역 3-4개 배열, 각 항목 {{"region": "지역명", "reason": "확진 규모·연결성 근거를 담은 2문장"}}
+6. "risk_factors": 악화 위험 요인 3-4개 (각 문자열은 근거를 담은 1문장)
+7. "best_case": 최선 시나리오 (구체적 개입과 그 결과를 담은 2문장)
+8. "worst_case": 최악 시나리오 (구체적 실패 경로와 그 결과를 담은 2문장)
 
 JSON 외 다른 텍스트 금지."""
         resp = client.models.generate_content(model=model, contents=prompt)

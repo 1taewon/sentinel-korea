@@ -907,7 +907,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
       {/* 시기별 대응 방안 — AI (Gemini) 분석이 우선, 없으면 규칙 기반 fallback */}
       {aiActions.length > 0 ? (
         <div className="whatif-section">
-          <div className="whatif-section-title">시기별 대응 방안 · AI 분석 (Gemini)</div>
+          <div className="whatif-section-title">시기별 대응 방안 및 Sentinel AI 분석</div>
           <div className="epi-playbook">
             {(['단기', '중기', '후기'] as const).map((key, idx) => {
               const label = ['단기 (0~7일)', '중기 (1~3주)', '후기 (21~28일)'][idx];
@@ -917,12 +917,11 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
                 <div key={key} className="epi-playbook-stage">
                   <div className="epi-playbook-head">
                     <span className="epi-playbook-when">{label}</span>
-                    <span className="epi-playbook-phase">AI 권고</span>
                   </div>
                   <ul className="epi-playbook-actions">
                     {items.map((a, j) => (
                       <li key={j}>
-                        {a.priority && <span className={`epi-ai-prio ${(a.priority || '').toLowerCase()}`}>{prioKr(a.priority)}</span>}
+                        {a.priority && <span className="epi-ai-prio">{prioKr(a.priority)}</span>}
                         {a.action}
                       </li>
                     ))}
@@ -931,7 +930,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
               );
             })}
           </div>
-          <div className="epi-region-caveat">Sentinel AI(Gemini)가 위 SEIR 시뮬레이션 결과(정점 시점·치명률·전파력)를 해석해 생성한 시기별 대응 권고입니다.</div>
+          <div className="epi-region-caveat">Sentinel AI가 위 SEIR 시뮬레이션 결과(정점 시점·치명률·전파력)를 해석해 생성한 시기별 대응 권고 및 분석을 제공합니다.</div>
         </div>
       ) : (s?.response_playbook && s.response_playbook.length > 0 && (
         <div className="whatif-section">
@@ -956,7 +955,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
       {/* AI 시나리오 분석 (Gemini) — 영향·확산 양상·전개·위험 (대응 방안은 위 전용 섹션) */}
       {g && !g.error && !g.parse_error && (g.impact_summary || g.spread_pattern || (g.timeline && g.timeline.length > 0) || (g.high_risk_regions && g.high_risk_regions.length > 0) || g.best_case || g.worst_case || g.risk_factors) && (
         <div className="whatif-gemini">
-          <div className="whatif-section-title whatif-ai-head">AI 시나리오 분석 (Gemini)</div>
+          <div className="whatif-section-title whatif-ai-head">시나리오 분석</div>
           {g.impact_summary && (
             <div className="whatif-section">
               <div className="whatif-section-title">영향 요약</div>
@@ -985,7 +984,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
               <div className="whatif-section-title">고위험 지역</div>
               {g.high_risk_regions.map((hr, i) => (
                 <div key={i} className="whatif-action-item">
-                  <span className="ontology-pill ontology-rec-priority-HIGH">{hr.region}</span>
+                  <span className="epi-hr-region">{hr.region}</span>
                   <span className="whatif-action-text">{hr.reason}</span>
                 </div>
               ))}
