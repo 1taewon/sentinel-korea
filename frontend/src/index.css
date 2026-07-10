@@ -8054,18 +8054,23 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   background: rgba(56, 189, 248, 0.12);
   box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4) inset;
 }
-/* Featured tabs (Disease, Outbreak Scenario) — slightly larger + accented, they're the most useful */
+/* Featured tabs (Disease, Outbreak Scenario) — ~2x Region/Snapshot, bold outline, the most useful */
 .ontology-type-card--featured {
-  padding: 13px 12px;
-  border-left-width: 4px;
-  background: linear-gradient(180deg, rgba(56, 189, 248, 0.07), var(--bg-soft));
-  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.10);
+  padding: 19px 15px;
+  border-width: 2px;
+  border-left-width: 5px;
+  border-color: rgba(56, 189, 248, 0.55);
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.09), var(--bg-soft));
+  box-shadow: 0 2px 12px rgba(56, 189, 248, 0.13);
 }
 .ontology-type-card--featured:hover {
-  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.20);
+  border-color: #38bdf8;
+  box-shadow: 0 4px 18px rgba(56, 189, 248, 0.22);
   transform: translateY(-1px);
 }
-.ontology-type-card--featured .ontology-type-card-name { font-size: 15px; }
+.ontology-type-card--featured .ontology-type-card-name { font-size: 16px; }
+.ontology-type-card--featured .ontology-type-card-kr { font-size: 12px; margin-top: 3px; }
+.ontology-type-card--featured .ontology-type-card-desc { font-size: 11px; margin-top: 6px; }
 .ontology-type-card-featured-tag {
   display: inline-block;
   margin-left: 6px;

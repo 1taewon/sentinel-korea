@@ -1472,13 +1472,11 @@ export default function OntologyView() {
                     onClick={() => setSelectedType('WhatIf')}
                     style={{ borderLeftColor: '#fb7185' }} type="button">
                     <div className="ontology-type-card-row">
-                      <span className="ontology-type-card-name">Outbreak Scenario
-                        <span className="ontology-type-card-featured-tag">추천</span>
-                      </span>
+                      <span className="ontology-type-card-name">Outbreak Scenario</span>
                     </div>
                     <div className="ontology-type-card-kr">가상 유입 시나리오 분석</div>
                     <div className="ontology-type-card-desc">
-                      해외 신종 감염병 발생 시 한국 지역에 미치는 영향을 시뮬레이션합니다.
+                      해외 신종 감염병이 국내로 유입되는 상황을 가정해, 공항 유입 거점에서 전국 17개 시도로 퍼지는 확산을 시뮬레이션합니다. 인천공항 실측 여객량(해외유입 위험)과 고속도로 교통 연결성(국내 확산)을 반영하며, 주별 확산 애니메이션과 base 민감도 분석까지 제공합니다.
                     </div>
                   </button>
                 );
@@ -1491,9 +1489,7 @@ export default function OntologyView() {
                   className={`ontology-type-card ${featured ? 'ontology-type-card--featured' : ''} ${selectedType === t.id ? 'is-active' : ''}`}
                   onClick={() => setSelectedType(t.id)} style={{ borderLeftColor: t.color }} type="button">
                   <div className="ontology-type-card-row">
-                    <span className="ontology-type-card-name">{t.label}
-                      {featured && <span className="ontology-type-card-featured-tag">추천</span>}
-                    </span>
+                    <span className="ontology-type-card-name">{t.label}</span>
                     <span className="ontology-type-card-count" style={{ color: t.color }}>{t.instance_count}</span>
                   </div>
                   <div className="ontology-type-card-kr">{t.label_kr}</div>
