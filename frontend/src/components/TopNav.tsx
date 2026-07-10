@@ -133,10 +133,7 @@ export default function TopNav({
             className={`top-nav-tab ${activeTab === tab.key ? 'top-nav-tab--active' : ''} ${tab.special ? 'top-nav-tab--special' : ''}`}
             onClick={() => onTabChange(tab.key)}
           >
-            <span className="top-nav-tab-label">
-              {tab.labelEn}
-              {tab.special && <span className="top-nav-tab-badge">AI</span>}
-            </span>
+            <span className="top-nav-tab-label">{tab.labelEn}</span>
             <span className="top-nav-tab-sub">{tab.label}</span>
           </button>
         ))}
