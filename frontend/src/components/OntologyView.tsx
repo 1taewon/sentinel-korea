@@ -993,7 +993,6 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
           )}
         </div>
       )}
-      {g?.error && <div className="ontology-decision-error">{g.error}</div>}
     </div>
   );
 }

@@ -1472,7 +1472,7 @@ def _gemini_national_scenario(*, disease_name: str, canon: str, is_novel: bool, 
         if use_weather:
             signals.append("기상(예보 기온)")
         curve_txt = ", ".join(f"{p['day']}일 {p['cumulative_cases']:,}명" for p in national_curve)
-        worst_txt = ", ".join(f"{w['name']} {w['cases']:,}명" for w in worst)
+        worst_txt = ", ".join(f"{w['region_name']} {w['cumulative_cases']:,}명" for w in worst)
         dtype = "신종 감염병(파라미터 사용자 지정)" if is_novel else f"기지 질병({canon})"
         prompt = f"""당신은 한국 호흡기 감염병 감시 시스템 Sentinel의 시나리오 분석 AI입니다. 아래는 메타population SEIR 역학 모델의 28일 시뮬레이션 결과입니다. 이 수치를 해석해 정책 결정자를 위한 분석을 제공하세요.
 
