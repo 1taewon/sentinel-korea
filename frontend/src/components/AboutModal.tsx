@@ -213,6 +213,11 @@ export default function AboutModal({ open, onClose }: AboutModalProps) {
                   운영 관련 문의: <strong>poqwelkjas@naver.com</strong>
                 </p>
                 <p>
+                  Outbreak Scenario를 실제 데이터로 직접 실행하려면 admin 계정이 필요합니다.
+                  위 이메일로 소속&middot;용도를 남겨 주시면 계정을 발급해 드립니다.
+                  (심사&middot;평가용 열람은 로그인 없이 &ldquo;예시 보기&rdquo;로 가능합니다.)
+                </p>
+                <p>
                   오류 신고&middot;수정 요청&middot;방법론 비판 환영합니다.
                   본 플랫폼은 공개 데이터를 다루며, 그 분석은 비판과 수정에 열려 있습니다.
                   오류, 누락, 더 나은 방법론에 대한 제안을 적극 환영합니다.

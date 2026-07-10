@@ -1742,10 +1742,11 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   const [weatherBase, setWeatherBase] = useState(0.7);
   const [loading, setLoading] = useState(false);
   const [exampleLoading, setExampleLoading] = useState(false);
+  const [exampleMode, setExampleMode] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const runNationalScenario = async () => {
-    setLoading(true); setStatusMsg(null);
+    setLoading(true); setStatusMsg(null); setExampleMode(false);
     try {
       const r = await fetch(`${API_BASE}/ontology/functions/whatIfOutbreakNational`, {
         method: 'POST', headers: await adminHeaders(),
@@ -1768,23 +1769,38 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
     } finally { setLoading(false); }
   };
 
-  // Public demo — load a pre-run H5N1/China scenario so anyone (incl. non-admin /
-  // read-only judges) can see the full output without the admin-gated live run.
-  const loadExample = async () => {
+  // Public demo — fetch the pre-run H5N1/China scenario for the CURRENT toggle combo
+  // so anyone (incl. non-admin / read-only judges) can see how each signal changes it.
+  const fetchExample = async () => {
     setExampleLoading(true); setStatusMsg(null);
     try {
-      const r = await fetch(`${API_BASE}/ontology/scenario-example`);
+      const q = `a=${useAviation ? 1 : 0}&t=${useTraffic ? 1 : 0}&w=${useWeather ? 1 : 0}`;
+      const r = await fetch(`${API_BASE}/ontology/scenario-example?${q}`);
       const d = await r.json();
       if (!r.ok || d.error || !d.regions) {
         setStatusMsg({ ok: false, text: d.error || d.detail || '예시를 불러오지 못했습니다.' });
         return;
       }
       onResult?.(d);
-      setStatusMsg({ ok: true, text: `예시 시나리오(H5N1/China) 표시 — ${d.summary?.escalated_count ?? 0}개 지역 상향, 결과 확인 →` });
+      setStatusMsg({ ok: true, text: `예시(H5N1/China) · 항공 ${useAviation ? 'ON' : 'OFF'} / 교통 ${useTraffic ? 'ON' : 'OFF'} / 기상 ${useWeather ? 'ON' : 'OFF'} — ${d.summary?.escalated_count ?? 0}개 지역 상향` });
     } catch (e: any) {
       setStatusMsg({ ok: false, text: String(e?.message || e) });
     } finally { setExampleLoading(false); }
   };
+
+  // Enter example mode: show the full-featured demo (all signals on, default bases),
+  // then flipping any toggle re-fetches the matching pre-run combination (see effect).
+  const loadExample = () => {
+    setTrafficBase(0.5); setWeatherBase(0.7);
+    setUseAviation(true); setUseTraffic(true); setUseWeather(true);
+    setExampleMode(true);
+  };
+
+  // In example mode, (re)load the demo whenever a signal toggle flips.
+  useEffect(() => {
+    if (exampleMode) fetchExample();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exampleMode, useAviation, useTraffic, useWeather]);
 
   // Show the current traffic-connectivity 기준시각 (default = Monday pipeline).
   useEffect(() => {
@@ -1866,10 +1882,10 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
             <label>연결성 base <strong className="whatif-base-val">{trafficBase.toFixed(2)}</strong></label>
             <input type="range" min={0} max={1} step={0.05} value={trafficBase}
               onChange={(e) => setTrafficBase(Number(e.target.value))}
-              className="whatif-traffic-base-slider" />
+              className="whatif-traffic-base-slider" disabled={exampleMode} />
             <div className="whatif-base-presets">
               {([[0.3, '허브집중'], [0.5, '기본'], [0.7, '광역']] as [number, string][]).map(([v, l]) => (
-                <button key={v} type="button"
+                <button key={v} type="button" disabled={exampleMode}
                   className={`whatif-base-preset ${Math.abs(trafficBase - v) < 1e-9 ? 'is-active' : ''}`}
                   onClick={() => setTrafficBase(v)}>{v} {l}</button>
               ))}
@@ -1912,10 +1928,10 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
             <label>기상 base <strong className="whatif-base-val">{weatherBase.toFixed(2)}</strong></label>
             <input type="range" min={0} max={1.5} step={0.05} value={weatherBase}
               onChange={(e) => setWeatherBase(Number(e.target.value))}
-              className="whatif-traffic-base-slider" />
+              className="whatif-traffic-base-slider" disabled={exampleMode} />
             <div className="whatif-base-presets">
               {([[0.4, '약함'], [0.7, '기본'], [1.0, '강함']] as [number, string][]).map(([v, l]) => (
-                <button key={v} type="button"
+                <button key={v} type="button" disabled={exampleMode}
                   className={`whatif-base-preset ${Math.abs(weatherBase - v) < 1e-9 ? 'is-active' : ''}`}
                   onClick={() => setWeatherBase(v)}>{v} {l}</button>
               ))}
@@ -1947,10 +1963,16 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
         disabled={!isAdmin || loading}>
         {loading ? 'Simulating...' : isAdmin ? 'Run National Scenario (Gemini)' : 'Admin only'}
       </button>
-      <button type="button" className="whatif-example-btn" onClick={loadExample} disabled={exampleLoading}>
-        {exampleLoading ? '예시 불러오는 중…' : '예시 보기 · H5N1 China 조류독감'}
+      <button type="button" className={`whatif-example-btn ${exampleMode ? 'is-on' : ''}`}
+        onClick={loadExample} disabled={exampleLoading}>
+        {exampleLoading ? '예시 불러오는 중…' : exampleMode ? '예시 초기화 (전체 ON) · H5N1 China' : '예시 보기 · H5N1 China 조류독감'}
       </button>
-      <div className="whatif-example-note">관리자가 아니어도 클릭하면 예시 결과(지도·확산 애니메이션·지역표·민감도)를 볼 수 있습니다.</div>
+      <div className="whatif-example-note">
+        관리자가 아니어도 예시를 볼 수 있습니다. {exampleMode
+          ? '위 항공·교통·기상 토글을 껐다 켜며 각 신호가 결과를 어떻게 바꾸는지 비교해 보세요. '
+          : '클릭하면 지도·확산 애니메이션·지역표·민감도가 표시됩니다. '}
+        예시는 기본 base 값(연결성 0.5·기상 0.7)으로만 분석됩니다. 실제 데이터로 직접 실행하려면 상단 (i)의 이메일로 admin 계정을 문의해 주세요.
+      </div>
       {statusMsg && (
         <div className={`whatif-status-msg ${statusMsg.ok ? 'whatif-status-success' : 'whatif-status-error'}`}>
           {statusMsg.text}

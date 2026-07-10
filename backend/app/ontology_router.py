@@ -35,19 +35,44 @@ SNAPSHOT_DIR = PROCESSED_DIR / "snapshots"
 
 # Public demo — a pre-run H5N1/China scenario so non-admin visitors (competition
 # judges) can see the full Outbreak Scenario output without running it live.
-_SCENARIO_EXAMPLE_FILE = PROCESSED_DIR / "scenario_example.json"
+_SCENARIO_EXAMPLE_FILE = PROCESSED_DIR / "scenario_example.json"  # {combo_key: result}
 _example_lock = threading.Lock()
 
 
-def _generate_scenario_example() -> dict:
-    """Run the canonical demo scenario (avian flu H5N1 from China via ICN, all signal
-    layers on, weather from cache — never a live fetch on this public path)."""
+def _generate_scenario_example(use_aviation: bool = True, use_traffic: bool = True,
+                               use_weather: bool = True) -> dict:
+    """Run the canonical demo scenario (avian flu H5N1 from China via ICN) for a given
+    toggle combination, at DEFAULT base values (traffic 0.5, weather 0.7). Weather is
+    read from cache (weather_live=False) so this public path never triggers a live fetch."""
     from .ontology_functions import _what_if_outbreak_national
     return _what_if_outbreak_national({
         "entry_point": "ICN", "disease": "H5N1 Avian Influenza", "country": "China",
         "severity": "high", "weeks": 4,
-        "use_aviation": True, "use_traffic": True, "use_weather": True, "weather_live": False,
+        "use_aviation": use_aviation, "use_traffic": use_traffic, "use_weather": use_weather,
+        "weather_live": False,
     })
+
+
+def _example_combo_key(a: bool, t: bool, w: bool) -> str:
+    return f"a{1 if a else 0}t{1 if t else 0}w{1 if w else 0}"
+
+
+def _load_example_cache() -> dict:
+    if _SCENARIO_EXAMPLE_FILE.exists():
+        try:
+            data = json.loads(_SCENARIO_EXAMPLE_FILE.read_text(encoding="utf-8"))
+            return data if isinstance(data, dict) else {}
+        except Exception:
+            return {}
+    return {}
+
+
+def _save_example_cache(cache: dict) -> None:
+    try:
+        _SCENARIO_EXAMPLE_FILE.write_text(
+            json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        pass
 REPORTS_DIR = DATA_DIR / "reports"
 
 
@@ -496,38 +521,37 @@ async def invoke_function(
 
 
 @router.get("/ontology/scenario-example")
-async def scenario_example() -> dict[str, Any]:
-    """Public demo output — a pre-run H5N1/China Outbreak Scenario. Lets non-admin
-    visitors (e.g. competition judges) see the full result (map, spread animation,
-    region table, sensitivity) without the admin-gated live run. Cached; generated
-    lazily on first request."""
-    if _SCENARIO_EXAMPLE_FILE.exists():
-        try:
-            return json.loads(_SCENARIO_EXAMPLE_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            pass
+async def scenario_example(a: int = 1, t: int = 1, w: int = 1) -> dict[str, Any]:
+    """Public demo output — a pre-run H5N1/China Outbreak Scenario for the given toggle
+    combination (a=aviation, t=traffic, w=weather; 1/0). Lets non-admin visitors flip
+    the signal toggles and see how the result changes, without the admin-gated live run.
+    Cached per combination; generated lazily on first request. Base values are the
+    defaults (traffic 0.5, weather 0.7)."""
+    key = _example_combo_key(bool(a), bool(t), bool(w))
+    cache = _load_example_cache()
+    if key in cache:
+        return cache[key]
     with _example_lock:
-        if _SCENARIO_EXAMPLE_FILE.exists():
-            try:
-                return json.loads(_SCENARIO_EXAMPLE_FILE.read_text(encoding="utf-8"))
-            except Exception:
-                pass
-        result = await run_in_threadpool(_generate_scenario_example)
-        try:
-            _SCENARIO_EXAMPLE_FILE.write_text(
-                json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-        except Exception:
-            pass
+        cache = _load_example_cache()
+        if key in cache:
+            return cache[key]
+        result = await run_in_threadpool(_generate_scenario_example, bool(a), bool(t), bool(w))
+        cache[key] = result
+        _save_example_cache(cache)
         return result
 
 
 @router.post("/ontology/scenario-example/refresh")
 async def scenario_example_refresh(_: dict = Depends(require_admin)) -> dict[str, Any]:
-    """Regenerate the cached public demo scenario (admin)."""
-    result = await run_in_threadpool(_generate_scenario_example)
-    _SCENARIO_EXAMPLE_FILE.write_text(
-        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-    return {"status": "ok", "escalated": result.get("summary", {}).get("escalated_count")}
+    """Regenerate all 8 toggle-combination demo scenarios (admin)."""
+    cache: dict = {}
+    for a in (False, True):
+        for t in (False, True):
+            for wx in (False, True):
+                cache[_example_combo_key(a, t, wx)] = await run_in_threadpool(
+                    _generate_scenario_example, a, t, wx)
+    _save_example_cache(cache)
+    return {"status": "ok", "combos": len(cache)}
 
 
 # ─────────────────────────────────────────────────────────────────────────────

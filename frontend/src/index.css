@@ -9370,6 +9370,7 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   cursor: pointer;
 }
 .whatif-example-btn:hover:not(:disabled) { background: rgba(56, 189, 248, 0.18); }
+.whatif-example-btn.is-on { background: #38bdf8; color: #06111f; border-color: #38bdf8; }
 .whatif-example-btn:disabled { opacity: 0.6; cursor: default; }
 .whatif-example-note { font-size: 10px; color: var(--text-muted, #94a3b8); margin-top: 4px; text-align: center; }
 .whatif-standalone-desc {
