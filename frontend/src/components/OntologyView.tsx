@@ -611,7 +611,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
         </span>
         {result.scenario?.proximity_source === 'aviation' && result.scenario?.aviation ? (
           <span className="whatif-mobility-badge whatif-mobility-badge--real" title="발생국→인천 실측 도착 여객량 기반 이동량">
-            ✈️ 실측 여객 {result.scenario.aviation.country_kr} {result.scenario.aviation.arr_passengers?.toLocaleString()}명/{result.scenario.aviation.month} · ×{result.scenario.proximity_multiplier}
+            실측 여객 {result.scenario.aviation.country_kr} {result.scenario.aviation.arr_passengers?.toLocaleString()}명/{result.scenario.aviation.month} · ×{result.scenario.proximity_multiplier}
           </span>
         ) : (
           <span className="whatif-mobility-badge" title="하드코딩 이동량 proxy (항공상황 add 미적용)">
@@ -1581,7 +1581,8 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   return (
     <div className="whatif-standalone">
       <div className="whatif-standalone-desc">
-        <strong>전국 확산 시나리오</strong> — 해외 감염병이 한국에 유입된다면? 선택한 공항 거점에서 전국 17개 시도로의 확산 패턴을 시뮬레이션합니다. <strong>✈️ 항공상황 add</strong>를 켜면 발생국의 <strong>인천공항 실측 여객량</strong>으로 이동량(전파 배수)을 객관화해 분석합니다 (끄면 기본 proxy 사용).
+        <strong>전국 확산 시나리오</strong> — 해외 감염병이 한국에 유입된다면? 선택한 공항 거점에서 전국 17개 시도로의 확산 패턴을 시뮬레이션합니다. <strong>항공상황 add</strong>를 켜면 발생국의 <strong>인천공항 실측 여객량</strong>으로 이동량(전파 배수)을 객관화해 분석합니다 (끄면 기본 proxy 사용).<br />
+        <span className="whatif-ref-note">참고: 항공 여객량 기반 해외유입 위험 추정은 BlueDot·GLEAM 등 국제 감염병 예측 모델에서 검증된 표준 방식입니다.</span>
       </div>
       <div className="whatif-row">
         <label>유입 거점</label>
@@ -1613,7 +1614,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       </div>
       <label className={`whatif-aviation-toggle ${useAviation ? 'is-on' : ''}`}>
         <input type="checkbox" checked={useAviation} onChange={(e) => setUseAviation(e.target.checked)} />
-        <span className="whatif-aviation-label">✈️ 항공상황 add</span>
+        <span className="whatif-aviation-label">항공상황 add</span>
         <span className="whatif-aviation-hint">발생국 → 인천공항 실측 여객량으로 이동량 객관화 (끄면 기본 proxy)</span>
       </label>
       <div className="whatif-presets">

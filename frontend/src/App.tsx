@@ -1695,7 +1695,7 @@ function AppInner({
                       </div>
                       <div className="globe-legend-row">
                         <i className="globe-legend-arc globe-legend-arc--thick" />
-                        <div><strong>선 굵기</strong><small>한국 관련도 점수가 높을수록 굵어집니다 (질병/거리/이동량 ✈️인천공항 실측 여객/최신성 통합).</small></div>
+                        <div><strong>선 굵기</strong><small>한국 관련도 점수가 높을수록 굵어집니다 (질병/거리/이동량(인천공항 실측 여객)/최신성 통합).</small></div>
                       </div>
                       <div className="globe-legend-row">
                         <i className="globe-legend-arc globe-legend-arc--fast" />
@@ -1726,7 +1726,7 @@ function AppInner({
                   <span className="globe-context-kicker">한국 관련성 기반 국제 감시</span>
                   <h4>어떤 국제 신호가 한국에 가까운가?</h4>
                   <p>
-                    국제 신호는 질병 심각도, <strong>한국 이동량(✈️ 인천공항 국가별 실측 도착 여객)</strong>, 거리, 예상 밖 이벤트,
+                    국제 신호는 질병 심각도, <strong>한국 이동량(인천공항 국가별 실측 도착 여객)</strong>, 거리, 예상 밖 이벤트,
                     소스 신뢰도를 함께 보아 Korea relevance를 계산합니다. 이동량은 하드코딩 proxy 대신
                     <strong> 인천공항 실측 여객 데이터</strong>를 자동 반영합니다(데이터 수집 시). 점수가 50% 이상이면 globe에서
                     한국으로 향하는 arc가 나타나고, 점수가 높을수록 더 자주, 더 진하게 나타납니다.
@@ -2249,7 +2249,7 @@ function AppInner({
                       <strong className="pipeline-flow-detail-title">{row.title}</strong>
                       <p className="pipeline-flow-detail-text">{row.detail}</p>
                       <span className="pipeline-flow-detail-updated">
-                        🕒 마지막 업데이트: {formatRunTime(row.updatedAt)}
+                        마지막 업데이트: {formatRunTime(row.updatedAt)}
                       </span>
                       {(upstream.length > 0 || downstream.length > 0) && (
                         <div className="pipeline-flow-detail-links">
@@ -2413,7 +2413,7 @@ function AppInner({
                       <strong className="pipeline-flow-detail-title">{row.title}</strong>
                       <p className="pipeline-flow-detail-text">{row.detail}</p>
                       <span className="pipeline-flow-detail-updated">
-                        🕒 마지막 업데이트: {formatRunTime(row.updatedAt)}
+                        마지막 업데이트: {formatRunTime(row.updatedAt)}
                       </span>
                       {(upstream.length > 0 || downstream.length > 0) && (
                         <div className="pipeline-flow-detail-links">

@@ -9720,3 +9720,11 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   color: #059669;
   border-color: #34d399;
 }
+.whatif-ref-note {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-muted, #94a3b8);
+  font-style: italic;
+  line-height: 1.5;
+}

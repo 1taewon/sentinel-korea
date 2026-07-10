@@ -60,13 +60,14 @@ def _healthmap_source_url(title: str) -> str:
     """Working 'original source' link for a HealthMap alert.
 
     HealthMap no longer serves durable per-alert permalinks (feedalert.php → 404,
-    alertids expire), so a Google News search of the title reliably surfaces the
-    underlying article instead of a dead link.
+    alertids expire), so a plain Google web search of the title reliably surfaces
+    the underlying article instead of a dead link. (Google News search was
+    region-restricted and often returned nothing.)
     """
     query = title.rstrip(". ").strip()
     if not query:
         return "https://www.healthmap.org/en/"
-    return "https://news.google.com/search?q=" + urllib.parse.quote(query)
+    return "https://www.google.com/search?q=" + urllib.parse.quote(query)
 
 
 def _pin_significance(pin: str) -> tuple[str, float]:

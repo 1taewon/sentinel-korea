@@ -74,7 +74,7 @@ export default function SymptomReportWidget() {
     <div className="symptom-widget" role="dialog" aria-label="호흡기 증상 자가신고">
       <button className="symptom-widget-close" onClick={dismiss} aria-label="닫기" type="button">×</button>
       {submitted ? (
-        <div className="symptom-widget-thanks">감사합니다 🙏<br />익명으로 집계되었습니다.</div>
+        <div className="symptom-widget-thanks">감사합니다.<br />익명으로 집계되었습니다.</div>
       ) : (
         <>
           <div className="symptom-widget-title">이번 주 호흡기 증상이 있으세요?</div>
