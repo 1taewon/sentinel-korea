@@ -17,17 +17,37 @@ Design notes
 from __future__ import annotations
 
 import json
+import threading
 from datetime import date as _date
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
+from starlette.concurrency import run_in_threadpool
+
+from .auth import require_admin
 
 router = APIRouter()
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 PROCESSED_DIR = DATA_DIR / "processed"
 SNAPSHOT_DIR = PROCESSED_DIR / "snapshots"
+
+# Public demo — a pre-run H5N1/China scenario so non-admin visitors (competition
+# judges) can see the full Outbreak Scenario output without running it live.
+_SCENARIO_EXAMPLE_FILE = PROCESSED_DIR / "scenario_example.json"
+_example_lock = threading.Lock()
+
+
+def _generate_scenario_example() -> dict:
+    """Run the canonical demo scenario (avian flu H5N1 from China via ICN, all signal
+    layers on, weather from cache — never a live fetch on this public path)."""
+    from .ontology_functions import _what_if_outbreak_national
+    return _what_if_outbreak_national({
+        "entry_point": "ICN", "disease": "H5N1 Avian Influenza", "country": "China",
+        "severity": "high", "weeks": 4,
+        "use_aviation": True, "use_traffic": True, "use_weather": True, "weather_live": False,
+    })
 REPORTS_DIR = DATA_DIR / "reports"
 
 
@@ -473,6 +493,41 @@ async def invoke_function(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{spec.name} failed: {type(e).__name__}: {e}")
     return {"name": name, "inputs": inputs, "result": result}
+
+
+@router.get("/ontology/scenario-example")
+async def scenario_example() -> dict[str, Any]:
+    """Public demo output — a pre-run H5N1/China Outbreak Scenario. Lets non-admin
+    visitors (e.g. competition judges) see the full result (map, spread animation,
+    region table, sensitivity) without the admin-gated live run. Cached; generated
+    lazily on first request."""
+    if _SCENARIO_EXAMPLE_FILE.exists():
+        try:
+            return json.loads(_SCENARIO_EXAMPLE_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    with _example_lock:
+        if _SCENARIO_EXAMPLE_FILE.exists():
+            try:
+                return json.loads(_SCENARIO_EXAMPLE_FILE.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+        result = await run_in_threadpool(_generate_scenario_example)
+        try:
+            _SCENARIO_EXAMPLE_FILE.write_text(
+                json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:
+            pass
+        return result
+
+
+@router.post("/ontology/scenario-example/refresh")
+async def scenario_example_refresh(_: dict = Depends(require_admin)) -> dict[str, Any]:
+    """Regenerate the cached public demo scenario (admin)."""
+    result = await run_in_threadpool(_generate_scenario_example)
+    _SCENARIO_EXAMPLE_FILE.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"status": "ok", "escalated": result.get("summary", {}).get("escalated_count")}
 
 
 # ─────────────────────────────────────────────────────────────────────────────

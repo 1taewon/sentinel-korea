@@ -1303,7 +1303,8 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     # 기상상황 add: weather-favorability transmissibility weight (cold + dry → faster
     # spread; temperature dominant, absolute humidity = influenza seasonality driver).
     use_weather = bool(inputs.get("use_weather"))
-    weather_fav = _weather_favorability_live() if use_weather else {}  # live KMA fetch at run-time
+    weather_live = inputs.get("weather_live", True)  # example gen passes False → cached (no live fetch)
+    weather_fav = (_weather_favorability_live() if weather_live else _weather_favorability()) if use_weather else {}
     weather_source = "kma" if (use_weather and weather_fav) else ("unavailable" if use_weather else "off")
     # Weather transmissibility base (floor of the ×band; span 0.6). Default 0.7 →
     # ×0.7..1.3. User-selectable, with the same centered ±0.3 sensitivity sweep as

@@ -1741,6 +1741,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   const [useWeather, setUseWeather] = useState(false);
   const [weatherBase, setWeatherBase] = useState(0.7);
   const [loading, setLoading] = useState(false);
+  const [exampleLoading, setExampleLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const runNationalScenario = async () => {
@@ -1765,6 +1766,24 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
     } catch (e: any) {
       setStatusMsg({ ok: false, text: String(e?.message || e) });
     } finally { setLoading(false); }
+  };
+
+  // Public demo — load a pre-run H5N1/China scenario so anyone (incl. non-admin /
+  // read-only judges) can see the full output without the admin-gated live run.
+  const loadExample = async () => {
+    setExampleLoading(true); setStatusMsg(null);
+    try {
+      const r = await fetch(`${API_BASE}/ontology/scenario-example`);
+      const d = await r.json();
+      if (!r.ok || d.error || !d.regions) {
+        setStatusMsg({ ok: false, text: d.error || d.detail || '예시를 불러오지 못했습니다.' });
+        return;
+      }
+      onResult?.(d);
+      setStatusMsg({ ok: true, text: `예시 시나리오(H5N1/China) 표시 — ${d.summary?.escalated_count ?? 0}개 지역 상향, 결과 확인 →` });
+    } catch (e: any) {
+      setStatusMsg({ ok: false, text: String(e?.message || e) });
+    } finally { setExampleLoading(false); }
   };
 
   // Show the current traffic-connectivity 기준시각 (default = Monday pipeline).
@@ -1801,7 +1820,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
     <div className="whatif-standalone">
       <div className="whatif-standalone-desc">
         <strong>전국 확산 시나리오</strong> — 해외 감염병이 한국에 유입된다면? 선택한 공항 거점에서 전국 17개 시도로의 확산 패턴을 시뮬레이션합니다. <strong>항공상황 add</strong>를 켜면 발생국의 <strong>인천공항 실측 여객량</strong>으로 이동량(전파 배수)을 객관화해 분석합니다 (끄면 기본 proxy 사용). <strong>교통상황 add</strong>를 켜면 <strong>고속도로 실측 도착 교통량</strong>으로 시도별 연결성을 확산 배수에 반영하고, <strong>기상상황 add</strong>를 켜면 <strong>기상청 예보 기온</strong>으로 계절 전파력을 반영합니다.<br />
-        <span className="whatif-ref-note">참고: 항공 여객량 기반 해외유입 위험 추정은 BlueDot·GLEAM 등 국제 감염병 예측 모델의 표준 방식이며, 시도 간 이동량(연결성) 기반 국내 확산 추정은 COVID-19 시공간 확산 네트워크 연구(대한교통학회·감염 네트워크 연구)에, 기상(기온) 기반 전파력 보정은 Shang(2026) 메타분석(108개 연구·922만 건)에 근거합니다.</span>
+        <span className="whatif-ref-note">참고: 항공 여객량 기반 해외유입 위험 추정은 BlueDot 등 국제 감염병 예측 모델의 방식 차용, 시도 간 이동량(연결성) 기반 국내 확산 추정은 COVID-19 시공간 확산 네트워크 연구(대한교통학회·감염 네트워크 연구), 기상(기온) 기반 전파력 보정은 Shang(2026) 메타분석에 근거합니다.</span>
       </div>
       <div className="whatif-row">
         <label>유입 거점</label>
@@ -1928,6 +1947,10 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
         disabled={!isAdmin || loading}>
         {loading ? 'Simulating...' : isAdmin ? 'Run National Scenario (Gemini)' : 'Admin only'}
       </button>
+      <button type="button" className="whatif-example-btn" onClick={loadExample} disabled={exampleLoading}>
+        {exampleLoading ? '예시 불러오는 중…' : '예시 보기 · H5N1 China 조류독감'}
+      </button>
+      <div className="whatif-example-note">관리자가 아니어도 클릭하면 예시 결과(지도·확산 애니메이션·지역표·민감도)를 볼 수 있습니다.</div>
       {statusMsg && (
         <div className={`whatif-status-msg ${statusMsg.ok ? 'whatif-status-success' : 'whatif-status-error'}`}>
           {statusMsg.text}
