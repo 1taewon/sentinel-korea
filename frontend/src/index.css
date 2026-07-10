@@ -9182,6 +9182,10 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .epi-chart-peak { color: #38bdf8; font-weight: 700; }
 .sens-chart { display: flex; flex-direction: column; gap: 4px; }
 .sens-chart-svg { width: 100%; max-width: 540px; height: auto; margin: 0 auto; display: block; }
+.whatif-figrow { display: flex; gap: 16px; flex-wrap: wrap; align-items: stretch; }
+.whatif-figrow .whatif-fig { flex: 1 1 380px; min-width: 0; margin: 0; }
+.whatif-figrow .whatif-fig .epi-chart-svg,
+.whatif-figrow .whatif-fig .sens-chart-svg { max-width: 100%; }
 .whatif-epi-params { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; background: var(--bg-soft, #f8fafc); display: flex; flex-direction: column; gap: 6px; }
 .whatif-epi-head { font-size: 11px; font-weight: 700; color: var(--text-secondary, #475569); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .whatif-epi-known { font-size: 10px; font-weight: 600; color: #059669; }
@@ -9924,6 +9928,15 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .whatif-method-src { color: var(--text-muted, #94a3b8) !important; font-size: 10px !important; }
 .whatif-method-head { margin: 10px 0 2px !important; font-size: 11px !important; font-weight: 700 !important; color: var(--accent, #38bdf8) !important; letter-spacing: 0.02em; }
 .whatif-method-head:first-child { margin-top: 2px !important; }
+.whatif-flow { list-style: none; margin: 6px 0 4px; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.whatif-flow li { font-size: 11px; line-height: 1.5; color: var(--text-secondary, #475569); }
+.whatif-flow li:first-child { font-size: 11.5px; color: var(--text-primary, #0f172a); margin-bottom: 1px; }
+.whatif-flow li strong { color: var(--text-primary, #0f172a); font-weight: 700; }
+.whatif-flow em { color: var(--text-primary, #0f172a); font-style: normal; font-weight: 600; }
+.wf-k { display: inline-block; min-width: 64px; text-align: center; font-size: 9.5px; font-weight: 700; padding: 1px 6px; border-radius: 4px; margin-right: 6px; vertical-align: baseline; letter-spacing: 0.02em; white-space: nowrap; }
+.wf-k.api { background: rgba(56, 189, 248, 0.14); color: #0284c7; }
+.wf-k.knob { background: rgba(255, 159, 67, 0.16); color: #d97706; }
+.wf-k.eq { background: rgba(52, 211, 153, 0.15); color: #059669; }
 .whatif-intensity { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 2px 0 4px; }
 .whatif-intensity > label { font-size: 11px; font-weight: 500; color: var(--text-secondary, #475569); white-space: nowrap; }
 .whatif-intensity .whatif-traffic-base-slider { flex: 1 1 130px; }

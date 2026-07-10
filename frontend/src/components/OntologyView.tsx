@@ -814,19 +814,22 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
         </div>
       )}
 
-      {/* Epidemic curve — cumulative cases & deaths over the 28-day timeline */}
-      {s?.national_curve && s.national_curve.length > 0 && (
-        <div className="whatif-section">
-          <div className="whatif-section-title">전국 유행곡선 · 누적 확진 및 사망 (정점 {s.peak_day}일차)</div>
-          <EpiCurveChart curve={s.national_curve} peakDay={s.peak_day} />
-        </div>
-      )}
-
-      {s?.sensitivity && s.sensitivity.length > 0 && (
-        <div className="whatif-section">
-          <div className="whatif-section-title">강도 민감도 요약 · 어떤 신호가 결과를 가장 좌우하나</div>
-          <SensitivityChart items={s.sensitivity} />
-          <div className="epi-region-caveat">각 신호의 강도를 최저·최고로 바꿔 SEIR을 재실행했을 때의 28일 누적 확진 범위입니다(나머지 조건은 현재값 고정). 막대가 길수록 결과를 크게 좌우하는 요인입니다.</div>
+      {/* Epidemic curve + sensitivity — side by side on wide screens */}
+      {((s?.national_curve && s.national_curve.length > 0) || (s?.sensitivity && s.sensitivity.length > 0)) && (
+        <div className="whatif-figrow">
+          {s?.national_curve && s.national_curve.length > 0 && (
+            <div className="whatif-section whatif-fig">
+              <div className="whatif-section-title">전국 유행곡선 · 누적 확진 및 사망 (정점 {s.peak_day}일차)</div>
+              <EpiCurveChart curve={s.national_curve} peakDay={s.peak_day} />
+            </div>
+          )}
+          {s?.sensitivity && s.sensitivity.length > 0 && (
+            <div className="whatif-section whatif-fig">
+              <div className="whatif-section-title">강도 민감도 요약 · 어떤 신호가 결과를 가장 좌우하나</div>
+              <SensitivityChart items={s.sensitivity} />
+              <div className="epi-region-caveat">각 신호의 강도를 최저·최고로 바꿔 SEIR을 재실행했을 때의 28일 누적 확진 범위입니다(나머지 조건은 현재값 고정). 막대가 길수록 결과를 크게 좌우하는 요인입니다.</div>
+            </div>
+          )}
         </div>
       )}
 
@@ -1888,13 +1891,30 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
             <p className="whatif-method-head">SEIR 모델</p>
             <p>전국 17개 시도를 각각 하나의 인구집단으로 보고, 각 집단을 <strong>S(취약)·E(잠복)·I(감염)·R(회복)·D(사망)</strong> 다섯 구획으로 나눈다. 시뮬레이션은 하루 단위로 28일간 진행되며 매일 다음을 계산한다.</p>
             <p><strong>① 지역 내 감염</strong> — 한 지역의 감염자(I)가 취약자(S)를 감염시키는 힘은 전파율 β에 비례한다. <em>β = R0 ÷ 전염기(일)</em>이므로 R0가 크거나 전염기가 길수록 빠르게 확산한다. 새로 감염된 사람은 잠복(E) → 감염(I) → 회복(R) 또는 사망(D)으로 이행하며, 잠복기·전염기가 그 속도를 정한다.</p>
-            <p><strong>② 지역 간 이동</strong> — 감염자가 다른 시도로 이동해 새 유행을 일으킨다. 두 지역의 결합 강도는 <em>중력 모형</em>(인구가 많고 가까울수록 강함)에 실측 교통 연결성을 곱해 만든 17×17 연결행렬 C로 정하고, 전체 이동 비율 m으로 조절한다.</p>
+            <p><strong>② 지역 간 이동</strong> — 감염자가 다른 시도로 이동해 새 유행을 일으킨다. 두 지역의 결합 강도는 <em>중력 모형</em>(인구가 많고 가까울수록 강함)에 지역별 연결성(교통 add 시 실측 교통량, 아니면 허브 가중치)을 곱해 만든 17×17 연결행렬 C로 정하고, 전체 이동 비율 m으로 조절한다. 연결성·이동 강도의 계산은 아래 신호 반영에 정리했다.</p>
             <p><strong>③ 사망</strong> — 매일 감염 상태를 벗어나는 사람 중 치명률(CFR) 비율이 사망(D)한다. 인구는 보존되며(사망자는 D에 누적), 개입(백신·거리두기)은 없다고 가정한다. Day 0 = 거점만 감염, 나머지 전 지역은 0에서 시작한다.</p>
             <p className="whatif-method-src">Balcan et al. 2009, <em>PNAS</em>(GLEAM) · Chang et al. 2020, <em>Nature</em>(이동 네트워크 SEIR) · Ding et al. 2020(Flight-SEIR). 인구: 행정안전부 주민등록 2026-06(총 5,109만). 질병 파라미터(R0·CFR·잠복기·전염기)는 WHO/CDC 수준 문헌값을 기본으로 하며 신종은 직접 설정한다.</p>
             <p className="whatif-method-head">항공·교통·기상 신호 반영</p>
-            <p><strong>항공 유입</strong> — 발생국에서 인천공항으로 들어오는 실측 도착 여객량(data.go.kr)으로 초기 유입 규모를 결정한다. 거점의 초기 감염자 I(t=0) = 5 × 유입 규모 강도 × 국가 여객지수로, 여객이 많은 나라일수록 시작 규모가 커진다. 항공 여객 기반 유입위험 추정은 BlueDot 등 국제 감염병 예측 모델의 방식을 따른다.</p>
-            <p><strong>교통 연결성</strong> — 고속도로 실측 도착 교통량(data.ex.co.kr)을 시도별 연결성 가중치로 사용한다. 지역 간 결합행렬 C의 각 성분에 이 교통 연결성을 곱해, 교통량이 많은 시도로 감염이 더 빨리 이동한다(지도 확산 경로의 굵기·밀도로 표현). 시도 간 이동량 기반 COVID-19 확산 네트워크 연구에 근거한다.</p>
-            <p><strong>기상 전파력</strong> — 기상청 단기+중기예보 기온(~10일, data.go.kr)으로 초기 전파율을 보정한다. 예보 가능한 10일 이내에 한해 β를 <em>β × (1 + 기상 강도 × 저온지수)</em>로 높인다(기온이 낮을수록 저온지수↑). Shang et al. 2026, <em>Environment International</em>(메타분석).</p>
+            <p>각 신호의 <em>값</em>은 실측 API 데이터가 만들고, 사용자가 조절하는 것은 그 값을 수식에 넣는 <em>강도(계수)</em>뿐이다. 아래에 신호별로 [실측 API] 무엇을 불러오는지, [내가 조절] 어떤 강도를 정하는지, [수식] 그 강도가 SEIR의 어디에 들어가는지를 정리했다.</p>
+            <ul className="whatif-flow">
+              <li><strong>항공 유입</strong></li>
+              <li><span className="wf-k api">실측 API</span> 인천공항 도착 여객량(data.go.kr) → 발생국의 국가 여객지수(값 고정)</li>
+              <li><span className="wf-k knob">내가 조절</span> 유입 규모 강도 = ×0.5~3.0 (기본 1.0)</li>
+              <li><span className="wf-k eq">수식</span> 초기 감염자 <em>I(0) = 5 × 강도 × 여객지수</em> → 거점의 seed. 강도는 API 여객지수에 곱해지는 배수. BlueDot 등 항공 여객 기반 유입위험 추정 방식.</li>
+            </ul>
+            <ul className="whatif-flow">
+              <li><strong>교통 연결성 · 이동 강도</strong> (두 갈래로 반영)</li>
+              <li><span className="wf-k api">실측 API</span> 고속도로 도착 교통량(data.ex.co.kr) → 시도별 연결성 가중치(값 고정)</li>
+              <li><span className="wf-k eq">수식·어디로</span> 확산 결합 <em>C_ij = 인구_j ÷ 거리² × 연결성_j</em> (중력모형 = 인접성 × 연결성). 교통 add를 끄면 허브 가중치(서울·인천 1.0 / 경기 0.9 / 부산 0.8 / 제주 0.7 / 대구·경남 0.6 / 그 외 0.5), 켜면 실측 교통량을 연결성_j에 사용. 지도 확산 경로의 굵기·밀도가 이 값.</li>
+              <li><span className="wf-k knob">내가 조절</span> 교통 이동 강도 m = 0.03~0.25 (기본 0.10)</li>
+              <li><span className="wf-k eq">수식·얼마나</span> 감염력 <em>λ = (1−m)·지역내 + m·β·Σ C·(타지역 감염)</em>. m은 전체 감염력 중 타지역에서 오는 비율 → m↑이면 전국 확산이 빨라진다. 시도 간 이동량 기반 COVID-19 확산 네트워크 연구에 근거.</li>
+            </ul>
+            <ul className="whatif-flow">
+              <li><strong>기상 전파력</strong></li>
+              <li><span className="wf-k api">실측 API</span> 기상청 단기+중기예보 기온(~10일, data.go.kr) → 시도별 저온지수(favorability) 0~1, 추울수록↑ (값 고정)</li>
+              <li><span className="wf-k knob">내가 조절</span> 기상 강도 = 0~1 (기본 0.3)</li>
+              <li><span className="wf-k eq">수식</span> 전파율 <em>β_i = β × (1 + 강도 × 저온지수)</em>, 예보 가능한 10일 이내만 적용. 강도는 API 저온지수에 곱해지는 계수. Shang et al. 2026, <em>Environment International</em>(메타분석).</li>
+            </ul>
           </div>
         </details>
         <span className="whatif-ref-note">개입(백신·거리두기) 없는 자연확산을 가정한 예시 시나리오입니다.</span>
