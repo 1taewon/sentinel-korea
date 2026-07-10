@@ -728,23 +728,10 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
     ...regions.filter((r) => r.level_changed).map((r) => r.region_id),
   ]);
 
-  // Sensitivity cells: the 0.3/0.5/0.7 sweep, plus the chosen base if it's a custom
-  // (arbitrary) value — its count is the main summary.escalated_count.
-  const sensCells = useMemo(() => {
-    const sweep = result.summary?.traffic_sensitivity;
-    if (!sweep) return null;
-    const chosen = result.scenario?.traffic_base;
-    const cells = sweep.map((s) => ({ base: s.base, escalated_count: s.escalated_count, is_selected: false }));
-    if (typeof chosen === 'number') {
-      const match = cells.find((c) => Math.abs(c.base - chosen) < 1e-9);
-      if (match) { match.is_selected = true; }
-      else {
-        cells.push({ base: chosen, escalated_count: result.summary?.escalated_count ?? 0, is_selected: true });
-        cells.sort((a, b) => a.base - b.base);
-      }
-    }
-    return cells;
-  }, [result.summary?.traffic_sensitivity, result.scenario?.traffic_base, result.summary?.escalated_count]);
+  // Sensitivity cells come from the backend sweep, now centered on the chosen base
+  // (±0.3) with the chosen value as the selected middle point.
+  const sensCells = result.summary?.traffic_sensitivity || null;
+  const sensSelectedBase = sensCells?.find((c) => c.is_selected)?.base ?? result.scenario?.traffic_base ?? 0.5;
 
   return (
     <div className="whatif-analysis-panel">
@@ -803,12 +790,12 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
           <div className="traffic-sensitivity-cells">
             {sensCells.map((s) => (
               <div key={s.base} className={`traffic-sensitivity-cell ${s.is_selected ? 'is-selected' : ''}`}>
-                <span className="tsc-base">{s.base.toFixed(2)} {s.base <= 0.3 ? '허브집중' : s.base >= 0.7 ? '광역' : '기본'}</span>
+                <span className="tsc-base">{s.base.toFixed(2)} {s.is_selected ? '선택' : s.base < sensSelectedBase ? '허브집중' : '광역'}</span>
                 <span className="tsc-count">{s.escalated_count}개</span>
               </div>
             ))}
           </div>
-          <span className="traffic-sensitivity-hint">세 기준값에서 상향 지역 수가 비슷할수록 결과가 파라미터에 견고합니다. 지도·표·애니메이션은 선택값({(result.scenario?.traffic_base ?? 0.5).toFixed(2)}) 기준.</span>
+          <span className="traffic-sensitivity-hint">선택값({(result.scenario?.traffic_base ?? 0.5).toFixed(2)}) 중심 ±0.3 이웃값의 상향 지역 수입니다. 값이 비슷할수록 base에 견고. 지도·표·애니메이션은 선택값 기준으로 계산됩니다.</span>
         </div>
       )}
 
@@ -1856,7 +1843,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
                   <li><strong>base 낮음(예 0.3)</strong> → 확산이 <strong>연결성 높은 허브에 집중</strong>, 외진 지역은 억제</li>
                   <li>예) base 0.5 → 서울(연결성 1.0) 배수 1.5 · 외진 지역(연결성 0.3) 배수 0.8</li>
                 </ul>
-                <p>정답이 정해진 값이 아니라 <strong>가정</strong>이므로, 실행 결과에 0.3/0.5/0.7 <strong>민감도</strong>를 함께 표시해 값에 따라 결과가 얼마나 달라지는지(견고성)를 볼 수 있게 했습니다. 슬라이더로 임의값도 설정 가능합니다.</p>
+                <p>정답이 정해진 값이 아니라 <strong>가정</strong>이므로, 실행 결과에 <strong>선택값 중심 ±0.3 민감도</strong>(예: 0.6 → 0.3/0.6/0.9)를 함께 표시해 값에 따라 결과가 얼마나 달라지는지(견고성)를 볼 수 있게 했습니다. 슬라이더로 임의값도 설정 가능합니다.</p>
               </div>
             </details>
           </div>

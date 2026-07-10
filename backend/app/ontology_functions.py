@@ -1250,7 +1250,10 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     except (TypeError, ValueError):
         traffic_base = 0.5
     traffic_base = max(0.0, min(1.0, traffic_base))
-    SENS_BASES = (0.3, 0.5, 0.7)
+    # Sensitivity sweep centered on the CHOSEN base (±0.3, clamped) so the user sees
+    # the neighborhood of their own value — e.g. base 0.6 → 0.3 / 0.6 / 0.9 — not a
+    # fixed preset triple. The chosen value is always the middle point.
+    SENS_BASES = tuple(sorted({round(max(0.0, min(1.0, traffic_base + d)), 2) for d in (-0.3, 0.0, 0.3)}))
     sens_counts = {b: 0 for b in SENS_BASES}
 
     # Real outbreak context
@@ -1377,8 +1380,9 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     # Connectivity-base sensitivity — how many regions escalate at each base (traffic only).
     traffic_sensitivity = None
     if use_traffic and conn_index:
+        _chosen = round(traffic_base, 2)
         traffic_sensitivity = [
-            {"base": b, "escalated_count": sens_counts[b], "is_selected": abs(b - traffic_base) < 1e-9}
+            {"base": b, "escalated_count": sens_counts[b], "is_selected": abs(b - _chosen) < 1e-9}
             for b in SENS_BASES
         ]
 
