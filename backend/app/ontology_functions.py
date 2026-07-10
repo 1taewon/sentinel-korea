@@ -1518,6 +1518,33 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         "new_cases": sum(r["new_cases"] for r in snaps[d]),
     } for d in _TIMELINE_DAYS]
 
+    # Sensitivity summary — re-run the SEIR (reusing already-fetched data, no re-fetch)
+    # at each active signal's low/high intensity to show how much each knob drives the
+    # 28-day case total. A compact "which factor matters most" figure.
+    def _run_total(seed=seed_count, m=traffic_intensity, wi=weather_intensity):
+        sn, _dn, _c = _simulate_outbreak(entry_idx, r0_eff, cfr_eff, inc_days, inf_days,
+                                         conn_list, seed, weather_fav, use_weather, mobility=m, weather_intensity=wi)
+        rows = sn[28]
+        return sum(r["cumulative_cases"] for r in rows), sum(r["cumulative_deaths"] for r in rows)
+
+    sensitivity = []
+    if inputs.get("use_aviation") and entry_type == "airport":
+        lo = _run_total(seed=5.0 * 0.5 * aviation_mult); hi = _run_total(seed=5.0 * 3.0 * aviation_mult)
+        sensitivity.append({"key": "aviation", "label": "항공 유입 규모", "unit": "×",
+                            "low_val": 0.5, "cur_val": round(aviation_intensity, 2), "high_val": 3.0,
+                            "low_cases": lo[0], "cur_cases": total_cases, "high_cases": hi[0]})
+    if use_traffic:
+        lo = _run_total(m=0.05); hi = _run_total(m=0.25)
+        sensitivity.append({"key": "traffic", "label": "교통 이동 강도(m)", "unit": "",
+                            "low_val": 0.05, "cur_val": round(traffic_intensity, 2), "high_val": 0.25,
+                            "low_cases": lo[0], "cur_cases": total_cases, "high_cases": hi[0]})
+    if use_weather:
+        lo = _run_total(wi=0.0); hi = _run_total(wi=1.0)
+        sensitivity.append({"key": "weather", "label": "기상 전파력 강도", "unit": "",
+                            "low_val": 0.0, "cur_val": round(weather_intensity, 2), "high_val": 1.0,
+                            "low_cases": lo[0], "cur_cases": total_cases, "high_cases": hi[0]})
+    sensitivity.sort(key=lambda x: abs(x["high_cases"] - x["low_cases"]), reverse=True)
+
     origin_verb = "발생" if entry_type == "domestic" else "유입"
     return {
         "entry_point": {
@@ -1545,6 +1572,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             "affected_regions": affected,
             "worst_regions": [{"name": r["region_name"], "cases": r["cumulative_cases"]} for r in worst],
             "national_curve": national_curve,
+            "sensitivity": sensitivity,
             "total_population": _SEIR_TOTAL_POP,
         },
         "gemini_scenario": None,

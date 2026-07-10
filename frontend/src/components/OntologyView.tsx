@@ -99,6 +99,7 @@ interface NationalOutbreakResult {
     attack_rate: number; peak_day: number; peak_new_cases: number; affected_regions: number;
     worst_regions: { name: string; cases: number }[];
     national_curve: { day: number; cumulative_cases: number; cumulative_deaths: number; new_cases: number }[];
+    sensitivity?: { key: string; label: string; unit: string; low_val: number; cur_val: number; high_val: number; low_cases: number; cur_cases: number; high_cases: number }[];
     total_population: number };
   gemini_scenario?: {
     impact_summary?: string; spread_pattern?: string;
@@ -713,6 +714,39 @@ function EpiCurveChart({ curve, peakDay }: {
   );
 }
 
+// ─── Sensitivity tornado: how much each signal's intensity drives the case total ──
+function SensitivityChart({ items }: {
+  items: { key: string; label: string; unit: string; low_val: number; cur_val: number; high_val: number; low_cases: number; cur_cases: number; high_cases: number }[];
+}) {
+  const W = 460, rowH = 40, padL = 96, padR = 58, padT = 6;
+  const H = padT + items.length * rowH + 8;
+  const maxCases = Math.max(...items.map((s) => s.high_cases), 1);
+  const x = (v: number) => padL + (v / maxCases) * (W - padL - padR);
+  return (
+    <div className="sens-chart">
+      <svg viewBox={`0 0 ${W} ${H}`} className="sens-chart-svg">
+        {items.map((s, i) => {
+          const cy = padT + i * rowH + rowH / 2 - 4;
+          return (
+            <g key={s.key}>
+              <text x={2} y={cy - 1} fontSize={10} fontWeight={700} fill="var(--text-primary, #0f172a)">{s.label}</text>
+              <text x={2} y={cy + 11} fontSize={8} fill="var(--text-muted, #94a3b8)">{s.low_val}{s.unit} → {s.high_val}{s.unit}</text>
+              <line x1={x(s.low_cases)} y1={cy} x2={x(s.high_cases)} y2={cy} stroke="#ff9f43" strokeWidth={8} strokeLinecap="round" opacity={0.45} />
+              <text x={x(s.low_cases) - 4} y={cy + 3} fontSize={8} textAnchor="end" fill="var(--text-muted, #94a3b8)">{s.low_cases.toLocaleString()}</text>
+              <text x={x(s.high_cases) + 4} y={cy + 3} fontSize={9} textAnchor="start" fontWeight={700} fill="var(--text-secondary, #475569)">{s.high_cases.toLocaleString()}</text>
+              <circle cx={x(s.cur_cases)} cy={cy} r={4} fill="#ff4d4f" stroke="#fff" strokeWidth={1.5} />
+            </g>
+          );
+        })}
+      </svg>
+      <div className="epi-chart-legend">
+        <span><i style={{ background: '#ff9f43', height: '6px', borderRadius: '3px' }} /> 강도 최저↔최고 시 28일 확진 범위</span>
+        <span><i style={{ background: '#ff4d4f', width: '9px', height: '9px', borderRadius: '50%' }} /> 현재 설정</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── National Outbreak Analysis Panel (results in analysis area) ──────────
 
 function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
@@ -785,6 +819,14 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
         <div className="whatif-section">
           <div className="whatif-section-title">전국 유행곡선 · 누적 확진 및 사망 (정점 {s.peak_day}일차)</div>
           <EpiCurveChart curve={s.national_curve} peakDay={s.peak_day} />
+        </div>
+      )}
+
+      {s?.sensitivity && s.sensitivity.length > 0 && (
+        <div className="whatif-section">
+          <div className="whatif-section-title">강도 민감도 요약 · 어떤 신호가 결과를 가장 좌우하나</div>
+          <SensitivityChart items={s.sensitivity} />
+          <div className="epi-region-caveat">각 신호의 강도를 최저·최고로 바꿔 SEIR을 재실행했을 때의 28일 누적 확진 범위입니다(나머지 조건은 현재값 고정). 막대가 길수록 결과를 크게 좌우하는 요인입니다.</div>
         </div>
       )}
 
