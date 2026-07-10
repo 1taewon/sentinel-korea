@@ -580,7 +580,7 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
 
   useEffect(() => {
     if (!playing) return;
-    const id = setInterval(() => setIdx((i) => (i >= days.length - 1 ? 0 : i + 1)), 1300);
+    const id = setInterval(() => setIdx((i) => (i >= days.length - 1 ? 0 : i + 1)), 1050);
     return () => clearInterval(id);
   }, [playing, days.length]);
 
@@ -632,17 +632,24 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
           const pt = centroids.get(s.code);
           if (!pt) return null;
           const level = r ? levelAt(r, idx) : 'G0';
-          const rad = 3 + (r ? relAt(r, idx) : 0) * 14;
+          const rel = r ? relAt(r, idx) : 0;
+          const rad = 3 + rel * 14;
           const isOrigin = primaryZones.includes(s.code);
+          const active = rel > 0.1;
           return (
             <g key={s.code}>
               {isOrigin && (
                 <circle cx={pt[0]} cy={pt[1]} r={rad + 5} fill="none"
-                  stroke="rgba(255,90,50,0.7)" strokeWidth={1.5} className="scenario-spread-origin" />
+                  stroke="rgba(255,90,50,0.75)" strokeWidth={1.6} className="scenario-spread-origin" />
+              )}
+              {!isOrigin && active && (
+                <circle cx={pt[0]} cy={pt[1]} r={rad + 3} fill="none"
+                  stroke={GLEVEL_COLORS[level] || GLEVEL_COLORS.G0} strokeOpacity={0.55} strokeWidth={1.3}
+                  className="scenario-spread-pulse" />
               )}
               <circle cx={pt[0]} cy={pt[1]} r={rad} fill={GLEVEL_COLORS[level] || GLEVEL_COLORS.G0}
-                stroke="#fff" strokeWidth={1} filter={isOrigin ? 'url(#spread-glow)' : undefined}
-                style={{ transition: 'r 0.7s ease, fill 0.7s ease' }} />
+                stroke="#fff" strokeWidth={1} filter={isOrigin || level === 'G3' ? 'url(#spread-glow)' : undefined}
+                style={{ transition: 'r 0.6s ease, fill 0.6s ease' }} />
               <text x={pt[0]} y={pt[1] - rad - 3} textAnchor="middle" fontSize={9} fontWeight={700}
                 fill="#e5e7eb" stroke="rgba(0,0,0,0.6)" strokeWidth={2} paintOrder="stroke"
                 style={{ pointerEvents: 'none' }}>{s.abbr}</text>
@@ -1707,11 +1714,14 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   const [country, setCountry] = useState('');
   const [severity, setSeverity] = useState('');
   const [useAviation, setUseAviation] = useState(false);
+  const [aviationIntensity, setAviationIntensity] = useState(1.0);
   const [useTraffic, setUseTraffic] = useState(false);
+  const [trafficIntensity, setTrafficIntensity] = useState(0.1);
   const [trafficUpdatedAt, setTrafficUpdatedAt] = useState<string | null>(null);
   const [trafficRefreshing, setTrafficRefreshing] = useState(false);
   const [trafficMsg, setTrafficMsg] = useState<string | null>(null);
   const [useWeather, setUseWeather] = useState(false);
+  const [weatherIntensity, setWeatherIntensity] = useState(0.3);
   // Editable epidemiological parameters (auto-filled for known diseases, set manually for novel).
   const [r0, setR0] = useState('');
   const [cfr, setCfr] = useState('');            // percent 0..100 in the UI
@@ -1741,6 +1751,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       const r = await fetch(`${API_BASE}/ontology/functions/whatIfOutbreakNational`, {
         method: 'POST', headers: await adminHeaders(),
         body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, use_aviation: useAviation, use_traffic: useTraffic, use_weather: useWeather,
+          aviation_intensity: aviationIntensity, traffic_intensity: trafficIntensity, weather_intensity: weatherIntensity,
           r0: Number(r0) || undefined, cfr: cfr !== '' ? Number(cfr) / 100 : undefined,
           incubation_days: Number(incubation) || undefined, infectious_days: Number(infectious) || undefined } }),
       });
@@ -1832,16 +1843,19 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
         <details className="whatif-method">
           <summary>분석 방법 (SEIR 모델) — 어떻게 계산하나요?</summary>
           <div className="whatif-method-body">
-            <p>17개 시도를 각각 <strong>S(취약)·E(잠복)·I(감염)·R(회복)·D(사망)</strong> 구획으로 두고, 매일 ① 지역 내 감염(전파율 β = R0 ÷ 전염기), ② 지역 간 이동(인구·거리 중력망 + 실측 교통 연결성), ③ 사망(감염 종료자 × CFR)을 계산합니다. Day 0 = 거점만 감염, 나머지 전 지역은 0에서 시작.</p>
-            <p className="whatif-method-src">모델: 중력형 메타population SEIR — Balcan 2009 PNAS(GLEAM) · Chang 2020 Nature · Flight-SEIR(Ding 2020). 인구: 행정안전부 주민등록 2026-06. 질병 파라미터(R0·CFR·잠복·전염기)는 WHO/CDC 수준 문헌값(직접 수정 가능).</p>
+            <p>전국 17개 시도를 각각 하나의 인구집단으로 보고, 각 집단을 <strong>S(취약)·E(잠복)·I(감염)·R(회복)·D(사망)</strong> 다섯 구획으로 나눕니다. 시뮬레이션은 하루 단위로 28일간 진행되며 매일 다음을 계산합니다.</p>
+            <p><strong>① 지역 내 감염</strong> — 한 지역의 감염자(I)가 취약자(S)를 감염시키는 힘은 전파율 β에 비례합니다. <em>β = R0 ÷ 전염기(일)</em>이므로 R0가 크거나 전염기가 길수록 빠르게 퍼집니다. 새로 감염된 사람은 잠복(E) → 감염(I) → 회복(R) 또는 사망(D)으로 넘어가며, 잠복기·전염기가 그 속도를 정합니다.</p>
+            <p><strong>② 지역 간 이동</strong> — 감염자가 다른 시도로 옮겨 새 유행을 일으킵니다. 두 지역의 결합 강도는 <em>중력 모형</em>(인구가 많고 가까울수록 강함)에 실측 교통 연결성을 곱해 만든 17×17 연결행렬 C로 정하고, 전체 이동 비율 m으로 조절합니다.</p>
+            <p><strong>③ 사망</strong> — 매일 감염 상태를 벗어나는 사람 중 치명률(CFR) 비율이 사망(D)합니다. 인구는 보존되며(사망자는 D에 누적), 개입(백신·거리두기)은 없다고 가정합니다. Day 0 = 거점만 감염, 나머지 전 지역은 0에서 시작합니다.</p>
+            <p className="whatif-method-src">모델: 중력형 메타population SEIR — Balcan et al. 2009, <em>PNAS</em>(GLEAM 프레임워크) · Chang et al. 2020, <em>Nature</em>(이동 네트워크 SEIR) · Ding et al. 2020(Flight-SEIR). 인구: 행정안전부 주민등록 2026-06(총 5,109만). 질병 파라미터(R0·CFR·잠복기·전염기)는 WHO/CDC 수준 문헌값을 기본으로 하며 신종은 직접 설정합니다.</p>
           </div>
         </details>
         <details className="whatif-method">
           <summary>항공·교통·기상 add — 무엇을 어떻게 반영하나요?</summary>
           <div className="whatif-method-body">
-            <p><strong>항공 유입</strong> — 발생국→인천공항 <strong>실측 도착 여객량</strong>(data.go.kr)으로 초기 유입 규모(seed)를 스케일. 항공 여객 기반 유입위험 추정은 BlueDot·GLEAM 등 국제 감염병 예측 모델의 방식.</p>
-            <p><strong>교통 연결성</strong> — <strong>고속도로 실측 도착 교통량</strong>(data.ex.co.kr)을 시도별 연결성 가중치로 사용해 지역 간 이동(확산 경로 굵기)에 반영. 시도 간 이동량 기반 확산은 COVID-19 시공간 확산 네트워크 연구(대한교통학회·감염 네트워크 연구).</p>
-            <p><strong>기상 전파력</strong> — <strong>기상청 단기+중기예보 기온</strong>(~10일, data.go.kr)으로 초기 ≤10일 전파율(β)을 보정(추울수록↑). 기온이 호흡기감염 최강 예측인자 — Shang 2026 메타분석(108연구·922만건).</p>
+            <p><strong>항공 유입</strong> — 발생국에서 인천공항으로 들어오는 <strong>실측 도착 여객량</strong>(data.go.kr)으로 초기 유입 규모를 정합니다. <em>SEIR 반영</em>: 거점의 초기 감염자 I(t=0) = 5명 × 유입 규모 강도 × 국가 여객지수 → 여객이 많은 나라일수록 시작 규모가 커집니다. 참고: 항공 여객 기반 유입위험 추정은 BlueDot 등 국제 감염병 예측 모델의 방식.</p>
+            <p><strong>교통 연결성</strong> — <strong>고속도로 실측 도착 교통량</strong>(data.ex.co.kr)을 시도별 연결성 가중치로 사용합니다. <em>SEIR 반영</em>: 지역 간 결합행렬 C의 각 성분에 이 교통 연결성을 곱해, 교통량이 많은 시도로 감염이 더 빨리 옮겨갑니다(지도 확산 경로의 굵기·밀도로 표현). 참고: 시도 간 이동량 기반 COVID-19 확산 네트워크 연구(대한교통학회·감염 네트워크 연구).</p>
+            <p><strong>기상 전파력</strong> — <strong>기상청 단기+중기예보 기온</strong>(~10일, data.go.kr)으로 초기 전파율을 보정합니다. <em>SEIR 반영</em>: 예보 가능한 10일 이내에 한해 β를 <em>β × (1 + 기상 강도 × 저온지수)</em>로 높입니다(추울수록 저온지수↑). 참고: 기온이 호흡기감염 최강 예측인자 — Shang et al. 2026, <em>Environment International</em>(108개 연구·922만 건 메타분석).</p>
           </div>
         </details>
         <span className="whatif-ref-note">개입(백신·거리두기) 없는 자연확산을 가정한 예시 시나리오입니다.</span>
@@ -1906,13 +1920,27 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
         <span className="whatif-aviation-label">항공상황 add</span>
         <span className="whatif-aviation-hint">발생국 → 인천공항 실측 여객량으로 유입 규모(초기 감염 seed)를 스케일 (끄면 국가 proxy)</span>
       </label>
+      {useAviation && (
+        <div className="whatif-intensity">
+          <label>유입 규모 강도 <strong className="whatif-base-val">×{aviationIntensity.toFixed(1)}</strong></label>
+          <input type="range" min={0.5} max={3} step={0.5} value={aviationIntensity} disabled={exampleMode}
+            onChange={(e) => setAviationIntensity(Number(e.target.value))} className="whatif-traffic-base-slider" />
+          <span className="whatif-intensity-hint">초기 감염자 = 5 × 강도 × 여객지수 → SEIR의 I(t=0). 클수록 시작 규모↑</span>
+        </div>
+      )}
       <label className={`whatif-aviation-toggle ${useTraffic ? 'is-on' : ''}`}>
         <input type="checkbox" checked={useTraffic} onChange={(e) => setUseTraffic(e.target.checked)} />
         <span className="whatif-aviation-label">교통상황 add</span>
-        <span className="whatif-aviation-hint">고속도로 실측 교통 연결성을 지역 간 이동·확산 경로에 반영 (끄면 인구·거리 기본). 방법·출처는 위 "항공·교통·기상 add" 설명 참고.</span>
+        <span className="whatif-aviation-hint">고속도로 실측 교통 연결성을 지역 간 이동·확산 경로에 반영 (끄면 인구·거리 기본). 방법·출처는 위 설명 참고.</span>
       </label>
       {useTraffic && (
         <div className="whatif-traffic-controls">
+          <div className="whatif-intensity">
+            <label>교통 이동 강도 (m) <strong className="whatif-base-val">{trafficIntensity.toFixed(2)}</strong></label>
+            <input type="range" min={0.03} max={0.25} step={0.01} value={trafficIntensity} disabled={exampleMode}
+              onChange={(e) => setTrafficIntensity(Number(e.target.value))} className="whatif-traffic-base-slider" />
+            <span className="whatif-intensity-hint">지역 간 감염 결합 비율 m. 클수록 전국 확산↑ (연결성 높은 허브부터)</span>
+          </div>
           <div className="whatif-traffic-refresh">
             <span className="whatif-traffic-updated">
               {trafficUpdatedAt
@@ -1932,6 +1960,14 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
         <span className="whatif-aviation-label">기상상황 add</span>
         <span className="whatif-aviation-hint">기상청 예보 기온(~10일)으로 초기 ≤10일 전파력을 보정 — 실행 시 실시간 조회 (끄면 미반영). 방법·출처는 위 설명 참고.</span>
       </label>
+      {useWeather && (
+        <div className="whatif-intensity">
+          <label>기상 강도 <strong className="whatif-base-val">{weatherIntensity.toFixed(1)}</strong></label>
+          <input type="range" min={0} max={1} step={0.1} value={weatherIntensity} disabled={exampleMode}
+            onChange={(e) => setWeatherIntensity(Number(e.target.value))} className="whatif-traffic-base-slider" />
+          <span className="whatif-intensity-hint">β = β × (1 + 강도 × 저온지수) (≤10일). 클수록 계절(추위) 영향↑</span>
+        </div>
+      )}
       <div className="whatif-presets">
         {WHAT_IF_PRESETS.map((p, i) => (
           <button key={i} type="button" className="whatif-preset-btn"

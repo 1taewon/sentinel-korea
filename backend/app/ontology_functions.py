@@ -1336,19 +1336,22 @@ def _epi_level(spread_score: float) -> str:
 
 
 def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: float, inf_days: float,
-                       conn_list: list[float], aviation_mult: float, weather_fav: dict, use_weather: bool,
+                       conn_list: list[float], seed_count: float, weather_fav: dict, use_weather: bool,
+                       mobility: float = 0.10, weather_intensity: float = 0.3,
                        days: int = 28) -> tuple[dict, list, list]:
-    """Daily discrete-time metapopulation SEIR+D over the 17 시도. Returns
-    (snaps {day: [per-region row]}, daily_new [(day, national new cases)], C matrix)."""
+    """Daily discrete-time metapopulation SEIR+D over the 17 시도. Signal add-ons enter as:
+    aviation → seed_count (initial infectious at entry); traffic → conn_list feeding the
+    gravity matrix C AND the mobility fraction; weather → per-region β boost (≤10일).
+    Returns (snaps {day: [row]}, daily_new [(day, national new cases)], C matrix)."""
     n = len(_SEIR_CODES)
     Npop = [float(_SEIR_POP[c]) for c in _SEIR_CODES]
     sigma = 1.0 / max(inc_days, 0.5)
     gamma = 1.0 / max(inf_days, 0.5)
     beta_base = r0_eff * gamma
-    m = 0.10
+    m = max(0.0, min(0.4, mobility))
     C = _build_seir_conn(conn_list)
     S = list(Npop); E = [0.0] * n; I = [0.0] * n; R = [0.0] * n; D = [0.0] * n; cum = [0.0] * n
-    seed = min(5.0 * max(1.0, aviation_mult), S[entry_idx])
+    seed = min(max(1.0, seed_count), S[entry_idx])
     I[entry_idx] += seed; S[entry_idx] -= seed; cum[entry_idx] = seed
     weather_window = 10
     snaps: dict = {}; prev_cum = [0.0] * n; daily_new: list = []
@@ -1375,7 +1378,7 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
             prev_cum = list(cum)
         nS = list(S); nE = list(E); nI = list(I); nR = list(R); nD = list(D); day_new = 0.0
         for i in range(n):
-            beta_i = (beta_base * (1.0 + 0.3 * weather_fav.get(_SEIR_CODES[i], 0.0))
+            beta_i = (beta_base * (1.0 + weather_intensity * weather_fav.get(_SEIR_CODES[i], 0.0))
                       if (use_weather and d <= weather_window) else beta_base)
             local = beta_i * I[i] / Npop[i] if Npop[i] else 0.0
             imp = sum(C[i][j] * (I[j] / Npop[j] if Npop[j] else 0.0) for j in range(n) if j != i)
@@ -1455,20 +1458,28 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         else:
             aviation_source = "unavailable"
     aviation_mult = max(1.0, prox) if entry_type == "airport" else 1.0
+    # 유입 규모 강도(초기 감염자 수 스케일). aviation add 시 국가 여객지수까지 곱해짐.
+    aviation_intensity = max(0.2, min(5.0, _num("aviation_intensity", 1.0)))
+    seed_count = 5.0 * aviation_intensity * aviation_mult
 
-    # Traffic -> per-region connectivity weight in the gravity matrix.
+    # Traffic -> per-region connectivity weight in the gravity matrix + mobility fraction.
     use_traffic = bool(inputs.get("use_traffic"))
     highway = _highway_connectivity() if use_traffic else {}
     traffic_source = "highway" if (use_traffic and highway) else ("unavailable" if use_traffic else "off")
     conn_list = [(highway.get(c, 0.5) if (use_traffic and highway) else _SEIR_CONN_DEFAULT[c]) for c in _SEIR_CODES]
+    # 교통 이동 강도 = 지역 간 결합 비율 m (클수록 전국 확산 빠름).
+    traffic_intensity = max(0.02, min(0.30, _num("traffic_intensity", 0.10)))
 
     # Weather -> transmissibility boost on days <= 10 (short-term forecast horizon).
     use_weather = bool(inputs.get("use_weather"))
     weather_fav = _weather_favorability_live() if use_weather else {}
     weather_source = "kma" if (use_weather and weather_fav) else ("unavailable" if use_weather else "off")
+    # 기상 강도 = β 보정 계수 (β = β·(1 + 강도·favorability), 클수록 계절 영향 큼).
+    weather_intensity = max(0.0, min(1.0, _num("weather_intensity", 0.3)))
 
     snaps, daily_new, C = _simulate_outbreak(entry_idx, r0_eff, cfr_eff, inc_days, inf_days,
-                                             conn_list, aviation_mult, weather_fav, use_weather)
+                                             conn_list, seed_count, weather_fav, use_weather,
+                                             mobility=traffic_intensity, weather_intensity=weather_intensity)
 
     region_results = []
     for i, code in enumerate(_SEIR_CODES):
@@ -1521,6 +1532,8 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             "incubation_days": inc_days, "infectious_days": inf_days,
             "aviation": aviation_info, "aviation_source": aviation_source,
             "traffic_source": traffic_source, "weather_source": weather_source,
+            "aviation_intensity": round(aviation_intensity, 2), "traffic_intensity": round(traffic_intensity, 2),
+            "weather_intensity": round(weather_intensity, 2), "seed_count": int(round(seed_count)),
         },
         "regions": region_results,
         "summary": {
@@ -1566,10 +1579,16 @@ register(FunctionSpec(
          "description": "Infectious period in days (override)"},
         {"name": "use_aviation", "type": "boolean", "required": False, "default": False,
          "description": "Scale the imported seed by real Incheon arriving-passenger volume for the origin country"},
+        {"name": "aviation_intensity", "type": "number", "required": False, "default": 1.0,
+         "description": "유입 규모 강도 (초기 감염자 수 = 5 × intensity × 국가 여객지수)"},
         {"name": "use_traffic", "type": "boolean", "required": False, "default": False,
          "description": "Use real highway traffic connectivity as the inter-region mobility weight"},
+        {"name": "traffic_intensity", "type": "number", "required": False, "default": 0.1,
+         "description": "교통 이동 강도 = 지역 간 결합 비율 m (0.02~0.30). 클수록 전국 확산 빠름"},
         {"name": "use_weather", "type": "boolean", "required": False, "default": False,
          "description": "Boost transmissibility on days <=10 by real forecast weather favorability"},
+        {"name": "weather_intensity", "type": "number", "required": False, "default": 0.3,
+         "description": "기상 강도 = β 보정계수 (β·(1+intensity·favorability), 0~1)"},
         {"name": "weather_live", "type": "boolean", "required": False, "default": True,
          "description": "Fetch weather live at run-time (example generation passes False to use cache)"},
     ],

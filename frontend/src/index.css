@@ -9868,13 +9868,19 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .scenario-spread-slider { flex: 1 1 180px; accent-color: #ff7a3c; cursor: pointer; }
 .scenario-spread-week { font-size: 12px; font-weight: 800; color: var(--text-primary, #0f172a); min-width: 64px; font-variant-numeric: tabular-nums; }
 .scenario-spread-svg { width: 100%; max-width: 560px; height: auto; margin: 0 auto; display: block; }
-.scenario-spread-edge { animation: ssDash 0.8s linear infinite; }
+.scenario-spread-edge { animation: ssDash 0.55s linear infinite; }
 @keyframes ssDash { to { stroke-dashoffset: -16; } }
-.scenario-spread-origin { transform-box: fill-box; transform-origin: center; animation: ssOriginPulse 1.6s ease-in-out infinite; }
+.scenario-spread-origin { transform-box: fill-box; transform-origin: center; animation: ssOriginPulse 1.3s ease-in-out infinite; }
 @keyframes ssOriginPulse {
-  0% { opacity: 0.7; transform: scale(0.8); }
-  50% { opacity: 0.15; transform: scale(1.35); }
-  100% { opacity: 0.7; transform: scale(0.8); }
+  0% { opacity: 0.75; transform: scale(0.75); }
+  50% { opacity: 0.1; transform: scale(1.5); }
+  100% { opacity: 0.75; transform: scale(0.75); }
+}
+.scenario-spread-pulse { transform-box: fill-box; transform-origin: center; animation: ssNodePulse 1.6s ease-out infinite; }
+@keyframes ssNodePulse {
+  0% { opacity: 0.55; transform: scale(0.7); }
+  70% { opacity: 0; transform: scale(1.9); }
+  100% { opacity: 0; transform: scale(1.9); }
 }
 .scenario-spread-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 10px; color: var(--text-muted, #94a3b8); justify-content: center; }
 .scenario-spread-legend span { display: inline-flex; align-items: center; gap: 5px; }
@@ -9914,3 +9920,7 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .whatif-method-body p { margin: 4px 0; font-size: 11px; line-height: 1.55; color: var(--text-secondary, #475569); }
 .whatif-method-body em { color: var(--text-primary, #0f172a); font-style: normal; font-weight: 600; }
 .whatif-method-src { color: var(--text-muted, #94a3b8) !important; font-size: 10px !important; }
+.whatif-intensity { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 2px 0 4px; }
+.whatif-intensity > label { font-size: 11px; font-weight: 500; color: var(--text-secondary, #475569); white-space: nowrap; }
+.whatif-intensity .whatif-traffic-base-slider { flex: 1 1 130px; }
+.whatif-intensity-hint { flex-basis: 100%; font-size: 10px; color: var(--text-muted, #94a3b8); line-height: 1.4; }
