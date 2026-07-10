@@ -1447,6 +1447,25 @@ def _build_response_playbook(peak_day: int, national_cfr: float, r0_eff: float) 
     ]
 
 
+# Real Korean healthcare capacity, so the AI calibrates severity to reality instead of
+# over-claiming "medical-system collapse" for small outbreaks. Approximate/rounded figures
+# from OECD Health at a Glance 2023, HIRA(심평원) 의료시설·장비 통계, KDCA 국가지정 입원치료병상
+# 지침, plus historical anchors (MERS 2015, COVID omicron 2022). See research notes.
+_KOREA_HEALTHCARE_CONTEXT = (
+    "[한국 의료 대응역량 참고치 — 근사·반올림 값]\n"
+    "- 총 병상: 약 68만 병상, 인구 1,000명당 약 12.6병상(OECD 최다 수준, 급성기 병상만도 약 7.4).\n"
+    "- 중환자실(ICU): 성인 약 1만 병상, 소아·신생아 포함 전체 약 1.2만 병상.\n"
+    "- 음압병상: 국가지정 입원치료병상 약 280병상(39개소)이 상시 핵심자원, 시도지정·의무설치 포함 광의로는 약 800병상 이상, 코로나19 시기엔 감염병전담병상 전환으로 일시 수천 병상까지 확대됨.\n"
+    "- 인공호흡기 약 1만 대, ECMO 약 350대.\n"
+    "- 역사적 기준점: 메르스 2015 = 186명 확진·38명 사망 → 원내감염으로 의료가 '심각히 압박'받았으나(삼성서울병원 부분폐쇄 등) 필수의료 붕괴는 없었음. 코로나 오미크론 2022 = 일 최대 약 62만 명 확진·일 432명 사망에도 재택·경증 분리와 중증병상 확보로 필수의료 체계는 '유지'됨."
+)
+_KOREA_SEVERITY_CALIBRATION = (
+    "위 대응역량 수치에 비례해 심각도를 판단하라. 28일간 수백 명 확진·수백 명 사망 수준은 특정 지역에 상당한 부담을 주는 심각한 사건이지만, 한국 전체의 필수의료 체계를 붕괴시키는 규모는 아니다"
+    "(메르스 186명·38명도 '붕괴'가 아닌 '압박'이었고, 오미크론 일 62만 명·432명 사망에도 체계는 유지됨). "
+    "'붕괴·마비·전면 재난·의료 마비' 같은 표현은 총 병상·중환자실·음압병상 등 실제 역량치에 근접·초과하는 규모(예: 지속적으로 ICU·음압 수용력을 소진시키는 중증환자 급증)에만 사용하고, 그 외에는 '지역 의료 부담 가중', '중환자·격리 병상 압박 증가' 등 규모에 비례한 표현으로 서술하라. 국지적 원내 마비와 전국적 필수의료 붕괴를 혼동하지 말라."
+)
+
+
 def _gemini_national_scenario(*, disease_name: str, canon: str, is_novel: bool, country: str,
                               severity: str, entry_label: str, origin_verb: str, seed_region_name: str,
                               r0_eff: float, cfr_eff: float, inc_days: float, inf_days: float,
@@ -1488,7 +1507,11 @@ def _gemini_national_scenario(*, disease_name: str, canon: str, is_novel: bool, 
 - 최다 피해 지역: {worst_txt}
 - 누적 확진 추이: {curve_txt}
 
-## 작성 원칙 (톤)
+## 한국 의료 대응역량 (심각도 보정 기준)
+{_KOREA_HEALTHCARE_CONTEXT}
+
+## 작성 원칙 (정확도·톤)
+- {_KOREA_SEVERITY_CALIBRATION}
 - 당신은 최종 결정권자가 아니라 정책 결정자에게 선택지를 제시하는 자문 역할이며, 최종 판단은 정책 결정자가 한다. 단정적 명령("~한다", "~해야 한다", "~하라")이 아니라 검토·고려를 권하는 자문 어투("~을 고려한다", "~을 검토한다", "~이 필요할 수 있다", "~을 권고한다", "~을 검토할 필요가 있다")로 쓴다.
 - "강제 격리 의무화", "전면 봉쇄", "즉각 격리" 같은 강압적·극단적 표현은 피하고, "격리 및 모니터링 강화 검토", "이동 자제 권고", "선제적 대비" 등 완화된 표현을 쓴다.
 
