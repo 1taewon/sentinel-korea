@@ -9922,6 +9922,8 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .whatif-method-body p { margin: 4px 0; font-size: 11px; line-height: 1.55; color: var(--text-secondary, #475569); }
 .whatif-method-body em { color: var(--text-primary, #0f172a); font-style: normal; font-weight: 600; }
 .whatif-method-src { color: var(--text-muted, #94a3b8) !important; font-size: 10px !important; }
+.whatif-method-head { margin: 10px 0 2px !important; font-size: 11px !important; font-weight: 700 !important; color: var(--accent, #38bdf8) !important; letter-spacing: 0.02em; }
+.whatif-method-head:first-child { margin-top: 2px !important; }
 .whatif-intensity { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 2px 0 4px; }
 .whatif-intensity > label { font-size: 11px; font-weight: 500; color: var(--text-secondary, #475569); white-space: nowrap; }
 .whatif-intensity .whatif-traffic-base-slider { flex: 1 1 130px; }
