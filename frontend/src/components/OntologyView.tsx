@@ -1299,14 +1299,38 @@ export default function OntologyView() {
         <div className="ontology-sidebar-section">
           <div className="ontology-pane-title">OBJECT TYPES</div>
           <div className="ontology-type-list">
-            {schema.object_types.map((t) => {
+            {/* Order: Disease & Outbreak Scenario first (most useful, emphasized), then Region, Snapshot */}
+            {(['Disease', 'WhatIf', 'Region', 'Snapshot'] as const).map((tabId) => {
+              const featured = tabId === 'Disease' || tabId === 'WhatIf';
+              if (tabId === 'WhatIf') {
+                return (
+                  <button key="WhatIf"
+                    className={`ontology-type-card ontology-type-card--featured ${selectedType === 'WhatIf' ? 'is-active' : ''}`}
+                    onClick={() => setSelectedType('WhatIf')}
+                    style={{ borderLeftColor: '#fb7185' }} type="button">
+                    <div className="ontology-type-card-row">
+                      <span className="ontology-type-card-name">Outbreak Scenario
+                        <span className="ontology-type-card-featured-tag">추천</span>
+                      </span>
+                    </div>
+                    <div className="ontology-type-card-kr">가상 유입 시나리오 분석</div>
+                    <div className="ontology-type-card-desc">
+                      해외 신종 감염병 발생 시 한국 지역에 미치는 영향을 시뮬레이션합니다.
+                    </div>
+                  </button>
+                );
+              }
+              const t = schema.object_types.find((o) => o.id === tabId);
+              if (!t) return null;
               const desc = TYPE_DESCRIPTIONS[t.id];
               return (
                 <button key={t.id}
-                  className={`ontology-type-card ${selectedType === t.id ? 'is-active' : ''}`}
+                  className={`ontology-type-card ${featured ? 'ontology-type-card--featured' : ''} ${selectedType === t.id ? 'is-active' : ''}`}
                   onClick={() => setSelectedType(t.id)} style={{ borderLeftColor: t.color }} type="button">
                   <div className="ontology-type-card-row">
-                    <span className="ontology-type-card-name">{t.label}</span>
+                    <span className="ontology-type-card-name">{t.label}
+                      {featured && <span className="ontology-type-card-featured-tag">추천</span>}
+                    </span>
                     <span className="ontology-type-card-count" style={{ color: t.color }}>{t.instance_count}</span>
                   </div>
                   <div className="ontology-type-card-kr">{t.label_kr}</div>
@@ -1314,18 +1338,6 @@ export default function OntologyView() {
                 </button>
               );
             })}
-            {/* Outbreak Scenario */}
-            <button className={`ontology-type-card ${selectedType === 'WhatIf' ? 'is-active' : ''}`}
-              onClick={() => setSelectedType('WhatIf')}
-              style={{ borderLeftColor: '#fb7185' }} type="button">
-              <div className="ontology-type-card-row">
-                <span className="ontology-type-card-name">Outbreak Scenario</span>
-              </div>
-              <div className="ontology-type-card-kr">가상 유입 시나리오 분석</div>
-              <div className="ontology-type-card-desc">
-                해외 신종 감염병 발생 시 한국 지역에 미치는 영향을 시뮬레이션합니다.
-              </div>
-            </button>
           </div>
         </div>
 

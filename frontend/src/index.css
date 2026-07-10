@@ -8054,6 +8054,30 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   background: rgba(56, 189, 248, 0.12);
   box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4) inset;
 }
+/* Featured tabs (Disease, Outbreak Scenario) — slightly larger + accented, they're the most useful */
+.ontology-type-card--featured {
+  padding: 13px 12px;
+  border-left-width: 4px;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.07), var(--bg-soft));
+  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.10);
+}
+.ontology-type-card--featured:hover {
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.20);
+  transform: translateY(-1px);
+}
+.ontology-type-card--featured .ontology-type-card-name { font-size: 15px; }
+.ontology-type-card-featured-tag {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #38bdf8;
+  color: #06111f;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
 .ontology-type-card-row {
   display: flex;
   align-items: baseline;
