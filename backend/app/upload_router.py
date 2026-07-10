@@ -219,6 +219,24 @@ async def refresh_global_signals(_: dict = Depends(require_admin)) -> dict[str, 
         status = "error"
     else:
         status = "empty"
+
+    # Aviation import-risk (인천공항 국가별 여객) — objective mobility signal.
+    # Kept separate from outbreak sources (own file, not the archive) and appended
+    # after status calc so it never skews it. No-op if AVIATION_API_KEY is unset.
+    try:
+        av_mod = __import_script("fetch_aviation_stats")
+        av_data = av_mod.fetch_aviation_stats()
+        (PROCESSED_DIR / "aviation_passenger_by_country.json").write_text(
+            json.dumps(av_data, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        results["aviation"] = {
+            "status": av_data.get("status"),
+            "month": av_data.get("month"),
+            "countries": len(av_data.get("countries", {})),
+        }
+    except Exception as exc:
+        results["aviation"] = {"status": "error", "error": str(exc)}
+
     return {"status": status, "results": results}
 
 

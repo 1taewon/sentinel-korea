@@ -77,6 +77,19 @@ async def signals_global(archive_date: str | None = None) -> list[dict]:
     return _load(MOCK_DIR / "mock_global_signals.json")
 
 
+@router.get("/signals/aviation")
+async def signals_aviation() -> dict[str, Any]:
+    """Objective import-risk factor — Incheon arriving-passenger volume by country
+    (log-normalized 0..1), keyed by English country name. Used to replace the
+    outbreak layer's hardcoded mobility proxy when the '항공상황 add' toggle is on.
+    Returns {"status": "empty", "countries": {}} when not yet collected.
+    """
+    data = _load(PROCESSED_DIR / "aviation_passenger_by_country.json")
+    if not data or not isinstance(data, dict):
+        return {"status": "empty", "countries": {}}
+    return data
+
+
 @router.get("/signals/global/archive-dates")
 async def signals_global_archive_dates() -> list[str]:
     """List available archive snapshot dates (YYYY-MM-DD), newest first."""
