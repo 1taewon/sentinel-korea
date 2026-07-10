@@ -84,7 +84,7 @@ interface NationalRegionResult {
   region_id: string; region_name: string;
   is_primary_zone?: boolean; is_seed?: boolean; population: number;
   cumulative_cases: number; cumulative_deaths: number; attack_rate: number; effective_cfr: number;
-  scenario_level: string; spread_multiplier: number;
+  scenario_level: string; spread_multiplier: number; connectivity?: number;
   timeline: EpiTimelinePoint[];
   error?: string;
 }
@@ -572,7 +572,7 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
     const o = originPts[0];
     return regions
       .filter((r) => !primaryZones.includes(r.region_id) && !r.error)
-      .map((r) => { const c = centroids.get(r.region_id); return c ? { code: r.region_id, from: o, to: c, mult: r.spread_multiplier || 0 } : null; })
+      .map((r) => { const c = centroids.get(r.region_id); return c ? { code: r.region_id, from: o, to: c, mult: (r.connectivity ?? r.spread_multiplier) || 0 } : null; })
       .filter(Boolean) as { code: string; from: [number, number]; to: [number, number]; mult: number }[];
   }, [regions, originPts, centroids, primaryZones]);
   const maxMult = useMemo(() => Math.max(1, ...edges.map((e) => e.mult)), [edges]);
@@ -1828,9 +1828,23 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   return (
     <div className="whatif-standalone">
       <div className="whatif-standalone-desc">
-        <strong>가상 유입·확산 시나리오 (역학 SEIR)</strong> — 해외 감염병이 국내로 유입되거나, 국내 특정 지역에서 감염병이 발생해 확산되는 상황을 가정합니다. 선택한 <strong>유입·확산 거점</strong>(공항 = 해외 유입 / 지역명 = 국내 발생)에서 시작해, 실제 시도별 인구와 질병 파라미터(R0·CFR·잠복기·전염기)로 <strong>메타population SEIR 모델</strong>을 28일간 시뮬레이션해 시도별 <strong>확진·사망·치명률·발병률</strong>을 계산합니다.<br />
-        <strong>분석 방법</strong> — 17개 시도를 각각 S(취약)·E(잠복)·I(감염)·R(회복)·D(사망) 구획으로 두고, ① 지역 내 감염(전파율 β = R0 ÷ 전염기), ② 지역 간 이동(인구·거리 중력망 + 실측 교통 연결성)으로 매일 새 감염·발병·사망을 계산합니다. Day 0 = 거점만 감염, 나머지 전 지역은 0에서 시작. 항공/교통/기상 add로 실측 유입 규모·이동 연결성·초기 전파력을 반영합니다.<br />
-        <span className="whatif-ref-note">모델: 중력형 메타population SEIR (Balcan 2009 PNAS · Chang 2020 Nature · Flight-SEIR Ding 2020). 인구: 행정안전부 주민등록 2026-06. 개입(백신·거리두기) 없는 자연확산 가정의 예시 — 예보가 아닙니다.</span>
+        <strong>가상 유입·확산 시나리오 (역학 SEIR)</strong> — 해외 감염병 유입 또는 국내 지역 발생을 가정해, 선택한 거점에서 전국 17개 시도로 퍼지는 확산을 <strong>메타population SEIR 모델</strong>로 28일간 시뮬레이션해 시도별 <strong>확진·사망·치명률·발병률</strong>을 계산합니다.
+        <details className="whatif-method">
+          <summary>분석 방법 (SEIR 모델) — 어떻게 계산하나요?</summary>
+          <div className="whatif-method-body">
+            <p>17개 시도를 각각 <strong>S(취약)·E(잠복)·I(감염)·R(회복)·D(사망)</strong> 구획으로 두고, 매일 ① 지역 내 감염(전파율 β = R0 ÷ 전염기), ② 지역 간 이동(인구·거리 중력망 + 실측 교통 연결성), ③ 사망(감염 종료자 × CFR)을 계산합니다. Day 0 = 거점만 감염, 나머지 전 지역은 0에서 시작.</p>
+            <p className="whatif-method-src">모델: 중력형 메타population SEIR — Balcan 2009 PNAS(GLEAM) · Chang 2020 Nature · Flight-SEIR(Ding 2020). 인구: 행정안전부 주민등록 2026-06. 질병 파라미터(R0·CFR·잠복·전염기)는 WHO/CDC 수준 문헌값(직접 수정 가능).</p>
+          </div>
+        </details>
+        <details className="whatif-method">
+          <summary>항공·교통·기상 add — 무엇을 어떻게 반영하나요?</summary>
+          <div className="whatif-method-body">
+            <p><strong>항공 유입</strong> — 발생국→인천공항 <strong>실측 도착 여객량</strong>(data.go.kr)으로 초기 유입 규모(seed)를 스케일. 항공 여객 기반 유입위험 추정은 BlueDot·GLEAM 등 국제 감염병 예측 모델의 방식.</p>
+            <p><strong>교통 연결성</strong> — <strong>고속도로 실측 도착 교통량</strong>(data.ex.co.kr)을 시도별 연결성 가중치로 사용해 지역 간 이동(확산 경로 굵기)에 반영. 시도 간 이동량 기반 확산은 COVID-19 시공간 확산 네트워크 연구(대한교통학회·감염 네트워크 연구).</p>
+            <p><strong>기상 전파력</strong> — <strong>기상청 단기+중기예보 기온</strong>(~10일, data.go.kr)으로 초기 ≤10일 전파율(β)을 보정(추울수록↑). 기온이 호흡기감염 최강 예측인자 — Shang 2026 메타분석(108연구·922만건).</p>
+          </div>
+        </details>
+        <span className="whatif-ref-note">개입(백신·거리두기) 없는 자연확산을 가정한 예시 시나리오입니다.</span>
       </div>
       <div className="whatif-row">
         <label>유입·확산 거점</label>
@@ -1895,7 +1909,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       <label className={`whatif-aviation-toggle ${useTraffic ? 'is-on' : ''}`}>
         <input type="checkbox" checked={useTraffic} onChange={(e) => setUseTraffic(e.target.checked)} />
         <span className="whatif-aviation-label">교통상황 add</span>
-        <span className="whatif-aviation-hint">고속도로 실측 교통 연결성을 지역 간 이동(감염 결합) 가중치로 사용 — 연결성 높은 허브로 먼저 확산. 대한교통학회·감염 네트워크 연구 기반. (끄면 인구·거리 기반 기본 연결성)</span>
+        <span className="whatif-aviation-hint">고속도로 실측 교통 연결성을 지역 간 이동·확산 경로에 반영 (끄면 인구·거리 기본). 방법·출처는 위 "항공·교통·기상 add" 설명 참고.</span>
       </label>
       {useTraffic && (
         <div className="whatif-traffic-controls">
@@ -1916,7 +1930,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       <label className={`whatif-aviation-toggle ${useWeather ? 'is-on' : ''}`}>
         <input type="checkbox" checked={useWeather} onChange={(e) => setUseWeather(e.target.checked)} />
         <span className="whatif-aviation-label">기상상황 add</span>
-        <span className="whatif-aviation-hint">기상청 단기+중기예보 기온(~10일)으로 초기 ≤10일 전파력(β)을 보정 — 추울수록 확산↑. 시나리오 실행 시 실시간 조회. 기온이 호흡기감염 최강 예측인자 (Shang 2026 메타분석).</span>
+        <span className="whatif-aviation-hint">기상청 예보 기온(~10일)으로 초기 ≤10일 전파력을 보정 — 실행 시 실시간 조회 (끄면 미반영). 방법·출처는 위 설명 참고.</span>
       </label>
       <div className="whatif-presets">
         {WHAT_IF_PRESETS.map((p, i) => (

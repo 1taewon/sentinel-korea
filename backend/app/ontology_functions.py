@@ -1486,6 +1486,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             "effective_cfr": last["effective_cfr"],
             "scenario_level": last["level"],
             "spread_multiplier": round(C[i][entry_idx], 3) if i != entry_idx else 1.0,
+            "connectivity": round(conn_list[i], 3),   # traffic connectivity weight (real highway when 교통 add)
             "timeline": [{"day": t["day"], "cumulative_cases": t["cumulative_cases"], "new_cases": t["new_cases"],
                           "cumulative_deaths": t["cumulative_deaths"], "attack_rate": t["attack_rate"],
                           "effective_cfr": t["effective_cfr"], "score": t["score"], "level": t["level"]} for t in tl],
@@ -1540,7 +1541,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             f"28일 후 전국 누적 {total_cases:,}명 확진, {total_deaths:,}명 사망 예상 "
             f"(전국 발병률 {total_cases / _SEIR_TOTAL_POP * 100:.2f}%, 정점 {peak_day}일차). "
             f"최다 피해: {', '.join(r['region_name'] for r in worst)}. "
-            f"※ 개입(백신·거리두기) 없는 자연확산 가정의 예시 시나리오 — 예보가 아님."
+            f"※ 개입(백신·거리두기) 없는 자연확산을 가정한 예시 시나리오입니다."
         ),
     }
 
