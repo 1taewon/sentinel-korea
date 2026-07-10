@@ -73,28 +73,33 @@ interface RecommendationsResult {
 }
 
 // What-if types
-interface WhatIfComparison {
-  weeks_ahead: number; baseline_score: number; baseline_level: string;
-  scenario_score: number; scenario_level: string; delta: number; level_changed: boolean;
-}
-// WhatIfResult removed — replaced by NationalOutbreakResult for national spread model.
+// WhatIfResult / WhatIfComparison removed — replaced by the SEIR epidemiological result.
 
-// National outbreak spread result
+// National outbreak epidemiological (SEIR) result
+interface EpiTimelinePoint {
+  day: number; cumulative_cases: number; new_cases: number; cumulative_deaths: number;
+  attack_rate: number; effective_cfr: number; score: number; level: string;
+}
 interface NationalRegionResult {
   region_id: string; region_name: string;
-  is_primary_zone?: boolean; spread_multiplier: number; lift: number;
-  baseline_level: string; baseline_score: number;
-  scenario_level: string; scenario_score: number;
-  max_delta: number; level_changed: boolean;
-  comparison: WhatIfComparison[];
-  timeline?: { day: number; score: number; level: string }[];
+  is_primary_zone?: boolean; is_seed?: boolean; population: number;
+  cumulative_cases: number; cumulative_deaths: number; attack_rate: number; effective_cfr: number;
+  scenario_level: string; spread_multiplier: number;
+  timeline: EpiTimelinePoint[];
   error?: string;
 }
 interface NationalOutbreakResult {
-  entry_point: { code: string; label: string; primary_zones: string[] };
-  scenario: { disease: string; country: string; severity: string; base_lift: number; proximity_multiplier: number; proximity_source?: string; aviation?: { multiplier: number; arr_passengers: number; country_kr: string; month: string } | null; traffic_source?: string; traffic_base?: number; weather_source?: string; weather_base?: number };
+  entry_point: { code: string; label: string; primary_zones: string[]; seed_region?: string; seed_region_name?: string };
+  scenario: { disease: string; disease_matched?: string; is_novel?: boolean; country: string; severity: string;
+    r0: number; cfr: number; r0_base?: number; cfr_base?: number; incubation_days?: number; infectious_days?: number;
+    aviation?: { multiplier: number; arr_passengers: number; country_kr: string; month: string } | null;
+    aviation_source?: string; traffic_source?: string; weather_source?: string };
   regions: NationalRegionResult[];
-  summary: { total_regions: number; escalated_count: number; escalated_regions: string[]; total_delta: number; traffic_sensitivity?: { base: number; escalated_count: number; is_selected: boolean }[] | null; weather_sensitivity?: { base: number; escalated_count: number; is_selected: boolean }[] | null };
+  summary: { total_regions: number; total_cases: number; total_deaths: number; national_cfr: number;
+    attack_rate: number; peak_day: number; peak_new_cases: number; affected_regions: number;
+    worst_regions: { name: string; cases: number }[];
+    national_curve: { day: number; cumulative_cases: number; cumulative_deaths: number; new_cases: number }[];
+    total_population: number };
   gemini_scenario?: {
     impact_summary?: string; spread_pattern?: string;
     timeline?: { week?: number; description?: string }[];
@@ -540,11 +545,18 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
     return m;
   }, [projection]);
 
-  const levelAt = (r: NationalRegionResult, i: number): string =>
-    r.timeline?.[i]?.level || r.baseline_level || 'G0';
-  const scoreAt = (r: NationalRegionResult, i: number): number =>
-    r.timeline?.[i]?.score ?? r.baseline_score ?? 0;
-  const baseScore = (r: NationalRegionResult): number => r.timeline?.[0]?.score ?? r.baseline_score ?? 0;
+  // Visualise RELATIVE spread: each region's cumulative cases vs the current worst
+  // region that frame, so the map lights up and the diffusion pattern is legible even
+  // while absolute attack rates are still tiny early on. (Table shows absolute numbers.)
+  const casesAt = (r: NationalRegionResult, i: number): number => r.timeline?.[i]?.cumulative_cases ?? 0;
+  const maxCasesAt = useMemo(
+    () => days.map((_, i) => Math.max(1, ...regions.map((r) => casesAt(r, i)))),
+    [regions, days]);
+  const relAt = (r: NationalRegionResult, i: number): number => casesAt(r, i) / (maxCasesAt[i] || 1);
+  const levelAt = (r: NationalRegionResult, i: number): string => {
+    const rel = relAt(r, i);
+    return rel >= 0.66 ? 'G3' : rel >= 0.33 ? 'G2' : rel >= 0.08 ? 'G1' : 'G0';
+  };
 
   const polys = useMemo(() => features.map((f: any, i: number) => {
     const sido = String(f.properties?.code || '').substring(0, 2);
@@ -604,7 +616,7 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
         })}
         {idx >= 1 && edges.map((e) => {
           const r = regionByCode.get(e.code);
-          if (!r || scoreAt(r, idx) <= baseScore(r) + 0.008) return null;
+          if (!r || casesAt(r, idx) <= 0) return null;
           // Thickness + dash density scale with traffic connectivity (spread_multiplier):
           // busier corridors get thicker, denser-dashed spread paths.
           const norm = maxMult > minMult ? (e.mult - minMult) / (maxMult - minMult) : 0.5;
@@ -620,7 +632,7 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
           const pt = centroids.get(s.code);
           if (!pt) return null;
           const level = r ? levelAt(r, idx) : 'G0';
-          const rad = 3 + (r ? scoreAt(r, idx) : 0) * 9;
+          const rad = 3 + (r ? relAt(r, idx) : 0) * 14;
           const isOrigin = primaryZones.includes(s.code);
           return (
             <g key={s.code}>
@@ -639,9 +651,56 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
         })}
       </svg>
       <div className="scenario-spread-legend">
-        <span><i className="ssl-origin" /> 해외유입 거점(항공): {entryLabel}</span>
+        <span><i className="ssl-origin" /> 유입 거점: {entryLabel}</span>
         <span><i className="ssl-edge" /> 확산 경로 (굵기·밀도 = 교통 연결성)</span>
-        <span><i className="ssl-node" /> 시도 위험도 (크기 = 예측 점수)</span>
+        <span><i className="ssl-node" /> 시도 감염 규모 (크기·색 = 최다 지역 대비 상대)</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Epidemic curve: cumulative cases + deaths over the day-level timeline ───
+function EpiCurveChart({ curve, peakDay }: {
+  curve: { day: number; cumulative_cases: number; cumulative_deaths: number; new_cases: number }[];
+  peakDay: number;
+}) {
+  const W = 460, H = 200, padL = 50, padR = 14, padT = 14, padB = 26;
+  const maxDay = Math.max(...curve.map((c) => c.day), 1);
+  const maxCases = Math.max(...curve.map((c) => c.cumulative_cases), 1);
+  const maxDeaths = Math.max(...curve.map((c) => c.cumulative_deaths), 0);
+  const x = (d: number) => padL + (d / maxDay) * (W - padL - padR);
+  const y = (v: number) => H - padB - (v / maxCases) * (H - padT - padB);
+  const line = (key: 'cumulative_cases' | 'cumulative_deaths') =>
+    curve.map((c, i) => `${i === 0 ? 'M' : 'L'} ${x(c.day).toFixed(1)} ${y(c[key]).toFixed(1)}`).join(' ');
+  const casesLine = line('cumulative_cases');
+  const area = `${casesLine} L ${x(maxDay).toFixed(1)} ${(H - padB).toFixed(1)} L ${x(0).toFixed(1)} ${(H - padB).toFixed(1)} Z`;
+  return (
+    <div className="epi-chart">
+      <svg viewBox={`0 0 ${W} ${H}`} className="epi-chart-svg">
+        {[0, 0.25, 0.5, 0.75, 1].map((f, i) => {
+          const v = f * maxCases;
+          return (
+            <g key={i}>
+              <line x1={padL} y1={y(v)} x2={W - padR} y2={y(v)} stroke="rgba(148,163,184,0.2)" strokeWidth={0.5} />
+              <text x={padL - 5} y={y(v) + 3} textAnchor="end" fontSize={8} fill="var(--text-muted,#94a3b8)">{Math.round(v).toLocaleString()}</text>
+            </g>
+          );
+        })}
+        {curve.map((c) => (
+          <text key={c.day} x={x(c.day)} y={H - padB + 12} textAnchor="middle" fontSize={8} fill="var(--text-muted,#94a3b8)">
+            {c.day === 0 ? '0' : c.day < 14 ? `${c.day}일` : `${c.day / 7}주`}
+          </text>
+        ))}
+        <line x1={x(peakDay)} y1={padT} x2={x(peakDay)} y2={H - padB} stroke="rgba(56,189,248,0.55)" strokeWidth={1} strokeDasharray="3 3" />
+        <path d={area} fill="rgba(255,159,67,0.15)" />
+        <path d={casesLine} fill="none" stroke="#ff9f43" strokeWidth={2} />
+        <path d={line('cumulative_deaths')} fill="none" stroke="#ff4d4f" strokeWidth={1.8} />
+        {curve.map((c) => <circle key={c.day} cx={x(c.day)} cy={y(c.cumulative_cases)} r={2.2} fill="#ff9f43" />)}
+      </svg>
+      <div className="epi-chart-legend">
+        <span><i style={{ background: '#ff9f43' }} /> 누적 확진 (최대 {maxCases.toLocaleString()})</span>
+        <span><i style={{ background: '#ff4d4f' }} /> 누적 사망 (최대 {maxDeaths.toLocaleString()})</span>
+        <span className="epi-chart-peak">정점 {peakDay}일차</span>
       </div>
     </div>
   );
@@ -654,126 +713,102 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
   const ep = result.entry_point;
 
   const regions = result.regions || [];
-
-  // Sensitivity cells come from the backend sweep, now centered on the chosen base
-  // (±0.3) with the chosen value as the selected middle point.
-  const sensCells = result.summary?.traffic_sensitivity || null;
-  const sensSelectedBase = sensCells?.find((c) => c.is_selected)?.base ?? result.scenario?.traffic_base ?? 0.5;
-  const wxSensCells = result.summary?.weather_sensitivity || null;
-  const wxSensSelectedBase = wxSensCells?.find((c) => c.is_selected)?.base ?? result.scenario?.weather_base ?? 0.7;
+  const s = result.summary;
+  const sc = result.scenario;
+  const fmt = (n?: number) => (n ?? 0).toLocaleString('ko-KR');
+  const pct = (n?: number, d = 2) => `${((n ?? 0) * 100).toFixed(d)}%`;
 
   return (
     <div className="whatif-analysis-panel">
       {/* Header */}
       <div className="whatif-analysis-header">
-        <span className="whatif-analysis-tag">NATIONAL SPREAD SCENARIO</span>
-        <span className="whatif-analysis-region">{ep?.label || ep?.code || '—'}</span>
-        <span className="whatif-analysis-scenario">
-          {result.scenario?.disease} / {result.scenario?.country} / {result.scenario?.severity}
-        </span>
-        {result.scenario?.proximity_source === 'aviation' && result.scenario?.aviation ? (
-          <span className="whatif-mobility-badge whatif-mobility-badge--real" title="발생국→인천 실측 도착 여객량 기반 이동량">
-            실측 여객 {result.scenario.aviation.country_kr} {result.scenario.aviation.arr_passengers?.toLocaleString()}명/{result.scenario.aviation.month} · ×{result.scenario.proximity_multiplier}
-          </span>
-        ) : (
-          <span className="whatif-mobility-badge" title="하드코딩 이동량 proxy (항공상황 add 미적용)">
-            이동량 proxy · ×{result.scenario?.proximity_multiplier}
-          </span>
+        <span className="whatif-analysis-tag">OUTBREAK EPIDEMIC SIMULATION</span>
+        <span className="whatif-analysis-region">{ep?.label || ep?.code || '—'}{ep?.seed_region_name ? ` → ${ep.seed_region_name}` : ''}</span>
+        <span className="whatif-analysis-scenario">{sc?.disease} / {sc?.country} / {sc?.severity}</span>
+        <span className="whatif-mobility-badge" title="유효 기초감염재생산수 (severity 반영)">R0 {sc?.r0}</span>
+        <span className="whatif-mobility-badge" title="유효 치명률 (severity 반영, 최대 50%)">CFR {pct(sc?.cfr, 1)}</span>
+        {sc?.is_novel && <span className="whatif-mobility-badge whatif-mobility-badge--real" title="신종감염병 — 직접 설정한 파라미터로 시뮬레이션">신종 파라미터</span>}
+        {sc?.aviation_source === 'aviation' && (
+          <span className="whatif-mobility-badge whatif-mobility-badge--real" title="발생국→인천 실측 도착 여객량으로 유입 규모(seed) 스케일">항공 유입 반영(실측)</span>
         )}
-        {result.scenario?.traffic_source === 'highway' && (
-          <span className="whatif-mobility-badge whatif-mobility-badge--real" title="고속도로 실측 도착 교통량 기반 지역 연결성을 확산 배수에 반영">
-            교통 연결성 반영(실측)
-          </span>
+        {sc?.traffic_source === 'highway' && (
+          <span className="whatif-mobility-badge whatif-mobility-badge--real" title="고속도로 실측 교통 연결성을 지역 간 이동 결합에 반영">교통 연결성 반영(실측)</span>
         )}
-        {result.scenario?.weather_source === 'kma' && (
-          <span className="whatif-mobility-badge whatif-mobility-badge--real" title="기상청 예보 기온 실시간 조회 기반 계절 전파력 반영">
-            기상 전파력 반영(실시간)
-          </span>
+        {sc?.weather_source === 'kma' && (
+          <span className="whatif-mobility-badge whatif-mobility-badge--real" title="기상청 예보 기온으로 ≤10일 전파력 보정">기상 전파력 반영</span>
         )}
       </div>
 
-      {/* Summary bar */}
-      <div className="national-summary-bar">
+      {/* Epidemiological headline numbers (28일 후) */}
+      <div className="national-summary-bar epi">
         <div className="national-summary-stat">
-          <span className="national-summary-num">{result.summary?.escalated_count ?? 0}</span>
-          <span className="national-summary-label">G-level 상향 지역</span>
+          <span className="national-summary-num">{fmt(s?.total_cases)}</span>
+          <span className="national-summary-label">누적 확진 (28일)</span>
         </div>
         <div className="national-summary-stat">
-          <span className="national-summary-num">+{(result.summary?.total_delta ?? 0).toFixed(3)}</span>
-          <span className="national-summary-label">전국 총 Delta</span>
+          <span className="national-summary-num death">{fmt(s?.total_deaths)}</span>
+          <span className="national-summary-label">누적 사망</span>
         </div>
         <div className="national-summary-stat">
-          <span className="national-summary-num">{ep?.primary_zones?.length ?? 0}</span>
-          <span className="national-summary-label">1차 영향 지역</span>
+          <span className="national-summary-num">{pct(s?.national_cfr, 1)}</span>
+          <span className="national-summary-label">전국 치명률</span>
+        </div>
+        <div className="national-summary-stat">
+          <span className="national-summary-num">{pct(s?.attack_rate, 3)}</span>
+          <span className="national-summary-label">전국 발병률</span>
+        </div>
+        <div className="national-summary-stat">
+          <span className="national-summary-num">{s?.affected_regions ?? 0}/17</span>
+          <span className="national-summary-label">확산 지역</span>
         </div>
       </div>
 
-      {/* Hero figure: animated spread across the landing 시도 map */}
+      {/* Hero figure: animated spatial spread across the 시도 map */}
       {regions.length > 0 && (
         <div className="whatif-section">
-          <div className="whatif-section-title">확산 시뮬레이션 · 항공 유입 → 교통 연결성·인접성 확산</div>
-          <ScenarioSpreadMap regions={regions} primaryZones={ep?.primary_zones || []}
-            entryLabel={ep?.label || ep?.code || '유입 거점'} />
+          <div className="whatif-section-title">확산 시뮬레이션 · 유입 거점 → 전국 (노드 크기 = 예측 감염 강도)</div>
+          <ScenarioSpreadMap regions={regions}
+            primaryZones={ep?.seed_region ? [ep.seed_region] : (ep?.primary_zones || [])}
+            entryLabel={ep?.seed_region_name || ep?.label || '유입 거점'} />
         </div>
       )}
 
-      {/* Connectivity-base sensitivity — escalated-region count at base 0.3/0.5/0.7 (+chosen) */}
-      {sensCells && (
-        <div className="traffic-sensitivity">
-          <span className="traffic-sensitivity-label">연결성 base 민감도 · 상향 지역 수</span>
-          <div className="traffic-sensitivity-cells">
-            {sensCells.map((s) => (
-              <div key={s.base} className={`traffic-sensitivity-cell ${s.is_selected ? 'is-selected' : ''}`}>
-                <span className="tsc-base">{s.base.toFixed(2)} {s.is_selected ? '선택' : s.base < sensSelectedBase ? '허브' : '광역'}</span>
-                <span className="tsc-count">{s.escalated_count}개</span>
-              </div>
-            ))}
-          </div>
-          <span className="traffic-sensitivity-hint">선택값({(result.scenario?.traffic_base ?? 0.5).toFixed(2)}) 중심 ±0.3 이웃값의 상향 지역 수입니다. 값이 비슷할수록 base에 견고. 지도·표·애니메이션은 선택값 기준으로 계산됩니다.</span>
-        </div>
-      )}
-
-      {/* Weather-base sensitivity */}
-      {wxSensCells && (
-        <div className="traffic-sensitivity">
-          <span className="traffic-sensitivity-label">기상 base 민감도 · 상향 지역 수</span>
-          <div className="traffic-sensitivity-cells">
-            {wxSensCells.map((s) => (
-              <div key={s.base} className={`traffic-sensitivity-cell ${s.is_selected ? 'is-selected' : ''}`}>
-                <span className="tsc-base">{s.base.toFixed(2)} {s.is_selected ? '선택' : s.base < wxSensSelectedBase ? '약함' : '강함'}</span>
-                <span className="tsc-count">{s.escalated_count}개</span>
-              </div>
-            ))}
-          </div>
-          <span className="traffic-sensitivity-hint">기상 선택값({(result.scenario?.weather_base ?? 0.7).toFixed(2)}) 중심 ±0.3 민감도. favorability는 기상청 예보 기온에서 계산된 실제 값입니다.</span>
+      {/* Epidemic curve — cumulative cases & deaths over the 28-day timeline */}
+      {s?.national_curve && s.national_curve.length > 0 && (
+        <div className="whatif-section">
+          <div className="whatif-section-title">전국 유행곡선 · 누적 확진 및 사망 (정점 {s.peak_day}일차)</div>
+          <EpiCurveChart curve={s.national_curve} peakDay={s.peak_day} />
         </div>
       )}
 
       {/* Narrative */}
       <div className="ontology-decision-narrative">{result.narrative}</div>
 
-      {/* Region ranking table (all 17) */}
+      {/* Region table — epidemiological numbers per 시도 (28일 후, 확진 순) */}
       <div className="whatif-section">
-        <div className="whatif-section-title">지역별 위험도 변화 (Delta 순)</div>
-        <div className="national-region-table">
-          <div className="national-region-header">
-            <span>지역</span><span>현재</span><span>시나리오</span><span>Delta</span><span>Spread</span>
+        <div className="whatif-section-title">시도별 역학 지표 · 28일 후 (인구 대비, 확진 순)</div>
+        <div className="epi-region-table">
+          <div className="epi-region-header">
+            <span>지역</span><span>누적 확진</span><span>신규</span><span>사망</span><span>발병률</span><span>치명률</span>
           </div>
-          {regions.map((r) => (
-            <div key={r.region_id} className={`national-region-row ${r.level_changed ? 'escalated' : ''} ${r.is_primary_zone ? 'primary' : ''}`}>
-              <span className="national-region-name">
-                {r.is_primary_zone && <span className="national-primary-badge">1차</span>}
-                {r.region_name}
-              </span>
-              <span><LevelPill level={r.baseline_level} /> {r.baseline_score.toFixed(3)}</span>
-              <span><LevelPill level={r.scenario_level} /> {r.scenario_score.toFixed(3)}</span>
-              <span className={`whatif-comp-delta ${r.max_delta > 0 ? 'up' : ''}`}>
-                +{r.max_delta.toFixed(3)}{r.level_changed && ' ⚠'}
-              </span>
-              <span className="national-spread-mult">×{r.spread_multiplier.toFixed(2)}</span>
-            </div>
-          ))}
+          {regions.map((r) => {
+            const last = r.timeline?.[r.timeline.length - 1];
+            return (
+              <div key={r.region_id} className={`epi-region-row ${r.is_seed ? 'seed' : ''}`}>
+                <span className="epi-region-name">
+                  {r.is_seed && <span className="epi-seed-badge">유입</span>}
+                  {r.region_name}
+                </span>
+                <span className="epi-num">{fmt(r.cumulative_cases)}</span>
+                <span className="epi-num small">+{fmt(last?.new_cases)}</span>
+                <span className="epi-num death">{fmt(r.cumulative_deaths)}</span>
+                <span className="epi-num">{pct(r.attack_rate, 3)}</span>
+                <span className="epi-num">{pct(r.effective_cfr, 1)}</span>
+              </div>
+            );
+          })}
         </div>
+        <div className="epi-region-caveat">개입(백신·거리두기) 없는 자연확산 가정의 예시 시나리오이며 예보가 아닙니다. 인구: 행정안전부 주민등록 2026-06.</div>
       </div>
 
       {/* Gemini national narrative */}
@@ -1643,6 +1678,26 @@ const ENTRY_POINTS = [
   { code: 'PUS', label: '김해국제공항', desc: '부산/경남' },
 ];
 
+// Disease epidemiological presets (mirror backend _DISEASE_TABLE; order = specific first
+// so "H5N1 Avian Influenza" hits h5n1, not influenza). Auto-fill the editable R0/CFR/
+// incubation/infectious for known diseases; a novel disease leaves the DEFAULT for the
+// user to set. cfr stored as a fraction; the UI edits it as a percent.
+const DISEASE_PRESETS: { keys: string[]; r0: number; cfr: number; inc: number; inf: number; label: string }[] = [
+  { keys: ['h5n1', 'avian', 'bird flu', '조류독감', '고병원성', 'h5'], r0: 1.8, cfr: 0.30, inc: 3, inf: 5, label: 'H5N1' },
+  { keys: ['h7n9', 'h7'], r0: 1.5, cfr: 0.39, inc: 4, inf: 6, label: 'H7N9' },
+  { keys: ['sars-cov-1', 'sars', '사스'], r0: 3.0, cfr: 0.10, inc: 5, inf: 7, label: 'SARS' },
+  { keys: ['mers', '메르스'], r0: 0.9, cfr: 0.34, inc: 5, inf: 7, label: 'MERS' },
+  { keys: ['measles', '홍역', 'rubeola'], r0: 15.0, cfr: 0.002, inc: 12, inf: 8, label: 'Measles' },
+  { keys: ['rsv', '호흡기세포융합'], r0: 1.5, cfr: 0.005, inc: 4, inf: 7, label: 'RSV' },
+  { keys: ['covid', 'sars-cov-2', '코로나'], r0: 2.5, cfr: 0.010, inc: 5, inf: 6, label: 'COVID-19' },
+  { keys: ['influenza', 'flu', '독감', '인플루엔자'], r0: 1.4, cfr: 0.001, inc: 2, inf: 4, label: 'Influenza' },
+];
+const DISEASE_DEFAULT = { r0: 2.5, cfr: 0.02, inc: 5, inf: 6, label: '신종(기본)' };
+function resolveDiseasePreset(name: string) {
+  const low = (name || '').toLowerCase();
+  return DISEASE_PRESETS.find((p) => p.keys.some((k) => low.includes(k.toLowerCase()))) || null;
+}
+
 function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   isAdmin: boolean; adminHeaders: () => Promise<Record<string, string>>;
   onResult?: (result: NationalOutbreakResult) => void;
@@ -1656,20 +1711,38 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   const [trafficUpdatedAt, setTrafficUpdatedAt] = useState<string | null>(null);
   const [trafficRefreshing, setTrafficRefreshing] = useState(false);
   const [trafficMsg, setTrafficMsg] = useState<string | null>(null);
-  const [trafficBase, setTrafficBase] = useState(0.5);
   const [useWeather, setUseWeather] = useState(false);
-  const [weatherBase, setWeatherBase] = useState(0.7);
+  // Editable epidemiological parameters (auto-filled for known diseases, set manually for novel).
+  const [r0, setR0] = useState('');
+  const [cfr, setCfr] = useState('');            // percent 0..100 in the UI
+  const [incubation, setIncubation] = useState('');
+  const [infectious, setInfectious] = useState('');
   const [loading, setLoading] = useState(false);
   const [exampleLoading, setExampleLoading] = useState(false);
   const [exampleMode, setExampleMode] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // Auto-fill epidemiological parameters from the disease name (known -> preset,
+  // novel -> DEFAULT for manual editing). Fires only on disease change, so manual edits
+  // to R0/CFR persist until the disease is changed.
+  const diseasePreset = resolveDiseasePreset(disease);
+  useEffect(() => {
+    const p = resolveDiseasePreset(disease) || DISEASE_DEFAULT;
+    setR0(String(p.r0));
+    setCfr(String(+(p.cfr * 100).toFixed(3)));
+    setIncubation(String(p.inc));
+    setInfectious(String(p.inf));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disease]);
 
   const runNationalScenario = async () => {
     setLoading(true); setStatusMsg(null); setExampleMode(false);
     try {
       const r = await fetch(`${API_BASE}/ontology/functions/whatIfOutbreakNational`, {
         method: 'POST', headers: await adminHeaders(),
-        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, weeks: 4, use_aviation: useAviation, use_traffic: useTraffic, traffic_base: trafficBase, use_weather: useWeather, weather_base: weatherBase } }),
+        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, use_aviation: useAviation, use_traffic: useTraffic, use_weather: useWeather,
+          r0: Number(r0) || undefined, cfr: cfr !== '' ? Number(cfr) / 100 : undefined,
+          incubation_days: Number(incubation) || undefined, infectious_days: Number(infectious) || undefined } }),
       });
       const d = await r.json();
       if (!r.ok) {
@@ -1680,7 +1753,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       if (result.error) {
         setStatusMsg({ ok: false, text: result.error });
       } else {
-        setStatusMsg({ ok: true, text: `${result.summary?.escalated_count || 0}개 지역 G-level 상향 예상 — 결과 확인 →` });
+        setStatusMsg({ ok: true, text: `28일 후 누적 ${(result.summary?.total_cases || 0).toLocaleString()}명 확진 · ${(result.summary?.total_deaths || 0).toLocaleString()}명 사망 예상 — 결과 확인 →` });
         onResult?.(result);
       }
     } catch (e: any) {
@@ -1701,7 +1774,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
         return;
       }
       onResult?.(d);
-      setStatusMsg({ ok: true, text: `예시(H5N1/China) · 항공 ${useAviation ? 'ON' : 'OFF'} / 교통 ${useTraffic ? 'ON' : 'OFF'} / 기상 ${useWeather ? 'ON' : 'OFF'} — ${d.summary?.escalated_count ?? 0}개 지역 상향` });
+      setStatusMsg({ ok: true, text: `예시(H5N1/China) · 항공 ${useAviation ? 'ON' : 'OFF'} / 교통 ${useTraffic ? 'ON' : 'OFF'} / 기상 ${useWeather ? 'ON' : 'OFF'} — 누적 ${(d.summary?.total_cases ?? 0).toLocaleString()}명 확진 · ${(d.summary?.total_deaths ?? 0).toLocaleString()}명 사망` });
     } catch (e: any) {
       setStatusMsg({ ok: false, text: String(e?.message || e) });
     } finally { setExampleLoading(false); }
@@ -1712,7 +1785,6 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   // toggle afterwards re-fetches the matching pre-run combination (see effect).
   const loadExample = () => {
     setEntryPoint('ICN'); setDisease('H5N1 Avian Influenza'); setCountry('China'); setSeverity('high');
-    setTrafficBase(0.5); setWeatherBase(0.7);
     setUseAviation(true); setUseTraffic(true); setUseWeather(true);
     setExampleMode(true);
   };
@@ -1756,8 +1828,8 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   return (
     <div className="whatif-standalone">
       <div className="whatif-standalone-desc">
-        <strong>전국 확산 시나리오</strong> — 해외 감염병이 한국에 유입된다면? 선택한 공항 거점에서 전국 17개 시도로의 확산 패턴을 시뮬레이션합니다. <strong>항공상황 add</strong>를 켜면 발생국의 <strong>인천공항 실측 여객량</strong>으로 이동량(전파 배수)을 객관화해 분석합니다 (끄면 기본 proxy 사용). <strong>교통상황 add</strong>를 켜면 <strong>고속도로 실측 도착 교통량</strong>으로 시도별 연결성을 확산 배수에 반영하고, <strong>기상상황 add</strong>를 켜면 <strong>기상청 예보 기온</strong>으로 계절 전파력을 반영합니다.<br />
-        <span className="whatif-ref-note">참고: 항공 여객량 기반 해외유입 위험 추정은 BlueDot 등 국제 감염병 예측 모델의 방식 차용, 시도 간 이동량(연결성) 기반 국내 확산 추정은 COVID-19 시공간 확산 네트워크 연구(대한교통학회·감염 네트워크 연구), 기상(기온) 기반 전파력 보정은 Shang(2026) 메타분석에 근거합니다.</span>
+        <strong>전국 역학 시뮬레이션 (SEIR)</strong> — 해외 신종 감염병이 유입되면? 실제 시도별 인구 + 질병 파라미터(R0·CFR·잠복기·전염기)로 <strong>메타population SEIR 모델</strong>을 돌려 28일간 <strong>확진·사망·치명률·발병률</strong>을 시도별로 계산합니다. Day 0 = 전 지역 0에서 시작(유입 거점만 초기 감염). <strong>항공/교통/기상 add</strong>로 실측 유입 규모·이동 연결성·계절 전파력을 반영합니다.<br />
+        <span className="whatif-ref-note">모델: 중력형 메타population SEIR (Balcan 2009 PNAS · Chang 2020 Nature · Flight-SEIR Ding 2020). 인구: 행정안전부 주민등록 2026-06. 개입(백신·거리두기) 없는 자연확산 가정의 예시 시나리오 — 예보가 아닙니다.</span>
       </div>
       <div className="whatif-row">
         <label>유입 거점</label>
@@ -1787,52 +1859,42 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
           <option value="critical">Critical</option>
         </select>
       </div>
+      <div className="whatif-epi-params">
+        <div className="whatif-epi-head">
+          역학 파라미터
+          {diseasePreset
+            ? <span className="whatif-epi-known">{diseasePreset.label} 기본값 · 수정 가능</span>
+            : <span className="whatif-epi-novel">신종감염병 — 직접 설정</span>}
+        </div>
+        <div className="whatif-epi-grid">
+          <label>R0<input type="number" step="0.1" min="0" value={r0} onChange={(e) => setR0(e.target.value)} className="whatif-input" /></label>
+          <label>CFR %<input type="number" step="0.1" min="0" max="100" value={cfr} onChange={(e) => setCfr(e.target.value)} className="whatif-input" /></label>
+          <label>잠복기(일)<input type="number" step="1" min="1" value={incubation} onChange={(e) => setIncubation(e.target.value)} className="whatif-input" /></label>
+          <label>전염기(일)<input type="number" step="1" min="1" value={infectious} onChange={(e) => setInfectious(e.target.value)} className="whatif-input" /></label>
+        </div>
+        <div className="whatif-epi-hint">알려진 질병은 논문 기반 기본값이 자동 입력됩니다. 신종감염병은 직접 설정하세요. Severity가 R0·CFR에 배수로 적용됩니다(결과 배지 참고).</div>
+      </div>
       <div className="whatif-example-box">
         <button type="button" className={`whatif-example-btn ${exampleMode ? 'is-on' : ''}`}
           onClick={loadExample} disabled={exampleLoading}>
           {exampleLoading ? '예시 분석 중…' : '예시 분석 · H5N1 China 조류독감'}
         </button>
         <div className="whatif-example-note">
-          예시 분석을 실행합니다. 클릭하면 지도·확산 애니메이션·지역표·민감도가 표시됩니다. 예시는 기본 base 값(연결성 0.5·기상 0.7)으로만 분석됩니다. 실제 데이터로 직접 실행하려면 상단 (i)의 이메일로 admin 계정을 문의해 주세요.
+          예시 분석을 실행합니다. 클릭하면 지도·확산 애니메이션·유행곡선·시도별 역학 지표(확진·사망·치명률)가 표시됩니다. 예시는 H5N1 기본 파라미터로 분석됩니다. 실제 데이터로 직접 실행하려면 상단 (i)의 이메일로 admin 계정을 문의해 주세요.
         </div>
       </div>
       <label className={`whatif-aviation-toggle ${useAviation ? 'is-on' : ''}`}>
         <input type="checkbox" checked={useAviation} onChange={(e) => setUseAviation(e.target.checked)} />
         <span className="whatif-aviation-label">항공상황 add</span>
-        <span className="whatif-aviation-hint">발생국 → 인천공항 실측 여객량으로 이동량(해외유입 위험) 객관화 (끄면 기본 proxy)</span>
+        <span className="whatif-aviation-hint">발생국 → 인천공항 실측 여객량으로 유입 규모(초기 감염 seed)를 스케일 (끄면 국가 proxy)</span>
       </label>
       <label className={`whatif-aviation-toggle ${useTraffic ? 'is-on' : ''}`}>
         <input type="checkbox" checked={useTraffic} onChange={(e) => setUseTraffic(e.target.checked)} />
         <span className="whatif-aviation-label">교통상황 add</span>
-        <span className="whatif-aviation-hint">고속도로 실측 도착 교통량으로 지역 연결성을 확산 배수에 반영 — 연결성 높은 허브가 먼 거리도 빨리 확산(웜홀). 대한교통학회·감염 네트워크 연구 기반.</span>
+        <span className="whatif-aviation-hint">고속도로 실측 교통 연결성을 지역 간 이동(감염 결합) 가중치로 사용 — 연결성 높은 허브로 먼저 확산. 대한교통학회·감염 네트워크 연구 기반. (끄면 인구·거리 기반 기본 연결성)</span>
       </label>
       {useTraffic && (
         <div className="whatif-traffic-controls">
-          <div className="whatif-traffic-base">
-            <label>연결성 base <strong className="whatif-base-val">{trafficBase.toFixed(2)}</strong></label>
-            <input type="range" min={0} max={1} step={0.05} value={trafficBase}
-              onChange={(e) => setTrafficBase(Number(e.target.value))}
-              className="whatif-traffic-base-slider" disabled={exampleMode} />
-            <div className="whatif-base-presets">
-              {([[0.3, '허브'], [0.5, '기본'], [0.7, '광역']] as [number, string][]).map(([v, l]) => (
-                <button key={v} type="button" disabled={exampleMode}
-                  className={`whatif-base-preset ${Math.abs(trafficBase - v) < 1e-9 ? 'is-active' : ''}`}
-                  onClick={() => setTrafficBase(v)}>{v} {l}</button>
-              ))}
-            </div>
-            <details className="whatif-base-explain">
-              <summary>연결성 base가 무엇인가요?</summary>
-              <div className="whatif-base-explain-body">
-                <p><strong>확산 배수 = base + 연결성(0~1)</strong>. base는 모든 지역에 공통으로 적용되는 <strong>기본 확산력(바닥값)</strong>이고, 여기에 각 지역의 고속도로 실측 <strong>연결성</strong>이 더해져 지역별 확산 배수가 정해집니다.</p>
-                <ul>
-                  <li><strong>base 높음(예 0.7)</strong> → 연결성 낮은 외진 지역도 배수↑ → <strong>전국 광역 확산</strong> 가정</li>
-                  <li><strong>base 낮음(예 0.3)</strong> → 확산이 <strong>연결성 높은 허브에 집중</strong>, 외진 지역은 억제</li>
-                  <li>예) base 0.5 → 서울(연결성 1.0) 배수 1.5 · 외진 지역(연결성 0.3) 배수 0.8</li>
-                </ul>
-                <p>정답이 정해진 값이 아니라 <strong>가정</strong>이므로, 실행 결과에 <strong>선택값 중심 ±0.3 민감도</strong>(예: 0.6 → 0.3/0.6/0.9)를 함께 표시해 값에 따라 결과가 얼마나 달라지는지(견고성)를 볼 수 있게 했습니다. 슬라이더로 임의값도 설정 가능합니다.</p>
-              </div>
-            </details>
-          </div>
           <div className="whatif-traffic-refresh">
             <span className="whatif-traffic-updated">
               {trafficUpdatedAt
@@ -1840,7 +1902,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
                 : '교통데이터 미수집 (기본: 월요일 자동 갱신)'}
             </span>
             <button type="button" className="whatif-traffic-refresh-btn"
-              onClick={refreshTraffic} disabled={trafficRefreshing}>
+              onClick={refreshTraffic} disabled={trafficRefreshing || exampleMode}>
               {trafficRefreshing ? '갱신 중…' : '최신 반영'}
             </button>
             {trafficMsg && <span className="whatif-traffic-msg">{trafficMsg}</span>}
@@ -1850,37 +1912,8 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       <label className={`whatif-aviation-toggle ${useWeather ? 'is-on' : ''}`}>
         <input type="checkbox" checked={useWeather} onChange={(e) => setUseWeather(e.target.checked)} />
         <span className="whatif-aviation-label">기상상황 add</span>
-        <span className="whatif-aviation-hint">기상청 단기+중기예보 기온(~10일)으로 계절 전파력을 반영 — 추울수록 확산↑. 시나리오 실행 시 실시간 조회. 확산 애니메이션에서 기상은 예보 가능한 ≤10일 구간에만 적용됩니다(그 이후는 장기 시나리오). 기온이 호흡기감염 최강 예측인자 (Shang 2026 메타분석).</span>
+        <span className="whatif-aviation-hint">기상청 단기+중기예보 기온(~10일)으로 초기 ≤10일 전파력(β)을 보정 — 추울수록 확산↑. 시나리오 실행 시 실시간 조회. 기온이 호흡기감염 최강 예측인자 (Shang 2026 메타분석).</span>
       </label>
-      {useWeather && (
-        <div className="whatif-traffic-controls">
-          <div className="whatif-traffic-base">
-            <label>기상 base <strong className="whatif-base-val">{weatherBase.toFixed(2)}</strong></label>
-            <input type="range" min={0} max={1.5} step={0.05} value={weatherBase}
-              onChange={(e) => setWeatherBase(Number(e.target.value))}
-              className="whatif-traffic-base-slider" disabled={exampleMode} />
-            <div className="whatif-base-presets">
-              {([[0.4, '약함'], [0.7, '기본'], [1.0, '강함']] as [number, string][]).map(([v, l]) => (
-                <button key={v} type="button" disabled={exampleMode}
-                  className={`whatif-base-preset ${Math.abs(weatherBase - v) < 1e-9 ? 'is-active' : ''}`}
-                  onClick={() => setWeatherBase(v)}>{v} {l}</button>
-              ))}
-            </div>
-            <details className="whatif-base-explain">
-              <summary>기상 base가 무엇인가요?</summary>
-              <div className="whatif-base-explain-body">
-                <p><strong>전파력 배수 = 기상 base + 0.6 × favorability</strong>. favorability(0~1)는 <strong>기상청 예보 기온에서 계산된 실제 값</strong>(추울수록↑)이고, base는 그 계절 효과를 얼마나 반영할지의 <strong>기본 강도</strong>입니다.</p>
-                <ul>
-                  <li><strong>base 높음(1.0)</strong> → 계절 전파력을 크게 반영 (겨울 확산 강조)</li>
-                  <li><strong>base 낮음(0.4)</strong> → 계절 효과를 약하게</li>
-                  <li>예) base 0.7 → 한파 지역(favorability 1.0) 배수 1.3 · 온난 지역(0.2) 배수 0.82</li>
-                </ul>
-                <p>base는 임의 설정값이라, 교통과 동일하게 선택값 중심 ±0.3 <strong>민감도</strong>(예: 0.7 → 0.4/0.7/1.0)를 결과에 함께 표시합니다.</p>
-              </div>
-            </details>
-          </div>
-        </div>
-      )}
       <div className="whatif-presets">
         {WHAT_IF_PRESETS.map((p, i) => (
           <button key={i} type="button" className="whatif-preset-btn"

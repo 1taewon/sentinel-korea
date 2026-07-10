@@ -9154,6 +9154,40 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   font-weight: 700;
   color: #fb7185;
 }
+/* ── Epidemiological (SEIR) result styling ── */
+.national-summary-bar.epi { flex-wrap: wrap; }
+.national-summary-bar.epi .national-summary-stat { min-width: 88px; }
+.national-summary-num.death { color: #ff4d4f; }
+.epi-region-table { display: flex; flex-direction: column; gap: 1px; max-height: 430px; overflow-y: auto; }
+.epi-region-header, .epi-region-row {
+  display: grid; grid-template-columns: 1.7fr 1fr 0.8fr 0.9fr 0.95fr 0.8fr;
+  gap: 6px; align-items: center; padding: 4px 8px; font-size: 11px;
+}
+.epi-region-header { font-weight: 700; color: var(--text-muted, #94a3b8); border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-card, #fff); z-index: 1; }
+.epi-region-header span:not(:first-child), .epi-region-row .epi-num { text-align: right; }
+.epi-region-row { border-radius: 4px; }
+.epi-region-row:nth-child(even) { background: rgba(148, 163, 184, 0.05); }
+.epi-region-row.seed { background: rgba(56, 189, 248, 0.10); }
+.epi-region-name { display: flex; align-items: center; gap: 4px; font-weight: 600; }
+.epi-seed-badge { font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 999px; background: #38bdf8; color: #06111f; }
+.epi-num { font-family: var(--font-mono, monospace); font-variant-numeric: tabular-nums; }
+.epi-num.death { color: #ff4d4f; }
+.epi-num.small { color: var(--text-muted, #94a3b8); }
+.epi-region-caveat { margin-top: 6px; font-size: 10px; color: var(--text-muted, #94a3b8); line-height: 1.5; }
+.epi-chart { display: flex; flex-direction: column; gap: 4px; }
+.epi-chart-svg { width: 100%; max-width: 540px; height: auto; margin: 0 auto; display: block; }
+.epi-chart-legend { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; font-size: 10px; color: var(--text-secondary, #475569); }
+.epi-chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.epi-chart-legend i { width: 12px; height: 3px; border-radius: 2px; display: inline-block; }
+.epi-chart-peak { color: #38bdf8; font-weight: 700; }
+.whatif-epi-params { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; background: var(--bg-soft, #f8fafc); display: flex; flex-direction: column; gap: 6px; }
+.whatif-epi-head { font-size: 11px; font-weight: 700; color: var(--text-secondary, #475569); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.whatif-epi-known { font-size: 10px; font-weight: 600; color: #059669; }
+.whatif-epi-novel { font-size: 10px; font-weight: 700; color: #f59e0b; }
+.whatif-epi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+.whatif-epi-grid label { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 10px; color: var(--text-muted, #94a3b8); text-transform: uppercase; letter-spacing: 0.3px; }
+.whatif-epi-grid input { max-width: 84px; text-align: right; }
+.whatif-epi-hint { font-size: 10px; color: var(--text-muted, #94a3b8); line-height: 1.5; }
 .national-summary-label {
   font-size: 10px;
   color: var(--text-muted);
@@ -9833,7 +9867,7 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .scenario-spread-play:hover { border-color: #34d399; background: rgba(52, 211, 153, 0.1); }
 .scenario-spread-slider { flex: 1 1 180px; accent-color: #ff7a3c; cursor: pointer; }
 .scenario-spread-week { font-size: 12px; font-weight: 800; color: var(--text-primary, #0f172a); min-width: 64px; font-variant-numeric: tabular-nums; }
-.scenario-spread-svg { width: 100%; max-width: 420px; height: auto; margin: 0 auto; display: block; }
+.scenario-spread-svg { width: 100%; max-width: 560px; height: auto; margin: 0 auto; display: block; }
 .scenario-spread-edge { animation: ssDash 0.8s linear infinite; }
 @keyframes ssDash { to { stroke-dashoffset: -16; } }
 .scenario-spread-origin { transform-box: fill-box; transform-origin: center; animation: ssOriginPulse 1.6s ease-in-out infinite; }

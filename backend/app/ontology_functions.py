@@ -1251,376 +1251,319 @@ def _spread_multiplier(region_code: str, entry_point: dict) -> float:
     return max(0.15, decay)
 
 
+# ── Metapopulation SEIR+D outbreak model ────────────────────────────────────
+# A real epidemiological simulator (replaces the abstract risk-score lift). Grounded
+# in the GLEAM / gravity-metapopulation literature (Balcan 2009 PNAS; Chang 2020
+# Nature; Flight-SEIR Ding 2020; Han 2025 Sci Rep). Day 0 = an imported outbreak from
+# ZERO — only the entry 시도 is seeded; every other region starts fully susceptible.
+# Emits real numbers per 시도: cases, deaths, attack rate, effective CFR.
+_TIMELINE_DAYS = (0, 3, 7, 10, 14, 21, 28)
+
+_SEIR_CODES = ["11", "26", "27", "28", "29", "30", "31", "36", "41", "42", "43", "44", "45", "46", "47", "48", "50"]
+# 행정안전부 주민등록 인구 2026-06 (합계 51,091,769)
+_SEIR_POP = {
+    "11": 9289813, "26": 3232370, "27": 2348165, "28": 3061002, "29": 1385460,
+    "30": 1442034, "31": 1087089, "36": 390923, "41": 13761783, "42": 1507217,
+    "43": 1600787, "44": 2138785, "45": 1718633, "46": 1773646, "47": 2495919,
+    "48": 3195351, "50": 662792,
+}
+_SEIR_TOTAL_POP = 51091769
+# Per-region connectivity weight (hub/airport/rail) used when 교통상황 add is off.
+_SEIR_CONN_DEFAULT = {c: 0.5 for c in _SEIR_CODES}
+_SEIR_CONN_DEFAULT.update({"11": 1.0, "28": 1.0, "41": 0.9, "26": 0.8, "50": 0.7, "27": 0.6, "48": 0.6})
+
+# Disease -> (R0, CFR, incubation_days, infectious_days). Representative literature
+# point values (WHO/CDC-level). Used as the editable BASE; an unrecognised free-text
+# disease falls back to DEFAULT and the user sets the parameters directly (신종감염병).
+# Order matters — first substring match wins, so specific strains precede the generic
+# "influenza"/"covid" (e.g. "H5N1 Avian Influenza" must hit h5n1, not influenza).
+_DISEASE_TABLE = {
+    "h5n1":     {"r0": 1.8,  "cfr": 0.30,  "inc": 3.0,  "inf": 5.0,   "aliases": ["avian", "bird flu", "조류독감", "고병원성", "h5"]},
+    "h7n9":     {"r0": 1.5,  "cfr": 0.39,  "inc": 4.0,  "inf": 6.0,   "aliases": ["h7n9", "h7"]},
+    "sars":     {"r0": 3.0,  "cfr": 0.10,  "inc": 5.0,  "inf": 7.0,   "aliases": ["sars-cov-1", "사스"]},
+    "mers":     {"r0": 0.9,  "cfr": 0.34,  "inc": 5.0,  "inf": 7.0,   "aliases": ["mers-cov", "메르스"]},
+    "measles":  {"r0": 15.0, "cfr": 0.002, "inc": 12.0, "inf": 8.0,   "aliases": ["홍역", "rubeola"]},
+    "rsv":      {"r0": 1.5,  "cfr": 0.005, "inc": 4.0,  "inf": 7.0,   "aliases": ["호흡기세포융합"]},
+    "covid19":  {"r0": 2.5,  "cfr": 0.010, "inc": 5.0,  "inf": 6.0,   "aliases": ["covid", "sars-cov-2", "코로나", "코로나19"]},
+    "influenza": {"r0": 1.4, "cfr": 0.001, "inc": 2.0,  "inf": 4.0,   "aliases": ["flu", "독감", "인플루엔자", "seasonal"]},
+}
+_DEFAULT_DISEASE = {"r0": 2.5, "cfr": 0.02, "inc": 5.0, "inf": 6.0}
+_SEV_MULT = {"low": (0.7, 0.4), "medium": (1.0, 1.0), "high": (1.4, 2.0), "critical": (1.8, 3.5)}
+
+
+def _resolve_disease(name: str) -> tuple[str, dict]:
+    """Match a free-text disease name to a preset. Unknown/novel -> ('', DEFAULT)."""
+    low = (name or "").lower()
+    for canon, d in _DISEASE_TABLE.items():
+        if canon in low:
+            return canon, d
+        for a in d["aliases"]:
+            if a and a.lower() in low:
+                return canon, d
+    return "", _DEFAULT_DISEASE
+
+
+def _build_seir_conn(conn_list: list[float]) -> list[list[float]]:
+    """Gravity connectivity matrix C (17x17, row-normalized to [0,1]).
+    C_ij = pop_j / distance_ij^2 * conn_j (i=destination, j=source)."""
+    n = len(_SEIR_CODES)
+    coords = [(_REGION_COORDS[c]["lat"], _REGION_COORDS[c]["lng"]) for c in _SEIR_CODES]
+    pops = [float(_SEIR_POP[c]) for c in _SEIR_CODES]
+    C = [[0.0] * n for _ in range(n)]
+    for i in range(n):
+        raw = []
+        for j in range(n):
+            if i == j:
+                raw.append(0.0)
+            else:
+                d = max(_haversine_km(coords[i][0], coords[i][1], coords[j][0], coords[j][1]), 10.0)
+                raw.append(pops[j] / (d * d) * conn_list[j])
+        mx = max(raw) or 1.0
+        C[i] = [r / mx for r in raw]
+    return C
+
+
+def _epi_level(spread_score: float) -> str:
+    """Map-color level from the infection-intensity score (so the map visibly lights up
+    as regions get hit within the 28-day window; the table shows the real attack rate)."""
+    if spread_score >= 0.66:
+        return "G3"
+    if spread_score >= 0.33:
+        return "G2"
+    if spread_score >= 0.08:
+        return "G1"
+    return "G0"
+
+
+def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: float, inf_days: float,
+                       conn_list: list[float], aviation_mult: float, weather_fav: dict, use_weather: bool,
+                       days: int = 28) -> tuple[dict, list, list]:
+    """Daily discrete-time metapopulation SEIR+D over the 17 시도. Returns
+    (snaps {day: [per-region row]}, daily_new [(day, national new cases)], C matrix)."""
+    n = len(_SEIR_CODES)
+    Npop = [float(_SEIR_POP[c]) for c in _SEIR_CODES]
+    sigma = 1.0 / max(inc_days, 0.5)
+    gamma = 1.0 / max(inf_days, 0.5)
+    beta_base = r0_eff * gamma
+    m = 0.10
+    C = _build_seir_conn(conn_list)
+    S = list(Npop); E = [0.0] * n; I = [0.0] * n; R = [0.0] * n; D = [0.0] * n; cum = [0.0] * n
+    seed = min(5.0 * max(1.0, aviation_mult), S[entry_idx])
+    I[entry_idx] += seed; S[entry_idx] -= seed; cum[entry_idx] = seed
+    weather_window = 10
+    snaps: dict = {}; prev_cum = [0.0] * n; daily_new: list = []
+    for d in range(0, days + 1):
+        if d in _TIMELINE_DAYS:
+            rows = []
+            for i in range(n):
+                cc = cum[i]
+                ar = cc / Npop[i] if Npop[i] else 0.0
+                ecfr = (D[i] / cc) if cc > 0 else 0.0
+                prev = I[i] / Npop[i] if Npop[i] else 0.0
+                spread = 1.0 - math.exp(-(1500.0 * prev + 12.0 * ar))
+                rows.append({
+                    "i": i, "day": d,
+                    "cumulative_cases": int(round(cc)),
+                    "new_cases": max(0, int(round(cc - prev_cum[i]))),
+                    "cumulative_deaths": int(round(D[i])),
+                    "attack_rate": round(ar, 6),
+                    "effective_cfr": round(ecfr, 4),
+                    "score": round(spread, 4),
+                    "level": _epi_level(spread),
+                })
+            snaps[d] = rows
+            prev_cum = list(cum)
+        nS = list(S); nE = list(E); nI = list(I); nR = list(R); nD = list(D); day_new = 0.0
+        for i in range(n):
+            beta_i = (beta_base * (1.0 + 0.3 * weather_fav.get(_SEIR_CODES[i], 0.0))
+                      if (use_weather and d <= weather_window) else beta_base)
+            local = beta_i * I[i] / Npop[i] if Npop[i] else 0.0
+            imp = sum(C[i][j] * (I[j] / Npop[j] if Npop[j] else 0.0) for j in range(n) if j != i)
+            lam = (1.0 - m) * local + m * beta_i * imp
+            ne = min(lam * S[i], S[i]); ni = min(sigma * E[i], E[i]); li = min(gamma * I[i], I[i])
+            nd = cfr * li; nr = li - nd
+            nS[i] = max(0.0, S[i] - ne); nE[i] = max(0.0, E[i] + ne - ni); nI[i] = max(0.0, I[i] + ni - li)
+            nR[i] = R[i] + nr; nD[i] = D[i] + nd
+            cum[i] += ni; day_new += ni
+        S, E, I, R, D = nS, nE, nI, nR, nD
+        daily_new.append((d, day_new))
+    return snaps, daily_new, C
+
+
 def _what_if_outbreak_national(inputs: dict) -> dict:
     entry_code = str(inputs.get("entry_point") or "ICN").upper()
     disease_name = str(inputs.get("disease") or "novel respiratory pathogen")
     country = str(inputs.get("country") or "China")
     severity = str(inputs.get("severity") or "high").lower()
-    weeks = max(1, min(int(inputs.get("weeks") or 4), 12))
+    if severity not in _SEV_MULT:
+        severity = "high"
 
     entry_point = _ENTRY_POINTS.get(entry_code)
     if not entry_point:
-        # Fallback for custom/unknown entry: use Korea center, no primary zones, all distance-based
-        entry_point = {
-            "label": entry_code,
-            "label_en": entry_code,
-            "primary_zones": [],
-            "lat": 36.5,  # Korea geographic center
-            "lng": 127.8,
-        }
+        entry_point = {"label": entry_code, "label_en": entry_code, "primary_zones": [], "lat": 36.5, "lng": 127.8}
 
-    # Base lift from severity × country proximity. When the "항공상황 add" toggle is
-    # on, replace the hardcoded proxy with the real Incheon arriving-passenger score.
-    base_lift = _SEVERITY_LIFT.get(severity, 0.03)
-    prox = _PROXIMITY_MULT.get(country.lower(), 0.5)
-    prox_source = "proxy"
-    aviation_info = None
+    # Seed region: the primary zone nearest the airport, else the nearest 시도.
+    def _nearest(codes: list[str]) -> str:
+        return min(codes, key=lambda c: _haversine_km(entry_point["lat"], entry_point["lng"],
+                                                       _REGION_COORDS[c]["lat"], _REGION_COORDS[c]["lng"]))
+    pz = [c for c in entry_point["primary_zones"] if c in _SEIR_CODES]
+    entry_region = _nearest(pz) if pz else _nearest(_SEIR_CODES)
+    entry_idx = _SEIR_CODES.index(entry_region)
+
+    # Disease parameters: preset base (known) or DEFAULT (novel), with optional user
+    # overrides (신종감염병은 R0/CFR/잠복기/전염기를 직접 설정). Severity always scales.
+    canon, dp = _resolve_disease(disease_name)
+
+    def _num(key: str, default: float) -> float:
+        v = inputs.get(key)
+        try:
+            return float(v) if v is not None and str(v) != "" else float(default)
+        except (TypeError, ValueError):
+            return float(default)
+
+    r0_base = max(0.0, _num("r0", dp["r0"]))
+    cfr_base = max(0.0, min(1.0, _num("cfr", dp["cfr"])))
+    inc_days = max(0.5, _num("incubation_days", dp["inc"]))
+    inf_days = max(0.5, _num("infectious_days", dp["inf"]))
+    r0m, cfrm = _SEV_MULT[severity]
+    r0_eff = round(r0_base * r0m, 3)
+    cfr_eff = round(min(cfr_base * cfrm, 0.5), 4)
+
+    # Aviation -> import seed scale (real when 항공상황 add, else hardcoded country proxy).
+    prox = _PROXIMITY_MULT.get(country.lower(), 1.0)
+    aviation_source = "off"; aviation_info = None
     if inputs.get("use_aviation"):
         av = _aviation_multiplier(country)
         if av:
-            prox, prox_source, aviation_info = av["multiplier"], "aviation", av
-    full_lift = min(0.15, base_lift * prox)
-
-    # 교통상황 add: weight per-region spread by highway connectivity (연결성) — the
-    # spread-network research's "wormhole" correction (far-but-connected regions).
-    use_traffic = bool(inputs.get("use_traffic"))
-    conn_index = _highway_connectivity() if use_traffic else {}
-    traffic_source = "highway" if (use_traffic and conn_index) else ("unavailable" if use_traffic else "off")
-    # Connectivity → spread-multiplier base (the floor of the ×band). Default 0.5 →
-    # ×0.5..1.5. User-selectable; the result also reports a sensitivity sweep so the
-    # user sees how many regions escalate at each base (robustness of the result).
-    try:
-        traffic_base = float(inputs.get("traffic_base", 0.5))
-    except (TypeError, ValueError):
-        traffic_base = 0.5
-    traffic_base = max(0.0, min(1.0, traffic_base))
-    # Sensitivity sweep centered on the CHOSEN base (±0.3, clamped) so the user sees
-    # the neighborhood of their own value — e.g. base 0.6 → 0.3 / 0.6 / 0.9 — not a
-    # fixed preset triple. The chosen value is always the middle point.
-    SENS_BASES = tuple(sorted({round(max(0.0, min(1.0, traffic_base + d)), 2) for d in (-0.3, 0.0, 0.3)}))
-    sens_counts = {b: 0 for b in SENS_BASES}
-
-    # 기상상황 add: weather-favorability transmissibility weight (cold + dry → faster
-    # spread; temperature dominant, absolute humidity = influenza seasonality driver).
-    use_weather = bool(inputs.get("use_weather"))
-    weather_live = inputs.get("weather_live", True)  # example gen passes False → cached (no live fetch)
-    weather_fav = (_weather_favorability_live() if weather_live else _weather_favorability()) if use_weather else {}
-    weather_source = "kma" if (use_weather and weather_fav) else ("unavailable" if use_weather else "off")
-    # Weather transmissibility base (floor of the ×band; span 0.6). Default 0.7 →
-    # ×0.7..1.3. User-selectable, with the same centered ±0.3 sensitivity sweep as
-    # the traffic base. favorability itself is the real computed KMA value.
-    try:
-        weather_base = float(inputs.get("weather_base", 0.7))
-    except (TypeError, ValueError):
-        weather_base = 0.7
-    weather_base = max(0.0, min(1.5, weather_base))
-    WX_SENS_BASES = tuple(sorted({round(max(0.0, min(1.5, weather_base + d)), 2) for d in (-0.3, 0.0, 0.3)}))
-    wx_sens_counts = {b: 0 for b in WX_SENS_BASES}
-
-    # Animation timeline day offsets: ≤10일 reflect short-term weather; later long-term.
-    _TIMELINE_DAYS = (0, 3, 7, 10, 14, 21, 28)
-
-    # Real outbreak context
-    outbreaks = _all_outbreaks()
-    real_exo = min(0.05, len([o for o in outbreaks if _korea_relevance(o) >= 0.6]) * 0.005)
-
-    # Compute per-region scenarios
-    region_results = []
-    for code, meta in sorted(_REGION_COORDS.items()):
-        base_mult = _spread_multiplier(code, entry_point)
-        conn = conn_index.get(code, 0.5) if (use_traffic and conn_index) else 0.0
-        # connectivity band = base_mult × (traffic_base + conn); e.g. base 0.5 → ×0.5..1.5
-        spread_mult = base_mult * (traffic_base + conn) if (use_traffic and conn_index) else base_mult
-        # weather transmissibility multiplier (weather_base + 0.6·favorability),
-        # applied to the lift not the spatial spread — weather is seasonal, not directional.
-        wx_mult = (weather_base + 0.6 * weather_fav.get(code, 0.5)) if (use_weather and weather_fav) else 1.0
-        region_lift = full_lift * spread_mult * wx_mult
-        total_exo = real_exo + region_lift
-
-        # Get baseline forecast for this region
-        baseline = _forecast_region_score({"region_id": code, "weeks": weeks})
-        if "error" in baseline:
-            region_results.append({
-                "region_id": code, "region_name": meta["name"],
-                "spread_multiplier": round(spread_mult, 3),
-                "lift": round(region_lift, 4),
-                "error": baseline["error"],
-            })
-            continue
-
-        history = baseline["history"]
-        scores = [p["score"] for p in history if p.get("score") is not None]
-        if not scores:
-            region_results.append({
-                "region_id": code, "region_name": meta["name"],
-                "spread_multiplier": round(spread_mult, 3),
-                "lift": round(region_lift, 4),
-                "error": "No score history",
-            })
-            continue
-
-        alpha = 0.4
-        ema = scores[0]
-        for s in scores[1:]:
-            ema = alpha * s + (1 - alpha) * ema
-
-        if len(scores) >= 8:
-            momentum = statistics.mean(scores[-4:]) - statistics.mean(scores[-8:-4])
-        elif len(scores) >= 4:
-            momentum = statistics.mean(scores[-4:]) - statistics.mean(scores[:-4] or scores[:1])
+            prox, aviation_source, aviation_info = av["multiplier"], "aviation", av
         else:
-            momentum = 0
+            aviation_source = "unavailable"
+    aviation_mult = max(1.0, prox)
 
-        residuals = []
-        e = scores[0]
-        for s in scores[1:]:
-            residuals.append(s - e)
-            e = alpha * s + (1 - alpha) * e
-        vol = statistics.stdev(residuals) if len(residuals) > 1 else 0.1
-        vol = max(0.04, min(0.20, vol))
+    # Traffic -> per-region connectivity weight in the gravity matrix.
+    use_traffic = bool(inputs.get("use_traffic"))
+    highway = _highway_connectivity() if use_traffic else {}
+    traffic_source = "highway" if (use_traffic and highway) else ("unavailable" if use_traffic else "off")
+    conn_list = [(highway.get(c, 0.5) if (use_traffic and highway) else _SEIR_CONN_DEFAULT[c]) for c in _SEIR_CODES]
 
-        last_date = _date.fromisoformat(history[-1]["date"])
-        baseline_pts = baseline["forecast"]
+    # Weather -> transmissibility boost on days <= 10 (short-term forecast horizon).
+    use_weather = bool(inputs.get("use_weather"))
+    weather_fav = _weather_favorability_live() if use_weather else {}
+    weather_source = "kma" if (use_weather and weather_fav) else ("unavailable" if use_weather else "off")
 
-        # base/momentum/vol are independent of traffic_base — only total_exo shifts —
-        # so we project once for the chosen base and cheaply re-project for the sweep.
-        def _project(exo: float) -> list[dict]:
-            pts: list[dict] = []
-            for i in range(1, weeks + 1):
-                dt = last_date.fromordinal(last_date.toordinal() + i * 7)
-                decayed_m = momentum * (0.7 ** (i - 1))
-                proj = max(0.0, min(1.0, ema + decayed_m + exo))
-                band = vol * (1 + 0.25 * (i - 1))
-                pts.append({
-                    "date": dt.isoformat(), "weeks_ahead": i,
-                    "score": round(proj, 4), "level": _level_for(proj),
-                    "low": round(max(0, proj - band), 4),
-                    "high": round(min(1, proj + band), 4),
-                })
-            return pts
+    snaps, daily_new, C = _simulate_outbreak(entry_idx, r0_eff, cfr_eff, inc_days, inf_days,
+                                             conn_list, aviation_mult, weather_fav, use_weather)
 
-        scenario_pts = _project(total_exo)
-
-        # Day-level spread timeline for the animation. Weather (short-term forecast)
-        # only shapes the ≤10-day points; later points use the base (no-weather) lift.
-        # A ramp lets the spread build up over ~2 weeks instead of jumping at week 1.
-        region_lift_base = full_lift * spread_mult
-        timeline = []
-        for _day in _TIMELINE_DAYS:
-            if _day <= 0:
-                _p = ema
-            else:
-                _dm = momentum * (0.7 ** max(0.0, _day / 7.0 - 1))
-                _ramp = min(1.0, _day / 14.0)
-                _lift = region_lift if _day <= 10 else region_lift_base
-                _p = ema + _dm + real_exo + _ramp * _lift
-            _p = max(0.0, min(1.0, _p))
-            timeline.append({"day": _day, "score": round(_p, 4), "level": _level_for(_p)})
-
-        # Sensitivity sweep — escalated? at each connectivity base (traffic only).
-        if use_traffic and conn_index:
-            for b in SENS_BASES:
-                exo_b = real_exo + full_lift * base_mult * (b + conn) * wx_mult
-                if any(bp["level"] != sp["level"] for bp, sp in zip(baseline_pts, _project(exo_b))):
-                    sens_counts[b] += 1
-
-        # Weather-base sensitivity — vary weather_base, hold traffic at its chosen value.
-        if use_weather and weather_fav:
-            _fav = weather_fav.get(code, 0.5)
-            for b in WX_SENS_BASES:
-                exo_b = real_exo + full_lift * spread_mult * (b + 0.6 * _fav)
-                if any(bp["level"] != sp["level"] for bp, sp in zip(baseline_pts, _project(exo_b))):
-                    wx_sens_counts[b] += 1
-
-        comparison = []
-        for b, s in zip(baseline_pts, scenario_pts):
-            comparison.append({
-                "weeks_ahead": b["weeks_ahead"],
-                "baseline_score": b["score"], "baseline_level": b["level"],
-                "scenario_score": s["score"], "scenario_level": s["level"],
-                "delta": round(s["score"] - b["score"], 4),
-                "level_changed": b["level"] != s["level"],
-            })
-
-        # Use last week's data for summary
-        last_b = baseline_pts[-1] if baseline_pts else {}
-        last_s = scenario_pts[-1] if scenario_pts else {}
-
+    region_results = []
+    for i, code in enumerate(_SEIR_CODES):
+        tl = [snaps[d][i] for d in _TIMELINE_DAYS]
+        last = tl[-1]
         region_results.append({
             "region_id": code,
-            "region_name": meta["name"],
+            "region_name": _REGION_COORDS.get(code, {}).get("name", code),
             "is_primary_zone": code in entry_point["primary_zones"],
-            "spread_multiplier": round(spread_mult, 3),
-            "lift": round(region_lift, 4),
-            "baseline_level": last_b.get("level", "G0"),
-            "baseline_score": last_b.get("score", 0),
-            "scenario_level": last_s.get("level", "G0"),
-            "scenario_score": last_s.get("score", 0),
-            "max_delta": round(max(c["delta"] for c in comparison), 4),
-            "level_changed": any(c["level_changed"] for c in comparison),
-            "comparison": comparison,
-            "timeline": timeline,
+            "is_seed": code == entry_region,
+            "population": _SEIR_POP[code],
+            "cumulative_cases": last["cumulative_cases"],
+            "cumulative_deaths": last["cumulative_deaths"],
+            "attack_rate": last["attack_rate"],
+            "effective_cfr": last["effective_cfr"],
+            "scenario_level": last["level"],
+            "spread_multiplier": round(C[i][entry_idx], 3) if i != entry_idx else 1.0,
+            "timeline": [{"day": t["day"], "cumulative_cases": t["cumulative_cases"], "new_cases": t["new_cases"],
+                          "cumulative_deaths": t["cumulative_deaths"], "attack_rate": t["attack_rate"],
+                          "effective_cfr": t["effective_cfr"], "score": t["score"], "level": t["level"]} for t in tl],
         })
+    region_results.sort(key=lambda r: r["cumulative_cases"], reverse=True)
 
-    # Sort by max_delta descending for ranking
-    region_results.sort(key=lambda r: r.get("max_delta", 0), reverse=True)
-
-    # Summary stats
-    escalated_regions = [r for r in region_results if r.get("level_changed")]
-    total_delta = sum(r.get("max_delta", 0) for r in region_results if "error" not in r)
-
-    # Connectivity-base sensitivity — how many regions escalate at each base (traffic only).
-    traffic_sensitivity = None
-    if use_traffic and conn_index:
-        _chosen = round(traffic_base, 2)
-        traffic_sensitivity = [
-            {"base": b, "escalated_count": sens_counts[b], "is_selected": abs(b - _chosen) < 1e-9}
-            for b in SENS_BASES
-        ]
-
-    weather_sensitivity = None
-    if use_weather and weather_fav:
-        _wchosen = round(weather_base, 2)
-        weather_sensitivity = [
-            {"base": b, "escalated_count": wx_sens_counts[b], "is_selected": abs(b - _wchosen) < 1e-9}
-            for b in WX_SENS_BASES
-        ]
-
-    # Gemini national scenario narrative
-    gemini_scenario = None
-    api_key = os.getenv("GEMINI_API_KEY")
-    if api_key:
-        try:
-            from google import genai
-            client = genai.Client(api_key=api_key)
-            model = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
-
-            top5 = region_results[:5]
-            summary_lines = []
-            for r in top5:
-                if "error" in r:
-                    continue
-                spread = "PRIMARY ZONE" if r.get("is_primary_zone") else "spread x{:.2f}".format(r.get("spread_multiplier", 0))
-                summary_lines.append(
-                    "  - {}({}): baseline {} -> scenario {} (delta +{:.3f}, {})".format(
-                        r["region_name"], r["region_id"],
-                        r.get("baseline_level", "?"), r.get("scenario_level", "?"),
-                        r.get("max_delta", 0), spread
-                    )
-                )
-            region_summary = "\n".join(summary_lines)
-
-            prompt = f"""당신은 한국 호흡기 감염병 감시 시스템 Sentinel의 전국 확산 시나리오 분석 AI입니다.
-
-## 가상 시나리오
-- 발생 국가: {country}
-- 질병: {disease_name}
-- 심각도: {severity}
-- 유입 거점: {entry_point['label']} ({entry_code})
-- 1차 영향권: {', '.join(entry_point['primary_zones'])} ({', '.join(_REGION_COORDS[c]['name'] for c in entry_point['primary_zones'] if c in _REGION_COORDS)})
-
-## 전국 확산 분석 결과 (위험도 상승 상위 5개 지역)
-{region_summary}
-
-## 전체 통계
-- G-level 상향된 지역: {len(escalated_regions)}/{len(region_results)}개
-- 전국 총 delta 합: +{total_delta:.3f}
-
-## 요청
-전국 확산 관점에서 다음을 JSON으로 작성하세요:
-1. "impact_summary": 이 시나리오의 전국적 영향 요약 (3-4문장, 한국어). 유입 거점에서의 1차 영향과 주변 지역으로의 확산 패턴을 설명.
-2. "spread_pattern": 확산 경로 설명 (유입 거점 → 인접 지역 → 전국, 2-3문장)
-3. "timeline": 주차별 예상 전개 시나리오 (전국 관점, 배열 [{{"week": 1, "description": "..."}}])
-4. "response_actions": 정책결정자가 취해야 할 선제 대응 조치 4-6개 (유입 거점 + 전국 단위, priority/action/timing 포함)
-5. "high_risk_regions": 특별 주의 필요 지역 목록과 이유 (배열 [{{"region": "...", "reason": "..."}}])
-6. "risk_factors": 상황을 악화시킬 수 있는 추가 위험 요인 3-4개
-7. "best_case": 최선의 시나리오 (1문장)
-8. "worst_case": 최악의 시나리오 (1문장)
-
-JSON 외 다른 텍스트 금지. 하나의 JSON object로만 응답.
-"""
-            resp = client.models.generate_content(model=model, contents=prompt)
-            raw = (resp.text or "").strip()
-            cleaned = raw
-            if cleaned.startswith("```"):
-                cleaned = cleaned.strip("`")
-                if cleaned.startswith("json"):
-                    cleaned = cleaned[4:]
-                cleaned = cleaned.strip()
-            try:
-                gemini_scenario = json.loads(cleaned)
-            except Exception:
-                gemini_scenario = {"raw": raw[:1200], "parse_error": True}
-        except Exception as e:
-            gemini_scenario = {"error": f"Gemini call failed: {type(e).__name__}: {e}"}
+    last_snap = snaps[28]
+    total_cases = sum(r["cumulative_cases"] for r in last_snap)
+    total_deaths = sum(r["cumulative_deaths"] for r in last_snap)
+    national_cfr = (total_deaths / total_cases) if total_cases > 0 else 0.0
+    peak_day, peak_new = max(daily_new, key=lambda t: t[1])
+    affected = sum(1 for r in region_results if r["cumulative_cases"] >= 1)
+    worst = region_results[:3]
+    national_curve = [{
+        "day": d,
+        "cumulative_cases": sum(r["cumulative_cases"] for r in snaps[d]),
+        "cumulative_deaths": sum(r["cumulative_deaths"] for r in snaps[d]),
+        "new_cases": sum(r["new_cases"] for r in snaps[d]),
+    } for d in _TIMELINE_DAYS]
 
     return {
         "entry_point": {
-            "code": entry_code,
-            "label": entry_point["label"],
-            "primary_zones": entry_point["primary_zones"],
+            "code": entry_code, "label": entry_point["label"],
+            "primary_zones": entry_point["primary_zones"], "seed_region": entry_region,
+            "seed_region_name": _REGION_COORDS.get(entry_region, {}).get("name", entry_region),
         },
         "scenario": {
-            "disease": disease_name,
-            "country": country,
-            "severity": severity,
-            "base_lift": round(full_lift, 4),
-            "proximity_multiplier": round(prox, 2),
-            "proximity_source": prox_source,
-            "aviation": aviation_info,
-            "traffic_source": traffic_source,
-            "traffic_base": round(traffic_base, 2),
-            "weather_source": weather_source,
-            "weather_base": round(weather_base, 2),
+            "disease": disease_name, "disease_matched": canon, "is_novel": not canon,
+            "country": country, "severity": severity,
+            "r0": r0_eff, "cfr": cfr_eff, "r0_base": round(r0_base, 3), "cfr_base": round(cfr_base, 4),
+            "incubation_days": inc_days, "infectious_days": inf_days,
+            "aviation": aviation_info, "aviation_source": aviation_source,
+            "traffic_source": traffic_source, "weather_source": weather_source,
         },
         "regions": region_results,
         "summary": {
             "total_regions": len(region_results),
-            "escalated_count": len(escalated_regions),
-            "escalated_regions": [r["region_name"] for r in escalated_regions],
-            "total_delta": round(total_delta, 4),
-            "traffic_sensitivity": traffic_sensitivity,
-            "weather_sensitivity": weather_sensitivity,
+            "total_cases": total_cases, "total_deaths": total_deaths,
+            "national_cfr": round(national_cfr, 4),
+            "attack_rate": round(total_cases / _SEIR_TOTAL_POP, 6),
+            "peak_day": peak_day, "peak_new_cases": int(round(peak_new)),
+            "affected_regions": affected,
+            "worst_regions": [{"name": r["region_name"], "cases": r["cumulative_cases"]} for r in worst],
+            "national_curve": national_curve,
+            "total_population": _SEIR_TOTAL_POP,
         },
-        "gemini_scenario": gemini_scenario,
+        "gemini_scenario": None,
         "narrative": (
-            f"전국 확산 시나리오: {country}에서 {disease_name} ({severity}) 발생 → "
-            f"{entry_point['label']} 유입. "
-            f"{len(escalated_regions)}개 지역 G-level 상향 예상. "
-            f"1차 영향권: {', '.join(_REGION_COORDS[c]['name'] for c in entry_point['primary_zones'] if c in _REGION_COORDS)}"
+            f"역학 시뮬레이션: {country}발 {disease_name} (R0 {r0_eff}·CFR {cfr_eff * 100:.1f}%, {severity})가 "
+            f"{entry_point['label']}({_REGION_COORDS.get(entry_region, {}).get('name', entry_region)})로 유입 시 — "
+            f"28일 후 전국 누적 {total_cases:,}명 확진, {total_deaths:,}명 사망 예상 "
+            f"(전국 발병률 {total_cases / _SEIR_TOTAL_POP * 100:.2f}%, 정점 {peak_day}일차). "
+            f"최다 피해: {', '.join(r['region_name'] for r in worst)}. "
+            f"※ 개입(백신·거리두기) 없는 자연확산 가정의 예시 시나리오 — 예보가 아님."
         ),
     }
 
 
 register(FunctionSpec(
     name="whatIfOutbreakNational",
-    label="National outbreak spread simulation",
+    label="National outbreak epidemiological simulation (SEIR)",
     inputs=[
         {"name": "entry_point", "type": "string", "required": False, "default": "ICN",
          "description": "Airport entry code (e.g. ICN, PUS) or free-text airport name"},
         {"name": "disease", "type": "string", "required": False, "default": "novel respiratory pathogen"},
         {"name": "country", "type": "string", "required": False, "default": "China"},
         {"name": "severity", "type": "string", "required": False, "default": "high",
-         "description": "low | medium | high | critical"},
-        {"name": "weeks", "type": "integer", "required": False, "default": 4},
+         "description": "low | medium | high | critical (scales R0 and CFR)"},
+        {"name": "r0", "type": "number", "required": False,
+         "description": "Base reproduction number R0 (override; auto-filled for known diseases, set manually for novel)"},
+        {"name": "cfr", "type": "number", "required": False,
+         "description": "Base case-fatality ratio 0..1 (override)"},
+        {"name": "incubation_days", "type": "number", "required": False,
+         "description": "Incubation period in days (override)"},
+        {"name": "infectious_days", "type": "number", "required": False,
+         "description": "Infectious period in days (override)"},
         {"name": "use_aviation", "type": "boolean", "required": False, "default": False,
-         "description": "Use real Incheon arriving-passenger volume for the country proximity multiplier instead of the hardcoded proxy"},
+         "description": "Scale the imported seed by real Incheon arriving-passenger volume for the origin country"},
         {"name": "use_traffic", "type": "boolean", "required": False, "default": False,
-         "description": "Weight per-region spread by real highway arrival-traffic connectivity (연결성)"},
-        {"name": "traffic_base", "type": "number", "required": False, "default": 0.5,
-         "description": "Connectivity multiplier base/floor (0..1). 0.5 → spread ×0.5..1.5. Lower = hub-concentrated, higher = broader spread"},
+         "description": "Use real highway traffic connectivity as the inter-region mobility weight"},
         {"name": "use_weather", "type": "boolean", "required": False, "default": False,
-         "description": "Weight per-region transmissibility by real forecast weather favorability (colder → faster spread)"},
-        {"name": "weather_base", "type": "number", "required": False, "default": 0.7,
-         "description": "Weather multiplier base/floor (0..1.5). 0.7 → transmissibility ×0.7..1.3 (span 0.6·favorability)"},
+         "description": "Boost transmissibility on days <=10 by real forecast weather favorability"},
+        {"name": "weather_live", "type": "boolean", "required": False, "default": True,
+         "description": "Fetch weather live at run-time (example generation passes False to use cache)"},
     ],
-    output="object<{entry_point, scenario, regions[], summary, gemini_scenario, narrative}>",
+    output="object<{entry_point, scenario, regions[], summary, narrative}>",
     affects_objects=["Region"],
     requires_admin=True,
-    description="National outbreak spread simulation: models disease entry through a selected "
-                "airport and computes proximity-weighted spread to all 17 Korean regions. "
-                "Primary zones (e.g. 수도권 for Incheon) get full lift; other regions decay by distance. "
-                "Gemini generates a national spread narrative with response recommendations.",
+    description="National outbreak epidemiological simulation: a daily metapopulation SEIR+D model "
+                "of an imported outbreak spreading across all 17 Korean 시도 from a seeded entry region. "
+                "Uses real 2026 population + disease R0/CFR/incubation/infectious parameters (editable) + "
+                "a gravity mobility network fed by aviation import, highway connectivity and geographic "
+                "proximity, with a short-term weather transmissibility boost. Outputs real cumulative "
+                "cases, deaths, attack rate and effective CFR per region over a day-level timeline.",
     fn=_what_if_outbreak_national,
 ))
 
