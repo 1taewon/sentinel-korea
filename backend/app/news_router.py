@@ -101,6 +101,17 @@ async def signals_highway_connectivity() -> dict[str, Any]:
     return data
 
 
+@router.get("/signals/weather-respiratory")
+async def signals_weather_respiratory() -> dict[str, Any]:
+    """Objective seasonal factor — respiratory-weather favorability by 시도 (0..1,
+    cold + dry → higher). Feeds the Outbreak Scenario's '기상상황 add' toggle and the
+    dashboard's opt-in weather layer. {"status": "empty"} when not yet collected."""
+    data = _load(PROCESSED_DIR / "weather_respiratory_by_region.json")
+    if not data or not isinstance(data, dict):
+        return {"status": "empty", "regions": {}}
+    return data
+
+
 @router.get("/signals/global/archive-dates")
 async def signals_global_archive_dates() -> list[str]:
     """List available archive snapshot dates (YYYY-MM-DD), newest first."""

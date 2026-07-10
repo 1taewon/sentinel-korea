@@ -91,7 +91,7 @@ interface NationalRegionResult {
 }
 interface NationalOutbreakResult {
   entry_point: { code: string; label: string; primary_zones: string[] };
-  scenario: { disease: string; country: string; severity: string; base_lift: number; proximity_multiplier: number; proximity_source?: string; aviation?: { multiplier: number; arr_passengers: number; country_kr: string; month: string } | null; traffic_source?: string; traffic_base?: number };
+  scenario: { disease: string; country: string; severity: string; base_lift: number; proximity_multiplier: number; proximity_source?: string; aviation?: { multiplier: number; arr_passengers: number; country_kr: string; month: string } | null; traffic_source?: string; traffic_base?: number; weather_source?: string };
   regions: NationalRegionResult[];
   summary: { total_regions: number; escalated_count: number; escalated_regions: string[]; total_delta: number; traffic_sensitivity?: { base: number; escalated_count: number; is_selected: boolean }[] | null };
   gemini_scenario?: {
@@ -754,6 +754,11 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
         {result.scenario?.traffic_source === 'highway' && (
           <span className="whatif-mobility-badge whatif-mobility-badge--real" title="고속도로 실측 도착 교통량 기반 지역 연결성을 확산 배수에 반영">
             교통 연결성 반영(실측)
+          </span>
+        )}
+        {result.scenario?.weather_source === 'kma' && (
+          <span className="whatif-mobility-badge whatif-mobility-badge--real" title="기상청 실측 기온·절대습도 기반 계절 전파력 반영">
+            기상 전파력 반영(실측)
           </span>
         )}
       </div>
@@ -1715,6 +1720,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   const [trafficRefreshing, setTrafficRefreshing] = useState(false);
   const [trafficMsg, setTrafficMsg] = useState<string | null>(null);
   const [trafficBase, setTrafficBase] = useState(0.5);
+  const [useWeather, setUseWeather] = useState(false);
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -1723,7 +1729,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
     try {
       const r = await fetch(`${API_BASE}/ontology/functions/whatIfOutbreakNational`, {
         method: 'POST', headers: await adminHeaders(),
-        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, weeks: 4, use_aviation: useAviation, use_traffic: useTraffic, traffic_base: trafficBase } }),
+        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, weeks: 4, use_aviation: useAviation, use_traffic: useTraffic, traffic_base: trafficBase, use_weather: useWeather } }),
       });
       const d = await r.json();
       if (!r.ok) {
@@ -1775,8 +1781,8 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   return (
     <div className="whatif-standalone">
       <div className="whatif-standalone-desc">
-        <strong>전국 확산 시나리오</strong> — 해외 감염병이 한국에 유입된다면? 선택한 공항 거점에서 전국 17개 시도로의 확산 패턴을 시뮬레이션합니다. <strong>항공상황 add</strong>를 켜면 발생국의 <strong>인천공항 실측 여객량</strong>으로 이동량(전파 배수)을 객관화해 분석합니다 (끄면 기본 proxy 사용). <strong>교통상황 add</strong>를 켜면 <strong>고속도로 실측 도착 교통량</strong>으로 시도별 연결성을 확산 배수에 반영합니다.<br />
-        <span className="whatif-ref-note">참고: 항공 여객량 기반 해외유입 위험 추정은 BlueDot·GLEAM 등 국제 감염병 예측 모델의 표준 방식이며, 시도 간 이동량(연결성) 기반 국내 확산 추정은 COVID-19 시공간 확산 네트워크 연구(대한교통학회·감염 네트워크 연구)에 근거합니다.</span>
+        <strong>전국 확산 시나리오</strong> — 해외 감염병이 한국에 유입된다면? 선택한 공항 거점에서 전국 17개 시도로의 확산 패턴을 시뮬레이션합니다. <strong>항공상황 add</strong>를 켜면 발생국의 <strong>인천공항 실측 여객량</strong>으로 이동량(전파 배수)을 객관화해 분석합니다 (끄면 기본 proxy 사용). <strong>교통상황 add</strong>를 켜면 <strong>고속도로 실측 도착 교통량</strong>으로 시도별 연결성을 확산 배수에 반영하고, <strong>기상상황 add</strong>를 켜면 <strong>기상청 실측 기온·절대습도</strong>로 계절 전파력을 반영합니다.<br />
+        <span className="whatif-ref-note">참고: 항공 여객량 기반 해외유입 위험 추정은 BlueDot·GLEAM 등 국제 감염병 예측 모델의 표준 방식이며, 시도 간 이동량(연결성) 기반 국내 확산 추정은 COVID-19 시공간 확산 네트워크 연구(대한교통학회·감염 네트워크 연구)에, 기상(저온·저습) 기반 전파력 보정은 Shaman(2009 PNAS)·Shang(2026) 메타분석에 근거합니다.</span>
       </div>
       <div className="whatif-row">
         <label>유입 거점</label>
@@ -1857,6 +1863,11 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
           </div>
         </div>
       )}
+      <label className={`whatif-aviation-toggle ${useWeather ? 'is-on' : ''}`}>
+        <input type="checkbox" checked={useWeather} onChange={(e) => setUseWeather(e.target.checked)} />
+        <span className="whatif-aviation-label">기상상황 add</span>
+        <span className="whatif-aviation-hint">기상청 실측 기온·절대습도로 계절 전파력을 반영 — 저온·저습일수록 확산↑. 기온이 최강 예측인자, 절대습도가 인플루엔자 계절성의 물리적 동인 (Shaman 2009 PNAS·Shang 2026 메타분석 기반).</span>
+      </label>
       <div className="whatif-presets">
         {WHAT_IF_PRESETS.map((p, i) => (
           <button key={i} type="button" className="whatif-preset-btn"

@@ -249,6 +249,18 @@ async def refresh_global_signals(_: dict = Depends(require_admin)) -> dict[str, 
     except Exception as exc:
         results["highway"] = {"status": "error", "error": str(exc)}
 
+    # Respiratory-weather favorability (기상청 초단기실황) — seasonal transmissibility
+    # signal. No-op if WEATHER_API_KEY is unset.
+    try:
+        wx_mod = __import_script("fetch_weather_stats")
+        wx_data = wx_mod.fetch_weather_respiratory()
+        (PROCESSED_DIR / "weather_respiratory_by_region.json").write_text(
+            json.dumps(wx_data, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        results["weather"] = {"status": wx_data.get("status"), "regions": len(wx_data.get("regions", {}))}
+    except Exception as exc:
+        results["weather"] = {"status": "error", "error": str(exc)}
+
     return {"status": status, "results": results}
 
 

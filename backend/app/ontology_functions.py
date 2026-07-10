@@ -944,6 +944,24 @@ def _highway_connectivity() -> dict[str, float]:
     }
 
 
+def _weather_favorability() -> dict[str, float]:
+    """Per-시도 respiratory-weather favorability (region_code → 0..1, cold+dry→higher).
+
+    Used to weight seasonal transmissibility when the "기상상황 add" toggle is on —
+    temperature is the dominant driver and absolute humidity carries the influenza
+    seasonality mechanism (Shang 2026; Shaman 2009/2010). Returns {} when unavailable.
+    """
+    data = _load_json(PROCESSED_DIR / "weather_respiratory_by_region.json")
+    if not isinstance(data, dict):
+        return {}
+    regions = data.get("regions") or {}
+    return {
+        code: float(v.get("favorability") or 0)
+        for code, v in regions.items()
+        if isinstance(v, dict)
+    }
+
+
 def _what_if_outbreak(inputs: dict) -> dict:
     region_id = str(inputs.get("region_id") or "")
     disease_name = str(inputs.get("disease") or "novel respiratory pathogen")
@@ -1256,6 +1274,12 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     SENS_BASES = tuple(sorted({round(max(0.0, min(1.0, traffic_base + d)), 2) for d in (-0.3, 0.0, 0.3)}))
     sens_counts = {b: 0 for b in SENS_BASES}
 
+    # 기상상황 add: weather-favorability transmissibility weight (cold + dry → faster
+    # spread; temperature dominant, absolute humidity = influenza seasonality driver).
+    use_weather = bool(inputs.get("use_weather"))
+    weather_fav = _weather_favorability() if use_weather else {}
+    weather_source = "kma" if (use_weather and weather_fav) else ("unavailable" if use_weather else "off")
+
     # Real outbreak context
     outbreaks = _all_outbreaks()
     real_exo = min(0.05, len([o for o in outbreaks if _korea_relevance(o) >= 0.6]) * 0.005)
@@ -1267,7 +1291,10 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         conn = conn_index.get(code, 0.5) if (use_traffic and conn_index) else 0.0
         # connectivity band = base_mult × (traffic_base + conn); e.g. base 0.5 → ×0.5..1.5
         spread_mult = base_mult * (traffic_base + conn) if (use_traffic and conn_index) else base_mult
-        region_lift = full_lift * spread_mult
+        # weather transmissibility multiplier (0.7..1.3x), applied to the lift not the
+        # spatial spread — weather is seasonal, not directional.
+        wx_mult = (0.7 + 0.6 * weather_fav.get(code, 0.5)) if (use_weather and weather_fav) else 1.0
+        region_lift = full_lift * spread_mult * wx_mult
         total_exo = real_exo + region_lift
 
         # Get baseline forecast for this region
@@ -1337,7 +1364,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         # Sensitivity sweep — escalated? at each connectivity base (traffic only).
         if use_traffic and conn_index:
             for b in SENS_BASES:
-                exo_b = real_exo + full_lift * base_mult * (b + conn)
+                exo_b = real_exo + full_lift * base_mult * (b + conn) * wx_mult
                 if any(bp["level"] != sp["level"] for bp, sp in zip(baseline_pts, _project(exo_b))):
                     sens_counts[b] += 1
 
@@ -1470,6 +1497,7 @@ JSON 외 다른 텍스트 금지. 하나의 JSON object로만 응답.
             "aviation": aviation_info,
             "traffic_source": traffic_source,
             "traffic_base": round(traffic_base, 2),
+            "weather_source": weather_source,
         },
         "regions": region_results,
         "summary": {
@@ -1506,6 +1534,8 @@ register(FunctionSpec(
          "description": "Weight per-region spread by real highway arrival-traffic connectivity (연결성)"},
         {"name": "traffic_base", "type": "number", "required": False, "default": 0.5,
          "description": "Connectivity multiplier base/floor (0..1). 0.5 → spread ×0.5..1.5. Lower = hub-concentrated, higher = broader spread"},
+        {"name": "use_weather", "type": "boolean", "required": False, "default": False,
+         "description": "Weight per-region transmissibility by real weather favorability (cold+dry → faster spread)"},
     ],
     output="object<{entry_point, scenario, regions[], summary, gemini_scenario, narrative}>",
     affects_objects=["Region"],
