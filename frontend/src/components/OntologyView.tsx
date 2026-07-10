@@ -599,7 +599,7 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
           className="scenario-spread-slider" />
         <span className="scenario-spread-week">{dayLabel(curDay)}{curDay > 0 && curDay <= 10 ? ' · 기상반영' : ''}</span>
       </div>
-      <svg viewBox="0 0 400 480" className="scenario-spread-svg korea-geo-svg">
+      <svg viewBox="0 0 400 525" className="scenario-spread-svg korea-geo-svg">
         <defs>
           <filter id="spread-glow">
             <feGaussianBlur stdDeviation="2.5" result="b" />
@@ -649,7 +649,8 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
                   className="scenario-spread-pulse" />
               )}
               <circle cx={pt[0]} cy={pt[1]} r={rad} fill={GLEVEL_COLORS[level] || GLEVEL_COLORS.G0}
-                stroke="#fff" strokeWidth={1} filter={isOrigin || level === 'G3' ? 'url(#spread-glow)' : undefined}
+                fillOpacity={isOrigin ? 0.68 : 1} stroke="#fff" strokeWidth={1}
+                filter={isOrigin || level === 'G3' ? 'url(#spread-glow)' : undefined}
                 style={{ transition: 'r 0.6s ease, fill 0.6s ease' }} />
               <text x={pt[0]} y={pt[1] - rad - 3} textAnchor="middle" fontSize={9} fontWeight={700}
                 fill="#e5e7eb" stroke="rgba(0,0,0,0.6)" strokeWidth={2} paintOrder="stroke"
@@ -1913,7 +1914,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
               <li><strong>기상 전파력</strong></li>
               <li><span className="wf-k api">실측 API</span> 기상청 단기+중기예보 기온(~10일, data.go.kr) → 시도별 저온지수(favorability) 0~1, 추울수록↑ (값 고정)</li>
               <li><span className="wf-k knob">내가 조절</span> 기상 강도 = 0~1 (기본 0.3)</li>
-              <li><span className="wf-k eq">수식</span> 전파율 <em>β_i = β × (1 + 강도 × 저온지수)</em>, 예보 가능한 10일 이내만 적용. 강도는 API 저온지수에 곱해지는 계수. Shang et al. 2026, <em>Environment International</em>(메타분석).</li>
+              <li><span className="wf-k eq">수식</span> 전파율 <em>β_i = β × (1 + 강도 × 저온지수)</em>, 예보 가능한 10일 이내만 적용. 강도는 API 저온지수에 곱해지는 계수. Shang et al. 2026, <em>Environment International</em> meta analysis.</li>
             </ul>
           </div>
         </details>
