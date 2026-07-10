@@ -1447,6 +1447,74 @@ def _build_response_playbook(peak_day: int, national_cfr: float, r0_eff: float) 
     ]
 
 
+def _gemini_national_scenario(*, disease_name: str, canon: str, is_novel: bool, country: str,
+                              severity: str, entry_label: str, origin_verb: str, seed_region_name: str,
+                              r0_eff: float, cfr_eff: float, inc_days: float, inf_days: float,
+                              total_cases: int, total_deaths: int, national_cfr: float, attack_rate: float,
+                              peak_day: int, worst: list, national_curve: list,
+                              use_aviation: bool, use_traffic: bool, use_weather: bool) -> dict | None:
+    """AI (Gemini) interpretation of the SEIR result — impact, spread pattern, week-by-week
+    timeline, stage-based response actions, high-risk regions, risk factors, best/worst case.
+    Grounded in the actual simulation numbers. Returns None if no API key; an {error}/{parse_error}
+    dict on failure (the frontend degrades gracefully)."""
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return None
+    try:
+        from google import genai
+        client = genai.Client(api_key=api_key)
+        model = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
+        signals = []
+        if use_aviation:
+            signals.append("항공 유입(실측 여객)")
+        if use_traffic:
+            signals.append("교통 연결성(실측 교통량)")
+        if use_weather:
+            signals.append("기상(예보 기온)")
+        curve_txt = ", ".join(f"{p['day']}일 {p['cumulative_cases']:,}명" for p in national_curve)
+        worst_txt = ", ".join(f"{w['name']} {w['cases']:,}명" for w in worst)
+        dtype = "신종 감염병(파라미터 사용자 지정)" if is_novel else f"기지 질병({canon})"
+        prompt = f"""당신은 한국 호흡기 감염병 감시 시스템 Sentinel의 시나리오 분석 AI입니다. 아래는 메타population SEIR 역학 모델의 28일 시뮬레이션 결과입니다. 이 수치를 해석해 정책 결정자를 위한 분석을 제공하세요.
+
+## 시나리오
+- 질병: {disease_name} ({dtype}), R0 {r0_eff}, 치명률 {cfr_eff * 100:.1f}%, 잠복기 {inc_days}일, 전염기 {inf_days}일
+- 심각도: {severity}
+- {origin_verb} 거점: {entry_label} → {seed_region_name}
+- 반영 신호: {', '.join(signals) or '없음'}
+
+## SEIR 시뮬레이션 결과 (28일)
+- 전국 누적 확진 {total_cases:,}명, 사망 {total_deaths:,}명, 전국 치명률 {national_cfr * 100:.1f}%, 발병률 {attack_rate * 100:.2f}%
+- 신규 확진 정점: {peak_day}일차
+- 최다 피해 지역: {worst_txt}
+- 누적 확진 추이: {curve_txt}
+
+## 요청 (반드시 한국어, JSON object 하나로만)
+1. "impact_summary": 이 결과의 의미와 파급 요약 (2-3문장)
+2. "spread_pattern": 예상 확산 양상 (거점→전국 경로, 1-2문장)
+3. "timeline": 주차별 전개 배열, 각 항목 {{"week": 정수(1~4), "description": "문자열"}}
+4. "response_actions": 시기별 대응 조치 4-6개 배열, 각 항목 {{"priority": "high|medium|low", "action": "구체적 조치", "timing": "단기(0~7일)|중기(1~3주)|후기(21~28일)"}}. 위 결과(정점 시점·치명률·전파력)에 근거해 구체적으로 작성.
+5. "high_risk_regions": 고위험 지역 2-3개 배열, 각 항목 {{"region": "지역명", "reason": "문자열"}}
+6. "risk_factors": 악화 위험 요인 2-3개 (문자열 배열)
+7. "best_case": 최선 시나리오 (1문장)
+8. "worst_case": 최악 시나리오 (1문장)
+
+JSON 외 다른 텍스트 금지."""
+        resp = client.models.generate_content(model=model, contents=prompt)
+        raw = (resp.text or "").strip()
+        cleaned = raw
+        if cleaned.startswith("```"):
+            cleaned = cleaned.strip("`")
+            if cleaned.startswith("json"):
+                cleaned = cleaned[4:]
+            cleaned = cleaned.strip()
+        try:
+            return json.loads(cleaned)
+        except Exception:
+            return {"raw": raw[:800], "parse_error": True}
+    except Exception as e:
+        return {"error": f"Gemini call failed: {type(e).__name__}: {e}"}
+
+
 def _what_if_outbreak_national(inputs: dict) -> dict:
     entry_raw = str(inputs.get("entry_point") or "ICN").strip()
     entry_code = entry_raw.upper()
@@ -1600,6 +1668,16 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     sensitivity.sort(key=lambda x: abs(x["high_cases"] - x["low_cases"]), reverse=True)
 
     origin_verb = "발생" if entry_type == "domestic" else "유입"
+    attack_rate_nat = total_cases / _SEIR_TOTAL_POP if _SEIR_TOTAL_POP else 0.0
+    gemini_scenario = _gemini_national_scenario(
+        disease_name=disease_name, canon=canon, is_novel=not canon, country=country, severity=severity,
+        entry_label=entry_point["label"], origin_verb=origin_verb,
+        seed_region_name=_REGION_COORDS.get(entry_region, {}).get("name", entry_region),
+        r0_eff=r0_eff, cfr_eff=cfr_eff, inc_days=inc_days, inf_days=inf_days,
+        total_cases=total_cases, total_deaths=total_deaths, national_cfr=national_cfr,
+        attack_rate=attack_rate_nat, peak_day=peak_day, worst=worst, national_curve=national_curve,
+        use_aviation=bool(inputs.get("use_aviation")) and entry_type == "airport",
+        use_traffic=use_traffic, use_weather=use_weather)
     return {
         "entry_point": {
             "code": entry_code, "label": entry_point["label"], "entry_type": entry_type,
@@ -1630,7 +1708,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             "response_playbook": _build_response_playbook(peak_day, national_cfr, r0_eff),
             "total_population": _SEIR_TOTAL_POP,
         },
-        "gemini_scenario": None,
+        "gemini_scenario": gemini_scenario,
         "narrative": (
             f"역학 시뮬레이션: {disease_name} (R0 {r0_eff}·CFR {cfr_eff * 100:.1f}%, {severity})가 "
             f"{entry_point['label']}에서 {origin_verb}({_REGION_COORDS.get(entry_region, {}).get('name', entry_region)} 거점) 시 — "

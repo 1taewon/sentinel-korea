@@ -759,6 +759,14 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
   const s = result.summary;
   const sc = result.scenario;
   const fmt = (n?: number) => (n ?? 0).toLocaleString('ko-KR');
+  const prioKr = (p?: string) => ({ high: '높음', medium: '보통', low: '낮음' } as Record<string, string>)[(p || '').toLowerCase()] || p || '';
+  const aiActions = g && !g.error && !g.parse_error ? (g.response_actions || []) : [];
+  const aiBucket = (timing?: string) => {
+    const t = timing || '';
+    if (t.includes('중기')) return '중기';
+    if (t.includes('후기') || t.includes('장기')) return '후기';
+    return '단기';
+  };
   const pct = (n?: number, d = 2) => `${((n ?? 0) * 100).toFixed(d)}%`;
 
   return (
@@ -874,8 +882,36 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
         <div className="epi-region-caveat">단기·중기 열은 각 시점의 <strong>누적 확진</strong>, 사망·치명률은 28일 기준입니다. 개입(백신·거리두기) 없는 자연확산 가정의 예시 시나리오이며 예보가 아닙니다. 인구: 행정안전부 주민등록 2026-06.</div>
       </div>
 
-      {/* Stage-based response playbook — phase-grounded recommendations (deterministic) */}
-      {s?.response_playbook && s.response_playbook.length > 0 && (
+      {/* 시기별 대응 방안 — AI (Gemini) 분석이 우선, 없으면 규칙 기반 fallback */}
+      {aiActions.length > 0 ? (
+        <div className="whatif-section">
+          <div className="whatif-section-title">시기별 대응 방안 · AI 분석 (Gemini)</div>
+          <div className="epi-playbook">
+            {(['단기', '중기', '후기'] as const).map((key, idx) => {
+              const label = ['단기 (0~7일)', '중기 (1~3주)', '후기 (21~28일)'][idx];
+              const items = aiActions.filter((a) => aiBucket(a.timing) === key);
+              if (items.length === 0) return null;
+              return (
+                <div key={key} className="epi-playbook-stage">
+                  <div className="epi-playbook-head">
+                    <span className="epi-playbook-when">{label}</span>
+                    <span className="epi-playbook-phase">AI 권고</span>
+                  </div>
+                  <ul className="epi-playbook-actions">
+                    {items.map((a, j) => (
+                      <li key={j}>
+                        {a.priority && <span className={`epi-ai-prio ${(a.priority || '').toLowerCase()}`}>{prioKr(a.priority)}</span>}
+                        {a.action}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+          <div className="epi-region-caveat">Sentinel AI(Gemini)가 위 SEIR 시뮬레이션 결과(정점 시점·치명률·전파력)를 해석해 생성한 시기별 대응 권고입니다.</div>
+        </div>
+      ) : (s?.response_playbook && s.response_playbook.length > 0 && (
         <div className="whatif-section">
           <div className="whatif-section-title">시기별 대응 방안 · 유행 단계별 권고</div>
           <div className="epi-playbook">
@@ -891,31 +927,32 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
               </div>
             ))}
           </div>
-          <div className="epi-region-caveat">K-방역 3T(검사·추적·치료) · WHO 봉쇄–완화 단계 · 감염병 위기경보 4단계 프레임워크에 근거한 시기별 권고 예시로, 시뮬레이션의 정점 시점·치명률·전파력에 맞춰 자동 조정됩니다.</div>
+          <div className="epi-region-caveat">AI 분석(Gemini)을 사용할 수 없어 규칙 기반 권고를 표시합니다. K-방역 3T · WHO 봉쇄–완화 단계 프레임워크 기반이며 정점 시점·치명률·전파력에 맞춰 조정됩니다.</div>
         </div>
-      )}
+      ))}
 
-      {/* Gemini national narrative */}
-      {g && !g.error && !g.parse_error && (
+      {/* AI 시나리오 분석 (Gemini) — 영향·확산 양상·전개·위험 (대응 방안은 위 전용 섹션) */}
+      {g && !g.error && !g.parse_error && (g.impact_summary || g.spread_pattern || (g.timeline && g.timeline.length > 0) || (g.high_risk_regions && g.high_risk_regions.length > 0) || g.best_case || g.worst_case || g.risk_factors) && (
         <div className="whatif-gemini">
+          <div className="whatif-section-title whatif-ai-head">AI 시나리오 분석 (Gemini)</div>
           {g.impact_summary && (
             <div className="whatif-section">
-              <div className="whatif-section-title">Impact Summary</div>
+              <div className="whatif-section-title">영향 요약</div>
               <p>{g.impact_summary}</p>
             </div>
           )}
           {g.spread_pattern && (
             <div className="whatif-section">
-              <div className="whatif-section-title">Spread Pattern</div>
+              <div className="whatif-section-title">확산 양상</div>
               <p>{g.spread_pattern}</p>
             </div>
           )}
           {g.timeline && g.timeline.length > 0 && (
             <div className="whatif-section">
-              <div className="whatif-section-title">Timeline Scenario</div>
+              <div className="whatif-section-title">주차별 전개</div>
               {g.timeline.map((t, i) => (
                 <div key={i} className="whatif-timeline-item">
-                  {t.week != null && <span className="whatif-timeline-week">+{t.week}w</span>}
+                  {t.week != null && <span className="whatif-timeline-week">{t.week}주차</span>}
                   <span>{t.description}</span>
                 </div>
               ))}
@@ -923,7 +960,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
           )}
           {g.high_risk_regions && g.high_risk_regions.length > 0 && (
             <div className="whatif-section">
-              <div className="whatif-section-title">High Risk Regions</div>
+              <div className="whatif-section-title">고위험 지역</div>
               {g.high_risk_regions.map((hr, i) => (
                 <div key={i} className="whatif-action-item">
                   <span className="ontology-pill ontology-rec-priority-HIGH">{hr.region}</span>
@@ -932,27 +969,15 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
               ))}
             </div>
           )}
-          {g.response_actions && (
-            <div className="whatif-section">
-              <div className="whatif-section-title">Response Actions</div>
-              {g.response_actions.map((a, i) => (
-                <div key={i} className="whatif-action-item">
-                  {a.priority && <span className={`ontology-pill ontology-rec-priority-${a.priority?.toUpperCase()}`}>{a.priority}</span>}
-                  <span className="whatif-action-text">{a.action}</span>
-                  {a.timing && <span className="whatif-action-timing">{a.timing}</span>}
-                </div>
-              ))}
-            </div>
-          )}
           {(g.best_case || g.worst_case) && (
             <div className="whatif-section whatif-cases">
-              {g.best_case && <div className="whatif-case best">Best case: {g.best_case}</div>}
-              {g.worst_case && <div className="whatif-case worst">Worst case: {g.worst_case}</div>}
+              {g.best_case && <div className="whatif-case best">최선 시나리오: {g.best_case}</div>}
+              {g.worst_case && <div className="whatif-case worst">최악 시나리오: {g.worst_case}</div>}
             </div>
           )}
           {g.risk_factors && (
             <div className="whatif-section">
-              <div className="whatif-section-title">Risk Factors</div>
+              <div className="whatif-section-title">추가 위험 요인</div>
               <ul className="whatif-risk-list">
                 {g.risk_factors.map((rf, i) => <li key={i}>{rf}</li>)}
               </ul>
