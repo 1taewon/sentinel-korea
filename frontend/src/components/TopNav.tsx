@@ -20,13 +20,13 @@ interface TopNavProps {
   onAboutOpen?: () => void;
 }
 
-const TABS: { key: NavTab; label: string; labelEn: string; adminOnly?: boolean }[] = [
+const TABS: { key: NavTab; label: string; labelEn: string; adminOnly?: boolean; special?: boolean }[] = [
   { key: 'map', label: '지도', labelEn: 'MAP' },
   { key: 'statistics', label: '통계', labelEn: 'STATISTICS' },
   { key: 'data_sources', label: '데이터 소스', labelEn: 'DATA SOURCES' },
   { key: 'pathway', label: 'Control', labelEn: 'PIPELINE' },
   { key: 'report', label: '리포트', labelEn: 'REPORT' },
-  { key: 'ontology', label: '예측분석', labelEn: 'FORECASTING' },
+  { key: 'ontology', label: '예측·시뮬레이션', labelEn: 'FORECASTING & SIMULATION', special: true },
 ];
 
 /* ── Pipeline Status Bar ────────────────────────────────────── */
@@ -130,10 +130,13 @@ export default function TopNav({
         {TABS.filter((tab) => !tab.adminOnly || isAdmin).map((tab) => (
           <button
             key={tab.key}
-            className={`top-nav-tab ${activeTab === tab.key ? 'top-nav-tab--active' : ''}`}
+            className={`top-nav-tab ${activeTab === tab.key ? 'top-nav-tab--active' : ''} ${tab.special ? 'top-nav-tab--special' : ''}`}
             onClick={() => onTabChange(tab.key)}
           >
-            <span className="top-nav-tab-label">{tab.labelEn}</span>
+            <span className="top-nav-tab-label">
+              {tab.labelEn}
+              {tab.special && <span className="top-nav-tab-badge">AI</span>}
+            </span>
             <span className="top-nav-tab-sub">{tab.label}</span>
           </button>
         ))}
