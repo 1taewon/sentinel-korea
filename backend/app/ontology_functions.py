@@ -962,6 +962,32 @@ def _weather_favorability() -> dict[str, float]:
     }
 
 
+def _weather_favorability_live() -> dict[str, float]:
+    """Fetch current KMA forecast weather LIVE (concurrent, ~2-3s) at scenario run-time,
+    persist it to the cache (so the map layer benefits too), and return per-시도
+    favorability. Falls back to the last cached value if the live fetch is unavailable
+    (no WEATHER_API_KEY / API error)."""
+    try:
+        import importlib.util
+        scripts_dir = Path(__file__).resolve().parent.parent / "scripts"
+        spec = importlib.util.spec_from_file_location(
+            "fetch_weather_stats", scripts_dir / "fetch_weather_stats.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        data = mod.fetch_weather_respiratory()
+        if data.get("status") == "ok" and data.get("regions"):
+            try:
+                (PROCESSED_DIR / "weather_respiratory_by_region.json").write_text(
+                    json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            except Exception:
+                pass
+            return {c: float(v.get("favorability") or 0)
+                    for c, v in data["regions"].items() if isinstance(v, dict)}
+    except Exception:
+        pass
+    return _weather_favorability()  # cache fallback
+
+
 def _what_if_outbreak(inputs: dict) -> dict:
     region_id = str(inputs.get("region_id") or "")
     disease_name = str(inputs.get("disease") or "novel respiratory pathogen")
@@ -1277,7 +1303,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     # 기상상황 add: weather-favorability transmissibility weight (cold + dry → faster
     # spread; temperature dominant, absolute humidity = influenza seasonality driver).
     use_weather = bool(inputs.get("use_weather"))
-    weather_fav = _weather_favorability() if use_weather else {}
+    weather_fav = _weather_favorability_live() if use_weather else {}  # live KMA fetch at run-time
     weather_source = "kma" if (use_weather and weather_fav) else ("unavailable" if use_weather else "off")
     # Weather transmissibility base (floor of the ×band; span 0.6). Default 0.7 →
     # ×0.7..1.3. User-selectable, with the same centered ±0.3 sensitivity sweep as

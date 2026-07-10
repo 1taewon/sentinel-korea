@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -73,6 +74,39 @@ def _base_datetime() -> tuple[str, str]:
     return prev.strftime("%Y%m%d"), "2300"
 
 
+def _fetch_region_temp(code: str, nx: int, ny: int, key: str,
+                       base_date: str, base_time: str) -> tuple[str, dict[str, Any] | None]:
+    """Fetch one 시도's forecast TMP and reduce to a favorability record."""
+    params = {
+        "serviceKey": key, "dataType": "JSON", "numOfRows": "700", "pageNo": "1",
+        "base_date": base_date, "base_time": base_time, "nx": str(nx), "ny": str(ny),
+    }
+    try:
+        resp = httpx.get(BASE, params=params, headers=HEADERS, timeout=8)
+        items = (resp.json().get("response", {}).get("body", {})
+                 .get("items", {}).get("item", []))
+    except Exception as exc:
+        print(f"[Weather] region {code} failed: {exc}", file=sys.stderr)
+        return code, None
+    # TMP (기온) forecast values, in time order, over the coming FORECAST_HOURS.
+    temps: list[float] = []
+    for it in items:
+        if isinstance(it, dict) and it.get("category") == "TMP":
+            try:
+                temps.append(float(it.get("fcstValue")))
+            except (TypeError, ValueError):
+                pass
+    temps = temps[:FORECAST_HOURS]
+    if not temps:
+        return code, None
+    avg_t = sum(temps) / len(temps)
+    return code, {
+        "favorability": _favorability(avg_t),
+        "temp_c": round(avg_t, 1),
+        "forecast_hours": len(temps),
+    }
+
+
 def fetch_weather_respiratory() -> dict[str, Any]:
     key = os.getenv("WEATHER_API_KEY", "").strip()
     if not key:
@@ -81,35 +115,15 @@ def fetch_weather_respiratory() -> dict[str, Any]:
 
     base_date, base_time = _base_datetime()
     regions: dict[str, Any] = {}
-    for code, (nx, ny) in _REGION_GRID.items():
-        params = {
-            "serviceKey": key, "dataType": "JSON", "numOfRows": "700", "pageNo": "1",
-            "base_date": base_date, "base_time": base_time, "nx": str(nx), "ny": str(ny),
-        }
-        try:
-            resp = httpx.get(BASE, params=params, headers=HEADERS, timeout=20)
-            items = (resp.json().get("response", {}).get("body", {})
-                     .get("items", {}).get("item", []))
-        except Exception as exc:
-            print(f"[Weather] region {code} failed: {exc}", file=sys.stderr)
-            continue
-        # TMP (기온) forecast values, in time order, over the coming FORECAST_HOURS.
-        temps: list[float] = []
-        for it in items:
-            if isinstance(it, dict) and it.get("category") == "TMP":
-                try:
-                    temps.append(float(it.get("fcstValue")))
-                except (TypeError, ValueError):
-                    pass
-        temps = temps[:FORECAST_HOURS]
-        if not temps:
-            continue
-        avg_t = sum(temps) / len(temps)
-        regions[code] = {
-            "favorability": _favorability(avg_t),
-            "temp_c": round(avg_t, 1),
-            "forecast_hours": len(temps),
-        }
+    # Fetch all 17 시도 concurrently so a live call (per Outbreak Scenario run) stays
+    # fast (~2-3s) instead of ~15s sequential.
+    with ThreadPoolExecutor(max_workers=len(_REGION_GRID)) as ex:
+        futures = [ex.submit(_fetch_region_temp, code, nx, ny, key, base_date, base_time)
+                   for code, (nx, ny) in _REGION_GRID.items()]
+        for fut in futures:
+            code, data = fut.result()
+            if data:
+                regions[code] = data
 
     if not regions:
         return {"status": "error", "reason": "no forecast temperature parsed", "regions": {}}

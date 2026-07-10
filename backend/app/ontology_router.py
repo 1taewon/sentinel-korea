@@ -464,7 +464,10 @@ async def invoke_function(
         raise HTTPException(status_code=404, detail=f"Unknown decision function: {name}")
     inputs = (body or {}).get("inputs") or {}
     try:
-        result = spec.fn(inputs)
+        # Offload the sync function (may block on live weather fetch / Gemini) to a
+        # threadpool so it never blocks the event loop.
+        from starlette.concurrency import run_in_threadpool
+        result = await run_in_threadpool(spec.fn, inputs)
     except HTTPException:
         raise
     except Exception as e:
