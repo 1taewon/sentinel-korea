@@ -91,9 +91,9 @@ interface NationalRegionResult {
 }
 interface NationalOutbreakResult {
   entry_point: { code: string; label: string; primary_zones: string[] };
-  scenario: { disease: string; country: string; severity: string; base_lift: number; proximity_multiplier: number; proximity_source?: string; aviation?: { multiplier: number; arr_passengers: number; country_kr: string; month: string } | null; traffic_source?: string };
+  scenario: { disease: string; country: string; severity: string; base_lift: number; proximity_multiplier: number; proximity_source?: string; aviation?: { multiplier: number; arr_passengers: number; country_kr: string; month: string } | null; traffic_source?: string; traffic_base?: number };
   regions: NationalRegionResult[];
-  summary: { total_regions: number; escalated_count: number; escalated_regions: string[]; total_delta: number };
+  summary: { total_regions: number; escalated_count: number; escalated_regions: string[]; total_delta: number; traffic_sensitivity?: { base: number; escalated_count: number; is_selected: boolean }[] | null };
   gemini_scenario?: {
     impact_summary?: string; spread_pattern?: string;
     timeline?: { week?: number; description?: string }[];
@@ -640,6 +640,22 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
           <span className="national-summary-label">1차 영향 지역</span>
         </div>
       </div>
+
+      {/* Connectivity-base sensitivity — escalated-region count at base 0.3/0.5/0.7 */}
+      {result.summary?.traffic_sensitivity && (
+        <div className="traffic-sensitivity">
+          <span className="traffic-sensitivity-label">연결성 base 민감도 · 상향 지역 수</span>
+          <div className="traffic-sensitivity-cells">
+            {result.summary.traffic_sensitivity.map((s) => (
+              <div key={s.base} className={`traffic-sensitivity-cell ${s.is_selected ? 'is-selected' : ''}`}>
+                <span className="tsc-base">{s.base.toFixed(1)} {s.base <= 0.3 ? '허브집중' : s.base >= 0.7 ? '광역' : '기본'}</span>
+                <span className="tsc-count">{s.escalated_count}개</span>
+              </div>
+            ))}
+          </div>
+          <span className="traffic-sensitivity-hint">세 base에서 값이 비슷할수록 결과가 파라미터에 견고합니다. 지도·표는 선택값({(result.scenario?.traffic_base ?? 0.5).toFixed(1)}) 기준.</span>
+        </div>
+      )}
 
       {/* Before/After Mini Maps — all regions shown */}
       <div className="whatif-minimap-pair">
@@ -1560,6 +1576,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   const [trafficUpdatedAt, setTrafficUpdatedAt] = useState<string | null>(null);
   const [trafficRefreshing, setTrafficRefreshing] = useState(false);
   const [trafficMsg, setTrafficMsg] = useState<string | null>(null);
+  const [trafficBase, setTrafficBase] = useState(0.5);
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -1568,7 +1585,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
     try {
       const r = await fetch(`${API_BASE}/ontology/functions/whatIfOutbreakNational`, {
         method: 'POST', headers: await adminHeaders(),
-        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, weeks: 4, use_aviation: useAviation, use_traffic: useTraffic } }),
+        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, weeks: 4, use_aviation: useAviation, use_traffic: useTraffic, traffic_base: trafficBase } }),
       });
       const d = await r.json();
       if (!r.ok) {
@@ -1662,17 +1679,29 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
         <span className="whatif-aviation-hint">고속도로 실측 도착 교통량으로 지역 연결성을 확산 배수에 반영 — 연결성 높은 허브가 먼 거리도 빨리 확산(웜홀). 대한교통학회·감염 네트워크 연구 기반.</span>
       </label>
       {useTraffic && (
-        <div className="whatif-traffic-refresh">
-          <span className="whatif-traffic-updated">
-            {trafficUpdatedAt
-              ? `교통데이터 기준: ${new Date(trafficUpdatedAt).toLocaleString('ko-KR')}`
-              : '교통데이터 미수집 (기본: 월요일 자동 갱신)'}
-          </span>
-          <button type="button" className="whatif-traffic-refresh-btn"
-            onClick={refreshTraffic} disabled={trafficRefreshing}>
-            {trafficRefreshing ? '갱신 중…' : '최신 반영'}
-          </button>
-          {trafficMsg && <span className="whatif-traffic-msg">{trafficMsg}</span>}
+        <div className="whatif-traffic-controls">
+          <div className="whatif-traffic-base">
+            <label>연결성 base</label>
+            <select value={trafficBase} onChange={(e) => setTrafficBase(Number(e.target.value))}
+              className="whatif-select whatif-traffic-base-select">
+              <option value={0.3}>0.3 — 허브 집중형</option>
+              <option value={0.5}>0.5 — 기본 (균형)</option>
+              <option value={0.7}>0.7 — 광역 확산형</option>
+            </select>
+            <span className="whatif-traffic-base-hint">확산 배수 = base + 연결성(0~1). 낮을수록 허브 집중, 높을수록 광역 확산. 실행하면 세 값의 민감도를 함께 표시합니다.</span>
+          </div>
+          <div className="whatif-traffic-refresh">
+            <span className="whatif-traffic-updated">
+              {trafficUpdatedAt
+                ? `교통데이터 기준: ${new Date(trafficUpdatedAt).toLocaleString('ko-KR')}`
+                : '교통데이터 미수집 (기본: 월요일 자동 갱신)'}
+            </span>
+            <button type="button" className="whatif-traffic-refresh-btn"
+              onClick={refreshTraffic} disabled={trafficRefreshing}>
+              {trafficRefreshing ? '갱신 중…' : '최신 반영'}
+            </button>
+            {trafficMsg && <span className="whatif-traffic-msg">{trafficMsg}</span>}
+          </div>
         </div>
       )}
       <div className="whatif-presets">

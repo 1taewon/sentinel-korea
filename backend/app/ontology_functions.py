@@ -1242,6 +1242,16 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     use_traffic = bool(inputs.get("use_traffic"))
     conn_index = _highway_connectivity() if use_traffic else {}
     traffic_source = "highway" if (use_traffic and conn_index) else ("unavailable" if use_traffic else "off")
+    # Connectivity → spread-multiplier base (the floor of the ×band). Default 0.5 →
+    # ×0.5..1.5. User-selectable; the result also reports a sensitivity sweep so the
+    # user sees how many regions escalate at each base (robustness of the result).
+    try:
+        traffic_base = float(inputs.get("traffic_base", 0.5))
+    except (TypeError, ValueError):
+        traffic_base = 0.5
+    traffic_base = max(0.0, min(1.0, traffic_base))
+    SENS_BASES = (0.3, 0.5, 0.7)
+    sens_counts = {b: 0 for b in SENS_BASES}
 
     # Real outbreak context
     outbreaks = _all_outbreaks()
@@ -1250,9 +1260,10 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     # Compute per-region scenarios
     region_results = []
     for code, meta in sorted(_REGION_COORDS.items()):
-        spread_mult = _spread_multiplier(code, entry_point)
-        if use_traffic and conn_index:
-            spread_mult *= 0.5 + conn_index.get(code, 0.5)  # connectivity (0.5..1.5x)
+        base_mult = _spread_multiplier(code, entry_point)
+        conn = conn_index.get(code, 0.5) if (use_traffic and conn_index) else 0.0
+        # connectivity band = base_mult × (traffic_base + conn); e.g. base 0.5 → ×0.5..1.5
+        spread_mult = base_mult * (traffic_base + conn) if (use_traffic and conn_index) else base_mult
         region_lift = full_lift * spread_mult
         total_exo = real_exo + region_lift
 
@@ -1300,18 +1311,32 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
 
         last_date = _date.fromisoformat(history[-1]["date"])
         baseline_pts = baseline["forecast"]
-        scenario_pts: list[dict] = []
-        for i in range(1, weeks + 1):
-            dt = last_date.fromordinal(last_date.toordinal() + i * 7)
-            decayed_m = momentum * (0.7 ** (i - 1))
-            proj = max(0.0, min(1.0, ema + decayed_m + total_exo))
-            band = vol * (1 + 0.25 * (i - 1))
-            scenario_pts.append({
-                "date": dt.isoformat(), "weeks_ahead": i,
-                "score": round(proj, 4), "level": _level_for(proj),
-                "low": round(max(0, proj - band), 4),
-                "high": round(min(1, proj + band), 4),
-            })
+
+        # base/momentum/vol are independent of traffic_base — only total_exo shifts —
+        # so we project once for the chosen base and cheaply re-project for the sweep.
+        def _project(exo: float) -> list[dict]:
+            pts: list[dict] = []
+            for i in range(1, weeks + 1):
+                dt = last_date.fromordinal(last_date.toordinal() + i * 7)
+                decayed_m = momentum * (0.7 ** (i - 1))
+                proj = max(0.0, min(1.0, ema + decayed_m + exo))
+                band = vol * (1 + 0.25 * (i - 1))
+                pts.append({
+                    "date": dt.isoformat(), "weeks_ahead": i,
+                    "score": round(proj, 4), "level": _level_for(proj),
+                    "low": round(max(0, proj - band), 4),
+                    "high": round(min(1, proj + band), 4),
+                })
+            return pts
+
+        scenario_pts = _project(total_exo)
+
+        # Sensitivity sweep — escalated? at each connectivity base (traffic only).
+        if use_traffic and conn_index:
+            for b in SENS_BASES:
+                exo_b = real_exo + full_lift * base_mult * (b + conn)
+                if any(bp["level"] != sp["level"] for bp, sp in zip(baseline_pts, _project(exo_b))):
+                    sens_counts[b] += 1
 
         comparison = []
         for b, s in zip(baseline_pts, scenario_pts):
@@ -1348,6 +1373,14 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     # Summary stats
     escalated_regions = [r for r in region_results if r.get("level_changed")]
     total_delta = sum(r.get("max_delta", 0) for r in region_results if "error" not in r)
+
+    # Connectivity-base sensitivity — how many regions escalate at each base (traffic only).
+    traffic_sensitivity = None
+    if use_traffic and conn_index:
+        traffic_sensitivity = [
+            {"base": b, "escalated_count": sens_counts[b], "is_selected": abs(b - traffic_base) < 1e-9}
+            for b in SENS_BASES
+        ]
 
     # Gemini national scenario narrative
     gemini_scenario = None
@@ -1432,6 +1465,7 @@ JSON 외 다른 텍스트 금지. 하나의 JSON object로만 응답.
             "proximity_source": prox_source,
             "aviation": aviation_info,
             "traffic_source": traffic_source,
+            "traffic_base": round(traffic_base, 2),
         },
         "regions": region_results,
         "summary": {
@@ -1439,6 +1473,7 @@ JSON 외 다른 텍스트 금지. 하나의 JSON object로만 응답.
             "escalated_count": len(escalated_regions),
             "escalated_regions": [r["region_name"] for r in escalated_regions],
             "total_delta": round(total_delta, 4),
+            "traffic_sensitivity": traffic_sensitivity,
         },
         "gemini_scenario": gemini_scenario,
         "narrative": (
@@ -1465,6 +1500,8 @@ register(FunctionSpec(
          "description": "Use real Incheon arriving-passenger volume for the country proximity multiplier instead of the hardcoded proxy"},
         {"name": "use_traffic", "type": "boolean", "required": False, "default": False,
          "description": "Weight per-region spread by real highway arrival-traffic connectivity (연결성)"},
+        {"name": "traffic_base", "type": "number", "required": False, "default": 0.5,
+         "description": "Connectivity multiplier base/floor (0..1). 0.5 → spread ×0.5..1.5. Lower = hub-concentrated, higher = broader spread"},
     ],
     output="object<{entry_point, scenario, regions[], summary, gemini_scenario, narrative}>",
     affects_objects=["Region"],

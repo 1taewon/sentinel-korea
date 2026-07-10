@@ -9728,6 +9728,35 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .whatif-traffic-refresh-btn:hover:not(:disabled) { border-color: #34d399; background: rgba(52, 211, 153, 0.1); }
 .whatif-traffic-refresh-btn:disabled { opacity: 0.55; cursor: default; }
 .whatif-traffic-msg { font-size: 11px; color: #059669; font-weight: 600; }
+.whatif-traffic-controls { display: flex; flex-direction: column; gap: 6px; margin: -2px 0 4px; padding-left: 2px; }
+.whatif-traffic-base { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.whatif-traffic-base > label { font-size: 11px; font-weight: 700; color: var(--text-primary, #0f172a); }
+.whatif-traffic-base-select { max-width: 220px; font-size: 12px; padding: 3px 8px; }
+.whatif-traffic-base-hint { font-size: 10px; color: var(--text-muted, #94a3b8); flex-basis: 100%; }
+.traffic-sensitivity {
+  margin: 4px 0 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  background: var(--bg-soft, #f8fafc);
+}
+.traffic-sensitivity-label { display: block; font-size: 11px; font-weight: 800; color: var(--text-secondary, #475569); margin-bottom: 6px; }
+.traffic-sensitivity-cells { display: flex; gap: 8px; flex-wrap: wrap; }
+.traffic-sensitivity-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  background: var(--bg, #fff);
+  min-width: 76px;
+}
+.traffic-sensitivity-cell.is-selected { border-color: #34d399; border-width: 2px; background: rgba(52, 211, 153, 0.08); }
+.tsc-base { font-size: 10px; color: var(--text-muted, #94a3b8); font-weight: 700; }
+.tsc-count { font-size: 16px; font-weight: 800; color: var(--text-primary, #0f172a); }
+.traffic-sensitivity-hint { display: block; margin-top: 6px; font-size: 10px; color: var(--text-muted, #94a3b8); }
 .whatif-mobility-badge {
   font-size: 10px;
   font-weight: 700;
