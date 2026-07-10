@@ -1707,9 +1707,11 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
     } finally { setExampleLoading(false); }
   };
 
-  // Enter example mode: show the full-featured demo (all signals on, default bases),
-  // then flipping any toggle re-fetches the matching pre-run combination (see effect).
+  // Enter example mode: fill the inputs with the canonical demo (H5N1/China via ICN),
+  // turn all signals on at default bases, and show the pre-run result. Flipping any
+  // toggle afterwards re-fetches the matching pre-run combination (see effect).
   const loadExample = () => {
+    setEntryPoint('ICN'); setDisease('H5N1 Avian Influenza'); setCountry('China'); setSeverity('high');
     setTrafficBase(0.5); setWeatherBase(0.7);
     setUseAviation(true); setUseTraffic(true); setUseWeather(true);
     setExampleMode(true);
@@ -1788,13 +1790,10 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       <div className="whatif-example-box">
         <button type="button" className={`whatif-example-btn ${exampleMode ? 'is-on' : ''}`}
           onClick={loadExample} disabled={exampleLoading}>
-          {exampleLoading ? '예시 불러오는 중…' : exampleMode ? '예시 초기화 (전체 ON) · H5N1 China' : '예시 보기 · H5N1 China 조류독감'}
+          {exampleLoading ? '예시 분석 중…' : '예시 분석 · H5N1 China 조류독감'}
         </button>
         <div className="whatif-example-note">
-          관리자가 아니어도 예시를 볼 수 있습니다. {exampleMode
-            ? '아래 항공·교통·기상 토글을 껐다 켜며 각 신호가 결과를 어떻게 바꾸는지 비교해 보세요. '
-            : '클릭하면 지도·확산 애니메이션·지역표·민감도가 표시됩니다. '}
-          예시는 기본 base 값(연결성 0.5·기상 0.7)으로만 분석됩니다. 실제 데이터로 직접 실행하려면 상단 (i)의 이메일로 admin 계정을 문의해 주세요.
+          예시 분석을 실행합니다. 클릭하면 지도·확산 애니메이션·지역표·민감도가 표시됩니다. 예시는 기본 base 값(연결성 0.5·기상 0.7)으로만 분석됩니다. 실제 데이터로 직접 실행하려면 상단 (i)의 이메일로 admin 계정을 문의해 주세요.
         </div>
       </div>
       <label className={`whatif-aviation-toggle ${useAviation ? 'is-on' : ''}`}>
