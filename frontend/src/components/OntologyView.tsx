@@ -650,7 +650,7 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
                   className="scenario-spread-pulse" />
               )}
               <circle cx={pt[0]} cy={pt[1]} r={rad} fill={GLEVEL_COLORS[level] || GLEVEL_COLORS.G0}
-                fillOpacity={isOrigin ? 0.68 : 1} stroke="#fff" strokeWidth={1}
+                fillOpacity={isOrigin ? 0.4 : 1} stroke="#fff" strokeWidth={1}
                 filter={isOrigin || level === 'G3' ? 'url(#spread-glow)' : undefined}
                 style={{ transition: 'r 0.6s ease, fill 0.6s ease' }} />
               <text x={pt[0]} y={pt[1] - rad - 3} textAnchor="middle" fontSize={9} fontWeight={700}
