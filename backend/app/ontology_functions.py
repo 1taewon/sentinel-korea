@@ -926,6 +926,24 @@ def _aviation_multiplier(country: str) -> dict | None:
     }
 
 
+def _highway_connectivity() -> dict[str, float]:
+    """Per-시도 highway arrival-traffic connectivity (region_code → 0..1).
+
+    Used to weight domestic spread when the "교통상황 add" toggle is on — the
+    spread-network research's connectivity/"wormhole" correction (far-but-connected
+    regions spread despite distance). Returns {} when the data is unavailable.
+    """
+    data = _load_json(PROCESSED_DIR / "highway_connectivity_by_region.json")
+    if not isinstance(data, dict):
+        return {}
+    regions = data.get("regions") or {}
+    return {
+        code: float(v.get("connectivity") or 0)
+        for code, v in regions.items()
+        if isinstance(v, dict)
+    }
+
+
 def _what_if_outbreak(inputs: dict) -> dict:
     region_id = str(inputs.get("region_id") or "")
     disease_name = str(inputs.get("disease") or "novel respiratory pathogen")
@@ -1219,6 +1237,12 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             prox, prox_source, aviation_info = av["multiplier"], "aviation", av
     full_lift = min(0.15, base_lift * prox)
 
+    # 교통상황 add: weight per-region spread by highway connectivity (연결성) — the
+    # spread-network research's "wormhole" correction (far-but-connected regions).
+    use_traffic = bool(inputs.get("use_traffic"))
+    conn_index = _highway_connectivity() if use_traffic else {}
+    traffic_source = "highway" if (use_traffic and conn_index) else ("unavailable" if use_traffic else "off")
+
     # Real outbreak context
     outbreaks = _all_outbreaks()
     real_exo = min(0.05, len([o for o in outbreaks if _korea_relevance(o) >= 0.6]) * 0.005)
@@ -1227,6 +1251,8 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     region_results = []
     for code, meta in sorted(_REGION_COORDS.items()):
         spread_mult = _spread_multiplier(code, entry_point)
+        if use_traffic and conn_index:
+            spread_mult *= 0.5 + conn_index.get(code, 0.5)  # connectivity (0.5..1.5x)
         region_lift = full_lift * spread_mult
         total_exo = real_exo + region_lift
 
@@ -1405,6 +1431,7 @@ JSON 외 다른 텍스트 금지. 하나의 JSON object로만 응답.
             "proximity_multiplier": round(prox, 2),
             "proximity_source": prox_source,
             "aviation": aviation_info,
+            "traffic_source": traffic_source,
         },
         "regions": region_results,
         "summary": {
@@ -1436,6 +1463,8 @@ register(FunctionSpec(
         {"name": "weeks", "type": "integer", "required": False, "default": 4},
         {"name": "use_aviation", "type": "boolean", "required": False, "default": False,
          "description": "Use real Incheon arriving-passenger volume for the country proximity multiplier instead of the hardcoded proxy"},
+        {"name": "use_traffic", "type": "boolean", "required": False, "default": False,
+         "description": "Weight per-region spread by real highway arrival-traffic connectivity (연결성)"},
     ],
     output="object<{entry_point, scenario, regions[], summary, gemini_scenario, narrative}>",
     affects_objects=["Region"],

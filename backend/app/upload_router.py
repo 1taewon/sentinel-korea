@@ -237,6 +237,18 @@ async def refresh_global_signals(_: dict = Depends(require_admin)) -> dict[str, 
     except Exception as exc:
         results["aviation"] = {"status": "error", "error": str(exc)}
 
+    # Highway connectivity (도로공사 도착 교통량) — objective domestic-spread signal
+    # for the Outbreak Scenario. No-op if HIGHWAY_API_KEY is unset.
+    try:
+        hw_mod = __import_script("fetch_highway_traffic")
+        hw_data = hw_mod.fetch_highway_connectivity()
+        (PROCESSED_DIR / "highway_connectivity_by_region.json").write_text(
+            json.dumps(hw_data, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        results["highway"] = {"status": hw_data.get("status"), "regions": len(hw_data.get("regions", {}))}
+    except Exception as exc:
+        results["highway"] = {"status": "error", "error": str(exc)}
+
     return {"status": status, "results": results}
 
 

@@ -90,6 +90,17 @@ async def signals_aviation() -> dict[str, Any]:
     return data
 
 
+@router.get("/signals/highway-connectivity")
+async def signals_highway_connectivity() -> dict[str, Any]:
+    """Objective domestic-spread factor — highway arrival-traffic connectivity by
+    시도 (0..1). Used to weight the Outbreak Scenario's regional spread when the
+    '교통상황 add' toggle is on. {"status": "empty"} when not yet collected."""
+    data = _load(PROCESSED_DIR / "highway_connectivity_by_region.json")
+    if not data or not isinstance(data, dict):
+        return {"status": "empty", "regions": {}}
+    return data
+
+
 @router.get("/signals/global/archive-dates")
 async def signals_global_archive_dates() -> list[str]:
     """List available archive snapshot dates (YYYY-MM-DD), newest first."""

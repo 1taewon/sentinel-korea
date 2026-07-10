@@ -91,7 +91,7 @@ interface NationalRegionResult {
 }
 interface NationalOutbreakResult {
   entry_point: { code: string; label: string; primary_zones: string[] };
-  scenario: { disease: string; country: string; severity: string; base_lift: number; proximity_multiplier: number; proximity_source?: string; aviation?: { multiplier: number; arr_passengers: number; country_kr: string; month: string } | null };
+  scenario: { disease: string; country: string; severity: string; base_lift: number; proximity_multiplier: number; proximity_source?: string; aviation?: { multiplier: number; arr_passengers: number; country_kr: string; month: string } | null; traffic_source?: string };
   regions: NationalRegionResult[];
   summary: { total_regions: number; escalated_count: number; escalated_regions: string[]; total_delta: number };
   gemini_scenario?: {
@@ -616,6 +616,11 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
         ) : (
           <span className="whatif-mobility-badge" title="하드코딩 이동량 proxy (항공상황 add 미적용)">
             이동량 proxy · ×{result.scenario?.proximity_multiplier}
+          </span>
+        )}
+        {result.scenario?.traffic_source === 'highway' && (
+          <span className="whatif-mobility-badge whatif-mobility-badge--real" title="고속도로 실측 도착 교통량 기반 지역 연결성을 확산 배수에 반영">
+            교통 연결성 반영(실측)
           </span>
         )}
       </div>
@@ -1551,6 +1556,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   const [country, setCountry] = useState('');
   const [severity, setSeverity] = useState('');
   const [useAviation, setUseAviation] = useState(false);
+  const [useTraffic, setUseTraffic] = useState(false);
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -1559,7 +1565,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
     try {
       const r = await fetch(`${API_BASE}/ontology/functions/whatIfOutbreakNational`, {
         method: 'POST', headers: await adminHeaders(),
-        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, weeks: 4, use_aviation: useAviation } }),
+        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, weeks: 4, use_aviation: useAviation, use_traffic: useTraffic } }),
       });
       const d = await r.json();
       if (!r.ok) {
@@ -1615,7 +1621,12 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       <label className={`whatif-aviation-toggle ${useAviation ? 'is-on' : ''}`}>
         <input type="checkbox" checked={useAviation} onChange={(e) => setUseAviation(e.target.checked)} />
         <span className="whatif-aviation-label">항공상황 add</span>
-        <span className="whatif-aviation-hint">발생국 → 인천공항 실측 여객량으로 이동량 객관화 (끄면 기본 proxy)</span>
+        <span className="whatif-aviation-hint">발생국 → 인천공항 실측 여객량으로 이동량(해외유입 위험) 객관화 (끄면 기본 proxy)</span>
+      </label>
+      <label className={`whatif-aviation-toggle ${useTraffic ? 'is-on' : ''}`}>
+        <input type="checkbox" checked={useTraffic} onChange={(e) => setUseTraffic(e.target.checked)} />
+        <span className="whatif-aviation-label">교통상황 add</span>
+        <span className="whatif-aviation-hint">고속도로 실측 도착 교통량으로 지역 연결성을 확산 배수에 반영 — 연결성 높은 허브가 먼 거리도 빨리 확산(웜홀). 대한교통학회·감염 네트워크 연구 기반.</span>
       </label>
       <div className="whatif-presets">
         {WHAT_IF_PRESETS.map((p, i) => (
