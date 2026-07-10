@@ -38,6 +38,7 @@ STEPS: list[dict[str, Any]] = [
     {"name": "korea_news",   "path": "/ingestion/refresh-korea",           "body": None,                   "timeout": 240,  "critical": False},
     {"name": "trends",       "path": "/ingestion/refresh-trends",          "body": None,                   "timeout": 720,  "critical": False},
     {"name": "global",       "path": "/ingestion/refresh-global",          "body": None,                   "timeout": 720,  "critical": False},
+    {"name": "weather",      "path": "/ingestion/refresh-weather",         "body": None,                   "timeout": 180,  "critical": False},
     {"name": "kdca_api",     "path": "/ingestion/refresh-kdca-notifiable", "body": None,                   "timeout": 240,  "critical": False},
     # Phase 2: AI analysis (critical — these update the dashboard / latest analysis date)
     {"name": "kdca_digest",  "path": "/risk-analysis/kdca-digest",         "body": None,                   "timeout": 240,  "critical": True},

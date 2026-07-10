@@ -7956,6 +7956,8 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 }
 .ontology-instances-col.is-scenario {
   overflow-y: auto;
+  width: 360px;
+  min-width: 324px;
 }
 
 /* Analysis area (takes remaining space) */

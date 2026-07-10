@@ -286,6 +286,7 @@ async def pipeline_last_updated() -> dict[str, Any]:
             "upload_history.json", "kdca_ari_weekly.json", "kdca_influenza_ili_weekly.json",
             "kdca_sari_pneumonia_weekly.json", "kdca_sari_influenza_weekly.json",
         ]),
+        "weather": _newest(["weather_respiratory_by_region.json"]),
         "kdca_api": _newest(["kdca_notifiable.json", "kdca_notifiable_weekly.json"]),
         "kdca_digest": _newest(["kdca_digest.json"]),
         "osint": _newest(["news_digest.json", "trends_digest.json"]),

@@ -33,6 +33,7 @@ type OperationKey =
   | 'korea_news'
   | 'trends'
   | 'global'
+  | 'weather'
   | 'kdca_upload'
   | 'kdca_api'
   | 'kdca_digest'
@@ -44,6 +45,7 @@ const FINAL_PIPELINE_SEQUENCE: OperationKey[] = [
   'korea_news',
   'trends',
   'global',
+  'weather',
   'kdca_api',
   'kdca_digest',
   'osint',
@@ -55,6 +57,7 @@ const createEmptyPipelineRuns = (): Record<OperationKey, string | undefined> => 
   korea_news: undefined,
   trends: undefined,
   global: undefined,
+  weather: undefined,
   kdca_upload: undefined,
   kdca_api: undefined,
   kdca_digest: undefined,
@@ -620,6 +623,23 @@ function AppInner({
           throw new Error(data?.details || data?.detail || 'WHO DON / overseas news refresh failed');
         }
         await fetchAlerts();
+      } else if (key === 'weather') {
+        const res = await fetch(`${API_BASE}/ingestion/refresh-weather`, { method: 'POST', headers: await getAdminHeaders(false) });
+        const data = await res.json();
+        if (!res.ok || data?.status === 'error') {
+          throw new Error(data?.error || data?.detail || 'Weather refresh failed');
+        }
+        // Reload favorability so the map's 기상 위험도 layer reflects the new data.
+        try {
+          const wr = await fetch(`${API_BASE}/signals/weather-respiratory`).then((r) => (r.ok ? r.json() : null));
+          if (wr && wr.regions) {
+            const scores: Record<string, number> = {};
+            for (const [code, v] of Object.entries(wr.regions as Record<string, { favorability?: number }>)) {
+              if (v && typeof v.favorability === 'number') scores[code] = v.favorability;
+            }
+            setWeatherScores(scores);
+          }
+        } catch { /* ignore */ }
       } else if (key === 'kdca_api') {
         await handleRefreshKdcaNotifiable({ rethrow: true });
       } else if (key === 'kdca_digest') {
@@ -685,7 +705,7 @@ function AppInner({
 
   // Steps that may fail without blocking the rest of the pipeline.
   // Data-ingestion sources are best-effort; AI analysis + report steps are critical.
-  const NON_CRITICAL_STEPS = new Set<OperationKey>(['korea_news', 'trends', 'global', 'kdca_api']);
+  const NON_CRITICAL_STEPS = new Set<OperationKey>(['korea_news', 'trends', 'global', 'weather', 'kdca_api']);
 
   const runFullFinalPipeline = async () => {
     if (!requireAdminAction('Full pipeline execution')) return;
@@ -943,6 +963,17 @@ function AppInner({
       primaryAction: '수집',
     },
     {
+      key: 'weather',
+      lane: 'SOURCE',
+      title: '기상 데이터 수집',
+      detail: `기상청 단기예보 기온으로 시도별 계절 위험도(favorability)를 계산합니다. Outbreak Scenario 기상 add + 지도 '기상 위험도' 레이어에 사용.${Object.keys(weatherScores).length ? ` 현재 ${Object.keys(weatherScores).length}개 시도 로드됨.` : ''}`,
+      status: runningPipeline === 'weather'
+        ? 'running'
+        : (Object.keys(weatherScores).length > 0 || lastPipelineRun.weather) ? 'ready' : 'needs-run',
+      updatedAt: lastPipelineRun.weather,
+      primaryAction: '수집',
+    },
+    {
       key: 'kdca_digest',
       lane: 'AI',
       title: 'KDCA 감시자료 요약',
@@ -1023,11 +1054,12 @@ function AppInner({
   // Row 3 (y=380): SYNTHESIS — sentinel
   // Row 4 (y=490): REPORT — kdca_report (FINAL 통합 리포트), placed below sentinel
   const PIPELINE_MODAL_NODE_LAYOUT: Record<string, { x: number; y: number }> = {
-    korea_news:  { x: 120, y:  80 },
-    trends:      { x: 290, y:  80 },
-    kdca_upload: { x: 540, y:  80 },
-    kdca_api:    { x: 720, y:  80 },
-    global:      { x: 890, y:  80 },   // ★ next to KDCA API
+    korea_news:  { x:  95, y:  80 },
+    trends:      { x: 245, y:  80 },
+    kdca_upload: { x: 430, y:  80 },
+    kdca_api:    { x: 580, y:  80 },
+    global:      { x: 745, y:  80 },
+    weather:     { x: 905, y:  80 },   // ★ standalone domestic met signal (no report edge)
     osint:       { x: 200, y: 230 },
     kdca_digest: { x: 630, y: 230 },
     sentinel:    { x: 415, y: 380 },
