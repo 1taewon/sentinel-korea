@@ -87,6 +87,7 @@ interface NationalRegionResult {
   scenario_level: string; scenario_score: number;
   max_delta: number; level_changed: boolean;
   comparison: WhatIfComparison[];
+  timeline?: { day: number; score: number; level: string }[];
   error?: string;
 }
 interface NationalOutbreakResult {
@@ -511,91 +512,22 @@ const SIDO_LABELS = [
   { code: '50', abbr: '제주', lat: 33.4890, lng: 126.4983 },
 ];
 
-function ScenarioMiniMap({ regionLevels, targetCode, title }: {
-  regionLevels: { code: string; level: string }[];
-  targetCode?: string;
-  title: string;
-}) {
-  const features = useKoreaGeoJSON();
-  const levelMap = useMemo(() => new Map(regionLevels.map(r => [r.code, r.level])), [regionLevels]);
-  const targetSet = useMemo(() => new Set((targetCode || '').split(',').filter(Boolean)), [targetCode]);
-
-  // d3 Mercator projection centered on Korea
-  const projection = useMemo(() =>
-    d3.geoMercator().center([127.8, 36.0]).scale(4800).translate([200, 240]),
-  []);
-  const pathGen = useMemo(() => d3.geoPath().projection(projection), [projection]);
-
-  // Pre-compute SVG paths + styling
-  const polys = useMemo(() => {
-    if (!features.length) return [];
-    return features.map((f: any, i: number) => {
-      const sigCode = f.properties?.code || '';
-      const sidoPrefix = sigCode.substring(0, 2);
-      const backendCode = GEOJSON_TO_BACKEND[sidoPrefix] || '';
-      const level = levelMap.get(backendCode) || 'G0';
-      const color = GLEVEL_COLORS[level] || GLEVEL_COLORS.G0;
-      const isTarget = targetSet.has(backendCode);
-      return { key: i, d: pathGen(f) || '', color, isTarget, level };
-    });
-  }, [features, levelMap, targetSet, pathGen]);
-
-  // Sido label positions
-  const labels = useMemo(() =>
-    SIDO_LABELS.map(s => {
-      const pt = projection([s.lng, s.lat]) || [0, 0];
-      return { ...s, x: pt[0], y: pt[1], level: levelMap.get(s.code) || 'G0' };
-    }),
-  [projection, levelMap]);
-
-  return (
-    <div className="scenario-minimap">
-      <div className="scenario-minimap-title">{title}</div>
-      <svg viewBox="0 0 400 480" className="scenario-minimap-svg korea-geo-svg">
-        <defs>
-          <filter id={`glow-${title.replace(/\s/g, '')}`}>
-            <feGaussianBlur stdDeviation="2.5" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-        </defs>
-        {/* SiGunGu polygons colored by parent Sido level */}
-        {polys.map(p => (
-          <path key={p.key} d={p.d}
-            fill={p.color}
-            fillOpacity={p.isTarget ? 0.95 : 0.6}
-            stroke={p.isTarget ? 'rgba(255,255,255,0.8)' : 'rgba(100,150,200,0.25)'}
-            strokeWidth={p.isTarget ? 1 : 0.3}
-            filter={p.isTarget ? `url(#glow-${title.replace(/\s/g, '')})` : undefined}
-          />
-        ))}
-        {/* Sido name labels */}
-        {labels.map(l => (
-          <text key={l.code} x={l.x} y={l.y}
-            textAnchor="middle" dominantBaseline="central"
-            fontSize={12} fontWeight={700}
-            fill={l.level === 'G1' ? '#1c2435' : '#fff'}
-            stroke="rgba(0,0,0,0.6)" strokeWidth={2.5} paintOrder="stroke"
-            style={{ pointerEvents: 'none' }}>
-            {l.abbr}
-          </text>
-        ))}
-      </svg>
-    </div>
-  );
-}
-
 // ─── Animated spread figure: aviation import → connectivity/proximity spread ──
-// Plays the backend's weekly projection (comparison[]) across the landing 시도 map:
-// the entry point (항공 유입 거점) seeds, spread edges fan out weighted by each
-// region's spread_multiplier (교통 연결성 × 인접성), nodes grow with predicted score.
+// Plays the backend's day-level timeline (0/3/7/10일 → 2/3/4주) across the landing
+// 시도 map: the entry point (항공 유입 거점) seeds, spread edges fan out with each
+// region's traffic connectivity, nodes grow with predicted score. Weather (short-term
+// forecast) only shapes the ≤10일 points; auto-plays and is manually scrubbable.
 function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
   regions: NationalRegionResult[];
   primaryZones: string[];
   entryLabel: string;
 }) {
   const features = useKoreaGeoJSON();
-  const weeks = useMemo(() => Math.max(1, ...regions.map((r) => r.comparison?.length || 0)), [regions]);
-  const [week, setWeek] = useState(0);
+  const days = useMemo(() => {
+    const t = regions.find((r) => r.timeline?.length)?.timeline;
+    return t?.map((p) => p.day) ?? [0, 3, 7, 10, 14, 21, 28];
+  }, [regions]);
+  const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(true);
 
   const projection = useMemo(() => d3.geoMercator().center([127.8, 36.0]).scale(4800).translate([200, 240]), []);
@@ -608,16 +540,11 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
     return m;
   }, [projection]);
 
-  const levelAt = (r: NationalRegionResult, w: number): string => {
-    if (w <= 0) return r.baseline_level || 'G0';
-    const c = r.comparison?.[Math.min(w, r.comparison.length) - 1];
-    return c?.scenario_level || r.scenario_level || 'G0';
-  };
-  const scoreAt = (r: NationalRegionResult, w: number): number => {
-    if (w <= 0) return r.baseline_score || 0;
-    const c = r.comparison?.[Math.min(w, r.comparison.length) - 1];
-    return c?.scenario_score ?? r.scenario_score ?? 0;
-  };
+  const levelAt = (r: NationalRegionResult, i: number): string =>
+    r.timeline?.[i]?.level || r.baseline_level || 'G0';
+  const scoreAt = (r: NationalRegionResult, i: number): number =>
+    r.timeline?.[i]?.score ?? r.baseline_score ?? 0;
+  const baseScore = (r: NationalRegionResult): number => r.timeline?.[0]?.score ?? r.baseline_score ?? 0;
 
   const polys = useMemo(() => features.map((f: any, i: number) => {
     const sido = String(f.properties?.code || '').substring(0, 2);
@@ -637,12 +564,16 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
       .filter(Boolean) as { code: string; from: [number, number]; to: [number, number]; mult: number }[];
   }, [regions, originPts, centroids, primaryZones]);
   const maxMult = useMemo(() => Math.max(1, ...edges.map((e) => e.mult)), [edges]);
+  const minMult = useMemo(() => Math.min(1, ...edges.map((e) => e.mult)), [edges]);
 
   useEffect(() => {
     if (!playing) return;
-    const id = setInterval(() => setWeek((w) => (w >= weeks ? 0 : w + 1)), 1300);
+    const id = setInterval(() => setIdx((i) => (i >= days.length - 1 ? 0 : i + 1)), 1300);
     return () => clearInterval(id);
-  }, [playing, weeks]);
+  }, [playing, days.length]);
+
+  const dayLabel = (d: number) => (d <= 0 ? '현재 (기준)' : d < 14 ? `${d}일 후` : `${d / 7}주 후`);
+  const curDay = days[idx] ?? 0;
 
   return (
     <div className="scenario-spread">
@@ -650,10 +581,10 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
         <button type="button" className="scenario-spread-play" onClick={() => setPlaying((p) => !p)}>
           {playing ? '일시정지' : '재생'}
         </button>
-        <input type="range" min={0} max={weeks} step={1} value={week}
-          onChange={(e) => { setPlaying(false); setWeek(Number(e.target.value)); }}
+        <input type="range" min={0} max={days.length - 1} step={1} value={idx}
+          onChange={(e) => { setPlaying(false); setIdx(Number(e.target.value)); }}
           className="scenario-spread-slider" />
-        <span className="scenario-spread-week">{week === 0 ? '현재 (기준)' : `${week}주 후`}</span>
+        <span className="scenario-spread-week">{dayLabel(curDay)}{curDay > 0 && curDay <= 10 ? ' · 기상반영' : ''}</span>
       </div>
       <svg viewBox="0 0 400 480" className="scenario-spread-svg korea-geo-svg">
         <defs>
@@ -664,28 +595,32 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
         </defs>
         {polys.map((p) => {
           const r = p.code ? regionByCode.get(p.code) : undefined;
-          const level = r ? levelAt(r, week) : 'G0';
+          const level = r ? levelAt(r, idx) : 'G0';
           return (
             <path key={p.key} d={p.d} fill={GLEVEL_COLORS[level] || GLEVEL_COLORS.G0}
-              fillOpacity={week === 0 ? 0.32 : 0.6} stroke="rgba(100,150,200,0.25)" strokeWidth={0.3}
+              fillOpacity={idx === 0 ? 0.32 : 0.6} stroke="rgba(100,150,200,0.25)" strokeWidth={0.3}
               style={{ transition: 'fill 0.7s ease, fill-opacity 0.7s ease' }} />
           );
         })}
-        {week >= 1 && edges.map((e) => {
+        {idx >= 1 && edges.map((e) => {
           const r = regionByCode.get(e.code);
-          if (!r || scoreAt(r, week) <= (r.baseline_score || 0) + 0.008) return null;
+          if (!r || scoreAt(r, idx) <= baseScore(r) + 0.008) return null;
+          // Thickness + dash density scale with traffic connectivity (spread_multiplier):
+          // busier corridors get thicker, denser-dashed spread paths.
+          const norm = maxMult > minMult ? (e.mult - minMult) / (maxMult - minMult) : 0.5;
           return (
             <line key={e.code} x1={e.from[0]} y1={e.from[1]} x2={e.to[0]} y2={e.to[1]}
-              stroke="rgba(255,120,60,0.55)" strokeWidth={0.5 + 2.5 * (e.mult / maxMult)}
-              strokeLinecap="round" strokeDasharray="3 5" className="scenario-spread-edge" />
+              stroke="rgba(255,120,60,0.62)" strokeWidth={0.6 + 3.4 * norm}
+              strokeLinecap="round" strokeDasharray={`${(2 + 3 * norm).toFixed(1)} ${(6 - 3 * norm).toFixed(1)}`}
+              className="scenario-spread-edge" />
           );
         })}
         {SIDO_LABELS.map((s) => {
           const r = regionByCode.get(s.code);
           const pt = centroids.get(s.code);
           if (!pt) return null;
-          const level = r ? levelAt(r, week) : 'G0';
-          const rad = 3 + (r ? scoreAt(r, week) : 0) * 9;
+          const level = r ? levelAt(r, idx) : 'G0';
+          const rad = 3 + (r ? scoreAt(r, idx) : 0) * 9;
           const isOrigin = primaryZones.includes(s.code);
           return (
             <g key={s.code}>
@@ -705,7 +640,7 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
       </svg>
       <div className="scenario-spread-legend">
         <span><i className="ssl-origin" /> 해외유입 거점(항공): {entryLabel}</span>
-        <span><i className="ssl-edge" /> 확산 경로 (굵기 = 교통 연결성·인접성)</span>
+        <span><i className="ssl-edge" /> 확산 경로 (굵기·밀도 = 교통 연결성)</span>
         <span><i className="ssl-node" /> 시도 위험도 (크기 = 예측 점수)</span>
       </div>
     </div>
@@ -718,15 +653,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
   const g = result.gemini_scenario;
   const ep = result.entry_point;
 
-  // Build before/after maps from region results (null-safe)
   const regions = result.regions || [];
-  const baselineLevels = regions.map((r) => ({ code: r.region_id, level: r.baseline_level }));
-  const scenarioLevels = regions.map((r) => ({ code: r.region_id, level: r.scenario_level }));
-  // Highlight all primary zone + escalated regions on the "after" map
-  const highlightCodes = new Set([
-    ...(ep?.primary_zones || []),
-    ...regions.filter((r) => r.level_changed).map((r) => r.region_id),
-  ]);
 
   // Sensitivity cells come from the backend sweep, now centered on the chosen base
   // (±0.3) with the chosen value as the selected middle point.
@@ -797,7 +724,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
           <div className="traffic-sensitivity-cells">
             {sensCells.map((s) => (
               <div key={s.base} className={`traffic-sensitivity-cell ${s.is_selected ? 'is-selected' : ''}`}>
-                <span className="tsc-base">{s.base.toFixed(2)} {s.is_selected ? '선택' : s.base < sensSelectedBase ? '허브집중' : '광역'}</span>
+                <span className="tsc-base">{s.base.toFixed(2)} {s.is_selected ? '선택' : s.base < sensSelectedBase ? '허브' : '광역'}</span>
                 <span className="tsc-count">{s.escalated_count}개</span>
               </div>
             ))}
@@ -821,14 +748,6 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
           <span className="traffic-sensitivity-hint">기상 선택값({(result.scenario?.weather_base ?? 0.7).toFixed(2)}) 중심 ±0.3 민감도. favorability는 기상청 예보 기온에서 계산된 실제 값입니다.</span>
         </div>
       )}
-
-      {/* Before/After Mini Maps — all regions shown */}
-      <div className="whatif-minimap-pair">
-        <ScenarioMiniMap regionLevels={baselineLevels} title="현재 (Baseline)" />
-        <ScenarioMiniMap regionLevels={scenarioLevels}
-          targetCode={Array.from(highlightCodes).join(',')}
-          title="시나리오 적용 후" />
-      </div>
 
       {/* Narrative */}
       <div className="ontology-decision-narrative">{result.narrative}</div>
@@ -1866,6 +1785,18 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
           <option value="critical">Critical</option>
         </select>
       </div>
+      <div className="whatif-example-box">
+        <button type="button" className={`whatif-example-btn ${exampleMode ? 'is-on' : ''}`}
+          onClick={loadExample} disabled={exampleLoading}>
+          {exampleLoading ? '예시 불러오는 중…' : exampleMode ? '예시 초기화 (전체 ON) · H5N1 China' : '예시 보기 · H5N1 China 조류독감'}
+        </button>
+        <div className="whatif-example-note">
+          관리자가 아니어도 예시를 볼 수 있습니다. {exampleMode
+            ? '아래 항공·교통·기상 토글을 껐다 켜며 각 신호가 결과를 어떻게 바꾸는지 비교해 보세요. '
+            : '클릭하면 지도·확산 애니메이션·지역표·민감도가 표시됩니다. '}
+          예시는 기본 base 값(연결성 0.5·기상 0.7)으로만 분석됩니다. 실제 데이터로 직접 실행하려면 상단 (i)의 이메일로 admin 계정을 문의해 주세요.
+        </div>
+      </div>
       <label className={`whatif-aviation-toggle ${useAviation ? 'is-on' : ''}`}>
         <input type="checkbox" checked={useAviation} onChange={(e) => setUseAviation(e.target.checked)} />
         <span className="whatif-aviation-label">항공상황 add</span>
@@ -1884,7 +1815,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
               onChange={(e) => setTrafficBase(Number(e.target.value))}
               className="whatif-traffic-base-slider" disabled={exampleMode} />
             <div className="whatif-base-presets">
-              {([[0.3, '허브집중'], [0.5, '기본'], [0.7, '광역']] as [number, string][]).map(([v, l]) => (
+              {([[0.3, '허브'], [0.5, '기본'], [0.7, '광역']] as [number, string][]).map(([v, l]) => (
                 <button key={v} type="button" disabled={exampleMode}
                   className={`whatif-base-preset ${Math.abs(trafficBase - v) < 1e-9 ? 'is-active' : ''}`}
                   onClick={() => setTrafficBase(v)}>{v} {l}</button>
@@ -1963,16 +1894,6 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
         disabled={!isAdmin || loading}>
         {loading ? 'Simulating...' : isAdmin ? 'Run National Scenario (Gemini)' : 'Admin only'}
       </button>
-      <button type="button" className={`whatif-example-btn ${exampleMode ? 'is-on' : ''}`}
-        onClick={loadExample} disabled={exampleLoading}>
-        {exampleLoading ? '예시 불러오는 중…' : exampleMode ? '예시 초기화 (전체 ON) · H5N1 China' : '예시 보기 · H5N1 China 조류독감'}
-      </button>
-      <div className="whatif-example-note">
-        관리자가 아니어도 예시를 볼 수 있습니다. {exampleMode
-          ? '위 항공·교통·기상 토글을 껐다 켜며 각 신호가 결과를 어떻게 바꾸는지 비교해 보세요. '
-          : '클릭하면 지도·확산 애니메이션·지역표·민감도가 표시됩니다. '}
-        예시는 기본 base 값(연결성 0.5·기상 0.7)으로만 분석됩니다. 실제 데이터로 직접 실행하려면 상단 (i)의 이메일로 admin 계정을 문의해 주세요.
-      </div>
       {statusMsg && (
         <div className={`whatif-status-msg ${statusMsg.ok ? 'whatif-status-success' : 'whatif-status-error'}`}>
           {statusMsg.text}

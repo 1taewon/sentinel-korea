@@ -1317,6 +1317,9 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     WX_SENS_BASES = tuple(sorted({round(max(0.0, min(1.5, weather_base + d)), 2) for d in (-0.3, 0.0, 0.3)}))
     wx_sens_counts = {b: 0 for b in WX_SENS_BASES}
 
+    # Animation timeline day offsets: ≤10일 reflect short-term weather; later long-term.
+    _TIMELINE_DAYS = (0, 3, 7, 10, 14, 21, 28)
+
     # Real outbreak context
     outbreaks = _all_outbreaks()
     real_exo = min(0.05, len([o for o in outbreaks if _korea_relevance(o) >= 0.6]) * 0.005)
@@ -1398,6 +1401,22 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
 
         scenario_pts = _project(total_exo)
 
+        # Day-level spread timeline for the animation. Weather (short-term forecast)
+        # only shapes the ≤10-day points; later points use the base (no-weather) lift.
+        # A ramp lets the spread build up over ~2 weeks instead of jumping at week 1.
+        region_lift_base = full_lift * spread_mult
+        timeline = []
+        for _day in _TIMELINE_DAYS:
+            if _day <= 0:
+                _p = ema
+            else:
+                _dm = momentum * (0.7 ** max(0.0, _day / 7.0 - 1))
+                _ramp = min(1.0, _day / 14.0)
+                _lift = region_lift if _day <= 10 else region_lift_base
+                _p = ema + _dm + real_exo + _ramp * _lift
+            _p = max(0.0, min(1.0, _p))
+            timeline.append({"day": _day, "score": round(_p, 4), "level": _level_for(_p)})
+
         # Sensitivity sweep — escalated? at each connectivity base (traffic only).
         if use_traffic and conn_index:
             for b in SENS_BASES:
@@ -1440,6 +1459,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             "max_delta": round(max(c["delta"] for c in comparison), 4),
             "level_changed": any(c["level_changed"] for c in comparison),
             "comparison": comparison,
+            "timeline": timeline,
         })
 
     # Sort by max_delta descending for ranking
