@@ -45,8 +45,8 @@ DEFAULT_SCORING_CONFIG: dict = {
         },
         "weather_respiratory": {
             "label": "Weather (forecast temp)",
-            "description": "Seasonal respiratory-weather favorability from KMA forecast temperature (colder → higher). A context modifier, not a disease measurement — off by default.",
-            "source": "기상청 단기예보 (Shang 2026)",
+            "description": "Seasonal respiratory-weather favorability from KMA ~10-day forecast temperature (short+medium term; colder → higher). A context modifier, not a disease measurement — off by default.",
+            "source": "기상청 단기+중기예보 (Shang 2026)",
             "enabled": False,
         },
     },

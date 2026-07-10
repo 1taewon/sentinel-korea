@@ -56,6 +56,28 @@ _REGION_GRID: dict[str, tuple[int, int]] = {
     "50": (53, 38),   # 제주
 }
 
+MID_BASE = "http://apis.data.go.kr/1360000/MidFcstInfoService/getMidTa"
+# 시도 대표 지점의 중기기온 지점번호 (regId). Unknown/failed lookups fall back to 단기 only.
+_MID_REGID: dict[str, str] = {
+    "11": "11B10101",  # 서울
+    "28": "11B20201",  # 인천
+    "41": "11B20601",  # 경기(수원)
+    "42": "11D10301",  # 강원(춘천)
+    "43": "11C10301",  # 충북(청주)
+    "44": "11C20101",  # 충남(홍성)
+    "30": "11C20401",  # 대전
+    "36": "11C20401",  # 세종 → 대전 대표
+    "45": "11F10201",  # 전북(전주)
+    "29": "11F20501",  # 광주
+    "46": "11F20401",  # 전남(목포)
+    "47": "11H10501",  # 경북(안동)
+    "27": "11H10701",  # 대구
+    "48": "11H20301",  # 경남(창원)
+    "26": "11H20201",  # 부산
+    "31": "11H20101",  # 울산
+    "50": "11G00201",  # 제주
+}
+
 
 def _favorability(temp_c: float) -> float:
     """Respiratory-weather favorability 0..1 from temperature: T=25°C→0, T=-5°C→1
@@ -74,9 +96,44 @@ def _base_datetime() -> tuple[str, str]:
     return prev.strftime("%Y%m%d"), "2300"
 
 
-def _fetch_region_temp(code: str, nx: int, ny: int, key: str,
-                       base_date: str, base_time: str) -> tuple[str, dict[str, Any] | None]:
-    """Fetch one 시도's forecast TMP and reduce to a favorability record."""
+def _mid_tmfc() -> str:
+    """중기예보 발표시각 (tmFc): 06/18시 발표. Use the most recent past announcement."""
+    now = datetime.now(KST)
+    if now.hour >= 19:
+        return now.strftime("%Y%m%d") + "1800"
+    if now.hour >= 7:
+        return now.strftime("%Y%m%d") + "0600"
+    return (now - timedelta(days=1)).strftime("%Y%m%d") + "1800"
+
+
+def _fetch_mid_temps(reg_id: str, key: str, tm_fc: str) -> list[float]:
+    """Daily mean temps for forecast days 4-10 from 중기기온 (getMidTa). [] on failure —
+    the region then falls back to the 단기 (short-term) forecast only."""
+    if not reg_id:
+        return []
+    params = {"serviceKey": key, "dataType": "JSON", "numOfRows": "10", "pageNo": "1",
+              "regId": reg_id, "tmFc": tm_fc}
+    try:
+        resp = httpx.get(MID_BASE, params=params, headers=HEADERS, timeout=8)
+        items = (resp.json().get("response", {}).get("body", {})
+                 .get("items", {}).get("item", []))
+    except Exception:
+        return []
+    row = (items[0] if isinstance(items, list) and items else items) or {}
+    means: list[float] = []
+    for d in range(4, 11):  # forecast days 4~10
+        try:
+            means.append((float(row.get(f"taMin{d}")) + float(row.get(f"taMax{d}"))) / 2.0)
+        except (TypeError, ValueError):
+            pass
+    return means
+
+
+def _fetch_region_temp(code: str, nx: int, ny: int, key: str, base_date: str,
+                       base_time: str, reg_id: str, tm_fc: str) -> tuple[str, dict[str, Any] | None]:
+    """Fetch one 시도's 단기(0-3일) + 중기(4-10일) forecast temperature and reduce to a
+    ~10-day-mean favorability record. Weather forecasts don't extend past ~10 days, so
+    this is the full horizon the favorability can be grounded in."""
     params = {
         "serviceKey": key, "dataType": "JSON", "numOfRows": "700", "pageNo": "1",
         "base_date": base_date, "base_time": base_time, "nx": str(nx), "ny": str(ny),
@@ -88,7 +145,7 @@ def _fetch_region_temp(code: str, nx: int, ny: int, key: str,
     except Exception as exc:
         print(f"[Weather] region {code} failed: {exc}", file=sys.stderr)
         return code, None
-    # TMP (기온) forecast values, in time order, over the coming FORECAST_HOURS.
+    # 단기 TMP (기온) over the coming FORECAST_HOURS.
     temps: list[float] = []
     for it in items:
         if isinstance(it, dict) and it.get("category") == "TMP":
@@ -99,11 +156,18 @@ def _fetch_region_temp(code: str, nx: int, ny: int, key: str,
     temps = temps[:FORECAST_HOURS]
     if not temps:
         return code, None
-    avg_t = sum(temps) / len(temps)
+    near_mean = sum(temps) / len(temps)
+
+    # 중기(4-10일) daily means — extend the basis to ~10 days. [] → 단기 only.
+    mid_means = _fetch_mid_temps(reg_id, key, tm_fc)
+    # Weight the near-term (~3 days) ×3 against the 7 medium-term daily means.
+    all_temps = [near_mean] * 3 + mid_means
+    avg_t = sum(all_temps) / len(all_temps)
     return code, {
         "favorability": _favorability(avg_t),
         "temp_c": round(avg_t, 1),
-        "forecast_hours": len(temps),
+        "near_temp_c": round(near_mean, 1),
+        "mid_days": len(mid_means),
     }
 
 
@@ -114,11 +178,12 @@ def fetch_weather_respiratory() -> dict[str, Any]:
         return {"status": "skipped", "reason": "WEATHER_API_KEY not set", "regions": {}}
 
     base_date, base_time = _base_datetime()
+    tm_fc = _mid_tmfc()
     regions: dict[str, Any] = {}
-    # Fetch all 17 시도 concurrently so a live call (per Outbreak Scenario run) stays
-    # fast (~2-3s) instead of ~15s sequential.
+    # Fetch all 17 시도 concurrently (단기 + 중기 per region) so a live call stays fast.
     with ThreadPoolExecutor(max_workers=len(_REGION_GRID)) as ex:
-        futures = [ex.submit(_fetch_region_temp, code, nx, ny, key, base_date, base_time)
+        futures = [ex.submit(_fetch_region_temp, code, nx, ny, key, base_date, base_time,
+                             _MID_REGID.get(code, ""), tm_fc)
                    for code, (nx, ny) in _REGION_GRID.items()]
         for fut in futures:
             code, data = fut.result()
@@ -130,10 +195,11 @@ def fetch_weather_respiratory() -> dict[str, Any]:
 
     return {
         "status": "ok",
-        "source": "기상청 단기예보 기온 (data.go.kr getVilageFcst, 3-day forecast)",
-        "note": "temperature-only respiratory favorability = clamp((25-T)/30) (Shang 2026 — temp dominant)",
-        "base": f"{base_date} {base_time} KST",
-        "forecast_hours": FORECAST_HOURS,
+        "source": "기상청 단기+중기예보 기온 (data.go.kr getVilageFcst + getMidTa, ~10-day)",
+        "note": "temperature-only respiratory favorability = clamp((25-T)/30) over the ~10-day "
+                "forecast horizon (short+medium term; weather is not forecast beyond ~10 days). "
+                "Shang 2026 — temp dominant",
+        "base": f"단기 {base_date} {base_time} · 중기 {tm_fc} KST",
         "generated_at": datetime.now(KST).isoformat(),
         "regions": regions,
     }

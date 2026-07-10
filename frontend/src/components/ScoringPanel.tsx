@@ -37,8 +37,8 @@ const fallbackConfig: ScoringConfig = {
     },
     weather_respiratory: {
       label: 'Weather (forecast temp)',
-      description: '기상청 단기예보 기온 기반 계절 호흡기 위험도(추울수록↑). 질병 측정이 아닌 맥락 보정이라 기본 0.00 — 운영자가 올리면 복합점수에 반영됩니다.',
-      source: '기상청 단기예보 (Shang 2026)',
+      description: '기상청 단기+중기예보 기온(~10일) 기반 계절 호흡기 위험도(추울수록↑). 질병 측정이 아닌 맥락 보정이라 기본 0.00 — 운영자가 올리면 복합점수에 반영됩니다.',
+      source: '기상청 단기+중기예보 (Shang 2026)',
       enabled: false,
     },
   },
