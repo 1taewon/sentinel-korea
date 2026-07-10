@@ -19,7 +19,7 @@ import TopNav, { type NavTab } from './components/TopNav';
 import TrendsChart from './components/TrendsChart';
 import WelcomeNotice from './components/WelcomeNotice';
 import { useAuth } from './contexts/AuthContext';
-import { relevanceLabel, scoreInternationalRelevance } from './lib/internationalRelevance';
+import { relevanceLabel, scoreInternationalRelevance, setAviationScores } from './lib/internationalRelevance';
 import type { CombinedData, GlobalSignal, IngestionStatus, KoreaAlert, ScoringConfig } from './types';
 import type { User } from 'firebase/auth';
 import './index.css';
@@ -311,6 +311,22 @@ function AppInner({
     setOperationError(`${label} is available only to the Sentinel operator. Public users can inspect the pipeline in read-only mode.`);
     return false;
   }, [isAdmin]);
+
+  // Load real Incheon arriving-passenger volumes so the globe's outbreak relevance
+  // uses objective import-risk mobility (auto-applied when the data is available).
+  useEffect(() => {
+    fetch(`${API_BASE}/signals/aviation`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { countries?: Record<string, { score?: number }> } | null) => {
+        if (!d || !d.countries) return;
+        const scores: Record<string, number> = {};
+        for (const [k, v] of Object.entries(d.countries)) {
+          if (v && typeof v.score === 'number') scores[k] = v.score;
+        }
+        setAviationScores(scores);
+      })
+      .catch(() => {});
+  }, []);
 
   // Load real per-step last-updated timestamps (file mtimes) from the backend so the
   // PIPELINE cards show when each step last ran. Persists across reloads, unlike the

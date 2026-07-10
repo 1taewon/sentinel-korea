@@ -91,7 +91,7 @@ interface NationalRegionResult {
 }
 interface NationalOutbreakResult {
   entry_point: { code: string; label: string; primary_zones: string[] };
-  scenario: { disease: string; country: string; severity: string; base_lift: number; proximity_multiplier: number };
+  scenario: { disease: string; country: string; severity: string; base_lift: number; proximity_multiplier: number; proximity_source?: string; aviation?: { multiplier: number; arr_passengers: number; country_kr: string; month: string } | null };
   regions: NationalRegionResult[];
   summary: { total_regions: number; escalated_count: number; escalated_regions: string[]; total_delta: number };
   gemini_scenario?: {
@@ -609,6 +609,15 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
         <span className="whatif-analysis-scenario">
           {result.scenario?.disease} / {result.scenario?.country} / {result.scenario?.severity}
         </span>
+        {result.scenario?.proximity_source === 'aviation' && result.scenario?.aviation ? (
+          <span className="whatif-mobility-badge whatif-mobility-badge--real" title="발생국→인천 실측 도착 여객량 기반 이동량">
+            ✈️ 실측 여객 {result.scenario.aviation.country_kr} {result.scenario.aviation.arr_passengers?.toLocaleString()}명/{result.scenario.aviation.month} · ×{result.scenario.proximity_multiplier}
+          </span>
+        ) : (
+          <span className="whatif-mobility-badge" title="하드코딩 이동량 proxy (항공상황 add 미적용)">
+            이동량 proxy · ×{result.scenario?.proximity_multiplier}
+          </span>
+        )}
       </div>
 
       {/* Summary bar */}
@@ -1529,6 +1538,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   const [disease, setDisease] = useState('');
   const [country, setCountry] = useState('');
   const [severity, setSeverity] = useState('');
+  const [useAviation, setUseAviation] = useState(false);
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -1537,7 +1547,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
     try {
       const r = await fetch(`${API_BASE}/ontology/functions/whatIfOutbreakNational`, {
         method: 'POST', headers: await adminHeaders(),
-        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, weeks: 4 } }),
+        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, weeks: 4, use_aviation: useAviation } }),
       });
       const d = await r.json();
       if (!r.ok) {
@@ -1589,6 +1599,11 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
           <option value="critical">Critical</option>
         </select>
       </div>
+      <label className={`whatif-aviation-toggle ${useAviation ? 'is-on' : ''}`}>
+        <input type="checkbox" checked={useAviation} onChange={(e) => setUseAviation(e.target.checked)} />
+        <span className="whatif-aviation-label">✈️ 항공상황 add</span>
+        <span className="whatif-aviation-hint">발생국 → 인천공항 실측 여객량으로 이동량 객관화 (끄면 기본 proxy)</span>
+      </label>
       <div className="whatif-presets">
         {WHAT_IF_PRESETS.map((p, i) => (
           <button key={i} type="button" className="whatif-preset-btn"

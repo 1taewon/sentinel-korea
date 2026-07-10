@@ -20,6 +20,17 @@ const HIGH_TRAFFIC_COUNTRY_PROXY: Record<string, number> = {
   india: 0.5,
 };
 
+// Real Incheon arriving-passenger scores (english country key -> 0..1), injected at
+// runtime from /signals/aviation. When a signal's country matches, these take
+// precedence over the hardcoded proxy above (objective import-risk mobility).
+let aviationScores: Record<string, number> = {};
+export function setAviationScores(scores: Record<string, number>) {
+  aviationScores = scores || {};
+}
+export function hasAviationData() {
+  return Object.keys(aviationScores).length > 0;
+}
+
 function clamp(value: number, min = 0, max = 1) {
   return Math.max(min, Math.min(max, value));
 }
@@ -73,6 +84,9 @@ function markerVolumeBoost(signal: GlobalSignal): number {
 
 function trafficProxy(signal: GlobalSignal, distanceKm: number) {
   const country = (signal.country || '').toLowerCase();
+  // Real Incheon passenger volume (when loaded) takes precedence over the proxy.
+  const avMatch = Object.entries(aviationScores).find(([key]) => key && country.includes(key));
+  if (avMatch) return avMatch[1];
   const matched = Object.entries(HIGH_TRAFFIC_COUNTRY_PROXY).find(([key]) => country.includes(key));
   if (matched) return matched[1];
   if (distanceKm < 900) return 0.82;

@@ -895,6 +895,37 @@ _PROXIMITY_MULT = {
 }
 
 
+def _aviation_multiplier(country: str) -> dict | None:
+    """Objective import-risk multiplier from real Incheon arriving-passenger volume.
+
+    Used in place of the hardcoded _PROXIMITY_MULT when the "항공상황 add" toggle is
+    on. Maps the aviation 0..1 score to the same ~0.5..2.0 range as the proxy so the
+    downstream lift math is unchanged. Returns None (→ caller keeps the proxy) when
+    the aviation file / matching country is unavailable.
+    """
+    data = _load_json(PROCESSED_DIR / "aviation_passenger_by_country.json")
+    if not isinstance(data, dict):
+        return None
+    countries = data.get("countries") or {}
+    c = (country or "").lower().strip()
+    if not c:
+        return None
+    match = None
+    for key, entry in countries.items():
+        if key and (key in c or c in key):
+            match = entry
+            break
+    if not match:
+        return None
+    score = float(match.get("score") or 0)
+    return {
+        "multiplier": round(0.5 + score * 1.5, 3),  # 0..1 score → 0.5..2.0 multiplier
+        "arr_passengers": match.get("arr_passengers"),
+        "country_kr": match.get("country_kr"),
+        "month": data.get("month"),
+    }
+
+
 def _what_if_outbreak(inputs: dict) -> dict:
     region_id = str(inputs.get("region_id") or "")
     disease_name = str(inputs.get("disease") or "novel respiratory pathogen")
@@ -1176,9 +1207,16 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             "lng": 127.8,
         }
 
-    # Base lift from severity × country proximity
+    # Base lift from severity × country proximity. When the "항공상황 add" toggle is
+    # on, replace the hardcoded proxy with the real Incheon arriving-passenger score.
     base_lift = _SEVERITY_LIFT.get(severity, 0.03)
     prox = _PROXIMITY_MULT.get(country.lower(), 0.5)
+    prox_source = "proxy"
+    aviation_info = None
+    if inputs.get("use_aviation"):
+        av = _aviation_multiplier(country)
+        if av:
+            prox, prox_source, aviation_info = av["multiplier"], "aviation", av
     full_lift = min(0.15, base_lift * prox)
 
     # Real outbreak context
@@ -1365,6 +1403,8 @@ JSON 외 다른 텍스트 금지. 하나의 JSON object로만 응답.
             "severity": severity,
             "base_lift": round(full_lift, 4),
             "proximity_multiplier": round(prox, 2),
+            "proximity_source": prox_source,
+            "aviation": aviation_info,
         },
         "regions": region_results,
         "summary": {
@@ -1394,6 +1434,8 @@ register(FunctionSpec(
         {"name": "severity", "type": "string", "required": False, "default": "high",
          "description": "low | medium | high | critical"},
         {"name": "weeks", "type": "integer", "required": False, "default": 4},
+        {"name": "use_aviation", "type": "boolean", "required": False, "default": False,
+         "description": "Use real Incheon arriving-passenger volume for the country proximity multiplier instead of the hardcoded proxy"},
     ],
     output="object<{entry_point, scenario, regions[], summary, gemini_scenario, narrative}>",
     affects_objects=["Region"],
