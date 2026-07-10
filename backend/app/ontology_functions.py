@@ -1391,16 +1391,31 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
 
 
 def _what_if_outbreak_national(inputs: dict) -> dict:
-    entry_code = str(inputs.get("entry_point") or "ICN").upper()
+    entry_raw = str(inputs.get("entry_point") or "ICN").strip()
+    entry_code = entry_raw.upper()
     disease_name = str(inputs.get("disease") or "novel respiratory pathogen")
     country = str(inputs.get("country") or "China")
     severity = str(inputs.get("severity") or "high").lower()
     if severity not in _SEV_MULT:
         severity = "high"
 
+    # Origin can be an airport (해외 유입) OR a domestic 시도 by code/name (국내 발생).
     entry_point = _ENTRY_POINTS.get(entry_code)
+    entry_type = "airport" if entry_point else None
     if not entry_point:
-        entry_point = {"label": entry_code, "label_en": entry_code, "primary_zones": [], "lat": 36.5, "lng": 127.8}
+        dom = None
+        for code, meta in _REGION_COORDS.items():
+            nm = meta.get("name", "")
+            if code == entry_code or (nm and (nm in entry_raw or entry_raw in nm)):
+                dom = (code, meta); break
+        if dom:
+            code, meta = dom
+            entry_point = {"label": meta.get("name", code), "label_en": code,
+                           "primary_zones": [code], "lat": meta["lat"], "lng": meta["lng"]}
+            entry_type = "domestic"
+        else:
+            entry_point = {"label": entry_raw, "label_en": entry_code, "primary_zones": [], "lat": 36.5, "lng": 127.8}
+            entry_type = "custom"
 
     # Seed region: the primary zone nearest the airport, else the nearest 시도.
     def _nearest(codes: list[str]) -> str:
@@ -1429,16 +1444,17 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     r0_eff = round(r0_base * r0m, 3)
     cfr_eff = round(min(cfr_base * cfrm, 0.5), 4)
 
-    # Aviation -> import seed scale (real when 항공상황 add, else hardcoded country proxy).
+    # Aviation -> import seed scale — only for a 해외 유입(airport) origin; a 국내 발생
+    # (domestic) origin has no import, so the seed stays at the base count.
     prox = _PROXIMITY_MULT.get(country.lower(), 1.0)
     aviation_source = "off"; aviation_info = None
-    if inputs.get("use_aviation"):
+    if entry_type == "airport" and inputs.get("use_aviation"):
         av = _aviation_multiplier(country)
         if av:
             prox, aviation_source, aviation_info = av["multiplier"], "aviation", av
         else:
             aviation_source = "unavailable"
-    aviation_mult = max(1.0, prox)
+    aviation_mult = max(1.0, prox) if entry_type == "airport" else 1.0
 
     # Traffic -> per-region connectivity weight in the gravity matrix.
     use_traffic = bool(inputs.get("use_traffic"))
@@ -1490,9 +1506,10 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         "new_cases": sum(r["new_cases"] for r in snaps[d]),
     } for d in _TIMELINE_DAYS]
 
+    origin_verb = "발생" if entry_type == "domestic" else "유입"
     return {
         "entry_point": {
-            "code": entry_code, "label": entry_point["label"],
+            "code": entry_code, "label": entry_point["label"], "entry_type": entry_type,
             "primary_zones": entry_point["primary_zones"], "seed_region": entry_region,
             "seed_region_name": _REGION_COORDS.get(entry_region, {}).get("name", entry_region),
         },
@@ -1518,8 +1535,8 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         },
         "gemini_scenario": None,
         "narrative": (
-            f"역학 시뮬레이션: {country}발 {disease_name} (R0 {r0_eff}·CFR {cfr_eff * 100:.1f}%, {severity})가 "
-            f"{entry_point['label']}({_REGION_COORDS.get(entry_region, {}).get('name', entry_region)})로 유입 시 — "
+            f"역학 시뮬레이션: {disease_name} (R0 {r0_eff}·CFR {cfr_eff * 100:.1f}%, {severity})가 "
+            f"{entry_point['label']}에서 {origin_verb}({_REGION_COORDS.get(entry_region, {}).get('name', entry_region)} 거점) 시 — "
             f"28일 후 전국 누적 {total_cases:,}명 확진, {total_deaths:,}명 사망 예상 "
             f"(전국 발병률 {total_cases / _SEIR_TOTAL_POP * 100:.2f}%, 정점 {peak_day}일차). "
             f"최다 피해: {', '.join(r['region_name'] for r in worst)}. "

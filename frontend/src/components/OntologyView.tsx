@@ -723,7 +723,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
       {/* Header */}
       <div className="whatif-analysis-header">
         <span className="whatif-analysis-tag">OUTBREAK EPIDEMIC SIMULATION</span>
-        <span className="whatif-analysis-region">{ep?.label || ep?.code || '—'}{ep?.seed_region_name ? ` → ${ep.seed_region_name}` : ''}</span>
+        <span className="whatif-analysis-region">{ep?.label || ep?.code || '—'}{ep?.seed_region_name && ep.seed_region_name !== ep.label ? ` → ${ep.seed_region_name}` : ''}</span>
         <span className="whatif-analysis-scenario">{sc?.disease} / {sc?.country} / {sc?.severity}</span>
         <span className="whatif-mobility-badge" title="유효 기초감염재생산수 (severity 반영)">R0 {sc?.r0}</span>
         <span className="whatif-mobility-badge" title="유효 치명률 (severity 반영, 최대 50%)">CFR {pct(sc?.cfr, 1)}</span>
@@ -1451,9 +1451,9 @@ export default function OntologyView() {
                     <div className="ontology-type-card-row">
                       <span className="ontology-type-card-name">Outbreak Scenario</span>
                     </div>
-                    <div className="ontology-type-card-kr">가상 유입 시나리오 분석</div>
+                    <div className="ontology-type-card-kr">가상 유입·확산 시나리오 분석</div>
                     <div className="ontology-type-card-desc">
-                      해외 신종 감염병이 국내로 유입되는 상황을 가정해, 공항 유입 거점에서 전국 17개 시도로 퍼지는 확산을 시뮬레이션합니다. 인천공항 실측 여객량(해외유입 위험)과 고속도로 교통 연결성(국내 확산)을 반영하며, 주별 확산 애니메이션과 base 민감도 분석까지 제공합니다.
+                      해외 감염병 유입 또는 국내 지역 발생을 가정해, 선택한 거점(공항·지역)에서 전국 17개 시도로 퍼지는 확산을 메타population SEIR 모델로 시뮬레이션합니다. 실제 인구·질병 파라미터로 시도별 확진·사망·치명률·발병률을 계산하고, 확산 애니메이션과 유행곡선을 제공합니다.
                     </div>
                   </button>
                 );
@@ -1828,16 +1828,20 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   return (
     <div className="whatif-standalone">
       <div className="whatif-standalone-desc">
-        <strong>전국 역학 시뮬레이션 (SEIR)</strong> — 해외 신종 감염병이 유입되면? 실제 시도별 인구 + 질병 파라미터(R0·CFR·잠복기·전염기)로 <strong>메타population SEIR 모델</strong>을 돌려 28일간 <strong>확진·사망·치명률·발병률</strong>을 시도별로 계산합니다. Day 0 = 전 지역 0에서 시작(유입 거점만 초기 감염). <strong>항공/교통/기상 add</strong>로 실측 유입 규모·이동 연결성·계절 전파력을 반영합니다.<br />
-        <span className="whatif-ref-note">모델: 중력형 메타population SEIR (Balcan 2009 PNAS · Chang 2020 Nature · Flight-SEIR Ding 2020). 인구: 행정안전부 주민등록 2026-06. 개입(백신·거리두기) 없는 자연확산 가정의 예시 시나리오 — 예보가 아닙니다.</span>
+        <strong>가상 유입·확산 시나리오 (역학 SEIR)</strong> — 해외 감염병이 국내로 유입되거나, 국내 특정 지역에서 감염병이 발생해 확산되는 상황을 가정합니다. 선택한 <strong>유입·확산 거점</strong>(공항 = 해외 유입 / 지역명 = 국내 발생)에서 시작해, 실제 시도별 인구와 질병 파라미터(R0·CFR·잠복기·전염기)로 <strong>메타population SEIR 모델</strong>을 28일간 시뮬레이션해 시도별 <strong>확진·사망·치명률·발병률</strong>을 계산합니다.<br />
+        <strong>분석 방법</strong> — 17개 시도를 각각 S(취약)·E(잠복)·I(감염)·R(회복)·D(사망) 구획으로 두고, ① 지역 내 감염(전파율 β = R0 ÷ 전염기), ② 지역 간 이동(인구·거리 중력망 + 실측 교통 연결성)으로 매일 새 감염·발병·사망을 계산합니다. Day 0 = 거점만 감염, 나머지 전 지역은 0에서 시작. 항공/교통/기상 add로 실측 유입 규모·이동 연결성·초기 전파력을 반영합니다.<br />
+        <span className="whatif-ref-note">모델: 중력형 메타population SEIR (Balcan 2009 PNAS · Chang 2020 Nature · Flight-SEIR Ding 2020). 인구: 행정안전부 주민등록 2026-06. 개입(백신·거리두기) 없는 자연확산 가정의 예시 — 예보가 아닙니다.</span>
       </div>
       <div className="whatif-row">
-        <label>유입 거점</label>
+        <label>유입·확산 거점</label>
         <input list="entry-point-list" value={entryPoint} onChange={(e) => setEntryPoint(e.target.value)}
-          className="whatif-input" placeholder="공항 코드 또는 직접 입력 (예: ICN, PUS, 무안공항)" />
+          className="whatif-input" placeholder="공항 코드·지역명 또는 직접 입력 (예: ICN, 대구, 부산)" />
         <datalist id="entry-point-list">
           {ENTRY_POINTS.map((ep) => (
-            <option key={ep.code} value={ep.code}>{ep.label} — {ep.desc}</option>
+            <option key={ep.code} value={ep.code}>{ep.label} — 해외 유입</option>
+          ))}
+          {['서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종', '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'].map((n) => (
+            <option key={n} value={n}>{n} — 국내 발생</option>
           ))}
         </datalist>
       </div>
