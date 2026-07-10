@@ -1308,7 +1308,7 @@ function AppInner({
               <MiniGlobe
                 signals={displayedSignals}
                 koreaAlerts={koreaAlerts}
-                activeLayers={activeLayers}
+                activeLayers={activeLayers.filter((l) => l !== 'weather_respiratory')}
                 aggregationMode={aggregationMode}
                 onGlobalSignalClick={(signal) => {
                   setSelectedGlobal(signal);
@@ -1661,7 +1661,7 @@ function AppInner({
                     isExpanded={true}
                     signals={displayedSignals}
                     koreaAlerts={koreaAlerts}
-                    activeLayers={activeLayers}
+                    activeLayers={activeLayers.filter((l) => l !== 'weather_respiratory')}
                     aggregationMode={aggregationMode}
                     onGlobalSignalClick={setSelectedGlobal}
                     selectedGlobalId={selectedGlobal?.id}

@@ -1279,6 +1279,16 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     use_weather = bool(inputs.get("use_weather"))
     weather_fav = _weather_favorability() if use_weather else {}
     weather_source = "kma" if (use_weather and weather_fav) else ("unavailable" if use_weather else "off")
+    # Weather transmissibility base (floor of the ×band; span 0.6). Default 0.7 →
+    # ×0.7..1.3. User-selectable, with the same centered ±0.3 sensitivity sweep as
+    # the traffic base. favorability itself is the real computed KMA value.
+    try:
+        weather_base = float(inputs.get("weather_base", 0.7))
+    except (TypeError, ValueError):
+        weather_base = 0.7
+    weather_base = max(0.0, min(1.5, weather_base))
+    WX_SENS_BASES = tuple(sorted({round(max(0.0, min(1.5, weather_base + d)), 2) for d in (-0.3, 0.0, 0.3)}))
+    wx_sens_counts = {b: 0 for b in WX_SENS_BASES}
 
     # Real outbreak context
     outbreaks = _all_outbreaks()
@@ -1291,9 +1301,9 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         conn = conn_index.get(code, 0.5) if (use_traffic and conn_index) else 0.0
         # connectivity band = base_mult × (traffic_base + conn); e.g. base 0.5 → ×0.5..1.5
         spread_mult = base_mult * (traffic_base + conn) if (use_traffic and conn_index) else base_mult
-        # weather transmissibility multiplier (0.7..1.3x), applied to the lift not the
-        # spatial spread — weather is seasonal, not directional.
-        wx_mult = (0.7 + 0.6 * weather_fav.get(code, 0.5)) if (use_weather and weather_fav) else 1.0
+        # weather transmissibility multiplier (weather_base + 0.6·favorability),
+        # applied to the lift not the spatial spread — weather is seasonal, not directional.
+        wx_mult = (weather_base + 0.6 * weather_fav.get(code, 0.5)) if (use_weather and weather_fav) else 1.0
         region_lift = full_lift * spread_mult * wx_mult
         total_exo = real_exo + region_lift
 
@@ -1368,6 +1378,14 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
                 if any(bp["level"] != sp["level"] for bp, sp in zip(baseline_pts, _project(exo_b))):
                     sens_counts[b] += 1
 
+        # Weather-base sensitivity — vary weather_base, hold traffic at its chosen value.
+        if use_weather and weather_fav:
+            _fav = weather_fav.get(code, 0.5)
+            for b in WX_SENS_BASES:
+                exo_b = real_exo + full_lift * spread_mult * (b + 0.6 * _fav)
+                if any(bp["level"] != sp["level"] for bp, sp in zip(baseline_pts, _project(exo_b))):
+                    wx_sens_counts[b] += 1
+
         comparison = []
         for b, s in zip(baseline_pts, scenario_pts):
             comparison.append({
@@ -1411,6 +1429,14 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         traffic_sensitivity = [
             {"base": b, "escalated_count": sens_counts[b], "is_selected": abs(b - _chosen) < 1e-9}
             for b in SENS_BASES
+        ]
+
+    weather_sensitivity = None
+    if use_weather and weather_fav:
+        _wchosen = round(weather_base, 2)
+        weather_sensitivity = [
+            {"base": b, "escalated_count": wx_sens_counts[b], "is_selected": abs(b - _wchosen) < 1e-9}
+            for b in WX_SENS_BASES
         ]
 
     # Gemini national scenario narrative
@@ -1498,6 +1524,7 @@ JSON 외 다른 텍스트 금지. 하나의 JSON object로만 응답.
             "traffic_source": traffic_source,
             "traffic_base": round(traffic_base, 2),
             "weather_source": weather_source,
+            "weather_base": round(weather_base, 2),
         },
         "regions": region_results,
         "summary": {
@@ -1506,6 +1533,7 @@ JSON 외 다른 텍스트 금지. 하나의 JSON object로만 응답.
             "escalated_regions": [r["region_name"] for r in escalated_regions],
             "total_delta": round(total_delta, 4),
             "traffic_sensitivity": traffic_sensitivity,
+            "weather_sensitivity": weather_sensitivity,
         },
         "gemini_scenario": gemini_scenario,
         "narrative": (
@@ -1535,7 +1563,9 @@ register(FunctionSpec(
         {"name": "traffic_base", "type": "number", "required": False, "default": 0.5,
          "description": "Connectivity multiplier base/floor (0..1). 0.5 → spread ×0.5..1.5. Lower = hub-concentrated, higher = broader spread"},
         {"name": "use_weather", "type": "boolean", "required": False, "default": False,
-         "description": "Weight per-region transmissibility by real weather favorability (cold+dry → faster spread)"},
+         "description": "Weight per-region transmissibility by real forecast weather favorability (colder → faster spread)"},
+        {"name": "weather_base", "type": "number", "required": False, "default": 0.7,
+         "description": "Weather multiplier base/floor (0..1.5). 0.7 → transmissibility ×0.7..1.3 (span 0.6·favorability)"},
     ],
     output="object<{entry_point, scenario, regions[], summary, gemini_scenario, narrative}>",
     affects_objects=["Region"],

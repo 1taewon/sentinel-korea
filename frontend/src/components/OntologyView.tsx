@@ -91,9 +91,9 @@ interface NationalRegionResult {
 }
 interface NationalOutbreakResult {
   entry_point: { code: string; label: string; primary_zones: string[] };
-  scenario: { disease: string; country: string; severity: string; base_lift: number; proximity_multiplier: number; proximity_source?: string; aviation?: { multiplier: number; arr_passengers: number; country_kr: string; month: string } | null; traffic_source?: string; traffic_base?: number; weather_source?: string };
+  scenario: { disease: string; country: string; severity: string; base_lift: number; proximity_multiplier: number; proximity_source?: string; aviation?: { multiplier: number; arr_passengers: number; country_kr: string; month: string } | null; traffic_source?: string; traffic_base?: number; weather_source?: string; weather_base?: number };
   regions: NationalRegionResult[];
-  summary: { total_regions: number; escalated_count: number; escalated_regions: string[]; total_delta: number; traffic_sensitivity?: { base: number; escalated_count: number; is_selected: boolean }[] | null };
+  summary: { total_regions: number; escalated_count: number; escalated_regions: string[]; total_delta: number; traffic_sensitivity?: { base: number; escalated_count: number; is_selected: boolean }[] | null; weather_sensitivity?: { base: number; escalated_count: number; is_selected: boolean }[] | null };
   gemini_scenario?: {
     impact_summary?: string; spread_pattern?: string;
     timeline?: { week?: number; description?: string }[];
@@ -732,6 +732,8 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
   // (±0.3) with the chosen value as the selected middle point.
   const sensCells = result.summary?.traffic_sensitivity || null;
   const sensSelectedBase = sensCells?.find((c) => c.is_selected)?.base ?? result.scenario?.traffic_base ?? 0.5;
+  const wxSensCells = result.summary?.weather_sensitivity || null;
+  const wxSensSelectedBase = wxSensCells?.find((c) => c.is_selected)?.base ?? result.scenario?.weather_base ?? 0.7;
 
   return (
     <div className="whatif-analysis-panel">
@@ -757,7 +759,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
           </span>
         )}
         {result.scenario?.weather_source === 'kma' && (
-          <span className="whatif-mobility-badge whatif-mobility-badge--real" title="기상청 실측 기온·절대습도 기반 계절 전파력 반영">
+          <span className="whatif-mobility-badge whatif-mobility-badge--real" title="기상청 예보 기온 기반 계절 전파력 반영">
             기상 전파력 반영(실측)
           </span>
         )}
@@ -801,6 +803,22 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
             ))}
           </div>
           <span className="traffic-sensitivity-hint">선택값({(result.scenario?.traffic_base ?? 0.5).toFixed(2)}) 중심 ±0.3 이웃값의 상향 지역 수입니다. 값이 비슷할수록 base에 견고. 지도·표·애니메이션은 선택값 기준으로 계산됩니다.</span>
+        </div>
+      )}
+
+      {/* Weather-base sensitivity */}
+      {wxSensCells && (
+        <div className="traffic-sensitivity">
+          <span className="traffic-sensitivity-label">기상 base 민감도 · 상향 지역 수</span>
+          <div className="traffic-sensitivity-cells">
+            {wxSensCells.map((s) => (
+              <div key={s.base} className={`traffic-sensitivity-cell ${s.is_selected ? 'is-selected' : ''}`}>
+                <span className="tsc-base">{s.base.toFixed(2)} {s.is_selected ? '선택' : s.base < wxSensSelectedBase ? '약함' : '강함'}</span>
+                <span className="tsc-count">{s.escalated_count}개</span>
+              </div>
+            ))}
+          </div>
+          <span className="traffic-sensitivity-hint">기상 선택값({(result.scenario?.weather_base ?? 0.7).toFixed(2)}) 중심 ±0.3 민감도. favorability는 기상청 예보 기온에서 계산된 실제 값입니다.</span>
         </div>
       )}
 
@@ -1721,6 +1739,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   const [trafficMsg, setTrafficMsg] = useState<string | null>(null);
   const [trafficBase, setTrafficBase] = useState(0.5);
   const [useWeather, setUseWeather] = useState(false);
+  const [weatherBase, setWeatherBase] = useState(0.7);
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -1729,7 +1748,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
     try {
       const r = await fetch(`${API_BASE}/ontology/functions/whatIfOutbreakNational`, {
         method: 'POST', headers: await adminHeaders(),
-        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, weeks: 4, use_aviation: useAviation, use_traffic: useTraffic, traffic_base: trafficBase, use_weather: useWeather } }),
+        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, weeks: 4, use_aviation: useAviation, use_traffic: useTraffic, traffic_base: trafficBase, use_weather: useWeather, weather_base: weatherBase } }),
       });
       const d = await r.json();
       if (!r.ok) {
@@ -1781,8 +1800,8 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   return (
     <div className="whatif-standalone">
       <div className="whatif-standalone-desc">
-        <strong>전국 확산 시나리오</strong> — 해외 감염병이 한국에 유입된다면? 선택한 공항 거점에서 전국 17개 시도로의 확산 패턴을 시뮬레이션합니다. <strong>항공상황 add</strong>를 켜면 발생국의 <strong>인천공항 실측 여객량</strong>으로 이동량(전파 배수)을 객관화해 분석합니다 (끄면 기본 proxy 사용). <strong>교통상황 add</strong>를 켜면 <strong>고속도로 실측 도착 교통량</strong>으로 시도별 연결성을 확산 배수에 반영하고, <strong>기상상황 add</strong>를 켜면 <strong>기상청 실측 기온·절대습도</strong>로 계절 전파력을 반영합니다.<br />
-        <span className="whatif-ref-note">참고: 항공 여객량 기반 해외유입 위험 추정은 BlueDot·GLEAM 등 국제 감염병 예측 모델의 표준 방식이며, 시도 간 이동량(연결성) 기반 국내 확산 추정은 COVID-19 시공간 확산 네트워크 연구(대한교통학회·감염 네트워크 연구)에, 기상(저온·저습) 기반 전파력 보정은 Shaman(2009 PNAS)·Shang(2026) 메타분석에 근거합니다.</span>
+        <strong>전국 확산 시나리오</strong> — 해외 감염병이 한국에 유입된다면? 선택한 공항 거점에서 전국 17개 시도로의 확산 패턴을 시뮬레이션합니다. <strong>항공상황 add</strong>를 켜면 발생국의 <strong>인천공항 실측 여객량</strong>으로 이동량(전파 배수)을 객관화해 분석합니다 (끄면 기본 proxy 사용). <strong>교통상황 add</strong>를 켜면 <strong>고속도로 실측 도착 교통량</strong>으로 시도별 연결성을 확산 배수에 반영하고, <strong>기상상황 add</strong>를 켜면 <strong>기상청 예보 기온</strong>으로 계절 전파력을 반영합니다.<br />
+        <span className="whatif-ref-note">참고: 항공 여객량 기반 해외유입 위험 추정은 BlueDot·GLEAM 등 국제 감염병 예측 모델의 표준 방식이며, 시도 간 이동량(연결성) 기반 국내 확산 추정은 COVID-19 시공간 확산 네트워크 연구(대한교통학회·감염 네트워크 연구)에, 기상(기온) 기반 전파력 보정은 Shang(2026) 메타분석(108개 연구·922만 건)에 근거합니다.</span>
       </div>
       <div className="whatif-row">
         <label>유입 거점</label>
@@ -1866,8 +1885,37 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       <label className={`whatif-aviation-toggle ${useWeather ? 'is-on' : ''}`}>
         <input type="checkbox" checked={useWeather} onChange={(e) => setUseWeather(e.target.checked)} />
         <span className="whatif-aviation-label">기상상황 add</span>
-        <span className="whatif-aviation-hint">기상청 실측 기온·절대습도로 계절 전파력을 반영 — 저온·저습일수록 확산↑. 기온이 최강 예측인자, 절대습도가 인플루엔자 계절성의 물리적 동인 (Shaman 2009 PNAS·Shang 2026 메타분석 기반).</span>
+        <span className="whatif-aviation-hint">기상청 단기예보 기온으로 계절 전파력을 반영 — 추울수록 확산↑. 기온이 호흡기감염 최강 예측인자 (Shang 2026 메타분석, 108개 연구·922만 건 기반).</span>
       </label>
+      {useWeather && (
+        <div className="whatif-traffic-controls">
+          <div className="whatif-traffic-base">
+            <label>기상 base <strong className="whatif-base-val">{weatherBase.toFixed(2)}</strong></label>
+            <input type="range" min={0} max={1.5} step={0.05} value={weatherBase}
+              onChange={(e) => setWeatherBase(Number(e.target.value))}
+              className="whatif-traffic-base-slider" />
+            <div className="whatif-base-presets">
+              {([[0.4, '약함'], [0.7, '기본'], [1.0, '강함']] as [number, string][]).map(([v, l]) => (
+                <button key={v} type="button"
+                  className={`whatif-base-preset ${Math.abs(weatherBase - v) < 1e-9 ? 'is-active' : ''}`}
+                  onClick={() => setWeatherBase(v)}>{v} {l}</button>
+              ))}
+            </div>
+            <details className="whatif-base-explain">
+              <summary>기상 base가 무엇인가요?</summary>
+              <div className="whatif-base-explain-body">
+                <p><strong>전파력 배수 = 기상 base + 0.6 × favorability</strong>. favorability(0~1)는 <strong>기상청 예보 기온에서 계산된 실제 값</strong>(추울수록↑)이고, base는 그 계절 효과를 얼마나 반영할지의 <strong>기본 강도</strong>입니다.</p>
+                <ul>
+                  <li><strong>base 높음(1.0)</strong> → 계절 전파력을 크게 반영 (겨울 확산 강조)</li>
+                  <li><strong>base 낮음(0.4)</strong> → 계절 효과를 약하게</li>
+                  <li>예) base 0.7 → 한파 지역(favorability 1.0) 배수 1.3 · 온난 지역(0.2) 배수 0.82</li>
+                </ul>
+                <p>base는 임의 설정값이라, 교통과 동일하게 선택값 중심 ±0.3 <strong>민감도</strong>(예: 0.7 → 0.4/0.7/1.0)를 결과에 함께 표시합니다.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+      )}
       <div className="whatif-presets">
         {WHAT_IF_PRESETS.map((p, i) => (
           <button key={i} type="button" className="whatif-preset-btn"
