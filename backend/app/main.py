@@ -208,6 +208,29 @@ async def _start_scheduler() -> None:
     print(f"[scheduler] started - weekly pipeline every Mon 07:00 KST (next run: {nxt})")
 
 
+@app.on_event("startup")
+async def _warm_scenario_examples() -> None:
+    """Pre-run the 8 demo Outbreak-Scenario combos in the background so judges see the
+    AI (Gemini) analysis with no first-load delay. Non-blocking (daemon thread); the
+    Railway filesystem is ephemeral so this re-warms on every boot. Opt out with
+    DISABLE_SCENARIO_WARM=true."""
+    if os.getenv("DISABLE_SCENARIO_WARM", "").lower() in ("1", "true", "yes"):
+        print("[scenario-warm] disabled (DISABLE_SCENARIO_WARM set)")
+        return
+    import threading
+
+    def _run() -> None:
+        try:
+            from .ontology_router import _warm_example_cache
+            info = _warm_example_cache()
+            print(f"[scenario-warm] done: {info}")
+        except Exception as exc:
+            print(f"[scenario-warm] failed: {type(exc).__name__}: {exc}")
+
+    threading.Thread(target=_run, name="scenario-warm", daemon=True).start()
+    print("[scenario-warm] pre-warming 8 demo scenarios in background")
+
+
 @app.on_event("shutdown")
 async def _stop_scheduler() -> None:
     global _scheduler

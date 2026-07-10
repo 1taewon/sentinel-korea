@@ -73,6 +73,45 @@ def _save_example_cache(cache: dict) -> None:
             json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception:
         pass
+
+
+def _example_has_ai(result: dict) -> bool:
+    """True if the cached scenario already carries a valid Gemini analysis."""
+    g = (result or {}).get("gemini_scenario")
+    return bool(g) and not g.get("error") and not g.get("parse_error")
+
+
+def _warm_example_cache(force: bool = False) -> dict:
+    """Pre-generate all 8 toggle-combo demo scenarios so judges see the AI (Gemini)
+    analysis instantly with no first-load delay. Run at startup in the background; the
+    Railway filesystem is ephemeral, so this re-warms each boot. Gemini is generated
+    per combo OUTSIDE the lock (the call is slow) and saved incrementally, so a
+    concurrent public GET is never blocked for the whole warm. If a key is present and
+    a combo's AI failed transiently, it is retried once before caching."""
+    import os
+    has_key = bool(os.getenv("GEMINI_API_KEY"))
+    generated = 0
+    for a in (False, True):
+        for t in (False, True):
+            for wx in (False, True):
+                key = _example_combo_key(a, t, wx)
+                with _example_lock:
+                    cache = _load_example_cache()
+                    if not force and key in cache and (not has_key or _example_has_ai(cache[key])):
+                        continue
+                result = _generate_scenario_example(a, t, wx)
+                if has_key and not _example_has_ai(result):
+                    retry = _generate_scenario_example(a, t, wx)
+                    if _example_has_ai(retry):
+                        result = retry
+                with _example_lock:
+                    cache = _load_example_cache()
+                    cache[key] = result
+                    _save_example_cache(cache)
+                generated += 1
+    return {"generated": generated, "ai_key": has_key}
+
+
 REPORTS_DIR = DATA_DIR / "reports"
 
 
