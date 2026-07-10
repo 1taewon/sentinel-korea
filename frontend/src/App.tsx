@@ -1048,18 +1048,18 @@ function AppInner({
   });
   const pipelineNodeMap = new Map(pipelineNodePositions.map((node) => [node.key, node]));
 
-  // Modal layout (viewBox 1000x560)
+  // Modal layout (viewBox 1160x560)
   // Row 1 (y=80):  SOURCE — korea_news, trends, kdca_upload, kdca_api, global
   // Row 2 (y=230): MID — osint, kdca_digest
   // Row 3 (y=380): SYNTHESIS — sentinel
   // Row 4 (y=490): REPORT — kdca_report (FINAL 통합 리포트), placed below sentinel
   const PIPELINE_MODAL_NODE_LAYOUT: Record<string, { x: number; y: number }> = {
-    korea_news:  { x:  95, y:  80 },
-    trends:      { x: 245, y:  80 },
-    kdca_upload: { x: 430, y:  80 },
-    kdca_api:    { x: 580, y:  80 },
-    global:      { x: 745, y:  80 },
-    weather:     { x: 905, y:  80 },   // ★ standalone domestic met signal (no report edge)
+    korea_news:  { x: 120, y:  80 },
+    trends:      { x: 290, y:  80 },
+    kdca_upload: { x: 540, y:  80 },
+    kdca_api:    { x: 720, y:  80 },
+    global:      { x: 890, y:  80 },
+    weather:     { x: 1035, y: 80 },   // ★ standalone domestic met signal (no report edge)
     osint:       { x: 200, y: 230 },
     kdca_digest: { x: 630, y: 230 },
     sentinel:    { x: 415, y: 380 },
@@ -2229,7 +2229,7 @@ function AppInner({
             </div>
 
             <div className="pipeline-flow-modal-svg-wrap">
-              <svg viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+              <svg viewBox="0 0 1160 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
                 <defs>
                   <marker id="pf-arrow-inline" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
                     <path d="M0,0 L10,5 L0,10 Z" fill="rgba(56,189,248,0.7)" />
@@ -2383,7 +2383,7 @@ function AppInner({
             </div>
 
             <div className="pipeline-flow-modal-svg-wrap">
-              <svg viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+              <svg viewBox="0 0 1160 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
                 <defs>
                   <marker id="pf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
                     <path d="M0,0 L10,5 L0,10 Z" fill="rgba(56,189,248,0.7)" />
