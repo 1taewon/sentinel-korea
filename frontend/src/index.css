@@ -9176,12 +9176,16 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .epi-region-caveat { margin-top: 6px; font-size: 10px; color: var(--text-muted, #94a3b8); line-height: 1.5; }
 .epi-region-caveat strong { color: var(--text-secondary, #475569); font-weight: 700; }
 
-/* Staged region table: 지역 + 3/7/14/21/28일 + 사망 + 치명률 (8 columns) */
+/* Staged region table: 지역 + 3/7/14/21/28일 (확진/사망) + 치명률 (7 columns) */
 .epi-region-staged .epi-region-header,
 .epi-region-staged .epi-region-row,
 .epi-region-superhead {
-  grid-template-columns: 1.5fr 0.8fr 0.8fr 0.85fr 0.85fr 1fr 0.85fr 0.8fr;
+  grid-template-columns: 1.4fr 0.95fr 0.95fr 1fr 1fr 1.1fr 0.8fr;
 }
+.epi-stage-cell { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; }
+.epi-region-staged .epi-num.mini { font-size: 9.5px; }
+.epi-num.zero { color: var(--text-muted, #94a3b8); }
+.epi-death-word { color: #dc2626 !important; }
 .epi-region-superhead {
   display: grid; gap: 6px; align-items: center; padding: 3px 8px; font-size: 10px;
   font-weight: 700; color: var(--text-muted, #94a3b8); text-align: center;

@@ -848,38 +848,46 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
 
       {/* Region table — cumulative cases per 시도 across the forecast stages (확진 순) */}
       <div className="whatif-section">
-        <div className="whatif-section-title">시도별 역학 지표 · 시기별 누적 확진 (단기 3·7일 / 중기 2·3주 / 28일)</div>
+        <div className="whatif-section-title">시도별 역학 지표 · 시기별 누적 확진·사망 (단기 3·7일 / 중기 2·3주 / 28일)</div>
         <div className="epi-region-table epi-region-staged">
           <div className="epi-region-superhead">
             <span></span>
             <span className="epi-grp short" style={{ gridColumn: 'span 2' }}>단기예측</span>
             <span className="epi-grp mid" style={{ gridColumn: 'span 2' }}>중기예측</span>
-            <span className="epi-grp final">최종</span>
-            <span style={{ gridColumn: 'span 2' }}>28일 기준</span>
+            <span className="epi-grp final" style={{ gridColumn: 'span 2' }}>최종 (28일)</span>
           </div>
           <div className="epi-region-header">
-            <span>지역</span><span>3일</span><span>7일</span><span>2주</span><span>3주</span><span>28일</span><span>사망</span><span>치명률</span>
+            <span>지역</span><span>3일</span><span>7일</span><span>2주</span><span>3주</span><span>28일</span><span>치명률</span>
           </div>
           {regions.map((r) => {
-            const at = (day: number) => r.timeline?.find((t) => t.day === day)?.cumulative_cases ?? 0;
+            const casesAt = (day: number) => r.timeline?.find((t) => t.day === day)?.cumulative_cases ?? 0;
+            const deathsAt = (day: number) => r.timeline?.find((t) => t.day === day)?.cumulative_deaths ?? 0;
+            const cell = (day: number, strong?: boolean) => {
+              const d = deathsAt(day);
+              return (
+                <span className="epi-stage-cell">
+                  <span className={`epi-num${strong ? ' strong' : ''}`}>{fmt(casesAt(day))}</span>
+                  <span className={`epi-num mini ${d > 0 ? 'death' : 'zero'}`}>{fmt(d)}</span>
+                </span>
+              );
+            };
             return (
               <div key={r.region_id} className={`epi-region-row ${r.is_seed ? 'seed' : ''}`}>
                 <span className="epi-region-name">
                   {r.is_seed && <span className="epi-seed-badge">유입</span>}
                   {r.region_name}
                 </span>
-                <span className="epi-num small">{fmt(at(3))}</span>
-                <span className="epi-num small">{fmt(at(7))}</span>
-                <span className="epi-num">{fmt(at(14))}</span>
-                <span className="epi-num">{fmt(at(21))}</span>
-                <span className="epi-num strong">{fmt(r.cumulative_cases)}</span>
-                <span className="epi-num death">{fmt(r.cumulative_deaths)}</span>
+                {cell(3)}
+                {cell(7)}
+                {cell(14)}
+                {cell(21)}
+                {cell(28, true)}
                 <span className="epi-num">{pct(r.effective_cfr, 1)}</span>
               </div>
             );
           })}
         </div>
-        <div className="epi-region-caveat">단기·중기 열은 각 시점의 <strong>누적 확진</strong>, 사망·치명률은 28일 기준입니다. 개입(백신·거리두기) 없는 자연확산 가정의 예시 시나리오이며 예보가 아닙니다. 인구: 행정안전부 주민등록 2026-06.</div>
+        <div className="epi-region-caveat">각 시점 칸은 <strong>누적 확진</strong>(위) · <strong className="epi-death-word">누적 사망</strong>(아래, 빨강)이며, 치명률은 28일 기준입니다. 개입(백신·거리두기) 없는 자연확산 가정의 예시 시나리오이며 예보가 아닙니다. 인구: 행정안전부 주민등록 2026-06.</div>
       </div>
 
       {/* 시기별 대응 방안 — AI (Gemini) 분석이 우선, 없으면 규칙 기반 fallback */}
