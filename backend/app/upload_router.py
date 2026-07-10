@@ -252,6 +252,42 @@ async def refresh_global_signals(_: dict = Depends(require_admin)) -> dict[str, 
     return {"status": status, "results": results}
 
 
+@router.post("/refresh-highway")
+async def refresh_highway_connectivity() -> dict[str, Any]:
+    """On-demand '최신 반영' for the Outbreak Scenario's traffic connectivity index.
+
+    Public (no admin) so casual scenario users can pull the latest, but cooldown-
+    guarded: if the cached index was refreshed within REFRESH_COOLDOWN_SEC, it is
+    returned as-is instead of re-hitting data.ex.co.kr — repeated clicks can't
+    hammer the external API. The Monday pipeline remains the default refresh.
+    """
+    REFRESH_COOLDOWN_SEC = 300  # 5 min
+    out_path = PROCESSED_DIR / "highway_connectivity_by_region.json"
+
+    if out_path.exists():
+        try:
+            existing = json.loads(out_path.read_text(encoding="utf-8"))
+            gen = existing.get("generated_at")
+            if gen:
+                from datetime import datetime, timezone
+                gen_dt = datetime.fromisoformat(gen)
+                now = datetime.now(gen_dt.tzinfo or timezone.utc)
+                age = (now - gen_dt).total_seconds()
+                if age < REFRESH_COOLDOWN_SEC:
+                    return {"status": "cooldown", "refreshed": False,
+                            "age_seconds": int(age), "data": existing}
+        except Exception:
+            pass
+
+    try:
+        hw_mod = __import_script("fetch_highway_traffic")
+        hw_data = hw_mod.fetch_highway_connectivity()
+        out_path.write_text(json.dumps(hw_data, ensure_ascii=False, indent=2), encoding="utf-8")
+        return {"status": hw_data.get("status"), "refreshed": True, "data": hw_data}
+    except Exception as exc:
+        return {"status": "error", "refreshed": False, "error": str(exc)}
+
+
 @router.post("/refresh-korea")
 async def refresh_korea_signals(_: dict = Depends(require_admin)) -> dict[str, Any]:
     """한국 뉴스를 새로 수집합니다 (네이버 + NewsAPI)."""

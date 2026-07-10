@@ -1557,6 +1557,9 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   const [severity, setSeverity] = useState('');
   const [useAviation, setUseAviation] = useState(false);
   const [useTraffic, setUseTraffic] = useState(false);
+  const [trafficUpdatedAt, setTrafficUpdatedAt] = useState<string | null>(null);
+  const [trafficRefreshing, setTrafficRefreshing] = useState(false);
+  const [trafficMsg, setTrafficMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -1584,11 +1587,41 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
     } finally { setLoading(false); }
   };
 
+  // Show the current traffic-connectivity 기준시각 (default = Monday pipeline).
+  useEffect(() => {
+    fetch(`${API_BASE}/signals/highway-connectivity`)
+      .then((r) => r.json())
+      .then((d) => { if (d && d.generated_at) setTrafficUpdatedAt(d.generated_at); })
+      .catch(() => {});
+  }, []);
+
+  // On-demand '최신 반영' — re-fetch latest highway traffic (backend cooldown-guarded).
+  const refreshTraffic = async () => {
+    setTrafficRefreshing(true); setTrafficMsg(null);
+    try {
+      const r = await fetch(`${API_BASE}/ingestion/refresh-highway`, { method: 'POST' });
+      const d = await r.json();
+      const gen = d?.data?.generated_at;
+      if (gen) setTrafficUpdatedAt(gen);
+      if (d?.status === 'cooldown') {
+        setTrafficMsg(`이미 최신 상태 (${Math.round((d.age_seconds || 0) / 60)}분 전 갱신)`);
+      } else if (d?.refreshed) {
+        setTrafficMsg('최신 교통 데이터 반영 완료');
+      } else if (d?.status === 'skipped') {
+        setTrafficMsg('HIGHWAY_API_KEY 미설정 — 수집 불가');
+      } else {
+        setTrafficMsg('갱신 실패 — 잠시 후 다시 시도');
+      }
+    } catch (e: any) {
+      setTrafficMsg('갱신 실패 — ' + String(e?.message || e));
+    } finally { setTrafficRefreshing(false); }
+  };
+
   return (
     <div className="whatif-standalone">
       <div className="whatif-standalone-desc">
-        <strong>전국 확산 시나리오</strong> — 해외 감염병이 한국에 유입된다면? 선택한 공항 거점에서 전국 17개 시도로의 확산 패턴을 시뮬레이션합니다. <strong>항공상황 add</strong>를 켜면 발생국의 <strong>인천공항 실측 여객량</strong>으로 이동량(전파 배수)을 객관화해 분석합니다 (끄면 기본 proxy 사용).<br />
-        <span className="whatif-ref-note">참고: 항공 여객량 기반 해외유입 위험 추정은 BlueDot·GLEAM 등 국제 감염병 예측 모델에서 검증된 표준 방식입니다.</span>
+        <strong>전국 확산 시나리오</strong> — 해외 감염병이 한국에 유입된다면? 선택한 공항 거점에서 전국 17개 시도로의 확산 패턴을 시뮬레이션합니다. <strong>항공상황 add</strong>를 켜면 발생국의 <strong>인천공항 실측 여객량</strong>으로 이동량(전파 배수)을 객관화해 분석합니다 (끄면 기본 proxy 사용). <strong>교통상황 add</strong>를 켜면 <strong>고속도로 실측 도착 교통량</strong>으로 시도별 연결성을 확산 배수에 반영합니다.<br />
+        <span className="whatif-ref-note">참고: 항공 여객량 기반 해외유입 위험 추정은 BlueDot·GLEAM 등 국제 감염병 예측 모델의 표준 방식이며, 시도 간 이동량(연결성) 기반 국내 확산 추정은 COVID-19 시공간 확산 네트워크 연구(대한교통학회·감염 네트워크 연구)에 근거합니다.</span>
       </div>
       <div className="whatif-row">
         <label>유입 거점</label>
@@ -1628,6 +1661,20 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
         <span className="whatif-aviation-label">교통상황 add</span>
         <span className="whatif-aviation-hint">고속도로 실측 도착 교통량으로 지역 연결성을 확산 배수에 반영 — 연결성 높은 허브가 먼 거리도 빨리 확산(웜홀). 대한교통학회·감염 네트워크 연구 기반.</span>
       </label>
+      {useTraffic && (
+        <div className="whatif-traffic-refresh">
+          <span className="whatif-traffic-updated">
+            {trafficUpdatedAt
+              ? `교통데이터 기준: ${new Date(trafficUpdatedAt).toLocaleString('ko-KR')}`
+              : '교통데이터 미수집 (기본: 월요일 자동 갱신)'}
+          </span>
+          <button type="button" className="whatif-traffic-refresh-btn"
+            onClick={refreshTraffic} disabled={trafficRefreshing}>
+            {trafficRefreshing ? '갱신 중…' : '최신 반영'}
+          </button>
+          {trafficMsg && <span className="whatif-traffic-msg">{trafficMsg}</span>}
+        </div>
+      )}
       <div className="whatif-presets">
         {WHAT_IF_PRESETS.map((p, i) => (
           <button key={i} type="button" className="whatif-preset-btn"
