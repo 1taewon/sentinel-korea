@@ -584,6 +584,134 @@ function ScenarioMiniMap({ regionLevels, targetCode, title }: {
   );
 }
 
+// ─── Animated spread figure: aviation import → connectivity/proximity spread ──
+// Plays the backend's weekly projection (comparison[]) across the landing 시도 map:
+// the entry point (항공 유입 거점) seeds, spread edges fan out weighted by each
+// region's spread_multiplier (교통 연결성 × 인접성), nodes grow with predicted score.
+function ScenarioSpreadMap({ regions, primaryZones, entryLabel }: {
+  regions: NationalRegionResult[];
+  primaryZones: string[];
+  entryLabel: string;
+}) {
+  const features = useKoreaGeoJSON();
+  const weeks = useMemo(() => Math.max(1, ...regions.map((r) => r.comparison?.length || 0)), [regions]);
+  const [week, setWeek] = useState(0);
+  const [playing, setPlaying] = useState(true);
+
+  const projection = useMemo(() => d3.geoMercator().center([127.8, 36.0]).scale(4800).translate([200, 240]), []);
+  const pathGen = useMemo(() => d3.geoPath().projection(projection), [projection]);
+
+  const regionByCode = useMemo(() => new Map(regions.map((r) => [r.region_id, r])), [regions]);
+  const centroids = useMemo(() => {
+    const m = new Map<string, [number, number]>();
+    SIDO_LABELS.forEach((s) => { const p = projection([s.lng, s.lat]); if (p) m.set(s.code, [p[0], p[1]]); });
+    return m;
+  }, [projection]);
+
+  const levelAt = (r: NationalRegionResult, w: number): string => {
+    if (w <= 0) return r.baseline_level || 'G0';
+    const c = r.comparison?.[Math.min(w, r.comparison.length) - 1];
+    return c?.scenario_level || r.scenario_level || 'G0';
+  };
+  const scoreAt = (r: NationalRegionResult, w: number): number => {
+    if (w <= 0) return r.baseline_score || 0;
+    const c = r.comparison?.[Math.min(w, r.comparison.length) - 1];
+    return c?.scenario_score ?? r.scenario_score ?? 0;
+  };
+
+  const polys = useMemo(() => features.map((f: any, i: number) => {
+    const sido = String(f.properties?.code || '').substring(0, 2);
+    return { key: i, d: pathGen(f) || '', code: GEOJSON_TO_BACKEND[sido] || '' };
+  }), [features, pathGen]);
+
+  const originPts = useMemo(
+    () => primaryZones.map((c) => centroids.get(c)).filter(Boolean) as [number, number][],
+    [primaryZones, centroids]);
+
+  const edges = useMemo(() => {
+    if (!originPts.length) return [] as { code: string; from: [number, number]; to: [number, number]; mult: number }[];
+    const o = originPts[0];
+    return regions
+      .filter((r) => !primaryZones.includes(r.region_id) && !r.error)
+      .map((r) => { const c = centroids.get(r.region_id); return c ? { code: r.region_id, from: o, to: c, mult: r.spread_multiplier || 0 } : null; })
+      .filter(Boolean) as { code: string; from: [number, number]; to: [number, number]; mult: number }[];
+  }, [regions, originPts, centroids, primaryZones]);
+  const maxMult = useMemo(() => Math.max(1, ...edges.map((e) => e.mult)), [edges]);
+
+  useEffect(() => {
+    if (!playing) return;
+    const id = setInterval(() => setWeek((w) => (w >= weeks ? 0 : w + 1)), 1300);
+    return () => clearInterval(id);
+  }, [playing, weeks]);
+
+  return (
+    <div className="scenario-spread">
+      <div className="scenario-spread-head">
+        <button type="button" className="scenario-spread-play" onClick={() => setPlaying((p) => !p)}>
+          {playing ? '일시정지' : '재생'}
+        </button>
+        <input type="range" min={0} max={weeks} step={1} value={week}
+          onChange={(e) => { setPlaying(false); setWeek(Number(e.target.value)); }}
+          className="scenario-spread-slider" />
+        <span className="scenario-spread-week">{week === 0 ? '현재 (기준)' : `${week}주 후`}</span>
+      </div>
+      <svg viewBox="0 0 400 480" className="scenario-spread-svg korea-geo-svg">
+        <defs>
+          <filter id="spread-glow">
+            <feGaussianBlur stdDeviation="2.5" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+        {polys.map((p) => {
+          const r = p.code ? regionByCode.get(p.code) : undefined;
+          const level = r ? levelAt(r, week) : 'G0';
+          return (
+            <path key={p.key} d={p.d} fill={GLEVEL_COLORS[level] || GLEVEL_COLORS.G0}
+              fillOpacity={week === 0 ? 0.32 : 0.6} stroke="rgba(100,150,200,0.25)" strokeWidth={0.3}
+              style={{ transition: 'fill 0.7s ease, fill-opacity 0.7s ease' }} />
+          );
+        })}
+        {week >= 1 && edges.map((e) => {
+          const r = regionByCode.get(e.code);
+          if (!r || scoreAt(r, week) <= (r.baseline_score || 0) + 0.008) return null;
+          return (
+            <line key={e.code} x1={e.from[0]} y1={e.from[1]} x2={e.to[0]} y2={e.to[1]}
+              stroke="rgba(255,120,60,0.55)" strokeWidth={0.5 + 2.5 * (e.mult / maxMult)}
+              strokeLinecap="round" strokeDasharray="3 5" className="scenario-spread-edge" />
+          );
+        })}
+        {SIDO_LABELS.map((s) => {
+          const r = regionByCode.get(s.code);
+          const pt = centroids.get(s.code);
+          if (!pt) return null;
+          const level = r ? levelAt(r, week) : 'G0';
+          const rad = 3 + (r ? scoreAt(r, week) : 0) * 9;
+          const isOrigin = primaryZones.includes(s.code);
+          return (
+            <g key={s.code}>
+              {isOrigin && (
+                <circle cx={pt[0]} cy={pt[1]} r={rad + 5} fill="none"
+                  stroke="rgba(255,90,50,0.7)" strokeWidth={1.5} className="scenario-spread-origin" />
+              )}
+              <circle cx={pt[0]} cy={pt[1]} r={rad} fill={GLEVEL_COLORS[level] || GLEVEL_COLORS.G0}
+                stroke="#fff" strokeWidth={1} filter={isOrigin ? 'url(#spread-glow)' : undefined}
+                style={{ transition: 'r 0.7s ease, fill 0.7s ease' }} />
+              <text x={pt[0]} y={pt[1] - rad - 3} textAnchor="middle" fontSize={9} fontWeight={700}
+                fill="#e5e7eb" stroke="rgba(0,0,0,0.6)" strokeWidth={2} paintOrder="stroke"
+                style={{ pointerEvents: 'none' }}>{s.abbr}</text>
+            </g>
+          );
+        })}
+      </svg>
+      <div className="scenario-spread-legend">
+        <span><i className="ssl-origin" /> 해외유입 거점(항공): {entryLabel}</span>
+        <span><i className="ssl-edge" /> 확산 경로 (굵기 = 교통 연결성·인접성)</span>
+        <span><i className="ssl-node" /> 시도 위험도 (크기 = 예측 점수)</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── National Outbreak Analysis Panel (results in analysis area) ──────────
 
 function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
@@ -599,6 +727,24 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
     ...(ep?.primary_zones || []),
     ...regions.filter((r) => r.level_changed).map((r) => r.region_id),
   ]);
+
+  // Sensitivity cells: the 0.3/0.5/0.7 sweep, plus the chosen base if it's a custom
+  // (arbitrary) value — its count is the main summary.escalated_count.
+  const sensCells = useMemo(() => {
+    const sweep = result.summary?.traffic_sensitivity;
+    if (!sweep) return null;
+    const chosen = result.scenario?.traffic_base;
+    const cells = sweep.map((s) => ({ base: s.base, escalated_count: s.escalated_count, is_selected: false }));
+    if (typeof chosen === 'number') {
+      const match = cells.find((c) => Math.abs(c.base - chosen) < 1e-9);
+      if (match) { match.is_selected = true; }
+      else {
+        cells.push({ base: chosen, escalated_count: result.summary?.escalated_count ?? 0, is_selected: true });
+        cells.sort((a, b) => a.base - b.base);
+      }
+    }
+    return cells;
+  }, [result.summary?.traffic_sensitivity, result.scenario?.traffic_base, result.summary?.escalated_count]);
 
   return (
     <div className="whatif-analysis-panel">
@@ -641,19 +787,28 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
         </div>
       </div>
 
-      {/* Connectivity-base sensitivity — escalated-region count at base 0.3/0.5/0.7 */}
-      {result.summary?.traffic_sensitivity && (
+      {/* Hero figure: animated spread across the landing 시도 map */}
+      {regions.length > 0 && (
+        <div className="whatif-section">
+          <div className="whatif-section-title">확산 시뮬레이션 · 항공 유입 → 교통 연결성·인접성 확산</div>
+          <ScenarioSpreadMap regions={regions} primaryZones={ep?.primary_zones || []}
+            entryLabel={ep?.label || ep?.code || '유입 거점'} />
+        </div>
+      )}
+
+      {/* Connectivity-base sensitivity — escalated-region count at base 0.3/0.5/0.7 (+chosen) */}
+      {sensCells && (
         <div className="traffic-sensitivity">
           <span className="traffic-sensitivity-label">연결성 base 민감도 · 상향 지역 수</span>
           <div className="traffic-sensitivity-cells">
-            {result.summary.traffic_sensitivity.map((s) => (
+            {sensCells.map((s) => (
               <div key={s.base} className={`traffic-sensitivity-cell ${s.is_selected ? 'is-selected' : ''}`}>
-                <span className="tsc-base">{s.base.toFixed(1)} {s.base <= 0.3 ? '허브집중' : s.base >= 0.7 ? '광역' : '기본'}</span>
+                <span className="tsc-base">{s.base.toFixed(2)} {s.base <= 0.3 ? '허브집중' : s.base >= 0.7 ? '광역' : '기본'}</span>
                 <span className="tsc-count">{s.escalated_count}개</span>
               </div>
             ))}
           </div>
-          <span className="traffic-sensitivity-hint">세 base에서 값이 비슷할수록 결과가 파라미터에 견고합니다. 지도·표는 선택값({(result.scenario?.traffic_base ?? 0.5).toFixed(1)}) 기준.</span>
+          <span className="traffic-sensitivity-hint">세 기준값에서 상향 지역 수가 비슷할수록 결과가 파라미터에 견고합니다. 지도·표·애니메이션은 선택값({(result.scenario?.traffic_base ?? 0.5).toFixed(2)}) 기준.</span>
         </div>
       )}
 
@@ -1681,14 +1836,29 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
       {useTraffic && (
         <div className="whatif-traffic-controls">
           <div className="whatif-traffic-base">
-            <label>연결성 base</label>
-            <select value={trafficBase} onChange={(e) => setTrafficBase(Number(e.target.value))}
-              className="whatif-select whatif-traffic-base-select">
-              <option value={0.3}>0.3 — 허브 집중형</option>
-              <option value={0.5}>0.5 — 기본 (균형)</option>
-              <option value={0.7}>0.7 — 광역 확산형</option>
-            </select>
-            <span className="whatif-traffic-base-hint">확산 배수 = base + 연결성(0~1). 낮을수록 허브 집중, 높을수록 광역 확산. 실행하면 세 값의 민감도를 함께 표시합니다.</span>
+            <label>연결성 base <strong className="whatif-base-val">{trafficBase.toFixed(2)}</strong></label>
+            <input type="range" min={0} max={1} step={0.05} value={trafficBase}
+              onChange={(e) => setTrafficBase(Number(e.target.value))}
+              className="whatif-traffic-base-slider" />
+            <div className="whatif-base-presets">
+              {([[0.3, '허브집중'], [0.5, '기본'], [0.7, '광역']] as [number, string][]).map(([v, l]) => (
+                <button key={v} type="button"
+                  className={`whatif-base-preset ${Math.abs(trafficBase - v) < 1e-9 ? 'is-active' : ''}`}
+                  onClick={() => setTrafficBase(v)}>{v} {l}</button>
+              ))}
+            </div>
+            <details className="whatif-base-explain">
+              <summary>연결성 base가 무엇인가요?</summary>
+              <div className="whatif-base-explain-body">
+                <p><strong>확산 배수 = base + 연결성(0~1)</strong>. base는 모든 지역에 공통으로 적용되는 <strong>기본 확산력(바닥값)</strong>이고, 여기에 각 지역의 고속도로 실측 <strong>연결성</strong>이 더해져 지역별 확산 배수가 정해집니다.</p>
+                <ul>
+                  <li><strong>base 높음(예 0.7)</strong> → 연결성 낮은 외진 지역도 배수↑ → <strong>전국 광역 확산</strong> 가정</li>
+                  <li><strong>base 낮음(예 0.3)</strong> → 확산이 <strong>연결성 높은 허브에 집중</strong>, 외진 지역은 억제</li>
+                  <li>예) base 0.5 → 서울(연결성 1.0) 배수 1.5 · 외진 지역(연결성 0.3) 배수 0.8</li>
+                </ul>
+                <p>정답이 정해진 값이 아니라 <strong>가정</strong>이므로, 실행 결과에 0.3/0.5/0.7 <strong>민감도</strong>를 함께 표시해 값에 따라 결과가 얼마나 달라지는지(견고성)를 볼 수 있게 했습니다. 슬라이더로 임의값도 설정 가능합니다.</p>
+              </div>
+            </details>
           </div>
           <div className="whatif-traffic-refresh">
             <span className="whatif-traffic-updated">
