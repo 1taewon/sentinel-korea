@@ -1569,7 +1569,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult }: {
   return (
     <div className="whatif-standalone">
       <div className="whatif-standalone-desc">
-        <strong>전국 확산 시나리오</strong> — 해외 감염병이 한국에 유입된다면? 선택한 공항 거점에서 전국 17개 시도로의 확산 패턴을 시뮬레이션합니다.
+        <strong>전국 확산 시나리오</strong> — 해외 감염병이 한국에 유입된다면? 선택한 공항 거점에서 전국 17개 시도로의 확산 패턴을 시뮬레이션합니다. <strong>✈️ 항공상황 add</strong>를 켜면 발생국의 <strong>인천공항 실측 여객량</strong>으로 이동량(전파 배수)을 객관화해 분석합니다 (끄면 기본 proxy 사용).
       </div>
       <div className="whatif-row">
         <label>유입 거점</label>
