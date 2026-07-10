@@ -23,7 +23,7 @@ function useTheme(): 'light' | 'dark' {
   return theme;
 }
 
-type Layer = 'respiratory' | 'wastewater_covid' | 'wastewater_flu' | 'news_trends_risk' | 'total_risk';
+type Layer = 'respiratory' | 'wastewater_covid' | 'wastewater_flu' | 'news_trends_risk' | 'total_risk' | 'weather_respiratory';
 
 type Props = {
   isExpanded?: boolean;

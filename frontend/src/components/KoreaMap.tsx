@@ -34,7 +34,7 @@ function scoreToColor(score: number): string {
   return '#34d399';
 }
 
-type Layer = 'respiratory' | 'wastewater_covid' | 'wastewater_flu' | 'news_trends_risk' | 'total_risk';
+type Layer = 'respiratory' | 'wastewater_covid' | 'wastewater_flu' | 'news_trends_risk' | 'total_risk' | 'weather_respiratory';
 type AggregationMode = 'max' | 'weighted';
 
 type Props = {
@@ -42,9 +42,10 @@ type Props = {
   onRegionClick: (alert: KoreaAlert) => void;
   activeLayers: Layer[];
   aggregationMode?: AggregationMode;
+  weatherScores?: Record<string, number>;
 };
 
-export default function KoreaMap({ koreaAlerts, onRegionClick, activeLayers, aggregationMode = 'max' }: Props) {
+export default function KoreaMap({ koreaAlerts, onRegionClick, activeLayers, aggregationMode = 'max', weatherScores = {} }: Props) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [geoData, setGeoData] = useState<any>(null);
@@ -109,6 +110,7 @@ export default function KoreaMap({ koreaAlerts, onRegionClick, activeLayers, agg
       if (layer === 'wastewater_flu') return alert.regional_wastewater?.influenza.score ?? alert.score;
       if (layer === 'news_trends_risk') return (alert as any).news_trends_risk?.score ?? 0;
       if (layer === 'total_risk') return (alert as any).total_risk?.score ?? 0;
+      if (layer === 'weather_respiratory') return weatherScores[alert.region_code] ?? 0;
       return alert.score;
     };
 
@@ -124,7 +126,7 @@ export default function KoreaMap({ koreaAlerts, onRegionClick, activeLayers, agg
 
     const level = aggregated >= 0.75 ? 'G3' : aggregated >= 0.55 ? 'G2' : aggregated >= 0.3 ? 'G1' : 'G0';
     return { score: aggregated, level };
-  }, [activeLayers, aggregationMode]);
+  }, [activeLayers, aggregationMode, weatherScores]);
 
   const resolveAlertFromFeature = useCallback((feature: any): KoreaAlert | null => {
     const provinceCode = String(feature.properties.code || '').slice(0, 2);

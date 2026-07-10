@@ -27,7 +27,7 @@ import './index.css';
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const NOTICE_VERSION = 'sentinel-notice-2026-05-v1';
 
-type Layer = 'respiratory' | 'wastewater_covid' | 'wastewater_flu' | 'news_trends_risk' | 'total_risk';
+type Layer = 'respiratory' | 'wastewater_covid' | 'wastewater_flu' | 'news_trends_risk' | 'total_risk' | 'weather_respiratory';
 type AggregationMode = 'max' | 'weighted';
 type OperationKey =
   | 'korea_news'
@@ -198,6 +198,7 @@ function AppInner({
   const [isGlobeExpanded, setIsGlobeExpanded] = useState(false);
   const [showFlowDiagram, setShowFlowDiagram] = useState(false);
   const [activeLayers, setActiveLayers] = useState<Layer[]>(['respiratory']);
+  const [weatherScores, setWeatherScores] = useState<Record<string, number>>({});
   const [aggregationMode, setAggregationMode] = useState<AggregationMode>('max');
   const [showLayerPanel, setShowLayerPanel] = useState(false);
 
@@ -324,6 +325,22 @@ function AppInner({
           if (v && typeof v.score === 'number') scores[k] = v.score;
         }
         setAviationScores(scores);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Load respiratory-weather favorability per region (0..1, cold+dry→higher) for the
+  // opt-in "기상 위험도" map layer. Only affects the map when the user enables it.
+  useEffect(() => {
+    fetch(`${API_BASE}/signals/weather-respiratory`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { regions?: Record<string, { favorability?: number }> } | null) => {
+        if (!d || !d.regions) return;
+        const scores: Record<string, number> = {};
+        for (const [code, v] of Object.entries(d.regions)) {
+          if (v && typeof v.favorability === 'number') scores[code] = v.favorability;
+        }
+        setWeatherScores(scores);
       })
       .catch(() => {});
   }, []);
@@ -1187,6 +1204,7 @@ function AppInner({
               onRegionClick={handleKoreaClick}
               activeLayers={activeLayers}
               aggregationMode={aggregationMode}
+              weatherScores={weatherScores}
             />
           </div>
 
@@ -1510,6 +1528,11 @@ function AppInner({
                     <input type="checkbox" checked={activeLayers.includes('total_risk')} onChange={() => toggleLayer('total_risk')} />
                     <span>총 위험도</span>
                   </label>
+                  <label className={`kas-inline-layer ${activeLayers.includes('weather_respiratory') ? 'active' : ''}`}
+                    title="기상청 실측 기온·절대습도 기반 계절 위험도 (저온·저습↑). 켜면 지도 위험도에 보정으로 반영">
+                    <input type="checkbox" checked={activeLayers.includes('weather_respiratory')} onChange={() => toggleLayer('weather_respiratory')} />
+                    <span>기상 위험도</span>
+                  </label>
                 </div>
                 {activeLayers.length > 1 && (
                   <div className="kas-aggregation" style={{ marginTop: 6 }}>
@@ -1590,6 +1613,11 @@ function AppInner({
               <label className={`kas-layer-item ${activeLayers.includes('total_risk') ? 'active' : ''}`}>
                 <input type="checkbox" checked={activeLayers.includes('total_risk')} onChange={() => toggleLayer('total_risk')} />
                 <span>총 위험도</span>
+              </label>
+              <label className={`kas-layer-item ${activeLayers.includes('weather_respiratory') ? 'active' : ''}`}
+                title="기상청 실측 기온·절대습도 기반 계절 위험도 (저온·저습↑). 켜면 지도 위험도에 보정으로 반영">
+                <input type="checkbox" checked={activeLayers.includes('weather_respiratory')} onChange={() => toggleLayer('weather_respiratory')} />
+                <span>기상 위험도</span>
               </label>
               {activeLayers.length > 1 && (
                 <div className="kas-aggregation">
