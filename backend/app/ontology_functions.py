@@ -1393,6 +1393,60 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
     return snaps, daily_new, C
 
 
+def _build_response_playbook(peak_day: int, national_cfr: float, r0_eff: float) -> list[dict]:
+    """Stage-based public-health response recommendations, adapted to the simulated
+    epidemic phase. Deterministic (no LLM), always present. Grounded in K-방역 3T
+    (Test–Trace–Treat), WHO 봉쇄–완화(containment–mitigation) 단계, 감염병 위기경보 4단계."""
+    high_cfr = national_cfr >= 0.05
+    high_r0 = r0_eff >= 2.5
+    still_growing = peak_day >= 21   # 신규 정점이 3주 이후 → 28일에도 성장기
+    early_peak = peak_day <= 10      # 정점이 10일 이전 → 28일엔 감소기
+
+    short = [
+        "유입·발생 거점 중심 즉시 역학조사·접촉자 추적 및 확진자 격리 (3T: 검사·추적)",
+        "진단검사 역량 확충, 의심사례 신고체계 가동, 유입 감시(검역) 강화",
+        "감염병 위기경보 단계 격상 검토 및 중앙방역대책본부 가동",
+    ]
+    if high_r0:
+        short.append(f"전파력이 높아(R0 {r0_eff}) 거점 지역 이동·집회 제한을 선제 검토")
+
+    mid = [
+        "사회적 거리두기·다중이용시설 방역으로 지역 간 전파 억제",
+        "병상·중환자실·의료인력·치료제(항바이러스제) 선제 확보 (3T: 치료)",
+        "고위험군(고령·기저질환자) 우선 보호 및 백신 우선접종 계획 수립",
+    ]
+    if high_cfr:
+        mid.append(f"치명률이 높아(전국 {national_cfr * 100:.1f}%) 중환자 병상·인공호흡기·ECMO 확보 우선")
+
+    if still_growing:
+        late_phase = "정점 대응 (성장기)"
+        late = [
+            f"신규 정점이 {peak_day}일차로 28일에도 성장기 — 의료체계 과부하 방지에 총력",
+            "경증 재택치료 전환·병상 재배분으로 중증 진료역량 확보",
+            "백신·치료제 확보 가속 및 방역 조치 강화 유지",
+        ]
+    elif early_peak:
+        late_phase = "완화·출구 (감소기)"
+        late = [
+            f"신규 정점({peak_day}일차)을 지나 감소기 — 단계적 거리두기 완화·출구전략 검토",
+            "재유행·변이 대비 감시체계 유지",
+            "완치자 후유증 관리 및 의료체계 정상화",
+        ]
+    else:
+        late_phase = "정점 전후 대응"
+        late = [
+            f"신규 정점({peak_day}일차) 전후 — 의료역량 유지하며 방역 수위 조정",
+            "지역별 확산 속도에 따라 대응 자원 차등 배분",
+            "재유행 대비 감시 유지 및 완화 시점 판단",
+        ]
+
+    return [
+        {"stage": "단기 (0~7일)", "phase": "봉쇄·초기대응", "actions": short},
+        {"stage": "중기 (1~3주)", "phase": "확산억제·의료대비", "actions": mid},
+        {"stage": "후기 (21~28일)", "phase": late_phase, "actions": late},
+    ]
+
+
 def _what_if_outbreak_national(inputs: dict) -> dict:
     entry_raw = str(inputs.get("entry_point") or "ICN").strip()
     entry_code = entry_raw.upper()
@@ -1573,6 +1627,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             "worst_regions": [{"name": r["region_name"], "cases": r["cumulative_cases"]} for r in worst],
             "national_curve": national_curve,
             "sensitivity": sensitivity,
+            "response_playbook": _build_response_playbook(peak_day, national_cfr, r0_eff),
             "total_population": _SEIR_TOTAL_POP,
         },
         "gemini_scenario": None,

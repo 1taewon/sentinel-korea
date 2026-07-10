@@ -100,6 +100,7 @@ interface NationalOutbreakResult {
     worst_regions: { name: string; cases: number }[];
     national_curve: { day: number; cumulative_cases: number; cumulative_deaths: number; new_cases: number }[];
     sensitivity?: { key: string; label: string; unit: string; low_val: number; cur_val: number; high_val: number; low_cases: number; cur_cases: number; high_cases: number }[];
+    response_playbook?: { stage: string; phase: string; actions: string[] }[];
     total_population: number };
   gemini_scenario?: {
     impact_summary?: string; spread_pattern?: string;
@@ -837,32 +838,62 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
       {/* Narrative */}
       <div className="ontology-decision-narrative">{result.narrative}</div>
 
-      {/* Region table — epidemiological numbers per 시도 (28일 후, 확진 순) */}
+      {/* Region table — cumulative cases per 시도 across the forecast stages (확진 순) */}
       <div className="whatif-section">
-        <div className="whatif-section-title">시도별 역학 지표 · 28일 후 (인구 대비, 확진 순)</div>
-        <div className="epi-region-table">
+        <div className="whatif-section-title">시도별 역학 지표 · 시기별 누적 확진 (단기 3·7일 / 중기 2·3주 / 28일)</div>
+        <div className="epi-region-table epi-region-staged">
+          <div className="epi-region-superhead">
+            <span></span>
+            <span className="epi-grp short" style={{ gridColumn: 'span 2' }}>단기예측</span>
+            <span className="epi-grp mid" style={{ gridColumn: 'span 2' }}>중기예측</span>
+            <span className="epi-grp final">최종</span>
+            <span style={{ gridColumn: 'span 2' }}>28일 기준</span>
+          </div>
           <div className="epi-region-header">
-            <span>지역</span><span>누적 확진</span><span>신규</span><span>사망</span><span>발병률</span><span>치명률</span>
+            <span>지역</span><span>3일</span><span>7일</span><span>2주</span><span>3주</span><span>28일</span><span>사망</span><span>치명률</span>
           </div>
           {regions.map((r) => {
-            const last = r.timeline?.[r.timeline.length - 1];
+            const at = (day: number) => r.timeline?.find((t) => t.day === day)?.cumulative_cases ?? 0;
             return (
               <div key={r.region_id} className={`epi-region-row ${r.is_seed ? 'seed' : ''}`}>
                 <span className="epi-region-name">
                   {r.is_seed && <span className="epi-seed-badge">유입</span>}
                   {r.region_name}
                 </span>
-                <span className="epi-num">{fmt(r.cumulative_cases)}</span>
-                <span className="epi-num small">+{fmt(last?.new_cases)}</span>
+                <span className="epi-num small">{fmt(at(3))}</span>
+                <span className="epi-num small">{fmt(at(7))}</span>
+                <span className="epi-num">{fmt(at(14))}</span>
+                <span className="epi-num">{fmt(at(21))}</span>
+                <span className="epi-num strong">{fmt(r.cumulative_cases)}</span>
                 <span className="epi-num death">{fmt(r.cumulative_deaths)}</span>
-                <span className="epi-num">{pct(r.attack_rate, 3)}</span>
                 <span className="epi-num">{pct(r.effective_cfr, 1)}</span>
               </div>
             );
           })}
         </div>
-        <div className="epi-region-caveat">개입(백신·거리두기) 없는 자연확산 가정의 예시 시나리오이며 예보가 아닙니다. 인구: 행정안전부 주민등록 2026-06.</div>
+        <div className="epi-region-caveat">단기·중기 열은 각 시점의 <strong>누적 확진</strong>, 사망·치명률은 28일 기준입니다. 개입(백신·거리두기) 없는 자연확산 가정의 예시 시나리오이며 예보가 아닙니다. 인구: 행정안전부 주민등록 2026-06.</div>
       </div>
+
+      {/* Stage-based response playbook — phase-grounded recommendations (deterministic) */}
+      {s?.response_playbook && s.response_playbook.length > 0 && (
+        <div className="whatif-section">
+          <div className="whatif-section-title">시기별 대응 방안 · 유행 단계별 권고</div>
+          <div className="epi-playbook">
+            {s.response_playbook.map((p, i) => (
+              <div key={i} className="epi-playbook-stage">
+                <div className="epi-playbook-head">
+                  <span className="epi-playbook-when">{p.stage}</span>
+                  <span className="epi-playbook-phase">{p.phase}</span>
+                </div>
+                <ul className="epi-playbook-actions">
+                  {p.actions.map((a, j) => <li key={j}>{a}</li>)}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="epi-region-caveat">K-방역 3T(검사·추적·치료) · WHO 봉쇄–완화 단계 · 감염병 위기경보 4단계 프레임워크에 근거한 시기별 권고 예시로, 시뮬레이션의 정점 시점·치명률·전파력에 맞춰 자동 조정됩니다.</div>
+        </div>
+      )}
 
       {/* Gemini national narrative */}
       {g && !g.error && !g.parse_error && (
