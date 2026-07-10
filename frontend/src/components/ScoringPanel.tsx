@@ -35,6 +35,12 @@ const fallbackConfig: ScoringConfig = {
       source: 'Gemini AI analysis',
       enabled: true,
     },
+    weather_respiratory: {
+      label: 'Weather (forecast temp)',
+      description: '기상청 단기예보 기온 기반 계절 호흡기 위험도(추울수록↑). 질병 측정이 아닌 맥락 보정이라 기본 0.00 — 운영자가 올리면 복합점수에 반영됩니다.',
+      source: '기상청 단기예보 (Shang 2026)',
+      enabled: false,
+    },
   },
   weights: {
     notifiable_disease: 0.40,
@@ -42,6 +48,7 @@ const fallbackConfig: ScoringConfig = {
     wastewater_pathogen: 0.25,
     clinical_cxr_aware: 0,
     news_trends_ai: 0.20,
+    weather_respiratory: 0,
   },
   active_threshold: 0.55,
   level_thresholds: {

@@ -414,6 +414,20 @@ def build_signal_detail(
     }
 
 
+def _weather_favorability_map() -> dict[str, float]:
+    """Per-region respiratory-weather favorability (0..1) for the composite scoring's
+    weather signal. Empty when the data has not been collected yet."""
+    data = load_json(PROCESSED_DIR / "weather_respiratory_by_region.json")
+    if not isinstance(data, dict):
+        return {}
+    regions = data.get("regions") or {}
+    return {
+        code: float(v.get("favorability") or 0.0)
+        for code, v in regions.items()
+        if isinstance(v, dict)
+    }
+
+
 def enrich_alert(raw_alert: dict[str, Any], config: dict | None = None) -> dict[str, Any]:
     config = config or app.state.scoring_config
     region_code = str(raw_alert.get("region_id") or raw_alert.get("region_code") or "")
@@ -428,6 +442,16 @@ def enrich_alert(raw_alert: dict[str, Any], config: dict | None = None) -> dict[
     if ntr and isinstance(ntr, dict) and ntr.get("score") is not None:
         ntr_score = float(ntr["score"])
         signal_details["news_trends_ai"] = build_signal_detail("news_trends_ai", ntr_score, snapshot_date)
+    # Weather favorability (context modifier) — injected per region so the composite can
+    # fold in seasonal weather when the operator raises its weight (default 0.00 = off).
+    # Not in SIGNAL_METADATA/SIGNAL_GROUPS: it's a context factor, not a disease source.
+    wx_fav = _weather_favorability_map()
+    if region_code in wx_fav:
+        signal_details["weather_respiratory"] = {
+            "normalized_score": wx_fav[region_code],
+            "coverage": 1.0, "freshness_days": 0.0, "qc_flag": "ok",
+            "label": "Weather (forecast temp)",
+        }
     adjusted_signals = compute_quality_adjusted_signals(signal_details, config.get("weights"))
     score = compute_composite_score(adjusted_signals, config.get("weights"))
     level = score_to_level(score, config.get("level_thresholds"))

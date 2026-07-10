@@ -43,6 +43,12 @@ DEFAULT_SCORING_CONFIG: dict = {
             "source": "Gemini AI analysis of news + Google Trends",
             "enabled": False,
         },
+        "weather_respiratory": {
+            "label": "Weather (forecast temp)",
+            "description": "Seasonal respiratory-weather favorability from KMA forecast temperature (colder → higher). A context modifier, not a disease measurement — off by default.",
+            "source": "기상청 단기예보 (Shang 2026)",
+            "enabled": False,
+        },
     },
     "weights": {
         "notifiable_disease": 0.40,
@@ -50,6 +56,7 @@ DEFAULT_SCORING_CONFIG: dict = {
         "wastewater_pathogen": 0.25,
         "clinical_cxr_aware": 0.00,
         "news_trends_ai": 0.20,
+        "weather_respiratory": 0.00,
     },
     "active_threshold": 0.55,
     "level_thresholds": {
