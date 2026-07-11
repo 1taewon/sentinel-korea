@@ -1923,28 +1923,33 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         weather_fav, use_weather, mobility=traffic_intensity,
         weather_intensity=weather_intensity, od_weights=od_weights, od_observation=od_observation,
         access_prior=airport_access_prior, observed_only=observed_only)
-    region_results = []
-    for i, code in enumerate(_SEIR_CODES):
-        tl = [snaps[d][i] for d in range(29)]
-        last = tl[-1]
-        region_results.append({
-            "region_id": code,
-            "region_name": _REGION_COORDS.get(code, {}).get("name", code),
-            "is_primary_zone": code in entry_point["primary_zones"],
-            "is_seed": code == entry_region,
-            "population": _SEIR_POP[code],
-            "cumulative_cases": last["cumulative_cases"],
-            "cumulative_deaths": last["cumulative_deaths"],
-            "attack_rate": last["attack_rate"],
-            "effective_cfr": last["effective_cfr"],
-            "scenario_level": last["level"],
-            "spread_multiplier": round(C[i][entry_idx], 3) if i != entry_idx else 1.0,
-            "connectivity": round(conn_list[i], 3),   # traffic connectivity weight (real highway when 교통 add)
-            "timeline": [{"day": t["day"], "cumulative_cases": t["cumulative_cases"], "new_cases": t["new_cases"],
-                          "cumulative_deaths": t["cumulative_deaths"], "attack_rate": t["attack_rate"],
-                          "effective_cfr": t["effective_cfr"], "score": t["score"], "level": t["level"]} for t in tl],
-        })
-    region_results.sort(key=lambda r: r["cumulative_cases"], reverse=True)
+
+    def _build_region_results(snaps_v: dict, C_v: list) -> list:
+        rows = []
+        for i, code in enumerate(_SEIR_CODES):
+            tl = [snaps_v[d][i] for d in range(29)]
+            last = tl[-1]
+            rows.append({
+                "region_id": code,
+                "region_name": _REGION_COORDS.get(code, {}).get("name", code),
+                "is_primary_zone": code in entry_point["primary_zones"],
+                "is_seed": code == entry_region,
+                "population": _SEIR_POP[code],
+                "cumulative_cases": last["cumulative_cases"],
+                "cumulative_deaths": last["cumulative_deaths"],
+                "attack_rate": last["attack_rate"],
+                "effective_cfr": last["effective_cfr"],
+                "scenario_level": last["level"],
+                "spread_multiplier": round(C_v[i][entry_idx], 3) if i != entry_idx else 1.0,
+                "connectivity": round(conn_list[i], 3),   # traffic connectivity weight (real highway when 교통 add)
+                "timeline": [{"day": t["day"], "cumulative_cases": t["cumulative_cases"], "new_cases": t["new_cases"],
+                              "cumulative_deaths": t["cumulative_deaths"], "attack_rate": t["attack_rate"],
+                              "effective_cfr": t["effective_cfr"], "score": t["score"], "level": t["level"]} for t in tl],
+            })
+        rows.sort(key=lambda r: r["cumulative_cases"], reverse=True)
+        return rows
+
+    region_results = _build_region_results(snaps, C)
 
     last_snap = snaps[28]
     total_cases = sum(r["cumulative_cases"] for r in last_snap)
@@ -2022,6 +2027,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         td = sum(r["cumulative_deaths"] for r in rows28)
         return {
             "total_cases": tc, "total_deaths": td,
+            "national_cfr": round(td / tc, 4) if tc > 0 else 0.0,
             "attack_rate": round(tc / _SEIR_TOTAL_POP, 6) if _SEIR_TOTAL_POP else 0.0,
             "affected_regions": sum(1 for r in rows28 if r["cumulative_cases"] >= 1),
             "national_curve": [{
@@ -2037,21 +2043,26 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             } for r in rows28],
         }
 
+    observed_variant = None
     if observed_only:
-        snaps_iso, _di, _ci, _ei = _simulate_outbreak(
+        snaps_iso, _di, C_iso, edges_iso = _simulate_outbreak(
             entry_idx, r0_eff, cfr_eff, inc_days, inf_days, conn_list, seed_count,
             weather_fav, use_weather, mobility=traffic_intensity, weather_intensity=weather_intensity,
             od_weights=od_weights, od_observation=od_observation, access_prior=airport_access_prior,
             observed_only=observed_only, isolate_unobserved=True)
+        # Full A-variant run so the map/animation and 시도 table can show it too, not just a summary.
+        region_results_iso = _build_region_results(snaps_iso, C_iso)
+        iso_summary = _summary_from_snaps(snaps_iso)
+        observed_variant = {"regions": region_results_iso, "transmission_edges": edges_iso, "summary": iso_summary}
         comparison = {
             "active": True,
-            "observed_only": _summary_from_snaps(snaps_iso),
+            "observed_only": iso_summary,
             "blended": _summary_from_snaps(snaps),
-            "note": "관측 OD only(A)는 관측된 경로만 쓰고 관측 없는 지역을 고립시킵니다. 관측+중력(B, 기본)은 관측 경로를 우선하되 나머지를 중력모형으로 채워, 실제로 모든 지역이 이동한다는 사실을 반영합니다. 희소 표본에서는 A가 확산을 과소추정하는 경향이 있어 B가 더 현실적입니다.",
+            "note": "A(실측값만)는 측정된 OD 경로에 유입 압력을 집중시켜 관측 구간을 강하게 밝히지만, 실측이 없는 지역은 고립되어 전혀 도달하지 못합니다. B(실측값+중력장 모형, 기본)는 관측 경로를 우선하되 나머지를 중력장(인구·거리²) 이동으로 채워 모든 지역을 연결합니다. 그래서 R0가 낮을 때는 A가 관측 구간에 집중돼 더 넓어 보일 수 있으나, 미관측 지역까지 현실적으로 확산하는 B가 기본값입니다. 아래 통계·애니메이션은 A/B를 전환해 볼 수 있습니다.",
         }
     else:
         comparison = {"active": False,
-                      "note": "교통 OD 미사용 — 두 방식 모두 중력 baseline으로 동일합니다."}
+                      "note": "교통 OD 미사용 — 두 방식 모두 중력장 baseline으로 동일합니다."}
 
     origin_verb = "발생" if entry_type == "domestic" else "유입"
     attack_rate_nat = total_cases / _SEIR_TOTAL_POP if _SEIR_TOTAL_POP else 0.0
@@ -2082,6 +2093,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             "weather_intensity": round(weather_intensity, 2), "seed_count": int(round(seed_count)),
         },
         "regions": region_results,
+        "observed_variant": observed_variant,  # A(실측값만) full regions+edges+summary; None when traffic OD off
         "mobility_network": {
             "source": network_source,
             "generated_at": highway_data["generated_at"],

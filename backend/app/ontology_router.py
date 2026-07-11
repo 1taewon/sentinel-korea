@@ -38,7 +38,7 @@ SNAPSHOT_DIR = PROCESSED_DIR / "snapshots"
 # is used only while it matches the current simulator schema and mobility/weather/
 # aviation inputs; refreshed data therefore reaches the example automatically.
 _SCENARIO_EXAMPLE_FILE = PROCESSED_DIR / "scenario_example_v16.json"
-_EXAMPLE_SCHEMA_VERSION = "seir-od-blended-noseverity-v6-r10cfr10"
+_EXAMPLE_SCHEMA_VERSION = "seir-od-blended-noseverity-v7-r10cfr10-abvariants"
 _EXAMPLE_INPUT_FILES = (
     "aviation_passenger_by_country.json",
     "highway_connectivity_by_region.json",

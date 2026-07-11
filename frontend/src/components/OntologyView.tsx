@@ -104,6 +104,11 @@ interface NationalOutbreakResult {
     edges: { source: string; target: string; weight: number; traffic_volume?: number | null; mobility_source?: string }[] };
   transmission_edges?: { day: number; source: string; target: string;
     expected_exposures: number; mobility_weight: number; mobility_source?: string; source_new_cases?: number; target_new_cases?: number }[];
+  observed_variant?: {
+    regions: NationalRegionResult[];
+    transmission_edges: NationalOutbreakResult['transmission_edges'];
+    summary: { total_cases: number; total_deaths: number; national_cfr: number; attack_rate: number; affected_regions: number };
+  } | null;
   data_sources?: {
     traffic_on: boolean; network_source: string; traffic_source?: string; observed_only: boolean;
     od_pairs: number; od_blend_observed: number; conn_marginal_weights: { road: number; rail: number; air: number };
@@ -917,12 +922,12 @@ function ComparisonPanel({ comparison }: { comparison: NonNullable<NationalOutbr
   const maxRegion = Math.max(1, ...a.regions.map((r) => r.cumulative_cases), ...b.regions.map((r) => r.cumulative_cases));
   const maxCurve = Math.max(1, ...a.national_curve.map((c) => c.cumulative_cases), ...b.national_curve.map((c) => c.cumulative_cases));
   const cols = [
-    { title: '관측 OD only', sub: '관측 경로만 · 미관측 지역 고립', data: a },
-    { title: '관측 + 중력 (기본)', sub: '관측 우선 + 나머지 중력 보정', data: b },
+    { title: 'A · 실측값만', sub: '측정 OD 경로만 · 미관측 지역 고립', data: a },
+    { title: 'B · 실측값 + 중력장 모형 (기본)', sub: '측정 OD 우선 + 나머지 중력장 보정', data: b },
   ];
   return (
     <div className="whatif-section">
-      <div className="whatif-section-title">이동구조 비교 · 관측 OD only ↔ 관측+중력 (같은 파라미터)</div>
+      <div className="whatif-section-title">이동구조 비교 · A 실측값만 ↔ B 실측값+중력장 모형 (같은 파라미터)</div>
       <div className="cmp-grid">
         {cols.map((c) => (
           <div key={c.title} className="cmp-col">
@@ -1035,9 +1040,16 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
   const g = result.gemini_scenario;
   const ep = result.entry_point;
 
-  const regions = result.regions || [];
-  const s = result.summary;
+  const s = result.summary;                    // B (blended) — drives sensitivity/comparison/AI/curve title
   const sc = result.scenario;
+  // A(실측값만) vs B(실측값+중력장 모형, 기본). The map/animation, headline numbers and
+  // 시도 table follow this toggle; the AI narrative/sensitivity/comparison stay on B.
+  const [variant, setVariant] = useState<'blended' | 'observed'>('blended');
+  const ov = result.observed_variant || null;
+  const showVariant = variant === 'observed' && !!ov;
+  const regions = (showVariant ? ov!.regions : result.regions) || [];
+  const hs = showVariant ? ov!.summary : result.summary;   // headline summary for the active variant
+  const activeEdges = showVariant ? ov!.transmission_edges : result.transmission_edges;
   const fmt = (n?: number) => (n ?? 0).toLocaleString('ko-KR');
   const prioKr = (p?: string) => ({ high: '높음', medium: '보통', low: '낮음' } as Record<string, string>)[(p || '').toLowerCase()] || p || '';
   const aiActions = g && !g.error && !g.parse_error ? (g.response_actions || []) : [];
@@ -1063,26 +1075,41 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
             "데이터 출처 · 반영 방식" panel below — not duplicated here. */}
       </div>
 
+      {/* A/B variant switch — the map/animation, headline and 시도 table follow it */}
+      {ov && (
+        <div className="whatif-variant-switch" style={{ display: 'flex', gap: 6, alignItems: 'center', margin: '2px 0 10px' }}>
+          <span style={{ fontSize: 11, color: '#94a3b8' }}>이동구조:</span>
+          {([['blended', 'B · 실측값 + 중력장 모형 (기본)'], ['observed', 'A · 실측값만']] as const).map(([key, label]) => (
+            <button key={key} type="button" onClick={() => setVariant(key)}
+              style={{ fontSize: 11, padding: '3px 10px', borderRadius: 12, cursor: 'pointer',
+                border: '1px solid rgba(148,163,184,0.35)',
+                background: variant === key ? 'rgba(56,189,248,0.18)' : 'transparent',
+                color: variant === key ? '#38bdf8' : '#cbd5e1',
+                fontWeight: variant === key ? 700 : 400 }}>{label}</button>
+          ))}
+        </div>
+      )}
+
       {/* Epidemiological headline numbers (28일 후) */}
       <div className="national-summary-bar epi">
         <div className="national-summary-stat">
-          <span className="national-summary-num">{fmt(s?.total_cases)}</span>
+          <span className="national-summary-num">{fmt(hs?.total_cases)}</span>
           <span className="national-summary-label">모델 누적 감염 (28일)</span>
         </div>
         <div className="national-summary-stat">
-          <span className="national-summary-num death">{fmt(s?.total_deaths)}</span>
+          <span className="national-summary-num death">{fmt(hs?.total_deaths)}</span>
           <span className="national-summary-label">누적 사망</span>
         </div>
         <div className="national-summary-stat">
-          <span className="national-summary-num">{pct(s?.national_cfr, 1)}</span>
+          <span className="national-summary-num">{pct(hs?.national_cfr, 1)}</span>
           <span className="national-summary-label">28일 사망비</span>
         </div>
         <div className="national-summary-stat">
-          <span className="national-summary-num">{pct(s?.attack_rate, 3)}</span>
+          <span className="national-summary-num">{pct(hs?.attack_rate, 3)}</span>
           <span className="national-summary-label">전국 발병률</span>
         </div>
         <div className="national-summary-stat">
-          <span className="national-summary-num">{s?.affected_regions ?? 0}/17</span>
+          <span className="national-summary-num">{hs?.affected_regions ?? 0}/17</span>
           <span className="national-summary-label">확산 지역</span>
         </div>
       </div>
@@ -1090,12 +1117,12 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
       {/* Hero figure: animated spatial spread across the 시도 map */}
       {regions.length > 0 && (
         <div className="whatif-section">
-          <div className="whatif-section-title">일별 전파 애니메이션 · 지역 간 유입 기여(노드 크기 = 모델 감염 강도)</div>
+          <div className="whatif-section-title">일별 전파 애니메이션 · 지역 간 유입 기여(노드 크기 = 모델 감염 강도){ov ? (showVariant ? ' · A 실측값만' : ' · B 실측+중력장(기본)') : ''}</div>
           <ScenarioSpreadMap regions={regions}
             primaryZones={ep?.seed_region ? [ep.seed_region] : (ep?.primary_zones || [])}
             entryLabel={ep?.seed_region_name || ep?.label || '유입 거점'}
             mobilityNetwork={result.mobility_network}
-            transmissionEdges={result.transmission_edges} />
+            transmissionEdges={activeEdges} />
         </div>
       )}
 
