@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import threading
 from pathlib import Path
 from typing import Any
@@ -21,7 +22,16 @@ from . import legionella_lib as LL
 router = APIRouter()
 
 _STATE_FILE = Path(__file__).resolve().parent.parent / "data" / "processed" / "legionella_cases.json"
+# Synthetic surveys live beside the facility data, resolved the same way (frontend repo path
+# for local dev, backend-bundled legionella_data for the deployed backend container).
+_SYNTH_DIR = LL._PUBLIC_DATA / "synthetic_surveys"
 _lock = threading.Lock()
+
+# Pre-warmed, stateless 예시 분석 (4 synthetic de-identified surveys) so non-admin judges
+# get the investigation demo instantly and reproducibly — it never touches the shared
+# case store and uses curated demo coordinates (not the live geocoder).
+_EXAMPLE_CACHE: dict[str, Any] | None = None
+_example_lock = threading.Lock()
 
 
 def _load_cases() -> list[dict]:
@@ -134,3 +144,64 @@ async def surveillance_reset() -> dict[str, Any]:
     with _lock:
         _save_cases([])
     return {"status": "ok", "cases": 0}
+
+
+# ── 예시 분석 (stateless synthetic demo, pre-warmed) ─────────────────────────
+def _example_narrative(result: dict) -> dict:
+    """A small headline summary for the demo panel (routes + the multi-case convergence)."""
+    crs = result.get("case_results", [])
+    routes: dict[str, int] = {}
+    for cr in crs:
+        lab = (cr.get("route") or {}).get("label") or "불분명"
+        routes[lab] = routes.get(lab, 0) + 1
+    plan = (result.get("hotspots") or {}).get("plan", [])
+    convergence = next((p for p in plan if p.get("linked_case_count", 0) >= 2), None)
+    return {"total_cases": len(crs), "hotspot_count": len(plan),
+            "route_summary": routes, "convergence": convergence}
+
+
+def _compute_example() -> dict:
+    """Run the 4 synthetic surveys through the full pipeline without persisting anything."""
+    cases: list[dict] = []
+    for idx, p in enumerate(sorted(_SYNTH_DIR.glob("case_*.txt"))):
+        try:
+            text = p.read_text(encoding="utf-8")
+        except Exception:
+            continue
+        parsed = LL.parse_survey_text(text, use_llm=False)  # deterministic, offline
+        g = LL.demo_geocode(parsed.get("presumed_area") or "")  # curated → reproducible
+        parsed.update({"id": idx + 1, "source_file": p.name,
+                       "location": [round(g[0], 6), round(g[1], 6)] if g else None})
+        cases.append(parsed)
+    result = _pipeline(cases, [])          # towers empty (national default)
+    result["narrative"] = _example_narrative(result)
+    result["example"] = True
+    return result
+
+
+def _get_example() -> dict:
+    global _EXAMPLE_CACHE
+    with _example_lock:
+        if _EXAMPLE_CACHE is None:
+            _EXAMPLE_CACHE = _compute_example()
+        return _EXAMPLE_CACHE
+
+
+def _prewarm_example() -> None:
+    try:
+        _get_example()
+    except Exception:
+        pass
+
+
+@router.get("/surveillance/example")
+async def surveillance_example() -> dict[str, Any]:
+    """Pre-warmed synthetic investigation demo (no auth, no state, instant)."""
+    return await run_in_threadpool(_get_example)
+
+
+# Warm the demo in the background so the first judge request is instant. Parsing is offline
+# (use_llm=False) so this is pure local file IO. Skipped under pytest so test collection stays
+# side-effect-free; the endpoint's lazy cache still computes on first request if unwarmed.
+if not os.getenv("PYTEST_CURRENT_TEST"):
+    threading.Thread(target=_prewarm_example, daemon=True).start()

@@ -22,8 +22,14 @@ from typing import Any
 
 import httpx
 
-# 전국 사업장·병원 좌표 소스 (Phase 1-4 산출물).
-_PUBLIC_DATA = Path(__file__).resolve().parents[2] / "frontend" / "public" / "data"
+# 전국 사업장·병원 좌표 소스 (Phase 1-4 산출물). 두 위치를 순서대로 탐색한다:
+# (1) 레포 루트 frontend/public/data — 로컬 개발(프론트와 공유),
+# (2) backend/app/legionella_data — 배포용 번들(Railway 백엔드 컨테이너엔 frontend/ 가 없으므로).
+_DATA_CANDIDATES = [
+    Path(__file__).resolve().parents[2] / "frontend" / "public" / "data",
+    Path(__file__).resolve().parent / "legionella_data",
+]
+_PUBLIC_DATA = next((p for p in _DATA_CANDIDATES if (p / "facilities_bath.geojson").exists()), _DATA_CANDIDATES[0])
 _MPD_LAT = 111_000.0  # metres per degree latitude (거의 상수)
 
 EXPOSURE_BACK_MAX = 14  # 발병 전 최대일 (노출 시간창 시작)
@@ -107,12 +113,13 @@ _PARSE_SCHEMA_HINT = (
 )
 
 
-def parse_survey_text(text: str) -> dict:
+def parse_survey_text(text: str, use_llm: bool = True) -> dict:
     """Extract G-6/Z fields. Gemini if GEMINI_API_KEY set, else regex fallback.
-    Never extracts/returns 성명·주민번호·연락처."""
+    Never extracts/returns 성명·주민번호·연락처. Pass use_llm=False for a deterministic,
+    offline parse (used by the 예시 분석 demo so it is reproducible across deploys)."""
     clean = strip_pii(text or "")
     key = os.getenv("GEMINI_API_KEY", "").strip()
-    if key:
+    if use_llm and key:
         try:
             from google import genai
             client = genai.Client(api_key=key)
@@ -219,6 +226,20 @@ def geocode(address: str) -> tuple[float, float] | None:
             except Exception:
                 continue
     for kw, (lng, lat) in _BUSAN_FALLBACK.items():  # demo fallback by dong keyword
+        if kw in address:
+            return lng, lat
+    return None
+
+
+def demo_geocode(address: str) -> tuple[float, float] | None:
+    """Stable, curated coordinates for the synthetic demo only (no live geocoder).
+
+    The 예시 분석 must produce the same investigation every time regardless of whether a
+    live V-World key is set, so it maps 읍면동 keywords straight to curated 부산 anchors
+    (온천 = 동래온천 목욕장 밀집지) instead of geocoding a vague administrative name."""
+    if not address:
+        return None
+    for kw, (lng, lat) in _BUSAN_FALLBACK.items():
         if kw in address:
             return lng, lat
     return None
