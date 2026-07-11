@@ -1,8 +1,8 @@
 """legionella_lib.py — de-identified survey → source matching → investigation hotspots.
 
 Deterministic epidemiology (match + KDE hotspot) + a Gemini parse step for the
-free-text survey. NO patient/personal data leaves the box: PII patterns are stripped
-before the LLM call and dropped from any output. All distances use a latitude-aware
+free-text survey. Uploaded forms are limited to authenticated operators; common PII
+fields are redacted before the LLM parse and dropped from every stored output. All distances use a latitude-aware
 local metre projection (pyproj-free, valid nationwide); output GeoJSON stays WGS84 [lng,lat].
 
 Framing (fixed in outputs): the risk map is an environmental-contamination tendency,
@@ -45,6 +45,8 @@ _PII = [
     (re.compile(r"\d{6}\s*[-–]\s*\d{7}"), "[주민번호제거]"),        # RRN
     (re.compile(r"01[0-9]\s*[-–]?\s*\d{3,4}\s*[-–]?\s*\d{4}"), "[연락처제거]"),  # mobile
     (re.compile(r"0\d{1,2}\s*[-–]\s*\d{3,4}\s*[-–]\s*\d{4}"), "[연락처제거]"),   # landline
+    (re.compile(r"(?im)^\s*(?:성명|환자명|보호자|조사자|담당자)\s*[:：]?\s*[^\n]+$"), "[성명제거]"),
+    (re.compile(r"(?im)^\s*(?:주민등록주소|상세주소|연락처|이메일)\s*[:：]?\s*[^\n]+$"), "[개인정보제거]"),
 ]
 
 
@@ -52,6 +54,13 @@ def strip_pii(text: str) -> str:
     out = text or ""
     for pat, repl in _PII:
         out = pat.sub(repl, out)
+    # Keep an epidemiologically useful area only at 읍·면·동 granularity before it is
+    # handed to the parser/LLM; road names and building/unit details are not needed.
+    def _coarsen_area(match: re.Match) -> str:
+        label, value = match.group(1), match.group(2)
+        area = re.search(r"((?:[가-힣]+(?:특별시|광역시|도)\s*)?(?:[가-힣]+(?:시|군|구)\s*)?[가-힣0-9]+(?:읍|면|동))", value)
+        return f"{label}: {area.group(1) if area else '[지역정보제거]'}"
+    out = re.sub(r"(?im)^(\s*추정\s*감염\s*지역)\s*[:：]\s*([^\n]+)$", _coarsen_area, out)
     return out
 
 
@@ -104,7 +113,11 @@ def load_facilities() -> list[dict]:
 
 # ── survey parsing (Gemini + regex fallback) ────────────────────────────────
 _PARSE_SCHEMA_HINT = (
-    '{"onset_date":"YYYY-MM-DD|null","hospitalized":true|false,'
+    '{"onset_date":"YYYY-MM-DD|null","diagnosis_date":"YYYY-MM-DD|null",'
+    '"symptoms":["발열|기침|호흡곤란|근육통|두통|소화기증상|의식저하|기타"],'
+    '"lab_results":[{"test":"배양|PCR|요항원검사|혈청검사|기타","result":"양성|음성|미상"}],'
+    '"underlying_conditions":["면역저하|만성폐질환|당뇨병|신장질환|암|흡연|기타"],'
+    '"hospitalized":true|false,'
     '"hospital_days":정수|null,"hospitalized_consecutive_10d":true|false,'
     '"travel_overnight_2w":true|false,'
     '"risk_places":[{"type":"요양시설|의료기관|숙박업소|대형건물|수영장·온천|목욕장·온천|기타",'
@@ -128,7 +141,7 @@ def parse_survey_text(text: str, use_llm: bool = True) -> dict:
                 "당신은 레지오넬라증 역학조사서(G-6 위험요인·입원)를 구조화하는 도구다. 아래 조사서에서 "
                 "양식에 명시된 값만 추출하고 추론하지 말 것. 개인식별정보(성명·주민등록번호·주소 상세·연락처)는 "
                 "추출·반환 금지(추정감염지역은 읍면동 수준까지만). 다음 JSON 하나로만 응답:\n"
-                f"{_PARSE_SCHEMA_HINT}\n\n[조사서]\n{clean[:6000]}\n\nJSON:"
+                f"{_PARSE_SCHEMA_HINT}\n\n[조사서]\n{clean[:16000]}\n\nJSON:"
             )
             raw = (client.models.generate_content(model=model, contents=prompt).text or "").strip()
             if raw.startswith("```"):
@@ -149,7 +162,9 @@ def _regex_parse(text: str) -> dict:
                 return m.group(1).strip()
         return None
     onset = find(r"최초증상\s*발생일[:\s]*([\d]{4}[-.\s/][\d]{1,2}[-.\s/][\d]{1,2})",
-                 r"발병일[:\s]*([\d]{4}[-.\s/][\d]{1,2}[-.\s/][\d]{1,2})")
+                  r"발병일[:\s]*([\d]{4}[-.\s/][\d]{1,2}[-.\s/][\d]{1,2})")
+    diagnosis = find(r"진단일[:\s]*([\d]{4}[-.\s/][\d]{1,2}[-.\s/][\d]{1,2})",
+                     r"확진일[:\s]*([\d]{4}[-.\s/][\d]{1,2}[-.\s/][\d]{1,2})")
     # area may be inline ("추정 감염지역: 부산…") or on the line after a section header ("[7. 추정 감염지역]\n부산…").
     area = find(r"추정\s*감염\s*지역[ \t]*[:：][ \t]*([^\n\]]+)",
                 r"추정\s*감염\s*지역[^\n]*\][ \t]*\n[ \t]*([^\n]+)",
@@ -170,7 +185,19 @@ def _regex_parse(text: str) -> dict:
         or bool(re.search(r"\d\s*박", text)) and "여행" in text
         or "숙박업소" in text
     )
-    return {"onset_date": _norm_date(onset), "hospitalized": hospitalized,
+    symptom_terms = ("발열", "기침", "호흡곤란", "근육통", "두통", "구토", "설사", "의식 저하")
+    symptoms = [term for term in symptom_terms if term.replace(" ", "") in text.replace(" ", "")]
+    condition_terms = ("면역저하", "만성폐질환", "당뇨", "신장질환", "암", "흡연")
+    conditions = [term for term in condition_terms if term in text]
+    tests = []
+    for term, label in (("PCR", "PCR"), ("요항원", "요항원검사"), ("소변항원", "요항원검사"),
+                        ("배양", "배양"), ("혈청", "혈청검사")):
+        if term in text and label not in [t["test"] for t in tests]:
+            result = "양성" if re.search(rf"{re.escape(term)}[^\n]{{0,40}}양성", text) else "미상"
+            tests.append({"test": label, "result": result})
+    return {"onset_date": _norm_date(onset), "diagnosis_date": _norm_date(diagnosis),
+            "symptoms": symptoms, "lab_results": tests, "underlying_conditions": conditions,
+            "hospitalized": hospitalized,
             "hospital_days": int(hosp_days) if hosp_days else None,
             "hospitalized_consecutive_10d": bool(hosp_days and int(hosp_days) >= 10),
             "travel_overnight_2w": travel,
@@ -198,8 +225,22 @@ def _sanitize_case(d: dict) -> dict:
             places.append({"type": str(p.get("type") or "기타"),
                            "used_date": _norm_date(p.get("used_date")) if isinstance(p.get("used_date"), str) else None,
                            "exposures": [str(x) for x in (p.get("exposures") or [])][:4]})
+    raw_symptoms = d.get("symptoms") if isinstance(d.get("symptoms"), list) else []
+    raw_conditions = d.get("underlying_conditions") if isinstance(d.get("underlying_conditions"), list) else []
+    raw_labs = d.get("lab_results") if isinstance(d.get("lab_results"), list) else []
+    symptoms = [strip_pii(str(x))[:40] for x in raw_symptoms if str(x).strip()][:12]
+    conditions = [strip_pii(str(x))[:40] for x in raw_conditions if str(x).strip()][:12]
+    lab_results = []
+    for item in raw_labs[:8]:
+        if isinstance(item, dict):
+            lab_results.append({"test": strip_pii(str(item.get("test") or "기타"))[:40],
+                                "result": strip_pii(str(item.get("result") or "미상"))[:20]})
     return {
         "onset_date": _norm_date(d.get("onset_date")) if isinstance(d.get("onset_date"), str) else None,
+        "diagnosis_date": _norm_date(d.get("diagnosis_date")) if isinstance(d.get("diagnosis_date"), str) else None,
+        "symptoms": symptoms,
+        "lab_results": lab_results,
+        "underlying_conditions": conditions,
         "hospitalized": bool(d.get("hospitalized")),
         "hospital_days": int(d["hospital_days"]) if str(d.get("hospital_days") or "").isdigit() else None,
         "hospitalized_consecutive_10d": bool(d.get("hospitalized_consecutive_10d")),
@@ -310,7 +351,7 @@ def _infer_route(case: dict, exposed: list[dict]) -> dict:
     days = case.get("hospital_days") or 0
     med_place = any(p.get("type") in ("의료기관", "요양시설") for p in case.get("risk_places", []))
     if med_place and (case.get("hospitalized_consecutive_10d") or days >= 10):
-        return {"label": "의료기관내감염(확정)", "reason": "발병 전 10일 연속 의료기관 입원력 보고."}
+        return {"label": "의료기관 관련 감염 가능성", "reason": "발병 전 10일 연속 의료기관 입원력 보고."}
     if med_place and case.get("hospitalized") and 1 <= days <= 9:
         return {"label": "의료기관내감염(가능성 높음)", "reason": f"노출 시간창 내 의료기관 이용력 + {days}일 입원."}
     if case.get("travel_overnight_2w"):
@@ -438,47 +479,66 @@ def _report_template(result: dict) -> str:
     conv = next((p for p in plan if p.get("linked_case_count", 0) >= 2), None)
     L: list[str] = []
     L.append("레지오넬라증 역학조사 결과 보고서 (초안)")
-    L.append("※ 자동 분석 요약 초안이며 확정 결론이 아님. 최종 판단은 역학조사관.")
+    L.append("※ 초안 보고서이며 최종 판단은 역학조사관이 합니다.")
     L.append("")
     L.append("1. 사건 개요")
     L.append(f" - 조사 대상: 레지오넬라증 {len(crs)}건 (비식별 조사서)")
     L.append(f" - 발병 시기: {span}")
     L.append(f" - 발생 지역: {', '.join(areas)}")
     L.append("")
-    L.append("2. 사례 요약")
+    L.append("2. 추정 감염경로 (AI 분석)")
     for cr in crs:
         c = cases.get(cr.get("id"), {})
         hosp = (f"입원 {c.get('hospital_days')}일" if c.get("hospital_days")
                 else ("입원" if c.get("hospitalized") else "미입원"))
-        L.append(f" - 케이스 {cr.get('id')}: 발병 {cr.get('onset_date', '?')}, "
-                 f"{(cr.get('route') or {}).get('label', '-')} · {c.get('presumed_area', '미상')} · {hosp}")
+        route = cr.get("route") or {}
+        exposures = ", ".join(
+            f"{p.get('type')} ({'/'.join(p.get('exposures') or [])})" for p in c.get("risk_places", [])
+        ) or "기록된 노출력 없음"
+        L.append(f" - 케이스 {cr.get('id')}: {route.get('label', '불분명')} — "
+                 f"{route.get('reason', '조사서 근거 부족')} (노출력: {exposures}; {hosp})")
     L.append("")
-    L.append("3. 역학적 연관성")
+    L.append("3. 특이사항")
+    for cr in crs:
+        c = cases.get(cr.get("id"), {})
+        notes = []
+        if c.get("symptoms"):
+            notes.append(f"주요증상 {', '.join(c['symptoms'])}")
+        if c.get("lab_results"):
+            notes.append("검사 " + ", ".join(f"{x.get('test')} {x.get('result')}" for x in c["lab_results"]))
+        if c.get("underlying_conditions"):
+            notes.append(f"기저질환/위험요인 {', '.join(c['underlying_conditions'])}")
+        if c.get("travel_overnight_2w"):
+            notes.append("발병 전 2주 이내 숙박·여행력")
+        if c.get("hospitalized_consecutive_10d"):
+            notes.append("발병 전 10일 이상 연속 의료기관 입원력")
+        L.append(f" - 케이스 {cr.get('id')}: {'; '.join(notes) if notes else '특이사항 추출 없음'}.")
+    L.append("")
+    L.append("4. 종합의견")
     if conv and conv_ids:
-        L.append(f" - 케이스 {'·'.join(map(str, conv_ids))}가 공통 노출후보로 수렴: "
-                 f"{', '.join(conv.get('facilities', [])[:3])} 등 (반경 {conv.get('radius_m')}m, "
-                 f"고위험시설 {conv.get('high_risk_facility_count')}곳) — 동일 목욕장 밀집지.")
+        L.append(f" - 케이스 {'·'.join(map(str, conv_ids))}의 노출후보가 반경 {conv.get('radius_m')}m 내 "
+                 f"{', '.join(conv.get('facilities', [])[:3])} 등으로 수렴합니다. 해당 지점은 환경조사 "
+                 f"우선 대상으로 검토하되, 감염원 확정은 임상·환경 검체의 일치 확인 후 판단합니다.")
     else:
-        L.append(" - 다수 사례 간 공통 노출원 수렴은 확인되지 않음(개별 노출 가능성).")
+        L.append(" - 다수 사례 간 공통 노출후보 수렴은 확인되지 않아, 개별 노출력을 중심으로 추가 조사가 필요합니다.")
     L.append("")
-    L.append("4. 환경조사 우선순위 (제안)")
+    L.append("5. 환경조사 우선순위 (제안)")
     for p in plan:
         L.append(f" - {p.get('rank')}순위: 반경 {p.get('radius_m')}m · 고위험시설 "
                  f"{p.get('high_risk_facility_count')}곳 · 연관 케이스 {p.get('linked_case_count')}건 — "
                  f"{', '.join(p.get('facilities', [])[:2])}")
     L.append("")
-    L.append("5. 권고 사항")
+    L.append("6. 권고 사항")
     L.append(" - 우선순위 지점의 냉각탑·목욕장·급수설비 채수 및 배양 검사 실시.")
     L.append(" - 환자 임상검체와 환경검체의 레지오넬라 혈청형·유전형 일치 여부 확인.")
     if any("의료기관" in (cr.get("route") or {}).get("label", "") for cr in crs):
-        L.append(" - 의료기관내감염(확정) 사례 관련 기관의 급수·냉각·가습설비 즉시 점검.")
+        L.append(" - 의료기관 관련 감염 가능성이 있는 사례의 급수·냉각·가습설비 점검.")
     if any("여행" in (cr.get("route") or {}).get("label", "") for cr in crs):
         L.append(" - 여행관련 사례 숙박시설 급수·냉방설비 조사 및 관할 보건소 통보.")
     L.append("")
-    L.append("6. 한계 및 유의")
+    L.append("7. 한계 및 유의")
     L.append(" - Hotspot은 노출후보의 시공간 밀집이며 확정 감염원이 아님(채수·배양 일치로 확정).")
     L.append(" - 위험 히트맵은 PHWR 가중 환경 오염 경향이며 환자 발생 예측이 아님.")
-    L.append(" - 본 자료는 합성·비식별 데모이며 실제 환자정보를 포함하지 않음.")
     return "\n".join(L)
 
 
@@ -495,10 +555,10 @@ def build_report_draft(result: dict, use_llm: bool = True) -> str:
         model = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
         prompt = (
             "당신은 감염병 역학조사관을 보조하는 도구다. 아래 '분석 사실'만 근거로 레지오넬라증 역학조사 "
-            "결과 보고서 초안을 한국어로 작성하라. 사실을 새로 지어내지 말고, 추정·초안임을 명시하며, "
-            "'확정 감염원이 아니고 채수·배양 병원체 일치로 확정하며 최종 판단은 역학조사관'이라는 점과 "
-            "'합성·비식별 데모'라는 점을 반드시 포함하라. 6개 절 구성(1 사건 개요, 2 사례 요약, "
-            "3 역학적 연관성, 4 환경조사 우선순위, 5 권고 사항, 6 한계 및 유의)으로 간결한 개조식.\n\n"
+            "결과 보고서 초안을 한국어로 작성하라. 사실을 새로 지어내지 말고, 초안 보고서이며 최종 판단은 "
+            "역학조사관이 한다는 점을 명시하라. 반드시 '추정 감염경로 (AI 분석)', '특이사항', '종합의견'을 "
+            "독립된 절로 작성하고, 조사서에 없는 감염원·노출 사실을 단정하지 말라. 7개 절 구성(1 사건 개요, "
+            "2 추정 감염경로, 3 특이사항, 4 종합의견, 5 환경조사 우선순위, 6 권고 사항, 7 한계 및 유의)으로 간결한 개조식.\n\n"
             f"[분석 사실]\n{template}\n\n[보고서 초안]:"
         )
         txt = (client.models.generate_content(model=model, contents=prompt).text or "").strip()

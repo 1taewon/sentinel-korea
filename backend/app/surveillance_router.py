@@ -14,10 +14,11 @@ import threading
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from starlette.concurrency import run_in_threadpool
 
 from . import legionella_lib as LL
+from .auth import require_admin
 
 router = APIRouter()
 
@@ -98,7 +99,8 @@ def _parse_towers(raw: str | None) -> list[tuple[float, float]]:
 
 @router.post("/surveillance/parse-survey")
 async def parse_survey(files: list[UploadFile] = File(...),
-                       cooling_towers: str | None = Form(None)) -> dict[str, Any]:
+                       cooling_towers: str | None = Form(None),
+                       _: dict = Depends(require_admin)) -> dict[str, Any]:
     """Parse uploaded de-identified surveys, append cases, and re-run match + hotspot."""
     towers = _parse_towers(cooling_towers)
 
@@ -106,10 +108,12 @@ async def parse_survey(files: list[UploadFile] = File(...),
         with _lock:
             cases = _load_cases()
             base = len(cases)
+            unreadable_files: list[str] = []
             for idx, up in enumerate(_read):
                 fname, content = up
                 text = _extract_text(fname, content)
                 if not text.strip():
+                    unreadable_files.append(fname)
                     continue
                 parsed = LL.parse_survey_text(text)
                 loc = None
@@ -122,6 +126,7 @@ async def parse_survey(files: list[UploadFile] = File(...),
             result = _pipeline(cases, towers)
             result["narrative"] = _example_narrative(result)
             result["report_draft"] = LL.build_report_draft(result, use_llm=True)
+            result["unreadable_files"] = unreadable_files
             return result
 
     # Read file bytes in the async context, then run the CPU/IO pipeline off-thread.
@@ -130,20 +135,22 @@ async def parse_survey(files: list[UploadFile] = File(...),
 
 
 @router.get("/surveillance/state")
-async def surveillance_state(cooling_towers: str | None = None) -> dict[str, Any]:
+async def surveillance_state(cooling_towers: str | None = None,
+                             _: dict = Depends(require_admin)) -> dict[str, Any]:
     towers = _parse_towers(cooling_towers)
     return await run_in_threadpool(lambda: _pipeline(_load_cases(), towers))
 
 
 @router.post("/surveillance/recompute")
-async def surveillance_recompute(cooling_towers: str | None = Form(None)) -> dict[str, Any]:
+async def surveillance_recompute(cooling_towers: str | None = Form(None),
+                                 _: dict = Depends(require_admin)) -> dict[str, Any]:
     """Re-run match + hotspot against updated cooling towers without new uploads."""
     towers = _parse_towers(cooling_towers)
     return await run_in_threadpool(lambda: _pipeline(_load_cases(), towers))
 
 
 @router.post("/surveillance/reset")
-async def surveillance_reset() -> dict[str, Any]:
+async def surveillance_reset(_: dict = Depends(require_admin)) -> dict[str, Any]:
     with _lock:
         _save_cases([])
     return {"status": "ok", "cases": 0}

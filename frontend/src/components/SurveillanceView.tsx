@@ -53,8 +53,7 @@ export default function SurveillanceView() {
             <div className="surveillance-detail-title">방법론 상세</div>
             <p>
               비식별 역학조사서와 위성영상 분석을 결합해 <strong>AI 기반</strong>으로 역학조사를 지원하고
-              조사 우선순위·추정 감염경로 초안을 생성합니다. 별도 ML/GPU 없이 공개데이터와 결정론적
-              통계로 동작합니다.
+              조사 우선순위·추정 감염경로 초안을 생성합니다.
             </p>
 
             <div className="surveillance-detail-h">위험 히트맵 — 환경 오염 경향</div>
@@ -64,12 +63,11 @@ export default function SurveillanceView() {
             </p>
             <code className="surveillance-formula">risk(x) = Σᵢ wᵢ · exp( −d(x,pᵢ)² / 2σ² )</code>
             <p className="surveillance-detail-note">
-              wᵢ = PHWR 가중치, pᵢ = 시설 위치, σ = 대역폭. <strong>환경 오염 경향이며 환자 발생 예측이
-              아닙니다</strong>(2021 PHWR: 지역 검출률과 발생률 상관 없음 — 제주 발생률 최고인데 검출률
-              평균 이하).
+              wᵢ = 가중치, pᵢ = 시설 위치, σ = 대역폭. <strong>환경 오염 경향이며 환자 발생 예측이
+              아닙니다</strong>(2021 PHWR).
             </p>
             <p className="surveillance-detail-note">
-              PHWR 가중치(시설유형): 온천 0.394 · 찜질방 0.375 · 상급종합 0.35 · 대형목욕탕 0.328 ·
+              가중치(시설유형): 온천 0.394 · 찜질방 0.375 · 상급종합 0.35 · 대형목욕탕 0.328 ·
               종합병원 0.263 · 요양병원 0.20 · 냉각탑 0.5.
             </p>
 
@@ -79,11 +77,11 @@ export default function SurveillanceView() {
               반경 500m에서 공통 노출후보를 찾아 <strong>케이스 수렴</strong>을 우선한 KDE 피크를 조사
               우선순위로 제시합니다.
             </p>
-            <code className="surveillance-formula">공통점수 = 케이스수 × PHWR가중 × 근접도</code>
+            <code className="surveillance-formula">공통점수 = 케이스수 × 가중 × 근접도</code>
             <p className="surveillance-detail-note">
               Hotspot은 <strong>AI 기반 역학조사 분석으로 도출한 환경조사 우선 대상</strong>이며, 확정
               감염원이 아닙니다 — 채수·배양에서 환자와 동일 병원체가 일치할 때 확정하고, 최종 판단은
-              역학조사관이 합니다. LLM은 파싱·경로 초안만 생성합니다.
+              역학조사관이 합니다.
             </p>
 
             <div className="surveillance-detail-h">참고 · References</div>
@@ -99,7 +97,6 @@ export default function SurveillanceView() {
               </li>
               <li>공개데이터: 목욕장업(행정안전부)·병원정보서비스(건강보험심사평가원)·V-World 위성영상(국토교통부).</li>
             </ul>
-            <div className="surveillance-detail-demo">조사 모듈은 합성·비식별 데모입니다(실제 환자정보 미사용).</div>
           </div>
         )}
       </div>
