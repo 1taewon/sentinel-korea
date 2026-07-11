@@ -80,7 +80,7 @@ const TYPE_META: Record<ReportType, { label: string; color: string; cadence: str
     label: 'FINAL',
     color: '#38bdf8',
     cadence: 'Weekly',
-    role: 'Korea-first respiratory intelligence synthesis.',
+    role: 'Infectious disease intelligence synthesis.',
   },
 };
 

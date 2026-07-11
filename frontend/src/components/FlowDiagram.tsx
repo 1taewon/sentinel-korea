@@ -396,8 +396,8 @@ export default function FlowDiagram({ onClose, onDataRefreshed, snapshotDate, em
             <h3 className="flow-title">{lang === 'ko' ? '파이프라인 컨트롤' : 'Pipeline Control'}</h3>
             <span className="flow-subtitle">
               {lang === 'ko'
-                ? '한국형 호흡기 감염 인텔리전스: evidence, fusion, explanation, report를 한 화면에서 제어합니다.'
-                : 'Korea-first respiratory intelligence control room: evidence, fusion, explanation, and report.'}
+                ? '감염병 인텔리전스: evidence, fusion, explanation, report를 한 화면에서 제어합니다.'
+                : 'Infectious disease intelligence control room: evidence, fusion, explanation, and report.'}
             </span>
           </div>
           <div className="flow-header-actions">
