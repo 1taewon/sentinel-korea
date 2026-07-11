@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { KoreaAlert } from '../types';
 import ScoringPanel from './ScoringPanel';
 import RegionDetailInline from './RegionDetailInline';
+import AberrationPanel from './AberrationPanel';
 
 interface StatisticsViewProps {
   koreaAlerts: KoreaAlert[];
@@ -106,6 +107,11 @@ export default function StatisticsView({ koreaAlerts, onScoringApply, onRegionCl
           />
         </div>
       )}
+
+      {/* 전수감시 감염병 통계적 이상징후 탐지 (Farrington Flexible) — 질환별 국가 단위 */}
+      <div className="stats-detail-section">
+        <AberrationPanel />
+      </div>
     </div>
   );
 }
