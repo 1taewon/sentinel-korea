@@ -14,6 +14,13 @@ const ZOOM = 7;
 // national view; digitise per area, or the investigation flies to the surveyed region.
 const SAMPLE_TOWERS: [number, number][] = [];
 const TOWER_WEIGHT = 0.5;
+// Example de-identified surveys (KDCA 역학조사서 서식 기반) — viewable so judges see the parse input.
+const EXAMPLE_SURVEYS = [
+  { file: 'case_01.txt', label: '예시 조사서 1', hint: '동래 온천 · 입원' },
+  { file: 'case_02.txt', label: '예시 조사서 2', hint: '동래 온천 · 미입원' },
+  { file: 'case_03.txt', label: '예시 조사서 3', hint: '동래 · 요양병원' },
+  { file: 'case_04.txt', label: '예시 조사서 4', hint: '해운대 · 숙박' },
+];
 
 function bathWeight(s: string): number {
   s = s || '';
@@ -77,10 +84,11 @@ export default function LegionellaView() {
   const [addMode, setAddMode] = useState(false);  // cooling-tower digitising off by default
   const [plan, setPlan] = useState<Plan[]>([]);
   const [uploadMsg, setUploadMsg] = useState('');
-  const [uploading, setUploading] = useState(false);
-  const [mode, setMode] = useState<'map' | 'example'>('map');
+  const [mode, setMode] = useState<'map' | 'analysis'>('map');
   const [exLoading, setExLoading] = useState(false);
   const [exResult, setExResult] = useState<any>(null);
+  const [stagedFiles, setStagedFiles] = useState<File[]>([]);
+  const [preview, setPreview] = useState<{ title: string; text: string } | null>(null);
   const [vis, setVis] = useState({ satellite: true, hybrid: true, towers: true, baths: true, hospitals: true, heat: true, cases: true, hotspot: true });
   const visRef = useRef(vis); visRef.current = vis;
   const addModeRef = useRef(addMode); addModeRef.current = addMode;
@@ -202,36 +210,43 @@ export default function LegionellaView() {
     } catch { /* */ }
   }
 
-  async function uploadFiles(fileList: File[]) {
-    if (!fileList.length) return;
-    setUploading(true); setUploadMsg('업로드·분석 중… (Gemini 파싱)');
-    const fd = new FormData();
-    fileList.forEach((f) => fd.append('files', f));
-    fd.append('cooling_towers', JSON.stringify(towers.current));
+  // Preview an example survey's raw text (so judges see exactly what gets parsed).
+  async function previewExample(s: { file: string; label: string }) {
     try {
-      const d = await (await fetch(`${API_BASE}/surveillance/parse-survey`, { method: 'POST', body: fd })).json();
-      applyInvestigation(d);
-      setUploadMsg(`분석 완료 — 케이스 ${(d.cases || []).length}건, 조사 우선순위 ${(d.hotspots?.features || []).length}개`);
-    } catch { setUploadMsg('업로드·분석 실패'); }
-    setUploading(false);
+      const t = await (await fetch(`/data/synthetic_surveys/${s.file}`)).text();
+      setPreview({ title: s.label, text: t });
+    } catch { setPreview({ title: s.label, text: '예시 조사서를 불러오지 못했습니다.' }); }
   }
-  // 예시 분석: pre-warmed, stateless synthetic demo (non-admin judges see it instantly).
-  async function runExample() {
-    setMode('example');
-    if (exResult) { applyInvestigation(exResult, true); return; }  // cached (also re-shows layers)
+
+  // 분석: run the pipeline — staged real uploads if any, else the pre-warmed 4-survey demo —
+  // then open the 분석 결과 tab (map overlay + per-case routes + 역학조사서 초안).
+  async function runAnalysis() {
+    setMode('analysis');
     if (exLoading) return;
-    setExLoading(true);
+    if (exResult && !stagedFiles.length) { applyInvestigation(exResult, true); return; }  // re-show cached
+    setExLoading(true); setExResult(null); setUploadMsg('');
     try {
-      const d = await (await fetch(`${API_BASE}/surveillance/example`)).json();
+      let d;
+      if (stagedFiles.length) {
+        const fd = new FormData();
+        stagedFiles.forEach((f) => fd.append('files', f));
+        fd.append('cooling_towers', JSON.stringify(towers.current));
+        d = await (await fetch(`${API_BASE}/surveillance/parse-survey`, { method: 'POST', body: fd })).json();
+        setStagedFiles([]);  // consumed — avoid re-uploading (which would append duplicates)
+      } else {
+        d = await (await fetch(`${API_BASE}/surveillance/example`)).json();
+      }
       setExResult(d);
       applyInvestigation(d, true);
-    } catch { /* leave loader off; note stays visible */ }
+    } catch { /* loader clears below; panel shows retry */ }
     setExLoading(false);
   }
+
   async function resetCases() {
     try { await fetch(`${API_BASE}/surveillance/reset`, { method: 'POST' }); } catch { /* */ }
     caseLayer.current.clearLayers(); hotspotLayer.current.clearLayers();
-    setPlan([]); setCounts((c) => ({ ...c, cases: 0 })); setUploadMsg('초기화됨');
+    setPlan([]); setExResult(null); setStagedFiles([]); setCounts((c) => ({ ...c, cases: 0 }));
+    setUploadMsg('초기화됨'); setMode('map');
   }
 
   const toggle = (k: keyof typeof vis) => {
@@ -252,7 +267,10 @@ export default function LegionellaView() {
     a.download = 'cooling_towers.geojson'; a.click(); URL.revokeObjectURL(a.href);
   };
 
-  const onDrop = (e: React.DragEvent) => { e.preventDefault(); uploadFiles(Array.from(e.dataTransfer.files)); };
+  const onDrop = (e: React.DragEvent) => { e.preventDefault(); setStagedFiles(Array.from(e.dataTransfer.files)); };
+  const routeReason = (cr: any) => (cr?.route?.reason || '');
+  const uniqPlaces = (c: any) => Array.from(new Set(((c?.risk_places) || []).map((p: any) => p.type)));
+  const caseParsed = (id: number) => ((exResult?.cases) || []).find((c: any) => c.id === id) || {};
 
   return (
     <div className="legionella-view">
@@ -285,7 +303,9 @@ export default function LegionellaView() {
 
         <div className="legionella-modes">
           <button type="button" className={mode === 'map' ? 'is-active' : ''} onClick={() => setMode('map')}>위험지도</button>
-          <button type="button" className={mode === 'example' ? 'is-active' : ''} onClick={runExample}>예시 분석</button>
+          {(exResult || exLoading) && (
+            <button type="button" className={mode === 'analysis' ? 'is-active' : ''} onClick={() => setMode('analysis')}>분석 결과</button>
+          )}
         </div>
 
         {mode === 'map' && (<>
@@ -301,23 +321,36 @@ export default function LegionellaView() {
           </div>
 
           <div className="legionella-group" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
-            <div className="legionella-group-title">역학조사서 업로드 (비식별)</div>
+            <div className="legionella-group-title">역학조사서 (비식별)</div>
+            <div className="legionella-hint">예시 역학조사서 (질병청 서식 기반) · 클릭 시 원문</div>
+            <div className="leg-sample-row">
+              {EXAMPLE_SURVEYS.map((s) => (
+                <button type="button" key={s.file} className="leg-sample-chip" title={s.hint}
+                  onClick={() => previewExample(s)}>{s.label}<em>{s.hint}</em></button>
+              ))}
+            </div>
             <div className="legionella-dropzone">
-              <input type="file" multiple accept=".txt,.md,.csv,.docx,.pdf" disabled={uploading}
-                onChange={(e) => uploadFiles(Array.from(e.target.files || []))} />
-              <span>파일 선택 · 드래그앤드롭 (.txt/.csv/.docx/.pdf)</span>
+              <input type="file" multiple accept=".txt,.md,.csv,.docx,.pdf" disabled={exLoading}
+                onChange={(e) => setStagedFiles(Array.from(e.target.files || []))} />
+              <span>또는 직접 업로드 · 드래그앤드롭 (.txt/.csv/.docx/.pdf)</span>
             </div>
+            {stagedFiles.length > 0 && (
+              <div className="legionella-upmsg">업로드 대기 {stagedFiles.length}건: {stagedFiles.map((f) => f.name).join(', ')}</div>
+            )}
             <div className="legionella-row2">
-              <button type="button" className="legionella-btn ghost" onClick={resetCases} disabled={uploading}>케이스 초기화</button>
+              <button type="button" className="legionella-btn ghost" onClick={resetCases} disabled={exLoading}>케이스 초기화</button>
             </div>
+            <button type="button" className="legionella-btn legionella-analyze" onClick={runAnalysis} disabled={exLoading}>
+              {exLoading ? '분석 중…' : stagedFiles.length ? `분석 (업로드 ${stagedFiles.length}건)` : '분석 (예시 조사서 4건)'}
+            </button>
             {uploadMsg && <div className="legionella-upmsg">{uploadMsg}</div>}
-            <div className="legionella-hint warn">개인정보(성명·주민번호·주소·연락처)가 제거된 비식별 조사서만 업로드. 합성·비식별 데모.</div>
+            <div className="legionella-hint warn">개인정보(성명·주민번호·주소·연락처)가 제거된 비식별 조사서만. 합성·비식별 데모.</div>
           </div>
         </>)}
 
-        {mode === 'example' && (
+        {mode === 'analysis' && (
           <div className="legionella-group">
-            <div className="legionella-group-title">예시 분석 · 합성 조사서 4건</div>
+            <div className="legionella-group-title">분석 결과</div>
             {exLoading && <ExampleAnalyzing />}
             {!exLoading && exResult && (<>
               {exResult.narrative?.convergence && (
@@ -328,47 +361,61 @@ export default function LegionellaView() {
                   </div>
                 </div>
               )}
-              <div className="leg-ex-caption">추정 감염경로(초안) · 규칙 기반</div>
-              <div className="leg-ex-routes">
-                {Object.entries(exResult.narrative?.route_summary || {}).map(([label, cnt]) => (
-                  <span className="leg-ex-route-chip" key={label}><i style={{ background: routeColor(label) }} />{label} {cnt as number}</span>
-                ))}
-              </div>
+
+              <div className="leg-ex-caption">케이스별 파싱 · 추정 감염경로(초안)</div>
               <div className="leg-ex-cases">
-                {(exResult.case_results || []).map((cr: any) => (
-                  <button type="button" key={cr.id} className="leg-ex-case"
-                    onClick={() => cr.location && mapRef.current?.flyTo([cr.location[1], cr.location[0]], 14)}>
-                    <span className="leg-ex-case-top">
-                      <span className="leg-ex-case-id">케이스 {cr.id}</span>
-                      <span className="leg-ex-route" style={{ color: routeColor(cr.route?.label || '') }}>{cr.route?.label || '-'}</span>
+                {(exResult.case_results || []).map((cr: any) => {
+                  const c = caseParsed(cr.id);
+                  const hosp = c.hospital_days ? `입원 ${c.hospital_days}일` : (c.hospitalized ? '입원' : '미입원');
+                  return (
+                    <button type="button" key={cr.id} className="leg-ex-case"
+                      onClick={() => cr.location && mapRef.current?.flyTo([cr.location[1], cr.location[0]], 14)}>
+                      <span className="leg-ex-case-top">
+                        <span className="leg-ex-case-id">케이스 {cr.id}</span>
+                        <span className="leg-ex-route" style={{ color: routeColor(cr.route?.label || '') }}>{cr.route?.label || '-'}</span>
+                      </span>
+                      <span className="leg-ex-case-meta">발병 {cr.onset_date || '?'} · {c.presumed_area || '지역 미상'}</span>
+                      <span className="leg-ex-case-parse">
+                        {hosp} · 위험장소 {uniqPlaces(c).join('/') || '없음'} · 여행 {c.travel_overnight_2w ? '있음' : '없음'} · 노출후보 {(cr.exposure_candidates || []).length}개
+                      </span>
+                      {routeReason(cr) && <span className="leg-ex-case-reason">근거: {routeReason(cr)}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {plan.length > 0 && (<>
+                <div className="leg-ex-caption">조사 우선순위 (환경조사 우선 대상)</div>
+                {plan.map((p) => (
+                  <button key={p.rank} type="button" className="legionella-plan" onClick={() => flyTo(p)}>
+                    <span className="legionella-plan-rank">{p.rank}</span>
+                    <span className="legionella-plan-body">
+                      반경 {p.radius_m}m · 고위험 {p.high_risk_facility_count} · 관련 케이스 {p.linked_case_count}
+                      {p.facilities.length ? <em> · {p.facilities.slice(0, 2).join(', ')}</em> : null}
                     </span>
-                    <span className="leg-ex-case-meta">발병 {cr.onset_date || '?'} · 노출후보 {(cr.exposure_candidates || []).length}개</span>
                   </button>
                 ))}
-              </div>
+              </>)}
+
+              {exResult.report_draft && (
+                <div className="leg-report">
+                  <div className="leg-report-head">
+                    <span>역학조사서 초안 (AI)</span>
+                    <button type="button" className="leg-report-copy"
+                      onClick={() => navigator.clipboard?.writeText(exResult.report_draft)}>복사</button>
+                  </div>
+                  <pre className="leg-report-body">{exResult.report_draft}</pre>
+                </div>
+              )}
+
               <button type="button" className="legionella-btn ghost" onClick={() => applyInvestigation(exResult, true)}>지도에 다시 표시</button>
             </>)}
             {!exLoading && !exResult && (
-              <div className="legionella-hint">예시 분석을 불러오지 못했습니다.
-                <button type="button" className="legionella-btn" style={{ marginTop: 6 }} onClick={() => { setExResult(null); runExample(); }}>다시 실행</button>
+              <div className="legionella-hint">분석 결과를 불러오지 못했습니다.
+                <button type="button" className="legionella-btn" style={{ marginTop: 6 }} onClick={runAnalysis}>다시 분석</button>
               </div>
             )}
-            <div className="legionella-hint warn">개인정보가 제거된 합성 조사서 기반의 재현 가능한 데모입니다(실제 환자정보 미사용).</div>
-          </div>
-        )}
-
-        {plan.length > 0 && (
-          <div className="legionella-group">
-            <div className="legionella-group-title">조사 우선순위</div>
-            {plan.map((p) => (
-              <button key={p.rank} type="button" className="legionella-plan" onClick={() => flyTo(p)}>
-                <span className="legionella-plan-rank">{p.rank}</span>
-                <span className="legionella-plan-body">
-                  반경 {p.radius_m}m · 냉각탑 {p.cooling_tower_count} · 고위험 {p.high_risk_facility_count} · 케이스 {p.linked_case_count}
-                  {p.facilities.length ? <em> · {p.facilities.slice(0, 2).join(', ')}</em> : null}
-                </span>
-              </button>
-            ))}
+            <div className="legionella-hint warn">합성·비식별 데모입니다(실제 환자정보 미사용). 초안은 조사관 검토용입니다.</div>
           </div>
         )}
 
@@ -384,6 +431,18 @@ export default function LegionellaView() {
 
         {status && <div className="legionella-status">{status}</div>}
       </div>
+
+      {preview && (
+        <div className="leg-modal" onClick={() => setPreview(null)}>
+          <div className="leg-modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="leg-modal-head">
+              <span>{preview.title} · 원문 (비식별)</span>
+              <button type="button" onClick={() => setPreview(null)}>닫기</button>
+            </div>
+            <pre className="leg-modal-body">{preview.text}</pre>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

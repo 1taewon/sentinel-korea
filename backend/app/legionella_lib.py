@@ -150,7 +150,10 @@ def _regex_parse(text: str) -> dict:
         return None
     onset = find(r"최초증상\s*발생일[:\s]*([\d]{4}[-.\s/][\d]{1,2}[-.\s/][\d]{1,2})",
                  r"발병일[:\s]*([\d]{4}[-.\s/][\d]{1,2}[-.\s/][\d]{1,2})")
-    area = find(r"추정감염지역[:\s]*(.+)", r"추정\s*감염\s*지역[:\s]*(.+)")
+    # area may be inline ("추정 감염지역: 부산…") or on the line after a section header ("[7. 추정 감염지역]\n부산…").
+    area = find(r"추정\s*감염\s*지역[ \t]*[:：][ \t]*([^\n\]]+)",
+                r"추정\s*감염\s*지역[^\n]*\][ \t]*\n[ \t]*([^\n]+)",
+                r"추정감염지역[:\s]*(.+)")
     hosp_days = find(r"입원\s*기간[:\s]*([\d]+)\s*일", r"입원[:\s]*([\d]+)\s*일")
     hospitalized = bool(hosp_days) or ("입원" in text and "입원 안" not in text and "미입원" not in text)
     places = []
@@ -160,8 +163,13 @@ def _regex_parse(text: str) -> dict:
         if kw in text:
             places.append({"type": typ, "used_date": None,
                            "exposures": (["샤워 또는 목욕"] if typ == "목욕장·온천" else ["냉방·가습기기"])})
-    no_travel = any(k in text for k in ("여행력 없음", "여행력없음", "여행 없", "여행력 없"))
-    travel = (not no_travel) and (("여행력 있음" in text) or ("박" in text and "여행" in text) or ("숙박업소" in text))
+    # colon/spacing-robust travel detection (KDCA form uses "여행력: 없음" / "여행력 있음(2박)").
+    no_travel = bool(re.search(r"여행\s*력?\s*[:：]?\s*(없|안\s*함|해당\s*없)", text))
+    travel = (not no_travel) and (
+        bool(re.search(r"여행\s*력?\s*[:：]?\s*있", text))
+        or bool(re.search(r"\d\s*박", text)) and "여행" in text
+        or "숙박업소" in text
+    )
     return {"onset_date": _norm_date(onset), "hospitalized": hospitalized,
             "hospital_days": int(hosp_days) if hosp_days else None,
             "hospitalized_consecutive_10d": bool(hosp_days and int(hosp_days) >= 10),
@@ -414,3 +422,88 @@ def build_hotspots(match: dict, towers: list[tuple[float, float]], facilities: l
     return {"type": "FeatureCollection",
             "note": "환경검사 우선순위 제안이며 확정 감염원 아님. 채수·배양 병원체 일치로 확정, 최종 판단은 조사관.",
             "features": feats, "plan": plan}
+
+
+# ── 역학조사서 초안 (report draft) ───────────────────────────────────────────
+def _report_template(result: dict) -> str:
+    """Deterministic 역학조사 결과 보고서 초안 assembled from the analysis (Gemini-free fallback)."""
+    crs = result.get("case_results", [])
+    cases = {c.get("id"): c for c in result.get("cases", [])}
+    plan = (result.get("hotspots") or {}).get("plan", [])
+    common = result.get("common_candidates", [])
+    onsets = sorted([cr.get("onset_date") for cr in crs if cr.get("onset_date")])
+    span = f"{onsets[0]} ~ {onsets[-1]}" if onsets else "미상"
+    areas = sorted({(cases.get(cr.get("id"), {}).get("presumed_area") or "미상") for cr in crs})
+    conv_ids = sorted({cid for c in common if c.get("case_count", 0) >= 2 for cid in c.get("linked_cases", [])})
+    conv = next((p for p in plan if p.get("linked_case_count", 0) >= 2), None)
+    L: list[str] = []
+    L.append("레지오넬라증 역학조사 결과 보고서 (초안)")
+    L.append("※ 자동 분석 요약 초안이며 확정 결론이 아님. 최종 판단은 역학조사관.")
+    L.append("")
+    L.append("1. 사건 개요")
+    L.append(f" - 조사 대상: 레지오넬라증 {len(crs)}건 (비식별 조사서)")
+    L.append(f" - 발병 시기: {span}")
+    L.append(f" - 발생 지역: {', '.join(areas)}")
+    L.append("")
+    L.append("2. 사례 요약")
+    for cr in crs:
+        c = cases.get(cr.get("id"), {})
+        hosp = (f"입원 {c.get('hospital_days')}일" if c.get("hospital_days")
+                else ("입원" if c.get("hospitalized") else "미입원"))
+        L.append(f" - 케이스 {cr.get('id')}: 발병 {cr.get('onset_date', '?')}, "
+                 f"{(cr.get('route') or {}).get('label', '-')} · {c.get('presumed_area', '미상')} · {hosp}")
+    L.append("")
+    L.append("3. 역학적 연관성")
+    if conv and conv_ids:
+        L.append(f" - 케이스 {'·'.join(map(str, conv_ids))}가 공통 노출후보로 수렴: "
+                 f"{', '.join(conv.get('facilities', [])[:3])} 등 (반경 {conv.get('radius_m')}m, "
+                 f"고위험시설 {conv.get('high_risk_facility_count')}곳) — 동일 목욕장 밀집지.")
+    else:
+        L.append(" - 다수 사례 간 공통 노출원 수렴은 확인되지 않음(개별 노출 가능성).")
+    L.append("")
+    L.append("4. 환경조사 우선순위 (제안)")
+    for p in plan:
+        L.append(f" - {p.get('rank')}순위: 반경 {p.get('radius_m')}m · 고위험시설 "
+                 f"{p.get('high_risk_facility_count')}곳 · 연관 케이스 {p.get('linked_case_count')}건 — "
+                 f"{', '.join(p.get('facilities', [])[:2])}")
+    L.append("")
+    L.append("5. 권고 사항")
+    L.append(" - 우선순위 지점의 냉각탑·목욕장·급수설비 채수 및 배양 검사 실시.")
+    L.append(" - 환자 임상검체와 환경검체의 레지오넬라 혈청형·유전형 일치 여부 확인.")
+    if any("의료기관" in (cr.get("route") or {}).get("label", "") for cr in crs):
+        L.append(" - 의료기관내감염(확정) 사례 관련 기관의 급수·냉각·가습설비 즉시 점검.")
+    if any("여행" in (cr.get("route") or {}).get("label", "") for cr in crs):
+        L.append(" - 여행관련 사례 숙박시설 급수·냉방설비 조사 및 관할 보건소 통보.")
+    L.append("")
+    L.append("6. 한계 및 유의")
+    L.append(" - Hotspot은 노출후보의 시공간 밀집이며 확정 감염원이 아님(채수·배양 일치로 확정).")
+    L.append(" - 위험 히트맵은 PHWR 가중 환경 오염 경향이며 환자 발생 예측이 아님.")
+    L.append(" - 본 자료는 합성·비식별 데모이며 실제 환자정보를 포함하지 않음.")
+    return "\n".join(L)
+
+
+def build_report_draft(result: dict, use_llm: bool = True) -> str:
+    """역학조사서 초안: Gemini writes a polished draft grounded in the analysis facts, with the
+    deterministic template as fallback (LLM off, no key, or on any error)."""
+    template = _report_template(result)
+    key = os.getenv("GEMINI_API_KEY", "").strip()
+    if not (use_llm and key):
+        return template
+    try:
+        from google import genai
+        client = genai.Client(api_key=key)
+        model = os.getenv("RISK_ANALYSIS_MODEL") or os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
+        prompt = (
+            "당신은 감염병 역학조사관을 보조하는 도구다. 아래 '분석 사실'만 근거로 레지오넬라증 역학조사 "
+            "결과 보고서 초안을 한국어로 작성하라. 사실을 새로 지어내지 말고, 추정·초안임을 명시하며, "
+            "'확정 감염원이 아니고 채수·배양 병원체 일치로 확정하며 최종 판단은 역학조사관'이라는 점과 "
+            "'합성·비식별 데모'라는 점을 반드시 포함하라. 6개 절 구성(1 사건 개요, 2 사례 요약, "
+            "3 역학적 연관성, 4 환경조사 우선순위, 5 권고 사항, 6 한계 및 유의)으로 간결한 개조식.\n\n"
+            f"[분석 사실]\n{template}\n\n[보고서 초안]:"
+        )
+        txt = (client.models.generate_content(model=model, contents=prompt).text or "").strip()
+        if txt.startswith("```"):
+            txt = txt.strip("`")
+        return txt if len(txt) > 120 else template
+    except Exception:
+        return template

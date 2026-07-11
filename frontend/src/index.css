@@ -9319,6 +9319,29 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .leg-ex-case-id { font-size: 11px; font-weight: 800; color: var(--text-primary, #0f172a); }
 .leg-ex-route { font-size: 10px; font-weight: 700; }
 .leg-ex-case-meta { font-size: 10px; color: var(--text-muted, #94a3b8); }
+.leg-ex-case-parse { font-size: 9.5px; color: var(--text-secondary, #475569); line-height: 1.4; }
+.leg-ex-case-reason { font-size: 9px; color: var(--text-muted, #94a3b8); line-height: 1.4; }
+/* example survey chips + 분석 button */
+.leg-sample-row { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 6px; }
+.leg-sample-chip { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 4px 7px; border: 1px solid var(--border, #e2e8f0); border-radius: 6px; background: rgba(148, 163, 184, 0.06); font-size: 11px; font-weight: 700; color: var(--text-secondary, #475569); cursor: pointer; }
+.leg-sample-chip:hover { border-color: var(--accent, #4361ee); color: var(--accent, #4361ee); }
+.leg-sample-chip em { font-style: normal; font-weight: 500; font-size: 9px; color: var(--text-muted, #94a3b8); }
+.legionella-btn.legionella-analyze { margin-top: 6px; background: var(--accent, #4361ee); color: #fff; border-color: var(--accent, #4361ee); font-size: 13px; padding: 8px; }
+.legionella-btn.legionella-analyze:hover { filter: brightness(1.08); background: var(--accent, #4361ee); color: #fff; }
+.legionella-btn.legionella-analyze:disabled { opacity: 0.6; cursor: default; }
+/* 역학조사서 초안 (report draft) */
+.leg-report { margin-top: 8px; border: 1px solid var(--border, #e2e8f0); border-radius: 8px; overflow: hidden; }
+.leg-report-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: var(--bg-soft, #f1f5f9); font-size: 11px; font-weight: 800; color: var(--text-primary, #0f172a); }
+.leg-report-copy { border: 1px solid var(--border, #e2e8f0); border-radius: 5px; background: var(--bg-card, #fff); font-size: 10px; font-weight: 700; color: var(--text-secondary, #475569); padding: 2px 8px; cursor: pointer; }
+.leg-report-copy:hover { border-color: var(--accent, #4361ee); color: var(--accent, #4361ee); }
+.leg-report-body { margin: 0; padding: 8px 9px; max-height: 220px; overflow-y: auto; font-family: var(--font-mono, monospace); font-size: 10px; line-height: 1.55; color: var(--text-primary, #0f172a); white-space: pre-wrap; word-break: break-word; background: var(--bg-card, #fff); }
+/* survey preview modal */
+.leg-modal { position: absolute; inset: 0; z-index: 1000; background: rgba(15, 23, 42, 0.55); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.leg-modal-box { width: min(560px, 92%); max-height: 82%; display: flex; flex-direction: column; background: var(--bg-card, #fff); border: 1px solid var(--border, #e2e8f0); border-radius: 10px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); overflow: hidden; }
+.leg-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--border, #e2e8f0); font-size: 12px; font-weight: 800; color: var(--text-primary, #0f172a); }
+.leg-modal-head button { border: 1px solid var(--border, #e2e8f0); border-radius: 6px; background: transparent; font-size: 11px; font-weight: 700; color: var(--text-secondary, #475569); padding: 3px 10px; cursor: pointer; }
+.leg-modal-head button:hover { border-color: var(--accent, #4361ee); color: var(--accent, #4361ee); }
+.leg-modal-body { margin: 0; padding: 14px 16px; overflow-y: auto; font-family: var(--font-mono, monospace); font-size: 12px; line-height: 1.6; color: var(--text-primary, #0f172a); white-space: pre-wrap; word-break: break-word; }
 
 /* Surveillance Intelligence container (methodology selector → tool) */
 .ontology-main.surveillance-main { display: flex; position: relative; }
