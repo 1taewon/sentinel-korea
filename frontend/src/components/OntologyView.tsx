@@ -574,6 +574,22 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
     const rel = relAt(r, i);
     return rel >= 0.66 ? 'G3' : rel >= 0.33 ? 'G2' : rel >= 0.08 ? 'G1' : 'G0';
   };
+  // Node colour encodes cumulative DEATHS (slate = none → amber → red → dark red),
+  // scaled to the peak death toll across the whole run so it deepens over time.
+  const deathsAt = (r: NationalRegionResult, i: number): number => r.timeline?.[i]?.cumulative_deaths ?? 0;
+  const maxDeathsGlobal = useMemo(
+    () => Math.max(1, ...regions.flatMap((r) => (r.timeline ?? []).map((p) => p.cumulative_deaths ?? 0))),
+    [regions],
+  );
+  const lerp3 = (a: number[], b: number[], t: number) =>
+    `rgb(${Math.round(a[0] + (b[0] - a[0]) * t)},${Math.round(a[1] + (b[1] - a[1]) * t)},${Math.round(a[2] + (b[2] - a[2]) * t)})`;
+  const deathFill = (r: NationalRegionResult | undefined, i: number): string => {
+    const deaths = r ? deathsAt(r, i) : 0;
+    if (deaths <= 0) return '#64748b'; // no deaths yet — slate
+    const rel = Math.min(1, deaths / maxDeathsGlobal);
+    const amber = [245, 158, 11], red = [220, 38, 38], dark = [127, 29, 29];
+    return rel < 0.5 ? lerp3(amber, red, rel / 0.5) : lerp3(red, dark, (rel - 0.5) / 0.5);
+  };
 
   const polys = useMemo(() => features.map((f: any, i: number) => {
     const sido = String(f.properties?.code || '').substring(0, 2);
@@ -726,11 +742,11 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
               )}
               {!isOrigin && active && (
                 <circle cx={pt[0]} cy={pt[1]} r={rad + 3} fill="none"
-                  stroke={GLEVEL_COLORS[level] || GLEVEL_COLORS.G0} strokeOpacity={0.55} strokeWidth={1.3}
+                  stroke={deathFill(r, idx)} strokeOpacity={0.5} strokeWidth={1.3}
                   className="scenario-spread-pulse" />
               )}
-              <circle cx={pt[0]} cy={pt[1]} r={rad} fill={GLEVEL_COLORS[level] || GLEVEL_COLORS.G0}
-                fillOpacity={isOrigin ? 0.4 : 1} stroke="#fff" strokeWidth={1}
+              <circle cx={pt[0]} cy={pt[1]} r={rad} fill={deathFill(r, idx)}
+                fillOpacity={isOrigin ? 0.4 : 0.5} stroke="#fff" strokeWidth={1}
                 filter={isOrigin || activeSource || level === 'G3' ? 'url(#spread-glow)' : undefined}
                 style={{ transition: 'r 0.45s ease, fill 0.45s ease' }} />
               <text x={pt[0]} y={pt[1] - rad - 3} textAnchor="middle" fontSize={9} fontWeight={700}
@@ -745,7 +761,7 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
         <span><i className="ssl-edge" /> 실선 = 관측 OD 기반 전파 기여</span>
         <span><i className="ssl-edge" style={{ background: '#94a3b8' }} /> 점선 = 관측 공백 공항 접근/기본 이동 보완</span>
         <span><i className="ssl-edge" style={{ background: '#60a5fa' }} /> 파란 경로 = 항공 운항일정 수송능력 프록시</span>
-        <span><i className="ssl-node" /> 시도 감염 규모(색 = 감염 강도, 크기 = 해당 일 상대 규모)</span>
+        <span><i className="ssl-node" style={{ background: '#dc2626' }} /> 시도 노드(색 = 누적 사망: 회색 0 → 붉을수록↑, 크기 = 해당 일 신규 감염)</span>
       </div>
     </div>
   );
