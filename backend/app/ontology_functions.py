@@ -1893,7 +1893,13 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         traffic_source = "baseline_mobility_data_unavailable"
     else:
         traffic_source = "baseline_mobility"
-    conn_list = [(highway.get(c, 0.5) if (observed_only and highway) else _SEIR_CONN_DEFAULT[c])
+    # Region connectivity for the gravity fill. A region absent from the measured
+    # network (e.g. 제주 — an island with no expressway OD, and, until the air marginal
+    # lands, no rail either) must NOT collapse to a flat 0.5: that silently drops its
+    # documented hub prior (제주 0.7, 인천 1.0) below several mainland provinces and makes
+    # its island spread arbitrary. Fall back to the hub prior, not a constant.
+    conn_list = [((highway.get(c) if c in highway else _SEIR_CONN_DEFAULT[c])
+                  if (observed_only and highway) else _SEIR_CONN_DEFAULT[c])
                  for c in _SEIR_CODES]
     # ICN is in Incheon.  The available expressway sample lacks an Incheon-origin
     # row, so use a narrow, explicitly-labelled airport-access bridge instead of
