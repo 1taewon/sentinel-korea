@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
@@ -127,14 +128,23 @@ def _region_from_label(value: Any) -> str | None:
 
 
 def _get_json(url: str, params: dict[str, Any], timeout: int = 20) -> dict[str, Any] | None:
-    try:
-        response = httpx.get(url, params=params, timeout=timeout,
-                             headers={"User-Agent": "Sentinel-Korea mobility collector"})
-        if response.status_code != 200:
+    """GET JSON with one retry on transient failure / throttle (429/5xx)."""
+    for attempt in range(2):
+        try:
+            response = httpx.get(url, params=params, timeout=timeout,
+                                 headers={"User-Agent": "Sentinel-Korea mobility collector"})
+            if response.status_code == 200:
+                return response.json()
+            if response.status_code in (429, 500, 502, 503) and attempt == 0:
+                time.sleep(1.2)
+                continue
             return None
-        return response.json()
-    except Exception:
-        return None
+        except Exception:
+            if attempt == 0:
+                time.sleep(0.8)
+                continue
+            return None
+    return None
 
 
 def _recent_day(offset_days: int = 8) -> str:
@@ -149,25 +159,23 @@ def _sample_keys(rows: list[dict[str, Any]]) -> list[str]:
 def _fetch_korail_marginals(key: str) -> tuple[dict[str, float], dict[str, Any]]:
     if not key:
         return {}, {"status": "skipped", "reason": "no public-data service key"}
-    ymd = _recent_day()
+    gte, lte = _recent_day(50), _recent_day(5)  # KORAIL stats lag; sample a recent window
     rows = _items(_get_json(KORAIL_MAIN_LINE, {
         "serviceKey": key, "pageNo": 1, "numOfRows": 1000, "returnType": "JSON",
-        "cond[run_ymd::GTE]": ymd, "cond[run_ymd::LTE]": ymd,
+        "cond[run_ymd::GTE]": gte, "cond[run_ymd::LTE]": lte,
     }))
     activity: dict[str, float] = defaultdict(float)
     parsed = 0
     for row in rows:
-        region = _region_from_label(_value(row, "stn_nm", "STN_NM", "역명", "stnNm", "station_nm"))
-        board = _as_int(_value(row, "gton_nmpr_co", "gtonNmprCo", "승차인원수", "ride_pas_nmpr_co",
-                               "GTON_NMPR_CO", "boardPassengerCnt", "ridePassengerCnt"))
-        alight = _as_int(_value(row, "gtoff_nmpr_co", "gtoffNmprCo", "하차인원수", "alight_pas_nmpr_co",
-                                "GTOFF_NMPR_CO", "alightPassengerCnt"))
+        region = _region_from_label(_value(row, "stn_nm", "STN_NM", "역명"))
+        board = _as_int(_value(row, "abrd_nope", "ABRD_NOPE", "승차인원수"))     # 승차 인원
+        alight = _as_int(_value(row, "goff_nope", "GOFF_NOPE", "하차인원수"))    # 하차 인원
         if region and (board + alight) > 0:
             activity[region] += board + alight
             parsed += 1
     if activity:
         return dict(activity), {"status": "ok", "observation": "observed_station_marginal",
-                                "date": ymd, "rows": parsed, "endpoint": "KORAIL mainLineTravelerTrain"}
+                                "window": f"{gte}~{lte}", "rows": parsed, "endpoint": "KORAIL mainLineTravelerTrain"}
     return {}, {"status": "unavailable", "reason": "station 승차/하차 fields not matched",
                 "rows_received": len(rows), "sample_keys": _sample_keys(rows)}
 
@@ -184,7 +192,7 @@ def _srt_route_pair(route_nm: Any) -> tuple[str, str] | None:
 def _fetch_srt_corridors(key: str) -> tuple[dict[tuple[str, str], float], dict[str, Any]]:
     if not key:
         return {}, {"status": "skipped", "reason": "no public-data service key"}
-    d0, d1 = _recent_day(8), _recent_day(1)
+    d0, d1 = _recent_day(50), _recent_day(5)  # SRT stats lag; sample a recent window
     rows = _items(_get_json(SRT_DAILY_PASSENGERS, {
         "serviceKey": key, "page": 1, "perPage": 2000, "returnType": "JSON",
         "cond[RUN_YMD::GTE]": d0, "cond[RUN_YMD::LTE]": d1,
@@ -221,7 +229,7 @@ def _fetch_flight_proxy(key: str) -> tuple[dict[tuple[str, str], float], dict[st
         })
         return pair, len(_items(payload))
 
-    with ThreadPoolExecutor(max_workers=6) as pool:
+    with ThreadPoolExecutor(max_workers=2) as pool:  # gentle: avoid tripping data.go.kr burst throttle
         futures = [pool.submit(one_pair, pair) for pair in _DOMESTIC_FLIGHT_PAIRS]
         for future in as_completed(futures):
             (origin, destination), flights = future.result()
@@ -244,15 +252,15 @@ def _fetch_air_marginals(key: str) -> tuple[dict[str, float], dict[str, Any]]:
     parsed = 0
     sample: list[str] = []
     for airport, code in _EXPECT_AIRPORTS.items():
+        # Same-day forecast only (future dates return empty); sum all hours + arr/dep.
         rows = _items(_get_json(AIRPORT_EXPECT_PASSENGER, {
-            "serviceKey": key, "pageNo": 1, "numOfRows": 300, "schDate": day,
+            "serviceKey": key, "pageNo": 1, "numOfRows": 200, "schDate": day,
             "schAirport": airport, "schTof": "D", "type": "json",
         }))
         if rows and not sample:
             sample = _sample_keys(rows)
         for row in rows:
-            passengers = _as_int(_value(row, "expaslsCnt", "exps_pas_co", "EXPS_PAS_CO",
-                                        "passengerCnt", "expsPas", "예상승객수", "TOT_PAX", "totPax"))
+            passengers = _as_int(_value(row, "PCT", "pct", "예상승객수"))  # 예상 승객수 (시간대별)
             if passengers > 0:
                 activity[code] += passengers
                 parsed += 1
