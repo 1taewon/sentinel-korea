@@ -78,3 +78,5 @@ build-check/
 
 # Runtime-generated Outbreak-Scenario demo cache (pre-warmed at startup; contains AI output only when a Gemini key is present)
 backend/data/processed/scenario_example_v*.json
+
+backend/data/processed/legionella_cases.json

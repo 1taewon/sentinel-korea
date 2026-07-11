@@ -49,6 +49,7 @@ from .config_router import router as config_router
 from .ontology_router import router as ontology_router
 from .participatory_router import router as participatory_router
 from .aberration_router import router as aberration_router
+from .surveillance_router import router as surveillance_router
 app.include_router(chatbot_router)
 app.include_router(report_router)
 app.include_router(upload_router)
@@ -59,6 +60,7 @@ app.include_router(config_router)
 app.include_router(ontology_router)
 app.include_router(participatory_router)
 app.include_router(aberration_router)
+app.include_router(surveillance_router)
 
 ALLOWED_ORIGINS = [
     "http://localhost:5173",
