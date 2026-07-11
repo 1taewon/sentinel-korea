@@ -255,7 +255,9 @@ async def refresh_global_signals(_: dict = Depends(require_admin)) -> dict[str, 
             results["mobility"] = {
                 "status": mobility_data.get("status"),
                 "corridors": len(mobility_data.get("corridors", [])),
-                "observed_modes": mobility_data.get("observed_modes", []),
+                "edge_modes": mobility_data.get("observed_edge_modes", []),
+                "marginals": mobility_data.get("active_marginals", []),
+                "modes": mobility_data.get("modes", {}),  # per-mode status + sample_keys for unmatched fields
             }
         except Exception as mobility_exc:
             results["mobility"] = {"status": "error", "error": str(mobility_exc)}
