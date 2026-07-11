@@ -26,15 +26,8 @@ export default function SurveillanceView() {
           <span className="ontology-kicker">SENTINEL SURVEILLANCE</span>
           <h2>Surveillance Intelligence</h2>
           <p>
-            국내 공개데이터·위성영상 기반 감염병 감시 방법론 모음. 방법론(Object Type)을 선택해
-            해당 감시 도구로 들어갑니다. 새 방법론은 계속 추가됩니다.
+            방법론(Object Type)을 선택해 해당 감시 도구로 들어갑니다. 새 방법론은 계속 추가됩니다.
           </p>
-          <div className="ontology-header-features">
-            <span>V-World 위성</span>
-            <span>공개데이터</span>
-            <span>수동 판독</span>
-            <span>비식별 데모</span>
-          </div>
         </div>
 
         <div className="ontology-sidebar-section">
@@ -51,7 +44,7 @@ export default function SurveillanceView() {
                 <div className="ontology-type-card-desc">{m.desc}</div>
               </button>
             ))}
-            <div className="surveillance-more">다른 방법론 추가 예정 (예: 결핵·수인성 등 공간감시)</div>
+            <div className="surveillance-more">다른 방법론 추가 예정</div>
           </div>
         </div>
       </div>
