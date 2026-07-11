@@ -677,7 +677,6 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
         <button type="button" className="scenario-spread-play" onClick={() => setPlaying((p) => !p)}>
           {playing ? '일시정지' : '재생'}
         </button>
-        <span className="scenario-spread-day">DAY <strong>D+{String(curDay).padStart(2, '0')}</strong></span>
         <input type="range" min={0} max={days.length - 1} step={1} value={idx}
           onChange={(e) => { setPlaying(false); setIdx(Number(e.target.value)); }}
           aria-label="시뮬레이션 일자"
@@ -769,9 +768,9 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
       </svg>
       <div className="scenario-spread-legend">
         <span><i className="ssl-origin" /> 유입 거점: {entryLabel}</span>
-        <span><i className="ssl-edge" /> 실선 = 관측 OD 기반 전파 기여</span>
-        <span><i className="ssl-edge" style={{ background: '#94a3b8' }} /> 점선 = 관측 공백 공항 접근/기본 이동 보완</span>
-        <span><i className="ssl-edge" style={{ background: '#60a5fa' }} /> 파란 경로 = 항공 운항일정 수송능력 프록시</span>
+        <span><i className="ssl-edge" /> 실선 — 관측 기종점 통행량(OD) 기반 유입 노출</span>
+        <span><i className="ssl-edge" style={{ background: '#94a3b8' }} /> 점선 — 중력모형 보간(미관측 구간·공항 접근)</span>
+        <span><i className="ssl-edge" style={{ background: '#60a5fa' }} /> 파란선 — 항공 운항 스케줄 수송능력 프록시</span>
         <span><i className="ssl-node" style={{ background: '#dc2626' }} /> 시도 노드(색 = 누적 사망: 회색 0 → 붉을수록↑, 크기 = 해당 일 신규 감염)</span>
       </div>
     </div>
@@ -1060,27 +1059,8 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
         <span className="whatif-mobility-badge" title="입력 재생산지수 R0">R0 {sc?.r0}</span>
         <span className="whatif-mobility-badge" title="입력 치명률 CFR">CFR {pct(sc?.cfr, 1)}</span>
         {sc?.is_novel && <span className="whatif-mobility-badge whatif-mobility-badge--real" title="신종감염병 — 직접 설정한 파라미터로 시뮬레이션">신종 파라미터</span>}
-        {sc?.aviation_source === 'aviation' && (
-          <span className="whatif-mobility-badge whatif-mobility-badge--real" title="발생국→인천 실측 도착 여객량으로 유입 규모(seed) 스케일">항공 유입 반영(실측)</span>
-        )}
-        {['highway_od', 'multimodal_od'].includes(sc?.traffic_source || '') && (
-          <span className="whatif-mobility-badge whatif-mobility-badge--real"
-            title={sc?.traffic_source === 'multimodal_od'
-              ? '고속도로·KORAIL/KTX·SRT·국내선의 모드별 출처를 보존한 멀티모달 OD 연결성을 지역 간 이동 결합에 반영'
-              : sc?.traffic_source === 'highway_od'
-                ? '한국도로공사 실측 출발→도착 교통망을 지역 간 이동 결합에 반영'
-                : '지역별 고속도로 도착량 지수를 연결성 보조값으로 반영'}>
-            {sc?.traffic_source === 'multimodal_od'
-              ? '멀티모달 OD 연결성 반영'
-              : sc?.traffic_source === 'highway_od' ? '교통 OD 연결성 반영(실측)' : '교통 도착량 지수 반영'}
-          </span>
-        )}
-        {sc?.traffic_source?.startsWith('baseline_mobility') && (
-          <span className="whatif-mobility-badge" title="실측 OD 보정은 끈 상태이며, 지역 간 이동은 인구·거리·허브 기반 기본 이동모형으로 계산">기본 이동모형</span>
-        )}
-        {sc?.weather_source?.startsWith('kma') && (
-          <span className="whatif-mobility-badge whatif-mobility-badge--real" title="기상청 예보 기온으로 ≤10일 전파력 보정">기상 전파력 반영</span>
-        )}
+        {/* Modal reflection status (항공/교통/기상) lives in the left toggles and the
+            "데이터 출처 · 반영 방식" panel below — not duplicated here. */}
       </div>
 
       {/* Epidemiological headline numbers (28일 후) */}
@@ -2149,6 +2129,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
   // to R0/CFR persist until the disease is changed.
   const diseasePreset = resolveDiseasePreset(disease);
   useEffect(() => {
+    if (exampleMode) return;  // example mode sets its own demo params (see loadExample)
     const p = resolveDiseasePreset(disease) || DISEASE_DEFAULT;
     setR0(String(p.r0));
     setCfr(String(+(p.cfr * 100).toFixed(3)));
@@ -2208,6 +2189,9 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
   // toggle afterwards re-fetches the matching pre-run combination (see effect).
   const loadExample = () => {
     setEntryPoint('ICN'); setDisease('H5N1 Avian Influenza'); setCountry('China');
+    // Demo params (match _generate_scenario_example): highly transmissible so the
+    // spread visibly reaches the whole country. R0 10, CFR 10%, inc 3, inf 5.
+    setR0('10'); setCfr('10'); setIncubation('3'); setInfectious('5');
     setUseAviation(true); setUseTraffic(true); setUseWeather(true);
     setExampleMode(true);
   };

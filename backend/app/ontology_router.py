@@ -38,7 +38,7 @@ SNAPSHOT_DIR = PROCESSED_DIR / "snapshots"
 # is used only while it matches the current simulator schema and mobility/weather/
 # aviation inputs; refreshed data therefore reaches the example automatically.
 _SCENARIO_EXAMPLE_FILE = PROCESSED_DIR / "scenario_example_v16.json"
-_EXAMPLE_SCHEMA_VERSION = "seir-od-blended-noseverity-v5"
+_EXAMPLE_SCHEMA_VERSION = "seir-od-blended-noseverity-v6-r10cfr10"
 _EXAMPLE_INPUT_FILES = (
     "aviation_passenger_by_country.json",
     "highway_connectivity_by_region.json",
@@ -82,6 +82,9 @@ def _generate_scenario_example(use_aviation: bool = True, use_traffic: bool = Tr
     result = _what_if_outbreak_national({
         "entry_point": "ICN", "disease": "H5N1 Avian Influenza", "country": "China",
         "weeks": 4,
+        # Demo params: a highly transmissible scenario (R0 10, CFR 10%) so the public
+        # example visibly spreads nationwide rather than staying near the entry region.
+        "r0": 10.0, "cfr": 0.10,
         "use_aviation": use_aviation, "use_traffic": use_traffic, "use_weather": use_weather,
         "weather_live": False,
     })
