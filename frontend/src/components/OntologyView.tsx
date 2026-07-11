@@ -104,6 +104,13 @@ interface NationalOutbreakResult {
     edges: { source: string; target: string; weight: number; traffic_volume?: number | null; mobility_source?: string }[] };
   transmission_edges?: { day: number; source: string; target: string;
     expected_exposures: number; mobility_weight: number; mobility_source?: string; source_new_cases?: number; target_new_cases?: number }[];
+  data_sources?: {
+    traffic_on: boolean; network_source: string; traffic_source?: string; observed_only: boolean;
+    od_pairs: number; od_blend_observed: number; conn_marginal_weights: { road: number; rail: number; air: number };
+    generated_at?: string | null; weather_source?: string; aviation_source?: string;
+    modes: { key: string; label: string; role: string; modal: string; status: string; reflected: boolean;
+      corridors?: number | null; regions?: number | null; reason?: string | null; conn_weight?: number | null }[];
+  };
   summary: { total_regions: number; total_cases: number; total_deaths: number; national_cfr: number;
     attack_rate: number; peak_day: number; peak_new_cases: number; affected_regions: number;
     worst_regions: { name: string; cases: number }[];
@@ -616,18 +623,21 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
     const seedCodes = new Set(primaryZones);
     const sourceActivity = (edge: NonNullable<NationalOutbreakResult['transmission_edges']>[number]) =>
       edge.source_new_cases ?? regionByCode.get(edge.source)?.timeline?.[idx]?.new_cases ?? 0;
-    const bestBySource = new Map<string, NonNullable<NationalOutbreakResult['transmission_edges']>[number]>();
+    // Keep each active source's top TWO OD hops (dayEdges is pre-sorted desc), so a real
+    // corridor like 서울→경기 AND 서울→부산 both show instead of collapsing to one line —
+    // while still capping per source to avoid a radial fan.
+    const topBySource = new Map<string, NonNullable<NationalOutbreakResult['transmission_edges']>>();
     for (const edge of dayEdges) {
-      const current = bestBySource.get(edge.source);
-      if (!current || edge.expected_exposures > current.expected_exposures) bestBySource.set(edge.source, edge);
+      const list = topBySource.get(edge.source) ?? [];
+      if (list.length < 2) { list.push(edge); topBySource.set(edge.source, list); }
     }
-    const chainEdges = [...bestBySource.values()]
+    const chainEdges = [...topBySource.values()].flat()
       .filter((edge) => !seedCodes.has(edge.source) && sourceActivity(edge) > 0)
       .sort((a, b) => (sourceActivity(b) * b.expected_exposures) - (sourceActivity(a) * a.expected_exposures));
-    const seedEdges = dayEdges.filter((edge) => seedCodes.has(edge.source)).slice(0, 3);
+    const seedEdges = dayEdges.filter((edge) => seedCodes.has(edge.source)).slice(0, 4);
     // Once secondary regions are infectious, foreground their next OD hops. The seed
     // remains visible but no longer overwhelms the animation as a radial fan.
-    return (chainEdges.length ? [...chainEdges.slice(0, 14), ...seedEdges] : dayEdges.slice(0, 10)).slice(0, 18);
+    return (chainEdges.length ? [...chainEdges.slice(0, 20), ...seedEdges] : dayEdges.slice(0, 14)).slice(0, 24);
   }, [transmissionEdges, curDay, primaryZones, regionByCode, idx]);
   const fallbackEdges = useMemo(() => {
     if (!originPts.length || hasModelEdges) return [] as NonNullable<NationalOutbreakResult['transmission_edges']>;
@@ -933,6 +943,74 @@ function ComparisonPanel({ comparison }: { comparison: NonNullable<NationalOutbr
   );
 }
 
+// ─── Data-source & reflection panel — what actually fed THIS run (runtime-derived) ──
+const NETWORK_SOURCE_LABEL: Record<string, string> = {
+  multimodal_od: '멀티모달 실측 OD (고속도로 + 철도)',
+  highway_od: '고속도로 실측 OD',
+  srt_od: 'SRT 실측 OD',
+  korail_od: 'KORAIL 실측 OD',
+  baseline_gravity: '중력모형 (실측 OD 미사용)',
+  gravity_prior: '중력모형 (실측 OD 미사용)',
+  unavailable: '중력모형 (실측 OD 미사용)',
+};
+
+function DataSourcePanel({ ds }: { ds: NonNullable<NationalOutbreakResult['data_sources']> }) {
+  const w = ds.conn_marginal_weights || { road: 0.6, rail: 0.25, air: 0.15 };
+  const pct = (v: number) => `${Math.round(v * 100)}%`;
+  const netLabel = NETWORK_SOURCE_LABEL[ds.network_source] || ds.network_source || '중력모형';
+  const chip = (m: NonNullable<NationalOutbreakResult['data_sources']>['modes'][number]) => {
+    if (!ds.traffic_on) return { text: '교통 OFF', color: '#64748b', bg: 'rgba(100,116,139,0.15)' };
+    if (m.reflected) return { text: '반영됨', color: '#22c55e', bg: 'rgba(34,197,94,0.15)' };
+    if (m.status === 'skipped') return { text: '키 없음', color: '#94a3b8', bg: 'rgba(148,163,184,0.15)' };
+    return { text: '미반영', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)' };
+  };
+  const detail = (m: NonNullable<NationalOutbreakResult['data_sources']>['modes'][number]) => {
+    if (m.role === 'od_edge') return m.reflected ? `corridor ${m.corridors}개` : (m.reason || '미수집');
+    return m.reflected ? `${m.regions}개 지역 · conn ${pct(m.conn_weight || 0)}` : (m.reason || '미수집');
+  };
+  return (
+    <div className="whatif-section">
+      <div className="whatif-section-title">데이터 출처 · 반영 방식 (이 시뮬레이션 기준)</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 10 }}>
+        <span style={{ fontSize: 12, color: '#94a3b8' }}>이동 네트워크:</span>
+        <strong style={{ fontSize: 13, color: '#e2e8f0' }}>{netLabel}</strong>
+        {ds.observed_only && (
+          <span style={{ fontSize: 11, color: '#cbd5e1' }}>
+            · 관측 구간 = 관측 {pct(ds.od_blend_observed)} + 중력 {pct(1 - ds.od_blend_observed)} 혼합 ({ds.od_pairs}개 OD쌍)
+          </span>
+        )}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 8 }}>
+        {ds.modes.map((m) => {
+          const c = chip(m);
+          return (
+            <div key={m.key} style={{ border: '1px solid rgba(148,163,184,0.2)', borderRadius: 8, padding: '8px 10px', background: 'rgba(15,23,42,0.4)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 }}>
+                <strong style={{ fontSize: 12.5, color: '#e2e8f0' }}>{m.label}</strong>
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: c.color, background: c.bg, padding: '1px 7px', borderRadius: 10 }}>{c.text}</span>
+              </div>
+              <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 3 }}>
+                {m.role === 'od_edge' ? '지역 간 OD 엣지' : '연결도(conn) 마진'} · {detail(m)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="epi-region-caveat">
+        반영 방식: 실측 OD가 있는 구간은 <b>관측 {pct(ds.od_blend_observed)} + 중력모형 {pct(1 - ds.od_blend_observed)}</b>로 혼합하고,
+        관측이 없는 구간은 <b>중력모형(인구 / 거리² × 연결도)</b>으로 보간합니다.
+        연결도(conn)는 <b>고속도로 {pct(w.road)} + 철도(KORAIL 승하차) {pct(w.rail)} + 항공(공항 여객) {pct(w.air)}</b>의
+        실측 활동량으로 산출됩니다. 위에서 “미반영”으로 표시된 모달은 이 시뮬레이션 계산·애니메이션에 들어가지 않았습니다.
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginTop: 8, fontSize: 11, color: '#cbd5e1' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 3, background: 'rgba(255,120,60,0.9)', borderRadius: 2 }} />관측 OD</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 3, background: 'rgba(96,165,250,0.9)', borderRadius: 2, borderTop: '1px dashed #60a5fa' }} />수송능력 프록시</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 3, background: 'rgba(148,163,184,0.9)', borderRadius: 2 }} />중력 추정</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Analyzing loader — shown in the analysis pane while the (slow) SEIR + AI run ──
 function WhatIfAnalyzing() {
   const steps = ['SEIR 역학 시뮬레이션 실행', '항공·교통·기상 신호 반영', '강도 민감도 분석 계산', 'Sentinel AI 시나리오 분석 생성'];
@@ -1040,6 +1118,9 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
             transmissionEdges={result.transmission_edges} />
         </div>
       )}
+
+      {/* Data-source & reflection panel — runtime-derived modal status for this run */}
+      {result.data_sources && <DataSourcePanel ds={result.data_sources} />}
 
       {/* Epidemic curve + sensitivity — side by side on wide screens */}
       {((s?.national_curve && s.national_curve.length > 0) || (s?.sensitivity && s.sensitivity.length > 0)) && (

@@ -1352,6 +1352,67 @@ _SEIR_TOTAL_POP = 51091769
 _SEIR_CONN_DEFAULT = {c: 0.5 for c in _SEIR_CODES}
 _SEIR_CONN_DEFAULT.update({"11": 1.0, "28": 1.0, "41": 0.9, "26": 0.8, "50": 0.7, "27": 0.6, "48": 0.6})
 
+# How the simulation blends its inputs — surfaced verbatim to the UI so the "데이터 출처"
+# panel never hardcodes numbers that could drift from the model.
+#   OD_BLEND_OBSERVED: observed-OD share where a corridor is measured (rest = gravity fill);
+#     mirrors _build_seir_conn(od_blend=0.7).
+#   CONN_MARGINAL_WEIGHTS: how region connectivity is built from modal activity in
+#     fetch_multimodal_mobility._region_connectivity (road/rail/air marginals).
+OD_BLEND_OBSERVED = 0.7
+CONN_MARGINAL_WEIGHTS = {"road": 0.60, "rail": 0.25, "air": 0.15}
+# Per-mode display metadata: label + whether the mode feeds pairwise OD edges or the
+# region-connectivity marginal that shapes the gravity fill.
+_MODE_DISPLAY = {
+    "highway":         {"label": "고속도로 OD",        "role": "od_edge",  "modal": "road"},
+    "srt":             {"label": "SRT 노선",           "role": "od_edge",  "modal": "rail"},
+    "domestic_flight": {"label": "국내선 항공(운항)",   "role": "od_edge",  "modal": "air"},
+    "korail_marginal": {"label": "KORAIL 역별 승하차", "role": "conn_marginal", "modal": "rail"},
+    "air_marginal":    {"label": "공항 예상 여객",      "role": "conn_marginal", "modal": "air"},
+}
+
+
+def _build_data_sources(*, network_source: str, traffic_source: str, observed_only: bool,
+                        use_traffic: bool, use_weather: bool, weather_source: str,
+                        use_aviation: bool, aviation_source: str,
+                        mode_metadata: dict, generated_at: Any, od_pairs: int) -> dict:
+    """A truthful, runtime-derived summary of what fed THIS simulation — every modal
+    status is read from the live mode metadata, never hardcoded, so the UI shows only
+    what was actually collected and reflected."""
+    modes = []
+    for key, disp in _MODE_DISPLAY.items():
+        meta = mode_metadata.get(key) if isinstance(mode_metadata, dict) else None
+        meta = meta if isinstance(meta, dict) else {}
+        status = meta.get("status", "unavailable")
+        corridors = meta.get("corridors")
+        regions = meta.get("regions")
+        # A mode is "reflected" only when traffic is on, it succeeded, and it produced
+        # something the model consumes (OD corridors, or connectivity-shaping regions).
+        reflected = bool(
+            use_traffic and status == "ok"
+            and ((disp["role"] == "od_edge" and (corridors or 0) > 0)
+                 or (disp["role"] == "conn_marginal" and (regions or 0) > 0))
+        )
+        modes.append({
+            "key": key, "label": disp["label"], "role": disp["role"], "modal": disp["modal"],
+            "status": status, "reflected": reflected,
+            "corridors": corridors, "regions": regions,
+            "reason": meta.get("reason"),
+            "conn_weight": CONN_MARGINAL_WEIGHTS.get(disp["modal"]) if disp["role"] == "conn_marginal" else None,
+        })
+    return {
+        "traffic_on": use_traffic,
+        "network_source": network_source,       # multimodal_od / highway_od / baseline_gravity …
+        "traffic_source": traffic_source,
+        "observed_only": observed_only,          # True → observed corridors blended with gravity floor
+        "od_pairs": od_pairs,                    # measured directed OD pairs feeding the blend
+        "od_blend_observed": OD_BLEND_OBSERVED,  # observed share on measured corridors
+        "conn_marginal_weights": CONN_MARGINAL_WEIGHTS,
+        "generated_at": generated_at,
+        "weather_source": weather_source,
+        "aviation_source": aviation_source if use_aviation else "off",
+        "modes": modes,
+    }
+
 # Disease -> (R0, CFR, incubation_days, infectious_days). Representative literature
 # point values (WHO/CDC-level). Used as the editable BASE; an unrecognised free-text
 # disease falls back to DEFAULT and the user sets the parameters directly (신종감염병).
@@ -1557,7 +1618,10 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
 
             for j, imported_lambda in enumerate(imported_lambdas):
                 exposure = imported_lambda * S[i] * scale
-                if i != j and exposure >= 0.01:
+                # Low absolute floor (not a share of the seed's exposure): the seed's flow
+                # dwarfs secondary hops, so a relative-to-max floor would suppress exactly
+                # the secondary sources we want to surface once regions start re-exporting.
+                if i != j and exposure >= 0.002:
                     edge_events_today.append({
                         "day": d + 1,
                         "source": _SEIR_CODES[j],
@@ -1583,13 +1647,13 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
             by_source.setdefault(edge["source"], []).append(edge)
         balanced: list[dict] = []
         for source_edges in by_source.values():
-            balanced.extend(sorted(source_edges, key=lambda edge: edge["expected_exposures"], reverse=True)[:2])
+            balanced.extend(sorted(source_edges, key=lambda edge: edge["expected_exposures"], reverse=True)[:3])
         chosen = {(edge["source"], edge["target"]) for edge in balanced}
         remainder = [edge for edge in edge_events_today if (edge["source"], edge["target"]) not in chosen]
         transmission_edges.extend((
             sorted(balanced, key=lambda edge: edge["expected_exposures"], reverse=True)
             + sorted(remainder, key=lambda edge: edge["expected_exposures"], reverse=True)
-        )[:32])
+        )[:48])
         S, E, I, R, D = nS, nE, nI, nR, nD
         day_onsets = next_onsets
         daily_new.append((d + 1, sum(next_onsets)))
@@ -2017,6 +2081,15 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             "generated_at": highway_data["generated_at"],
             "edges": mobility_edges,
         },
+        "data_sources": _build_data_sources(
+            network_source=network_source, traffic_source=traffic_source,
+            observed_only=observed_only, use_traffic=use_traffic,
+            use_weather=use_weather, weather_source=weather_source,
+            use_aviation=bool(inputs.get("use_aviation")) and entry_type == "airport",
+            aviation_source=aviation_source,
+            mode_metadata=highway_data.get("mode_metadata") or {},
+            generated_at=highway_data.get("generated_at"), od_pairs=len(od_weights),
+        ),
         "transmission_edges": transmission_edges,
         "summary": {
             "total_regions": len(region_results),
