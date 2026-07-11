@@ -2245,7 +2245,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
         <button type="button" className={`whatif-example-btn ${exampleMode && !isAdmin ? 'is-on' : ''}`}
           onClick={isAdmin ? runNationalScenario : loadExample}
           disabled={isAdmin ? loading : exampleLoading}>
-          {(isAdmin ? loading : exampleLoading) ? '분석 중…' : '분석 실행'}
+          {(isAdmin ? loading : exampleLoading) ? '시나리오 분석 중…' : '시나리오 분석'}
         </button>
         <div className="whatif-example-note">
           {isAdmin
