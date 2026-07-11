@@ -27,7 +27,7 @@ The displayed 28-day totals are calculated from these exact same daily state sna
 - **Input CFR** is shown separately and is the model parameter used on exits from `I`.
 - Every map frame, curve, table value, and animated edge is sourced from the same 0--28 day simulation run.
 
-`Severity` is now a response-priority label only. It does not silently scale both R0 and CFR; those two epidemiologically distinct quantities are entered explicitly.
+There is no `Severity` control. R0 and CFR — epidemiologically distinct quantities — are entered explicitly (auto-filled from a disease preset, editable for a novel pathogen), so a coarse severity label that scaled both would be redundant.
 
 ### Spatial mixing
 
@@ -39,7 +39,11 @@ The force of infection is:
 
 `lambda_i = (1-m) * beta_i * I_i/N_i + m * beta_i * sum_j C(i,j) * I_j/N_j`.
 
-`m` is the user-selected interregional mixing share. With **measured OD calibration ON**, the model uses only normalized observed corridors. If a destination has no observed inbound OD, its interregional term is retained locally (`C(i,i)=1`) instead of inventing a gravity route; the animation therefore never presents an unobserved connection as measured travel. With calibration OFF, the same nonzero `m` is applied through a documented population-distance/hub gravity baseline. The map animation shows daily expected imported exposures from this equation, not radial decoration.
+`m` is the user-selected interregional mixing share. With **measured OD calibration ON**, each destination's observed inbound OD is blended with a population-distance gravity baseline (observed share `od_blend`≈0.7); a destination with no observed inbound falls back to the gravity baseline. No region is isolated, because real Korean interregional travel is never exactly zero — a sparse OD sample is not evidence that unobserved pairs have zero flow. This is the standard "observed corridors + gravity fill" treatment used when only a partial OD sample is available. With calibration OFF, the same nonzero `m` is applied through the gravity baseline alone. Each animated edge is still labelled by provenance (`observed_od` vs `gravity_estimate`), so a measured corridor is never conflated with a modelled one.
+
+The UI also shows a side-by-side **comparison**: the same scenario run under (A) measured-OD-only with unobserved regions isolated (`C(i,i)=1`) versus (B) the observed-plus-gravity default. Because a sparse sample systematically under-connects the network, (A) tends to under-estimate national spread; (B) is the more realistic default, and both are shown so the modelling choice is transparent rather than hidden.
+
+Severity is no longer an input: transmission (R0) and fatality (CFR) are entered explicitly, so a coarse severity label would only duplicate them.
 
 This is compatible with established metapopulation and mobility-network epidemic modelling, including [Balcan et al., PNAS (2009)](https://pmc.ncbi.nlm.nih.gov/articles/PMC2793313/) and [Chang et al., Nature (2020)](https://www.nature.com/articles/s41586-020-2923-3). It is a deliberately compact decision-support model, not an individual-based mobility simulation.
 

@@ -38,7 +38,7 @@ SNAPSHOT_DIR = PROCESSED_DIR / "snapshots"
 # is used only while it matches the current simulator schema and mobility/weather/
 # aviation inputs; refreshed data therefore reaches the example automatically.
 _SCENARIO_EXAMPLE_FILE = PROCESSED_DIR / "scenario_example_v16.json"
-_EXAMPLE_SCHEMA_VERSION = "seir-od-access-bridge-v4"
+_EXAMPLE_SCHEMA_VERSION = "seir-od-blended-noseverity-v5"
 _EXAMPLE_INPUT_FILES = (
     "aviation_passenger_by_country.json",
     "highway_connectivity_by_region.json",
@@ -81,7 +81,7 @@ def _generate_scenario_example(use_aviation: bool = True, use_traffic: bool = Tr
     from .ontology_functions import _what_if_outbreak_national
     result = _what_if_outbreak_national({
         "entry_point": "ICN", "disease": "H5N1 Avian Influenza", "country": "China",
-        "severity": "high", "weeks": 4,
+        "weeks": 4,
         "use_aviation": use_aviation, "use_traffic": use_traffic, "use_weather": use_weather,
         "weather_live": False,
     })

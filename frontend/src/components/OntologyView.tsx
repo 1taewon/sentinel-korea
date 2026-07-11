@@ -88,9 +88,14 @@ interface NationalRegionResult {
   timeline: EpiTimelinePoint[];
   error?: string;
 }
+interface ComparisonVariant {
+  total_cases: number; total_deaths: number; attack_rate: number; affected_regions: number;
+  national_curve: { day: number; cumulative_cases: number; cumulative_deaths: number }[];
+  regions: { code: string; name: string; cumulative_cases: number; cumulative_deaths: number }[];
+}
 interface NationalOutbreakResult {
   entry_point: { code: string; label: string; primary_zones: string[]; seed_region?: string; seed_region_name?: string };
-  scenario: { disease: string; disease_matched?: string; is_novel?: boolean; country: string; severity: string;
+  scenario: { disease: string; disease_matched?: string; is_novel?: boolean; country: string;
     r0: number; cfr: number; r0_base?: number; cfr_base?: number; incubation_days?: number; infectious_days?: number;
     aviation?: { multiplier: number; arr_passengers: number; country_kr: string; month: string } | null;
     aviation_source?: string; traffic_source?: string; weather_source?: string; traffic_intensity?: number };
@@ -105,6 +110,10 @@ interface NationalOutbreakResult {
     national_curve: { day: number; cumulative_cases: number; cumulative_deaths: number; new_cases: number }[];
     sensitivity?: { key: string; label: string; unit: string; low_val: number; cur_val: number; high_val: number; low_cases: number; cur_cases: number; high_cases: number; low_deaths?: number; cur_deaths?: number; high_deaths?: number }[];
     response_playbook?: { stage: string; phase: string; actions: string[] }[];
+    comparison?: {
+      active: boolean; note: string;
+      observed_only?: ComparisonVariant; blended?: ComparisonVariant;
+    };
     total_population: number };
   gemini_scenario?: {
     impact_summary?: string; spread_pattern?: string;
@@ -462,11 +471,11 @@ function HotspotsPanel({ data, onPickRegion }: { data: HotspotsResult; onPickReg
 // ─── What-If Outbreak panel ─────────────────────────────────────────────────
 
 const WHAT_IF_PRESETS = [
-  { disease: 'H5N1 Avian Influenza', country: 'China', severity: 'critical' },
-  { disease: 'MERS-CoV', country: 'Saudi Arabia', severity: 'high' },
-  { disease: 'Novel Coronavirus', country: 'China', severity: 'high' },
-  { disease: 'Measles outbreak', country: 'Japan', severity: 'medium' },
-  { disease: 'H7N9 Influenza', country: 'Vietnam', severity: 'high' },
+  { disease: 'H5N1 Avian Influenza', country: 'China' },
+  { disease: 'MERS-CoV', country: 'Saudi Arabia' },
+  { disease: 'Novel Coronavirus', country: 'China' },
+  { disease: 'Measles outbreak', country: 'Japan' },
+  { disease: 'H7N9 Influenza', country: 'Vietnam' },
 ];
 
 // WhatIfPanel (single-region) removed — replaced by WhatIfStandalonePanel (national).
@@ -861,6 +870,77 @@ function SensitivityChart({ items }: {
   );
 }
 
+// ─── OD-treatment comparison: 관측 OD only vs 관측+중력 (side-by-side) ──────────
+function ComparisonMiniMap({ regions, maxCases }: { regions: ComparisonVariant['regions']; maxCases: number }) {
+  const features = useKoreaGeoJSON();
+  const projection = useMemo(() => d3.geoMercator().center([127.8, 36.0]).scale(2880).translate([120, 144]), []);
+  const pathGen = useMemo(() => d3.geoPath().projection(projection), [projection]);
+  const byCode = useMemo(() => new Map(regions.map((r) => [r.code, r])), [regions]);
+  const polys = useMemo(() => features.map((f: any, i: number) => {
+    const sido = String(f.properties?.code || '').substring(0, 2);
+    return { key: i, d: pathGen(f) || '', code: GEOJSON_TO_BACKEND[sido] || '' };
+  }), [features, pathGen]);
+  const fill = (code: string) => {
+    const c = byCode.get(code)?.cumulative_cases ?? 0;
+    if (c <= 0) return 'rgba(148,163,184,0.14)';
+    const rel = Math.min(1, c / (maxCases || 1));
+    return `rgba(255,110,55,${(0.18 + Math.sqrt(rel) * 0.72).toFixed(2)})`;
+  };
+  return (
+    <svg viewBox="0 0 240 315" className="cmp-mini-map">
+      {polys.map((p) => (
+        <path key={p.key} d={p.d} fill={p.code ? fill(p.code) : 'rgba(148,163,184,0.1)'}
+          stroke="rgba(100,150,200,0.28)" strokeWidth={0.3} />
+      ))}
+    </svg>
+  );
+}
+
+function ComparisonMiniCurve({ curve, maxCases }: { curve: ComparisonVariant['national_curve']; maxCases: number }) {
+  const W = 240, H = 60, padL = 6, padR = 6, padT = 6, padB = 10;
+  const maxD = Math.max(...curve.map((c) => c.day), 1);
+  const x = (d: number) => padL + (d / maxD) * (W - padL - padR);
+  const y = (v: number) => H - padB - (Math.min(v, maxCases) / (maxCases || 1)) * (H - padT - padB);
+  const line = curve.map((c, i) => `${i ? 'L' : 'M'} ${x(c.day).toFixed(1)} ${y(c.cumulative_cases).toFixed(1)}`).join(' ');
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="cmp-mini-curve">
+      <line x1={padL} y1={H - padB} x2={W - padR} y2={H - padB} stroke="rgba(148,163,184,0.3)" strokeWidth={0.5} />
+      <path d={line} fill="none" stroke="#ff9f43" strokeWidth={1.6} />
+    </svg>
+  );
+}
+
+function ComparisonPanel({ comparison }: { comparison: NonNullable<NationalOutbreakResult['summary']['comparison']> }) {
+  const a = comparison.observed_only, b = comparison.blended;
+  if (!comparison.active || !a || !b) return null;
+  const maxRegion = Math.max(1, ...a.regions.map((r) => r.cumulative_cases), ...b.regions.map((r) => r.cumulative_cases));
+  const maxCurve = Math.max(1, ...a.national_curve.map((c) => c.cumulative_cases), ...b.national_curve.map((c) => c.cumulative_cases));
+  const cols = [
+    { title: '관측 OD only', sub: '관측 경로만 · 미관측 지역 고립', data: a },
+    { title: '관측 + 중력 (기본)', sub: '관측 우선 + 나머지 중력 보정', data: b },
+  ];
+  return (
+    <div className="whatif-section">
+      <div className="whatif-section-title">이동구조 비교 · 관측 OD only ↔ 관측+중력 (같은 파라미터)</div>
+      <div className="cmp-grid">
+        {cols.map((c) => (
+          <div key={c.title} className="cmp-col">
+            <div className="cmp-col-head"><strong>{c.title}</strong><span>{c.sub}</span></div>
+            <ComparisonMiniMap regions={c.data.regions} maxCases={maxRegion} />
+            <ComparisonMiniCurve curve={c.data.national_curve} maxCases={maxCurve} />
+            <div className="cmp-totals">
+              <span>확진 <strong>{c.data.total_cases.toLocaleString()}</strong></span>
+              <span>사망 <strong>{c.data.total_deaths.toLocaleString()}</strong></span>
+              <span>확산 <strong>{c.data.affected_regions}/17</strong></span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="epi-region-caveat">{comparison.note}</div>
+    </div>
+  );
+}
+
 // ─── Analyzing loader — shown in the analysis pane while the (slow) SEIR + AI run ──
 function WhatIfAnalyzing() {
   const steps = ['SEIR 역학 시뮬레이션 실행', '항공·교통·기상 신호 반영', '강도 민감도 분석 계산', 'Sentinel AI 시나리오 분석 생성'];
@@ -906,9 +986,9 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
       <div className="whatif-analysis-header">
         <span className="whatif-analysis-tag">EPIDEMIC SIMULATION</span>
         <span className="whatif-analysis-region">{ep?.label || ep?.code || '—'}{ep?.seed_region_name && ep.seed_region_name !== ep.label ? ` → ${ep.seed_region_name}` : ''}</span>
-        <span className="whatif-analysis-scenario">{sc?.disease} / {sc?.country} / {sc?.severity}</span>
-        <span className="whatif-mobility-badge" title="입력 R0 (Severity와 독립)">R0 {sc?.r0}</span>
-        <span className="whatif-mobility-badge" title="입력 CFR (Severity와 독립)">CFR {pct(sc?.cfr, 1)}</span>
+        <span className="whatif-analysis-scenario">{sc?.disease} / {sc?.country}</span>
+        <span className="whatif-mobility-badge" title="입력 재생산지수 R0">R0 {sc?.r0}</span>
+        <span className="whatif-mobility-badge" title="입력 치명률 CFR">CFR {pct(sc?.cfr, 1)}</span>
         {sc?.is_novel && <span className="whatif-mobility-badge whatif-mobility-badge--real" title="신종감염병 — 직접 설정한 파라미터로 시뮬레이션">신종 파라미터</span>}
         {sc?.aviation_source === 'aviation' && (
           <span className="whatif-mobility-badge whatif-mobility-badge--real" title="발생국→인천 실측 도착 여객량으로 유입 규모(seed) 스케일">항공 유입 반영(실측)</span>
@@ -987,6 +1067,9 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
           )}
         </div>
       )}
+
+      {/* OD-treatment comparison (관측 OD only vs 관측+중력) — only when traffic OD is on */}
+      {s?.comparison?.active && <ComparisonPanel comparison={s.comparison} />}
 
       {/* Narrative */}
       <div className="ontology-decision-narrative">{result.narrative}</div>
@@ -1969,7 +2052,6 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
   const [entryPoint, setEntryPoint] = useState('');
   const [disease, setDisease] = useState('');
   const [country, setCountry] = useState('');
-  const [severity, setSeverity] = useState('');
   const [useAviation, setUseAviation] = useState(false);
   const [aviationIntensity, setAviationIntensity] = useState(1.0);
   const [useTraffic, setUseTraffic] = useState(false);
@@ -2007,7 +2089,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
     try {
       const r = await fetch(`${API_BASE}/ontology/functions/whatIfOutbreakNational`, {
         method: 'POST', headers: await adminHeaders(),
-        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, severity, use_aviation: useAviation, use_traffic: useTraffic, use_weather: useWeather,
+        body: JSON.stringify({ inputs: { entry_point: entryPoint, disease, country, use_aviation: useAviation, use_traffic: useTraffic, use_weather: useWeather,
           aviation_intensity: aviationIntensity, traffic_intensity: trafficIntensity, weather_intensity: weatherIntensity,
           r0: Number(r0) || undefined, cfr: cfr !== '' ? Number(cfr) / 100 : undefined,
           incubation_days: Number(incubation) || undefined, infectious_days: Number(infectious) || undefined } }),
@@ -2052,7 +2134,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
   // turn all signals on at default bases, and show the pre-run result. Flipping any
   // toggle afterwards re-fetches the matching pre-run combination (see effect).
   const loadExample = () => {
-    setEntryPoint('ICN'); setDisease('H5N1 Avian Influenza'); setCountry('China'); setSeverity('high');
+    setEntryPoint('ICN'); setDisease('H5N1 Avian Influenza'); setCountry('China');
     setUseAviation(true); setUseTraffic(true); setUseWeather(true);
     setExampleMode(true);
   };
@@ -2152,16 +2234,6 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
         <label>Country</label>
         <input value={country} onChange={(e) => setCountry(e.target.value)} className="whatif-input" placeholder="예: China" />
       </div>
-      <div className="whatif-row">
-        <label>Severity</label>
-        <select value={severity} onChange={(e) => setSeverity(e.target.value)} className="whatif-select">
-          <option value="" disabled>선택</option>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-          <option value="critical">Critical</option>
-        </select>
-      </div>
       <div className="whatif-epi-params">
         <div className="whatif-epi-head">
           역학 파라미터
@@ -2175,7 +2247,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
           <label>잠복기(일)<input type="number" step="1" min="1" value={incubation} onChange={(e) => setIncubation(e.target.value)} className="whatif-input" /></label>
           <label>전염기(일)<input type="number" step="1" min="1" value={infectious} onChange={(e) => setInfectious(e.target.value)} className="whatif-input" /></label>
         </div>
-        <div className="whatif-epi-hint">알려진 질병은 논문 기반 기본값이 자동 입력됩니다. 신종감염병은 직접 설정하세요. Severity는 대응 우선순위 표시에만 사용합니다. 전파·사망 계산은 위에서 직접 입력한 R0·CFR을 사용합니다.</div>
+        <div className="whatif-epi-hint">알려진 질병은 논문 기반 기본값이 자동 입력됩니다. 신종감염병은 직접 설정하세요. 전파·사망 규모는 전적으로 이 R0·CFR·잠복기·전염기로 결정됩니다.</div>
       </div>
       <div className="whatif-example-box">
         <button type="button" className={`whatif-example-btn ${exampleMode ? 'is-on' : ''}`}
@@ -2241,7 +2313,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
       <div className="whatif-presets">
         {WHAT_IF_PRESETS.map((p, i) => (
           <button key={i} type="button" className="whatif-preset-btn"
-            onClick={() => { setDisease(p.disease); setCountry(p.country); setSeverity(p.severity); }}>
+            onClick={() => { setDisease(p.disease); setCountry(p.country); }}>
             {p.disease.split(' ')[0]} / {p.country}
           </button>
         ))}

@@ -1386,15 +1386,22 @@ def _resolve_disease(name: str) -> tuple[str, dict]:
 
 def _build_seir_conn(conn_list: list[float],
                      od_weights: dict[tuple[str, str], float] | None = None,
-                     observed_only: bool = False) -> list[list[float]]:
+                     observed_only: bool = False,
+                     isolate_unobserved: bool = False,
+                     od_blend: float = 0.7) -> list[list[float]]:
     """Incoming mobility matrix C[i][j] (target i, source j), each row summing to 1.
 
-    With the measured-OD option enabled, a target's observed inbound OD mix is used
-    exactly. If the public sample has no inbound observation for a target, its
-    interregional term is retained locally (C[i][i] = 1) rather than inventing a
-    route with a gravity model. Without measured OD, a documented gravity/hub
-    baseline is used. This makes the UI toggle mean "use measured OD calibration",
-    not "allow or forbid all travel".
+    Two OD-calibration behaviours (selected per run for the comparison view):
+    - **blended (default, realistic)** — where a target has observed inbound OD it is
+      blended with the gravity baseline (observed share = ``od_blend``); where it has no
+      observation the gravity baseline is used. No region is isolated, because real
+      Korean interregional travel is never exactly zero. This is the standard treatment
+      when only a sparse OD sample is available (observed corridors + gravity fill).
+    - **isolate_unobserved=True** — a target with no observed inbound keeps its exposure
+      local (C[i][i]=1) and observed targets use their raw observed mix only. This is the
+      "measured-OD only, invent nothing" variant shown alongside for comparison.
+
+    Without measured OD (observed_only=False) a documented gravity/hub baseline is used.
     """
     n = len(_SEIR_CODES)
     coords = [(_REGION_COORDS[c]["lat"], _REGION_COORDS[c]["lng"]) for c in _SEIR_CODES]
@@ -1417,14 +1424,21 @@ def _build_seir_conn(conn_list: list[float],
         gravity_total = sum(gravity) or 1.0
         gravity = [value / gravity_total for value in gravity]
         observed_total = sum(observed)
-        if observed_total > 0:
-            C[i] = [value / observed_total for value in observed]
-        elif observed_only:
-            # A missing observation is not evidence of a route. Preserve the local
-            # force of infection instead of presenting a synthetic route as actual OD.
-            C[i][i] = 1.0
-        else:
+
+        if not observed_only:
             C[i] = gravity
+        elif observed_total > 0:
+            obs = [value / observed_total for value in observed]
+            if isolate_unobserved:
+                C[i] = obs  # measured-OD only
+            else:
+                mixed = [od_blend * obs[j] + (1.0 - od_blend) * gravity[j] for j in range(n)]
+                total = sum(mixed) or 1.0
+                C[i] = [value / total for value in mixed]  # observed + gravity floor
+        elif isolate_unobserved:
+            C[i][i] = 1.0  # no observation → isolate (comparison variant)
+        else:
+            C[i] = gravity  # no observation → gravity fill (realistic)
     return C
 
 def _epi_level(spread_score: float) -> str:
@@ -1446,6 +1460,7 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
                        od_observation: dict[tuple[str, str], str] | None = None,
                        access_prior: dict[str, float] | None = None,
                        observed_only: bool = False,
+                       isolate_unobserved: bool = False,
                        days: int = 28) -> tuple[dict, list, list, list]:
     """Daily discrete-time metapopulation SEIR+D over the 17 시도.
 
@@ -1462,16 +1477,17 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
     m = max(0.0, min(0.4, mobility))
     od_weights = od_weights or {}
     od_observation = od_observation or {}
-    C = _build_seir_conn(conn_list, od_weights, observed_only=observed_only)
-    # The expressway sample has no outbound row for Incheon Airport's region.
-    # Preserve the observed OD matrix, but add a separately-labelled airport-access
-    # bridge to the adjacent Seoul capital area rather than making a false radial
-    # "observed" route to the whole country. Its weight is a scenario assumption.
+    C = _build_seir_conn(conn_list, od_weights, observed_only=observed_only,
+                         isolate_unobserved=isolate_unobserved)
+    # In the isolate-unobserved variant the expressway sample has no outbound row for
+    # Incheon Airport's region, so add a separately-labelled airport-access bridge to the
+    # capital area rather than an all-country radial route. The blended (default) variant
+    # does not need this: the gravity floor already connects Incheon to Seoul/Gyeonggi.
     access_prior = access_prior or {}
     entry_code = _SEIR_CODES[entry_idx]
     entry_has_observed_outbound = any(source == entry_code for source, _ in od_weights)
     access_pairs: set[tuple[str, str]] = set()
-    if observed_only and access_prior and not entry_has_observed_outbound:
+    if observed_only and isolate_unobserved and access_prior and not entry_has_observed_outbound:
         for target_code, bridge_share in access_prior.items():
             if target_code not in _SEIR_CODES or target_code == entry_code:
                 continue
@@ -1654,7 +1670,7 @@ _KOREA_SEVERITY_CALIBRATION = (
 
 
 def _gemini_national_scenario(*, disease_name: str, canon: str, is_novel: bool, country: str,
-                              severity: str, entry_label: str, origin_verb: str, seed_region_name: str,
+                              entry_label: str, origin_verb: str, seed_region_name: str,
                               r0_eff: float, cfr_eff: float, inc_days: float, inf_days: float,
                               total_cases: int, total_deaths: int, national_cfr: float, attack_rate: float,
                               peak_day: int, worst: list, national_curve: list,
@@ -1684,7 +1700,6 @@ def _gemini_national_scenario(*, disease_name: str, canon: str, is_novel: bool, 
 
 ## 시나리오
 - 질병: {disease_name} ({dtype}), R0 {r0_eff}, 치명률 {cfr_eff * 100:.1f}%, 잠복기 {inc_days}일, 전염기 {inf_days}일
-- 심각도: {severity}
 - {origin_verb} 거점: {entry_label} → {seed_region_name}
 - 반영 신호: {', '.join(signals) or '없음'}
 
@@ -1734,9 +1749,9 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     entry_code = entry_raw.upper()
     disease_name = str(inputs.get("disease") or "novel respiratory pathogen")
     country = str(inputs.get("country") or "China")
-    severity = str(inputs.get("severity") or "high").lower()
-    if severity not in _SEVERITY_LEVELS:
-        severity = "high"
+    # Severity removed: transmission (R0) and fatality (CFR) are entered explicitly, so a
+    # coarse severity label would only duplicate them. The epidemiology is fully specified
+    # by R0 / CFR / incubation / infectious.
 
     # Origin can be an airport (해외 유입) OR a domestic 시도 by code/name (국내 발생).
     entry_point = _ENTRY_POINTS.get(entry_code)
@@ -1927,10 +1942,51 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
                             "low_deaths": lo[1], "cur_deaths": total_deaths, "high_deaths": hi[1]})
     sensitivity.sort(key=lambda x: abs(x["high_cases"] - x["low_cases"]), reverse=True)
 
+    # OD-treatment comparison — same scenario under (A) measured-OD-only (unobserved
+    # regions isolated) vs (B) observed + gravity fill (the default). Lets the reviewer
+    # see which is more realistic. Only differs when traffic OD is on; identical gravity
+    # baselines otherwise.
+    def _summary_from_snaps(sn: dict) -> dict:
+        rows28 = sn[28]
+        tc = sum(r["cumulative_cases"] for r in rows28)
+        td = sum(r["cumulative_deaths"] for r in rows28)
+        return {
+            "total_cases": tc, "total_deaths": td,
+            "attack_rate": round(tc / _SEIR_TOTAL_POP, 6) if _SEIR_TOTAL_POP else 0.0,
+            "affected_regions": sum(1 for r in rows28 if r["cumulative_cases"] >= 1),
+            "national_curve": [{
+                "day": d,
+                "cumulative_cases": sum(r["cumulative_cases"] for r in sn[d]),
+                "cumulative_deaths": sum(r["cumulative_deaths"] for r in sn[d]),
+            } for d in range(29)],
+            "regions": [{
+                "code": _SEIR_CODES[r["i"]],
+                "name": _REGION_COORDS.get(_SEIR_CODES[r["i"]], {}).get("name", _SEIR_CODES[r["i"]]),
+                "cumulative_cases": r["cumulative_cases"],
+                "cumulative_deaths": r["cumulative_deaths"],
+            } for r in rows28],
+        }
+
+    if observed_only:
+        snaps_iso, _di, _ci, _ei = _simulate_outbreak(
+            entry_idx, r0_eff, cfr_eff, inc_days, inf_days, conn_list, seed_count,
+            weather_fav, use_weather, mobility=traffic_intensity, weather_intensity=weather_intensity,
+            od_weights=od_weights, od_observation=od_observation, access_prior=airport_access_prior,
+            observed_only=observed_only, isolate_unobserved=True)
+        comparison = {
+            "active": True,
+            "observed_only": _summary_from_snaps(snaps_iso),
+            "blended": _summary_from_snaps(snaps),
+            "note": "관측 OD only(A)는 관측된 경로만 쓰고 관측 없는 지역을 고립시킵니다. 관측+중력(B, 기본)은 관측 경로를 우선하되 나머지를 중력모형으로 채워, 실제로 모든 지역이 이동한다는 사실을 반영합니다. 희소 표본에서는 A가 확산을 과소추정하는 경향이 있어 B가 더 현실적입니다.",
+        }
+    else:
+        comparison = {"active": False,
+                      "note": "교통 OD 미사용 — 두 방식 모두 중력 baseline으로 동일합니다."}
+
     origin_verb = "발생" if entry_type == "domestic" else "유입"
     attack_rate_nat = total_cases / _SEIR_TOTAL_POP if _SEIR_TOTAL_POP else 0.0
     gemini_scenario = _gemini_national_scenario(
-        disease_name=disease_name, canon=canon, is_novel=not canon, country=country, severity=severity,
+        disease_name=disease_name, canon=canon, is_novel=not canon, country=country,
         entry_label=entry_point["label"], origin_verb=origin_verb,
         seed_region_name=_REGION_COORDS.get(entry_region, {}).get("name", entry_region),
         r0_eff=r0_eff, cfr_eff=cfr_eff, inc_days=inc_days, inf_days=inf_days,
@@ -1946,7 +2002,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         },
         "scenario": {
             "disease": disease_name, "disease_matched": canon, "is_novel": not canon,
-            "country": country, "severity": severity,
+            "country": country,
             "r0": r0_eff, "cfr": cfr_eff, "r0_base": round(r0_base, 3), "cfr_base": round(cfr_base, 4),
             "incubation_days": inc_days, "infectious_days": inf_days,
             "aviation": aviation_info, "aviation_source": aviation_source,
@@ -1974,11 +2030,12 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             "national_curve": national_curve,
             "sensitivity": sensitivity,
             "response_playbook": _build_response_playbook(peak_day, cfr_eff, r0_eff),
+            "comparison": comparison,
             "total_population": _SEIR_TOTAL_POP,
         },
         "gemini_scenario": gemini_scenario,
         "narrative": (
-            f"역학 시뮬레이션: {disease_name} (R0 {r0_eff}·CFR {cfr_eff * 100:.1f}%, {severity})가 "
+            f"역학 시뮬레이션: {disease_name} (R0 {r0_eff}·CFR {cfr_eff * 100:.1f}%)가 "
             f"{entry_point['label']}에서 {origin_verb}({_REGION_COORDS.get(entry_region, {}).get('name', entry_region)} 거점) 시 — "
             f"28일 후 전국 모형 누적 감염 {total_cases:,}명, 사망 {total_deaths:,}명 (28일 사망비 {national_cfr * 100:.1f}%) "
             f"(전국 발병률 {total_cases / _SEIR_TOTAL_POP * 100:.2f}%, 정점 {peak_day}일차). "
@@ -1996,8 +2053,6 @@ register(FunctionSpec(
          "description": "Airport entry code (e.g. ICN, PUS) or free-text airport name"},
         {"name": "disease", "type": "string", "required": False, "default": "novel respiratory pathogen"},
         {"name": "country", "type": "string", "required": False, "default": "China"},
-        {"name": "severity", "type": "string", "required": False, "default": "high",
-         "description": "low | medium | high | critical (scales R0 and CFR)"},
         {"name": "r0", "type": "number", "required": False,
          "description": "Base reproduction number R0 (override; auto-filled for known diseases, set manually for novel)"},
         {"name": "cfr", "type": "number", "required": False,
