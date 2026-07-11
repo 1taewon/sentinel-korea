@@ -670,6 +670,22 @@ def _forecast_disease_trend(inputs: dict) -> dict:
         e = alpha * v + (1 - alpha) * e
     vol = statistics.stdev(residuals) if len(residuals) > 1 else max(1, ema * 0.15)
     vol = max(1, vol)  # at least 1 unit
+    # Evaluate this transparent benchmark on recent, unseen one-week origins.
+    def _ema_one_step(train: list[float]) -> float:
+        level = train[0]
+        for value in train[1:]:
+            level = alpha * value + (1 - alpha) * level
+        if len(train) >= 8:
+            drift = statistics.mean(train[-4:]) - statistics.mean(train[-8:-4])
+        elif len(train) >= 4:
+            drift = statistics.mean(train[-4:]) - statistics.mean(train[:-4] or train[:1])
+        else:
+            drift = 0.0
+        return max(0.0, level + drift)
+
+    validation_errors = [abs(_ema_one_step(values[:cut]) - values[cut])
+                         for cut in range(max(8, len(values) - 6), len(values))]
+    rolling_mae = round(float(statistics.mean(validation_errors)), 3) if validation_errors else None
 
     # --- Projection
     last_date = series[-1]["date"]
@@ -721,6 +737,7 @@ def _forecast_disease_trend(inputs: dict) -> dict:
                               "최근 4주와 이전 4주의 평균 차이(momentum)를 감쇄(0.7배/주)하여 "
                               "미래를 추정합니다. 신뢰구간은 과거 잔차의 표준편차로 계산합니다.",
         },
+        "diagnostics": {"rolling_mae": rolling_mae, "validation_folds": len(validation_errors), "interval": "heuristic band; not calibrated coverage"},
         "ema_baseline": round(ema, 2),
         "momentum": round(momentum, 2),
         "volatility": round(vol, 2),
@@ -755,116 +772,118 @@ register(FunctionSpec(
 # ═════════════════════════════════════════════════════════════════════════════
 
 def _forecast_disease_sarimax(inputs: dict) -> dict:
-    """SARIMAX-based forecast for disease time-series.
+    """Walk-forward selected non-seasonal ARIMA forecast for weekly disease signals.
 
-    Uses statsmodels SARIMAX with regularization. Designed to work alongside
-    the EMA forecast so the operator can compare two models side-by-side.
+    The public function name remains for compatibility. The available 17--34 weekly
+    observations cannot identify annual seasonality responsibly, so this function
+    explicitly returns ARIMA rather than mislabelling a non-seasonal model SARIMAX.
     """
     disease_id = str(inputs.get("disease_id") or "")
     weeks = max(1, min(int(inputs.get("weeks") or 4), 12))
     if not disease_id:
         return {"error": "disease_id required"}
-
     series = _load_disease_series(disease_id)
     if not series:
         return {"error": f"No time-series data for disease '{disease_id}'"}
-    if len(series) < 10:
-        return {"error": f"Insufficient data for SARIMAX ({len(series)} points, need >= 10)"}
+    if len(series) < 16:
+        return {"error": f"Insufficient data for walk-forward ARIMA ({len(series)} points, need >= 16)",
+                "disease_id": disease_id}
 
-    values = [p["value"] for p in series]
-
+    values = [max(0.0, float(point["value"])) for point in series]
     try:
         import warnings
-        warnings.filterwarnings("ignore")
-        from statsmodels.tsa.statespace.sarimax import SARIMAX as _SARIMAX
-
-        # SARIMAX(1,1,1) — order(p=1, d=1, q=1) with regularization
-        # d=1 handles non-stationarity (trending data)
-        model = _SARIMAX(
-            values,
-            order=(1, 1, 1),
-            enforce_stationarity=False,
-            enforce_invertibility=False,
-        )
-        results = model.fit(disp=False, maxiter=200)
-
-        # Forecast
         import numpy as _np
-        fc = results.get_forecast(steps=weeks)
-        pred_mean = _np.asarray(fc.predicted_mean).flatten()
-        conf_int_raw = fc.conf_int(alpha=0.1)  # 90% confidence
-        conf_int_arr = _np.asarray(conf_int_raw)
+        from statsmodels.tsa.statespace.sarimax import SARIMAX as _SARIMAX
+        warnings.filterwarnings("ignore")
 
-        last_date = series[-1]["date"]
+        candidates = ((0, 1, 1), (1, 1, 0), (1, 1, 1))
+        holdouts = list(range(max(12, len(values) - 6), len(values)))
+        candidate_mae: dict[str, float] = {}
+        candidate_folds: dict[str, int] = {}
+        for order in candidates:
+            errors: list[float] = []
+            for end_idx in holdouts:
+                train = _np.log1p(_np.asarray(values[:end_idx], dtype=float))
+                try:
+                    fitted = _SARIMAX(
+                        train, order=order, enforce_stationarity=False,
+                        enforce_invertibility=False,
+                    ).fit(disp=False, maxiter=100)
+                    predicted = float(_np.expm1(fitted.get_forecast(steps=1).predicted_mean[0]))
+                    errors.append(abs(max(0.0, predicted) - values[end_idx]))
+                except Exception:
+                    continue
+            if errors:
+                key = str(order)
+                candidate_mae[key] = round(float(statistics.mean(errors)), 3)
+                candidate_folds[key] = len(errors)
+        if not candidate_mae:
+            return {"error": "ARIMA walk-forward validation failed for every candidate", "disease_id": disease_id}
+
+        selected_key = min(candidate_mae, key=candidate_mae.get)
+        selected_order = next(order for order in candidates if str(order) == selected_key)
+        fitted = _SARIMAX(
+            _np.log1p(_np.asarray(values, dtype=float)), order=selected_order,
+            enforce_stationarity=False, enforce_invertibility=False,
+        ).fit(disp=False, maxiter=200)
+        forecast = fitted.get_forecast(steps=weeks)
+        mean_log = _np.asarray(forecast.predicted_mean).flatten()
+        interval_log = _np.asarray(forecast.conf_int(alpha=0.10))
+
         try:
-            ld = _date.fromisoformat(last_date)
+            last_date = _date.fromisoformat(series[-1]["date"])
         except Exception:
-            ld = _date.today()
-
+            last_date = _date.today()
         points: list[dict] = []
         for i in range(weeks):
-            dt = ld.fromordinal(ld.toordinal() + (i + 1) * 7)
-            val = max(0, float(pred_mean[i]))
-            lo = max(0, float(conf_int_arr[i, 0]))
-            hi = max(0, float(conf_int_arr[i, 1]))
-            points.append({
-                "date": dt.isoformat(),
-                "weeks_ahead": i + 1,
-                "value": round(val, 1),
-                "low": round(lo, 1),
-                "high": round(hi, 1),
-            })
+            dt = last_date.fromordinal(last_date.toordinal() + (i + 1) * 7)
+            value = max(0.0, float(_np.expm1(mean_log[i])))
+            low = max(0.0, float(_np.expm1(interval_log[i, 0])))
+            high = max(0.0, float(_np.expm1(interval_log[i, 1])))
+            points.append({"date": dt.isoformat(), "weeks_ahead": i + 1,
+                           "value": round(value, 1), "low": round(low, 1), "high": round(high, 1)})
 
-        # Model diagnostics
-        aic = round(float(results.aic), 1)
-        bic = round(float(results.bic), 1)
-
-        # Peak detection
-        peak_val = max(values)
-        peak_idx = values.index(peak_val)
-        peak_date = series[peak_idx]["date"] if peak_idx < len(series) else ""
-
-        # Narrative
-        delta = points[-1]["value"] - values[-1]
-        pct = (delta / max(1, values[-1])) * 100
-        direction = "상승" if pct > 10 else "하락" if pct < -10 else "유지"
-
+        peak_value = max(values)
+        peak_date = series[values.index(peak_value)]["date"]
         return {
-            "disease_id": disease_id,
-            "model_name": "SARIMAX",
+            "warning": ("최근 관측값의 변화가 매우 작아 단기 예측의 식별력이 제한됩니다."
+                        if len({round(value, 6) for value in values[-8:]}) <= 2 else None),            "disease_id": disease_id,
+            "model_name": "ARIMA",
             "history": series,
             "forecast": points,
             "method": {
-                "name": "SARIMAX(1,1,1)",
-                "formula": "(1-φB)(1-B)Yₜ = (1+θB)εₜ",
+                "name": f"ARIMA{selected_order} (walk-forward selected)",
+                "formula": "log1p(y) -> ARIMA(p,1,q) -> expm1 forecast",
                 "parameters": {
-                    "order": "(p=1, d=1, q=1)",
-                    "differencing": "d=1 (1차 차분으로 비정상성 제거)",
-                    "confidence": "90% (α=0.10)",
-                    "AIC": aic,
-                    "BIC": bic,
+                    "order": selected_order,
+                    "transform": "log1p for non-negative, right-skewed weekly values",
+                    "seasonality": "not fitted: fewer than 104 weekly observations",
+                    "prediction_interval": "90% model interval; empirical coverage requires ongoing backtesting",
                 },
-                "description_kr": "SARIMAX(1,1,1) 모델은 자기회귀(AR), 차분(I), "
-                                  "이동평균(MA)을 결합한 시계열 예측 방법입니다. "
-                                  "1차 차분(d=1)으로 추세를 제거하고, AR(1)으로 이전 값의 영향을, "
-                                  "MA(1)으로 잔차 패턴을 포착합니다. "
-                                  "90% 신뢰구간은 모델의 예측 불확실성을 반영합니다.",
+                "validation": {
+                    "scheme": "rolling-origin, one-week-ahead MAE",
+                    "folds": candidate_folds[selected_key],
+                    "selected_mae": candidate_mae[selected_key],
+                    "candidate_mae": candidate_mae,
+                },
+                "description_kr": "짧은 주간 시계열에는 계절 SARIMAX를 과적합하지 않고, log1p 변환 ARIMA 후보를 최근 시점 롤링 검증 MAE로 선택합니다.",
             },
-            "diagnostics": {"aic": aic, "bic": bic},
-            "peak": {"date": peak_date, "value": peak_val},
-            "narrative": f"[SARIMAX] {weeks}주 후 예상: {points[-1]['value']:.0f} "
-                         f"(현재 {values[-1]:.0f}, {direction} {pct:+.0f}%). "
-                         f"AIC={aic}, 90% CI: [{points[-1]['low']:.0f}-{points[-1]['high']:.0f}].",
+            "diagnostics": {
+                "aic": round(float(fitted.aic), 1), "bic": round(float(fitted.bic), 1),
+                "rolling_mae": candidate_mae[selected_key],
+                "validation_folds": candidate_folds[selected_key], "candidate_mae": candidate_mae,
+            },
+            "peak": {"date": peak_date, "value": peak_value},
+            "narrative": (f"[ARIMA walk-forward] {weeks}-week forecast: {points[-1]['value']:.0f} "
+                          f"(latest {values[-1]:.0f}; rolling MAE {candidate_mae[selected_key]:.1f}, "
+                          f"{candidate_folds[selected_key]} folds)."),
         }
-
-    except Exception as e:
-        return {"error": f"SARIMAX fitting failed: {type(e).__name__}: {e}",
-                "disease_id": disease_id}
-
+    except Exception as exc:
+        return {"error": f"ARIMA fitting failed: {type(exc).__name__}: {exc}", "disease_id": disease_id}
 
 register(FunctionSpec(
     name="forecastDiseaseSARIMAX",
-    label="Forecast disease trend (SARIMAX)",
+    label="Forecast disease trend (walk-forward ARIMA)",
     inputs=[
         {"name": "disease_id", "type": "string", "required": True,
          "description": "Disease.id"},
@@ -874,9 +893,8 @@ register(FunctionSpec(
     output="object<{history, forecast: list<{date,value,low,high}>, method, diagnostics, narrative}>",
     affects_objects=["Disease"],
     requires_admin=False,
-    description="SARIMAX(1,1,1) forecast with 90% confidence interval. "
-                "Statsmodels-based — requires >= 10 data points. Compare against EMA forecast "
-                "for multi-model decision support.",
+    description="Walk-forward selected ARIMA forecast on log1p weekly values, with a 90% model interval. "
+                "Uses >=16 points and reports rolling-origin validation MAE; compare against the transparent EMA benchmark.",
     fn=_forecast_disease_sarimax,
 ))
 
@@ -926,23 +944,56 @@ def _aviation_multiplier(country: str) -> dict | None:
     }
 
 
-def _highway_connectivity() -> dict[str, float]:
-    """Per-시도 highway arrival-traffic connectivity (region_code → 0..1).
+def _highway_mobility() -> dict:
+    """Load the best available directed Korean mobility network.
 
-    Used to weight domestic spread when the "교통상황 add" toggle is on — the
-    spread-network research's connectivity/"wormhole" correction (far-but-connected
-    regions spread despite distance). Returns {} when the data is unavailable.
+    A multimodal file is used only when it has explicit corridors. Each mode retains
+    its observation type in the source file; the simulator uses the combined OD shape
+    but does not relabel schedule-capacity proxies as observed passenger counts.
     """
-    data = _load_json(PROCESSED_DIR / "highway_connectivity_by_region.json")
+    multimodal = _load_json(PROCESSED_DIR / "multimodal_mobility_by_region.json")
+    highway = _load_json(PROCESSED_DIR / "highway_connectivity_by_region.json")
+    use_multimodal = isinstance(multimodal, dict) and bool(multimodal.get("corridors"))
+    data = multimodal if use_multimodal else highway
     if not isinstance(data, dict):
-        return {}
+        return {"connectivity": {}, "od_weights": {}, "od_volume": {}, "generated_at": None,
+                "network_source": "unavailable", "mode_metadata": {}}
+
     regions = data.get("regions") or {}
-    return {
+    connectivity = {
         code: float(v.get("connectivity") or 0)
         for code, v in regions.items()
-        if isinstance(v, dict)
+        if code in _SEIR_CODES and isinstance(v, dict)
+    }
+    od_weights: dict[tuple[str, str], float] = {}
+    od_volume: dict[tuple[str, str], int] = {}
+    for edge in data.get("corridors") or []:
+        if not isinstance(edge, dict):
+            continue
+        source, target = str(edge.get("source") or ""), str(edge.get("target") or "")
+        if source not in _SEIR_CODES or target not in _SEIR_CODES or source == target:
+            continue
+        try:
+            weight = max(0.0, float(edge.get("weight") or 0.0))
+            volume = max(0, int(edge.get("traffic") or 0))
+        except (TypeError, ValueError):
+            continue
+        if weight > 0:
+            od_weights[(source, target)] = weight
+            od_volume[(source, target)] = volume
+    return {
+        "connectivity": connectivity,
+        "od_weights": od_weights,
+        "od_volume": od_volume,
+        "generated_at": data.get("generated_at"),
+        "network_source": "multimodal_od" if use_multimodal else "highway_od",
+        "mode_metadata": data.get("modes") or {},
     }
 
+
+def _highway_connectivity() -> dict[str, float]:
+    """Compatibility wrapper for callers that only need the regional index."""
+    return _highway_mobility()["connectivity"]
 
 def _weather_favorability() -> dict[str, float]:
     """Per-시도 respiratory-weather favorability (region_code → 0..1, cold+dry→higher).
@@ -1288,7 +1339,8 @@ _DISEASE_TABLE = {
     "influenza": {"r0": 1.4, "cfr": 0.001, "inc": 2.0,  "inf": 4.0,   "aliases": ["flu", "독감", "인플루엔자", "seasonal"]},
 }
 _DEFAULT_DISEASE = {"r0": 2.5, "cfr": 0.02, "inc": 5.0, "inf": 6.0}
-_SEV_MULT = {"low": (0.7, 0.4), "medium": (1.0, 1.0), "high": (1.4, 2.0), "critical": (1.8, 3.5)}
+# Severity is a response-priority label only. Transmission and fatality are explicit inputs.
+_SEVERITY_LEVELS = {"low", "medium", "high", "critical"}
 
 
 def _resolve_disease(name: str) -> tuple[str, dict]:
@@ -1303,25 +1355,42 @@ def _resolve_disease(name: str) -> tuple[str, dict]:
     return "", _DEFAULT_DISEASE
 
 
-def _build_seir_conn(conn_list: list[float]) -> list[list[float]]:
-    """Gravity connectivity matrix C (17x17, row-normalized to [0,1]).
-    C_ij = pop_j / distance_ij^2 * conn_j (i=destination, j=source)."""
+def _build_seir_conn(conn_list: list[float],
+                     od_weights: dict[tuple[str, str], float] | None = None) -> list[list[float]]:
+    """Incoming mobility matrix C[i][j] (target i, source j), each row summing to 1.
+
+    When sampled Korean Expressway OD corridors are available, they provide 90% of
+    each target's incoming mix. A 10% gravity prior preserves a connected national
+    network when the bounded API sample misses a corridor. Without OD data, the
+    gravity prior is used on its own. This makes m a true mixing proportion in the
+    force of infection rather than a degree-dependent multiplier.
+    """
     n = len(_SEIR_CODES)
     coords = [(_REGION_COORDS[c]["lat"], _REGION_COORDS[c]["lng"]) for c in _SEIR_CODES]
     pops = [float(_SEIR_POP[c]) for c in _SEIR_CODES]
     C = [[0.0] * n for _ in range(n)]
+    od_weights = od_weights or {}
+
     for i in range(n):
-        raw = []
+        gravity = []
+        observed = []
         for j in range(n):
             if i == j:
-                raw.append(0.0)
-            else:
-                d = max(_haversine_km(coords[i][0], coords[i][1], coords[j][0], coords[j][1]), 10.0)
-                raw.append(pops[j] / (d * d) * conn_list[j])
-        mx = max(raw) or 1.0
-        C[i] = [r / mx for r in raw]
-    return C
+                gravity.append(0.0)
+                observed.append(0.0)
+                continue
+            distance = max(_haversine_km(coords[i][0], coords[i][1], coords[j][0], coords[j][1]), 10.0)
+            gravity.append(pops[j] / (distance * distance) * max(conn_list[j], 0.01))
+            observed.append(max(0.0, od_weights.get((_SEIR_CODES[j], _SEIR_CODES[i]), 0.0)))
 
+        gravity_total = sum(gravity) or 1.0
+        gravity = [value / gravity_total for value in gravity]
+        observed_total = sum(observed)
+        if observed_total > 0:
+            C[i] = [value / observed_total for value in observed]
+        else:
+            C[i] = gravity
+    return C
 
 def _epi_level(spread_score: float) -> str:
     """Map-color level from the infection-intensity score (so the map visibly lights up
@@ -1338,66 +1407,118 @@ def _epi_level(spread_score: float) -> str:
 def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: float, inf_days: float,
                        conn_list: list[float], seed_count: float, weather_fav: dict, use_weather: bool,
                        mobility: float = 0.10, weather_intensity: float = 0.3,
-                       days: int = 28) -> tuple[dict, list, list]:
-    """Daily discrete-time metapopulation SEIR+D over the 17 시도. Signal add-ons enter as:
-    aviation → seed_count (initial infectious at entry); traffic → conn_list feeding the
-    gravity matrix C AND the mobility fraction; weather → per-region β boost (≤10일).
-    Returns (snaps {day: [row]}, daily_new [(day, national new cases)], C matrix)."""
+                       od_weights: dict[tuple[str, str], float] | None = None,
+                       days: int = 28) -> tuple[dict, list, list, list]:
+    """Daily discrete-time metapopulation SEIR+D over the 17 시도.
+
+    C[i][j] is a normalized incoming mobility mix, so m is the share of exposure
+    pressure attributed to interregional mixing. The returned edge events attribute
+    imported exposures to their source region; they drive the map animation and are
+    not mistaken for observed case-contact tracing.
+    """
     n = len(_SEIR_CODES)
     Npop = [float(_SEIR_POP[c]) for c in _SEIR_CODES]
     sigma = 1.0 / max(inc_days, 0.5)
     gamma = 1.0 / max(inf_days, 0.5)
     beta_base = r0_eff * gamma
     m = max(0.0, min(0.4, mobility))
-    C = _build_seir_conn(conn_list)
+    C = _build_seir_conn(conn_list, od_weights)
     S = list(Npop); E = [0.0] * n; I = [0.0] * n; R = [0.0] * n; D = [0.0] * n; cum = [0.0] * n
     seed = min(max(1.0, seed_count), S[entry_idx])
     I[entry_idx] += seed; S[entry_idx] -= seed; cum[entry_idx] = seed
     weather_window = 10
-    snaps: dict = {}; prev_cum = [0.0] * n; daily_new: list = []
-    for d in range(0, days + 1):
-        if d in _TIMELINE_DAYS:
-            rows = []
-            for i in range(n):
-                cc = cum[i]
-                ar = cc / Npop[i] if Npop[i] else 0.0
-                ecfr = (D[i] / cc) if cc > 0 else 0.0
-                prev = I[i] / Npop[i] if Npop[i] else 0.0
-                spread = 1.0 - math.exp(-(1500.0 * prev + 12.0 * ar))
-                rows.append({
-                    "i": i, "day": d,
-                    "cumulative_cases": int(round(cc)),
-                    "new_cases": max(0, int(round(cc - prev_cum[i]))),
-                    "cumulative_deaths": int(round(D[i])),
-                    "attack_rate": round(ar, 6),
-                    "effective_cfr": round(ecfr, 4),
-                    "score": round(spread, 4),
-                    "level": _epi_level(spread),
-                })
-            snaps[d] = rows
-            prev_cum = list(cum)
-        nS = list(S); nE = list(E); nI = list(I); nR = list(R); nD = list(D); day_new = 0.0
+    snaps: dict = {}
+    day_onsets = [0.0] * n
+    day_onsets[entry_idx] = seed
+    daily_new: list = [(0, seed)]
+    transmission_edges: list[dict] = []
+
+    for d in range(days + 1):
+        rows = []
+        for i in range(n):
+            cc = cum[i]
+            ar = cc / Npop[i] if Npop[i] else 0.0
+            ecfr = (D[i] / cc) if cc > 0 else 0.0
+            prev = I[i] / Npop[i] if Npop[i] else 0.0
+            spread = 1.0 - math.exp(-(1500.0 * prev + 12.0 * ar))
+            rows.append({
+                "i": i, "day": d,
+                "cumulative_cases": int(round(cc)),
+                "new_cases": max(0, int(round(day_onsets[i]))),
+                "cumulative_deaths": int(round(D[i])),
+                "attack_rate": round(ar, 6),
+                "effective_cfr": round(ecfr, 4),
+                "score": round(spread, 4),
+                "level": _epi_level(spread),
+            })
+        snaps[d] = rows
+        if d == days:
+            break
+
+        nS = list(S); nE = list(E); nI = list(I); nR = list(R); nD = list(D)
+        next_onsets = [0.0] * n
+        edge_events_today: list[dict] = []
         for i in range(n):
             beta_i = (beta_base * (1.0 + weather_intensity * weather_fav.get(_SEIR_CODES[i], 0.0))
                       if (use_weather and d <= weather_window) else beta_base)
-            local = beta_i * I[i] / Npop[i] if Npop[i] else 0.0
-            imp = sum(C[i][j] * (I[j] / Npop[j] if Npop[j] else 0.0) for j in range(n) if j != i)
-            lam = (1.0 - m) * local + m * beta_i * imp
-            ne = min(lam * S[i], S[i]); ni = min(sigma * E[i], E[i]); li = min(gamma * I[i], I[i])
+            local_lambda = (1.0 - m) * beta_i * I[i] / Npop[i] if Npop[i] else 0.0
+            imported_lambdas = [
+                m * beta_i * C[i][j] * (I[j] / Npop[j] if Npop[j] else 0.0)
+                for j in range(n)
+            ]
+            lam = local_lambda + sum(imported_lambdas)
+            raw_exposed = lam * S[i]
+            ne = min(raw_exposed, S[i])
+            scale = ne / raw_exposed if raw_exposed > 0 else 0.0
+            ni = min(sigma * E[i], E[i])
+            li = min(gamma * I[i], I[i])
             nd = cfr * li; nr = li - nd
-            nS[i] = max(0.0, S[i] - ne); nE[i] = max(0.0, E[i] + ne - ni); nI[i] = max(0.0, I[i] + ni - li)
+            nS[i] = max(0.0, S[i] - ne)
+            nE[i] = max(0.0, E[i] + ne - ni)
+            nI[i] = max(0.0, I[i] + ni - li)
             nR[i] = R[i] + nr; nD[i] = D[i] + nd
-            cum[i] += ni; day_new += ni
+            cum[i] += ni
+            next_onsets[i] = ni
+
+            for j, imported_lambda in enumerate(imported_lambdas):
+                exposure = imported_lambda * S[i] * scale
+                if i != j and exposure >= 0.01:
+                    edge_events_today.append({
+                        "day": d + 1,
+                        "source": _SEIR_CODES[j],
+                        "target": _SEIR_CODES[i],
+                        "expected_exposures": round(exposure, 4),
+                        "mobility_weight": round(C[i][j], 5),
+                        "source_new_cases": round(day_onsets[j], 4),
+                        "target_new_cases": round(ni, 4),
+                    })
+
+        # Keep a route from each active source before filling the display budget with
+        # globally largest flows. This preserves observed network cascades (e.g.
+        # Incheon -> Seoul -> Busan) in the daily animation instead of a radial fan.
+        by_source: dict[str, list[dict]] = {}
+        for edge in edge_events_today:
+            by_source.setdefault(edge["source"], []).append(edge)
+        balanced: list[dict] = []
+        for source_edges in by_source.values():
+            balanced.extend(sorted(source_edges, key=lambda edge: edge["expected_exposures"], reverse=True)[:2])
+        chosen = {(edge["source"], edge["target"]) for edge in balanced}
+        remainder = [edge for edge in edge_events_today if (edge["source"], edge["target"]) not in chosen]
+        transmission_edges.extend((
+            sorted(balanced, key=lambda edge: edge["expected_exposures"], reverse=True)
+            + sorted(remainder, key=lambda edge: edge["expected_exposures"], reverse=True)
+        )[:32])
         S, E, I, R, D = nS, nE, nI, nR, nD
-        daily_new.append((d, day_new))
-    return snaps, daily_new, C
+        day_onsets = next_onsets
+        daily_new.append((d + 1, sum(next_onsets)))
 
+    return snaps, daily_new, C, transmission_edges
 
-def _build_response_playbook(peak_day: int, national_cfr: float, r0_eff: float) -> list[dict]:
+def _build_response_playbook(peak_day: int, input_cfr: float, r0_eff: float) -> list[dict]:
     """Stage-based public-health response recommendations, adapted to the simulated
     epidemic phase. Deterministic (no LLM), always present. Grounded in K-방역 3T
     (Test–Trace–Treat), WHO 봉쇄–완화(containment–mitigation) 단계, 감염병 위기경보 4단계."""
-    high_cfr = national_cfr >= 0.05
+    high_cfr = input_cfr >= 0.05
     high_r0 = r0_eff >= 2.5
     still_growing = peak_day >= 21   # 신규 정점이 3주 이후 → 28일에도 성장기
     early_peak = peak_day <= 10      # 정점이 10일 이전 → 28일엔 감소기
@@ -1416,7 +1537,7 @@ def _build_response_playbook(peak_day: int, national_cfr: float, r0_eff: float) 
         "고위험군(고령·기저질환자) 우선 보호 및 백신 우선접종 계획 수립",
     ]
     if high_cfr:
-        mid.append(f"치명률이 높아(전국 {national_cfr * 100:.1f}%) 중환자 병상·인공호흡기·ECMO 확보 우선")
+        mid.append(f"입력 CFR이 높아({input_cfr * 100:.1f}%) 중환자 병상·인공호흡기·ECMO 확보 우선")
 
     if still_growing:
         late_phase = "정점 대응 (성장기)"
@@ -1502,10 +1623,10 @@ def _gemini_national_scenario(*, disease_name: str, canon: str, is_novel: bool, 
 - 반영 신호: {', '.join(signals) or '없음'}
 
 ## SEIR 시뮬레이션 결과 (28일)
-- 전국 누적 확진 {total_cases:,}명, 사망 {total_deaths:,}명, 전국 치명률 {national_cfr * 100:.1f}%, 발병률 {attack_rate * 100:.2f}%
+- 전국 모형 누적 감염 {total_cases:,}명, 사망 {total_deaths:,}명, 28일 사망비 {national_cfr * 100:.1f}%, 입력 CFR {cfr_eff * 100:.1f}%, 발병률 {attack_rate * 100:.2f}%
 - 신규 확진 정점: {peak_day}일차
 - 최다 피해 지역: {worst_txt}
-- 누적 확진 추이: {curve_txt}
+- 모형 누적 감염 추이: {curve_txt}
 
 ## 한국 의료 대응역량 (심각도 보정 기준)
 {_KOREA_HEALTHCARE_CONTEXT}
@@ -1548,7 +1669,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     disease_name = str(inputs.get("disease") or "novel respiratory pathogen")
     country = str(inputs.get("country") or "China")
     severity = str(inputs.get("severity") or "high").lower()
-    if severity not in _SEV_MULT:
+    if severity not in _SEVERITY_LEVELS:
         severity = "high"
 
     # Origin can be an airport (해외 유입) OR a domestic 시도 by code/name (국내 발생).
@@ -1592,9 +1713,10 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     cfr_base = max(0.0, min(1.0, _num("cfr", dp["cfr"])))
     inc_days = max(0.5, _num("incubation_days", dp["inc"]))
     inf_days = max(0.5, _num("infectious_days", dp["inf"]))
-    r0m, cfrm = _SEV_MULT[severity]
-    r0_eff = round(r0_base * r0m, 3)
-    cfr_eff = round(min(cfr_base * cfrm, 0.5), 4)
+    # Do not let a qualitative severity label alter two distinct natural-history
+    # parameters. Scenario transmission is governed by the explicit R0/CFR inputs.
+    r0_eff = round(r0_base, 3)
+    cfr_eff = round(cfr_base, 4)
 
     # Aviation -> import seed scale — only for a 해외 유입(airport) origin; a 국내 발생
     # (domestic) origin has no import, so the seed stays at the base count.
@@ -1611,28 +1733,36 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     aviation_intensity = max(0.2, min(5.0, _num("aviation_intensity", 1.0)))
     seed_count = 5.0 * aviation_intensity * aviation_mult
 
-    # Traffic -> per-region connectivity weight in the gravity matrix + mobility fraction.
+    # Traffic -> measured interregional OD network when available, otherwise a gravity prior.
     use_traffic = bool(inputs.get("use_traffic"))
-    highway = _highway_connectivity() if use_traffic else {}
-    traffic_source = "highway" if (use_traffic and highway) else ("unavailable" if use_traffic else "off")
-    conn_list = [(highway.get(c, 0.5) if (use_traffic and highway) else _SEIR_CONN_DEFAULT[c]) for c in _SEIR_CODES]
+    highway_data = _highway_mobility() if use_traffic else {
+        "connectivity": {}, "od_weights": {}, "od_volume": {}, "generated_at": None, "network_source": "unavailable", "mode_metadata": {}}
+    highway = highway_data["connectivity"]
+    od_weights = highway_data["od_weights"]
+    traffic_source = (
+        highway_data.get("network_source", "highway_od") if (use_traffic and od_weights)
+        else ("highway_arrival_index" if (use_traffic and highway)
+              else ("unavailable" if use_traffic else "off"))
+    )
+    conn_list = [(highway.get(c, 0.5) if (use_traffic and highway) else _SEIR_CONN_DEFAULT[c])
+                 for c in _SEIR_CODES]
     # 교통 이동 강도 = 지역 간 결합 비율 m (클수록 전국 확산 빠름).
-    traffic_intensity = max(0.02, min(0.30, _num("traffic_intensity", 0.10)))
-
+    traffic_intensity = (max(0.02, min(0.30, _num("traffic_intensity", 0.10))) if use_traffic else 0.0)
     # Weather -> transmissibility boost on days <= 10 (short-term forecast horizon).
     use_weather = bool(inputs.get("use_weather"))
-    weather_fav = _weather_favorability_live() if use_weather else {}
-    weather_source = "kma" if (use_weather and weather_fav) else ("unavailable" if use_weather else "off")
+    weather_live = bool(inputs.get("weather_live", True))
+    weather_fav = ((_weather_favorability_live() if weather_live else _weather_favorability()) if use_weather else {})
+    weather_source = (("kma_live" if weather_live else "kma_cached") if (use_weather and weather_fav) else ("unavailable" if use_weather else "off"))
     # 기상 강도 = β 보정 계수 (β = β·(1 + 강도·favorability), 클수록 계절 영향 큼).
     weather_intensity = max(0.0, min(1.0, _num("weather_intensity", 0.3)))
 
-    snaps, daily_new, C = _simulate_outbreak(entry_idx, r0_eff, cfr_eff, inc_days, inf_days,
-                                             conn_list, seed_count, weather_fav, use_weather,
-                                             mobility=traffic_intensity, weather_intensity=weather_intensity)
-
+    snaps, daily_new, C, transmission_edges = _simulate_outbreak(
+        entry_idx, r0_eff, cfr_eff, inc_days, inf_days, conn_list, seed_count,
+        weather_fav, use_weather, mobility=traffic_intensity,
+        weather_intensity=weather_intensity, od_weights=od_weights)
     region_results = []
     for i, code in enumerate(_SEIR_CODES):
-        tl = [snaps[d][i] for d in _TIMELINE_DAYS]
+        tl = [snaps[d][i] for d in range(29)]
         last = tl[-1]
         region_results.append({
             "region_id": code,
@@ -1665,14 +1795,31 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         "cumulative_cases": sum(r["cumulative_cases"] for r in snaps[d]),
         "cumulative_deaths": sum(r["cumulative_deaths"] for r in snaps[d]),
         "new_cases": sum(r["new_cases"] for r in snaps[d]),
-    } for d in _TIMELINE_DAYS]
+    } for d in range(29)]
 
+    mobility_edges = []
+    for target_idx, target_code in enumerate(_SEIR_CODES):
+        for source_idx, source_code in enumerate(_SEIR_CODES):
+            weight = C[target_idx][source_idx]
+            if source_idx == target_idx or weight < 0.025:
+                continue
+            pair = (source_code, target_code)
+            mobility_edges.append({
+                "source": source_code,
+                "target": target_code,
+                "weight": round(weight, 5),
+                "traffic_volume": highway_data["od_volume"].get(pair),
+            })
+    mobility_edges.sort(key=lambda edge: edge["weight"], reverse=True)
+    network_source = highway_data.get("network_source", "highway_od") if od_weights else "gravity_prior"
     # Sensitivity summary — re-run the SEIR (reusing already-fetched data, no re-fetch)
     # at each active signal's low/high intensity to show how much each knob drives the
     # 28-day case total. A compact "which factor matters most" figure.
     def _run_total(seed=seed_count, m=traffic_intensity, wi=weather_intensity):
-        sn, _dn, _c = _simulate_outbreak(entry_idx, r0_eff, cfr_eff, inc_days, inf_days,
-                                         conn_list, seed, weather_fav, use_weather, mobility=m, weather_intensity=wi)
+        sn, _dn, _c, _edges = _simulate_outbreak(
+            entry_idx, r0_eff, cfr_eff, inc_days, inf_days, conn_list, seed,
+            weather_fav, use_weather, mobility=m, weather_intensity=wi,
+            od_weights=od_weights)
         rows = sn[28]
         return sum(r["cumulative_cases"] for r in rows), sum(r["cumulative_deaths"] for r in rows)
 
@@ -1725,24 +1872,31 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             "weather_intensity": round(weather_intensity, 2), "seed_count": int(round(seed_count)),
         },
         "regions": region_results,
+        "mobility_network": {
+            "source": network_source,
+            "generated_at": highway_data["generated_at"],
+            "edges": mobility_edges,
+        },
+        "transmission_edges": transmission_edges,
         "summary": {
             "total_regions": len(region_results),
             "total_cases": total_cases, "total_deaths": total_deaths,
-            "national_cfr": round(national_cfr, 4),
+            "national_cfr": round(national_cfr, 4),  # 28-day deaths / model cumulative infections, not an input CFR
+            "input_cfr": cfr_eff,
             "attack_rate": round(total_cases / _SEIR_TOTAL_POP, 6),
             "peak_day": peak_day, "peak_new_cases": int(round(peak_new)),
             "affected_regions": affected,
             "worst_regions": [{"name": r["region_name"], "cases": r["cumulative_cases"]} for r in worst],
             "national_curve": national_curve,
             "sensitivity": sensitivity,
-            "response_playbook": _build_response_playbook(peak_day, national_cfr, r0_eff),
+            "response_playbook": _build_response_playbook(peak_day, cfr_eff, r0_eff),
             "total_population": _SEIR_TOTAL_POP,
         },
         "gemini_scenario": gemini_scenario,
         "narrative": (
             f"역학 시뮬레이션: {disease_name} (R0 {r0_eff}·CFR {cfr_eff * 100:.1f}%, {severity})가 "
             f"{entry_point['label']}에서 {origin_verb}({_REGION_COORDS.get(entry_region, {}).get('name', entry_region)} 거점) 시 — "
-            f"28일 후 전국 누적 {total_cases:,}명 확진, {total_deaths:,}명 사망 예상 "
+            f"28일 후 전국 모형 누적 감염 {total_cases:,}명, 사망 {total_deaths:,}명 (28일 사망비 {national_cfr * 100:.1f}%) "
             f"(전국 발병률 {total_cases / _SEIR_TOTAL_POP * 100:.2f}%, 정점 {peak_day}일차). "
             f"최다 피해: {', '.join(r['region_name'] for r in worst)}. "
             f"※ 개입(백신·거리두기) 없는 자연확산을 가정한 예시 시나리오입니다."
@@ -1846,19 +2000,21 @@ def _signal_lead_lag(inputs: dict) -> dict:
             dates.append(path.stem)
 
     n = len(series_a)
-    if n < 10:
-        return {"error": f"insufficient paired data points ({n}, need >= 10)"}
+    if n < 16:
+        return {"error": f"insufficient paired data points ({n}, need >= 16)"}
 
-    # Normalize to zero-mean, unit-variance
-    mean_a = statistics.mean(series_a)
-    mean_b = statistics.mean(series_b)
-    std_a = statistics.stdev(series_a) if n > 1 else 1
-    std_b = statistics.stdev(series_b) if n > 1 else 1
-    std_a = max(std_a, 1e-9)
-    std_b = max(std_b, 1e-9)
-    norm_a = [(v - mean_a) / std_a for v in series_a]
-    norm_b = [(v - mean_b) / std_b for v in series_b]
-
+    # First differences remove level/trend before searching temporal association.
+    # This remains an exploratory association analysis, not a causal estimator.
+    diff_a = [series_a[i] - series_a[i - 1] for i in range(1, n)]
+    diff_b = [series_b[i] - series_b[i - 1] for i in range(1, n)]
+    dates = dates[1:]
+    n = len(diff_a)
+    mean_a = statistics.mean(diff_a)
+    mean_b = statistics.mean(diff_b)
+    std_a = max(statistics.stdev(diff_a), 1e-9)
+    std_b = max(statistics.stdev(diff_b), 1e-9)
+    norm_a = [(value - mean_a) / std_a for value in diff_a]
+    norm_b = [(value - mean_b) / std_b for value in diff_b]
     # Cross-correlation at lags -6..+6
     max_lag = min(6, n // 3)
     correlations: list[dict] = []
@@ -1870,7 +2026,7 @@ def _signal_lead_lag(inputs: dict) -> dict:
         else:
             a_slice = norm_a[-lag:]
             b_slice = norm_b[:n + lag]
-        if len(a_slice) < 4:
+        if len(a_slice) < 6:
             continue
         corr = sum(a * b for a, b in zip(a_slice, b_slice)) / len(a_slice)
         correlations.append({
@@ -1891,6 +2047,23 @@ def _signal_lead_lag(inputs: dict) -> dict:
     best = max(correlations, key=lambda c: abs(c["correlation"]))
     peak_lag = best["lag"]
     peak_corr = best["correlation"]
+    # Test the selected *maximum* lag correlation against all non-zero circular
+    # shifts of B. This adjusts for searching multiple lags while preserving each
+    # differenced series' autocorrelation structure more faithfully than iid shuffles.
+    def _max_abs_with(candidate_b: list[float]) -> float:
+        observed: list[float] = []
+        for lag in range(-max_lag, max_lag + 1):
+            if lag >= 0:
+                left, right = norm_a[:n - lag], candidate_b[lag:]
+            else:
+                left, right = norm_a[-lag:], candidate_b[:n + lag]
+            if len(left) >= 6:
+                observed.append(abs(sum(a * b for a, b in zip(left, right)) / len(left)))
+        return max(observed, default=0.0)
+
+    null_peaks = [_max_abs_with(norm_b[shift:] + norm_b[:shift]) for shift in range(1, n)]
+    permutation_p = (1 + sum(value >= abs(peak_corr) for value in null_peaks)) / (1 + len(null_peaks))
+    support = "suggestive" if permutation_p < 0.05 else "not_significant"
 
     # Strength interpretation
     abs_corr = abs(peak_corr)
@@ -1932,7 +2105,12 @@ def _signal_lead_lag(inputs: dict) -> dict:
         "data_points": n,
         "date_range": {"start": dates[0], "end": dates[-1]},
         "correlations": correlations,
-        "best_lag": {
+        "inference": {
+            "status": support,
+            "circular_shift_p_value": round(permutation_p, 4),
+            "null_shifts": len(null_peaks),
+            "caution": "Exploratory, trend-differenced association only; it is not causal evidence or a validated operational trigger.",
+        },        "best_lag": {
             "lag": peak_lag,
             "correlation": peak_corr,
             "strength": strength,
@@ -1948,7 +2126,9 @@ def _signal_lead_lag(inputs: dict) -> dict:
             "parameters": {
                 "max_lag": f"±{max_lag} weeks",
                 "normalization": "z-score (zero-mean, unit-variance)",
-                "min_pairs": 4,
+                "min_pairs": 6,
+                "preprocessing": "first difference then z-score",
+                "inference": "circular-shift p-value adjusted for the maximum correlation across tested lags",
             },
             "description_kr": "두 신호의 시간차 상관관계를 분석합니다. "
                               "lag=+N이면 신호 A가 N주 먼저 변동하고 신호 B가 따라가는 패턴, "
@@ -1991,105 +2171,101 @@ register(FunctionSpec(
 # ═════════════════════════════════════════════════════════════════════════════
 
 def _forecast_region_sarimax(inputs: dict) -> dict:
-    """SARIMAX-based forecast for Region composite score time-series.
-
-    Uses snapshot history (same as forecastRegionScore) but applies statsmodels
-    SARIMAX(1,1,1) for a more rigorous statistical forecast with confidence
-    intervals. Designed to run alongside the EMA model for dual-model comparison.
-    """
+    """Walk-forward selected ARIMA projection for a bounded regional alert score."""
     region_id = str(inputs.get("region_id") or "")
     weeks = max(1, min(int(inputs.get("weeks") or 4), 12))
     if not region_id:
         return {"error": "region_id required"}
-
-    history = _region_history_points(region_id, weeks=24)
+    # Use all available snapshots, not an arbitrary 24-week subset, for validation.
+    history = _region_history_points(region_id, weeks=104)
     if not history:
         return {"error": f"no history for region {region_id}"}
-
-    scores = [p["score"] for p in history if p.get("score") is not None]
-    if len(scores) < 10:
-        return {"error": f"Insufficient data for SARIMAX ({len(scores)} points, need >= 10)"}
+    scores = [float(point["score"]) for point in history if point.get("score") is not None]
+    if len(scores) < 16:
+        return {"error": f"Insufficient history for walk-forward ARIMA ({len(scores)} points, need >= 16)"}
 
     try:
         import warnings
-        warnings.filterwarnings("ignore")
-        from statsmodels.tsa.statespace.sarimax import SARIMAX as _SARIMAX
         import numpy as _np
+        from statsmodels.tsa.statespace.sarimax import SARIMAX as _SARIMAX
+        warnings.filterwarnings("ignore")
+        eps = 1e-4
+        bounded = _np.clip(_np.asarray(scores, dtype=float), eps, 1.0 - eps)
+        transformed = _np.log(bounded / (1.0 - bounded))
+        sigmoid = lambda x: 1.0 / (1.0 + _np.exp(-x))
+        candidates = ((0, 1, 1), (1, 1, 0), (1, 1, 1))
+        holdouts = list(range(max(12, len(scores) - 6), len(scores)))
+        candidate_mae: dict[str, float] = {}
+        candidate_folds: dict[str, int] = {}
+        for order in candidates:
+            errors: list[float] = []
+            for end_idx in holdouts:
+                try:
+                    fitted = _SARIMAX(
+                        transformed[:end_idx], order=order, enforce_stationarity=False,
+                        enforce_invertibility=False,
+                    ).fit(disp=False, maxiter=100)
+                    predicted = float(sigmoid(fitted.get_forecast(steps=1).predicted_mean[0]))
+                    errors.append(abs(predicted - scores[end_idx]))
+                except Exception:
+                    continue
+            if errors:
+                key = str(order)
+                candidate_mae[key] = round(float(statistics.mean(errors)), 5)
+                candidate_folds[key] = len(errors)
+        if not candidate_mae:
+            return {"error": "ARIMA walk-forward validation failed for every candidate", "region_id": region_id}
 
-        model = _SARIMAX(
-            scores,
-            order=(1, 1, 1),
-            enforce_stationarity=False,
+        selected_key = min(candidate_mae, key=candidate_mae.get)
+        selected_order = next(order for order in candidates if str(order) == selected_key)
+        fitted = _SARIMAX(
+            transformed, order=selected_order, enforce_stationarity=False,
             enforce_invertibility=False,
-        )
-        results = model.fit(disp=False, maxiter=200)
-
-        fc = results.get_forecast(steps=weeks)
-        pred_mean = _np.asarray(fc.predicted_mean).flatten()
-        conf_int_raw = fc.conf_int(alpha=0.1)  # 90% CI
-        conf_int_arr = _np.asarray(conf_int_raw)
-
-        last_date = history[-1]["date"]
+        ).fit(disp=False, maxiter=200)
+        forecast = fitted.get_forecast(steps=weeks)
+        mean_logit = _np.asarray(forecast.predicted_mean).flatten()
+        interval_logit = _np.asarray(forecast.conf_int(alpha=0.10))
         try:
-            ld = _date.fromisoformat(last_date)
+            last_date = _date.fromisoformat(history[-1]["date"])
         except Exception:
-            ld = _date.today()
-
+            last_date = _date.today()
         points: list[dict] = []
         for i in range(weeks):
-            dt = ld.fromordinal(ld.toordinal() + (i + 1) * 7)
-            val = max(0.0, min(1.0, float(pred_mean[i])))
-            lo = max(0.0, float(conf_int_arr[i, 0]))
-            hi = min(1.0, float(conf_int_arr[i, 1]))
-            points.append({
-                "date": dt.isoformat(),
-                "weeks_ahead": i + 1,
-                "score": round(val, 4),
-                "level": _level_for(val),
-                "low": round(lo, 4),
-                "high": round(hi, 4),
-            })
-
-        aic = round(float(results.aic), 1)
-        bic = round(float(results.bic), 1)
-
-        delta = points[-1]["score"] - scores[-1]
-        direction = "상승" if delta > 0.05 else "하락" if delta < -0.05 else "유지"
+            dt = last_date.fromordinal(last_date.toordinal() + (i + 1) * 7)
+            value = float(sigmoid(mean_logit[i]))
+            low = float(sigmoid(interval_logit[i, 0]))
+            high = float(sigmoid(interval_logit[i, 1]))
+            points.append({"date": dt.isoformat(), "weeks_ahead": i + 1,
+                           "score": round(value, 4), "level": _level_for(value),
+                           "low": round(low, 4), "high": round(high, 4)})
 
         return {
-            "region_id": region_id,
-            "model_name": "SARIMAX",
-            "history": history,
-            "forecast": points,
+            "warning": ("최근 관측 경보점수가 변하지 않아, 이 투영은 마지막 값 반복일 뿐 예측 정확도의 증거가 아닙니다."
+                        if len({round(score, 6) for score in scores[-8:]}) <= 2 else None),            "region_id": region_id, "model_name": "ARIMA", "history": history, "forecast": points,
             "method": {
-                "name": "SARIMAX(1,1,1)",
-                "formula": "(1-φB)(1-B)Yₜ = (1+θB)εₜ",
-                "parameters": {
-                    "order": "(p=1, d=1, q=1)",
-                    "differencing": "d=1 (1차 차분으로 비정상성 제거)",
-                    "confidence": "90% (α=0.10)",
-                    "AIC": aic,
-                    "BIC": bic,
-                },
-                "description_kr": "SARIMAX(1,1,1) 모델을 지역 복합점수 시계열에 적용합니다. "
-                                  "1차 차분(d=1)으로 추세를 제거하고, AR(1)으로 이전 값의 영향을, "
-                                  "MA(1)으로 잔차 패턴을 포착합니다. "
-                                  "EMA 모델과 비교하여 다중 모델 관점에서 의사결정을 지원합니다.",
+                "name": f"ARIMA{selected_order} on logit(score) (walk-forward selected)",
+                "formula": "logit(alert_score) -> ARIMA(p,1,q) -> inverse-logit forecast",
+                "parameters": {"order": selected_order, "score_bounds": "logit transform preserves 0..1 bounds",
+                               "seasonality": "not fitted: fewer than 104 weekly snapshots",
+                               "prediction_interval": "90% model interval; monitor empirical coverage"},
+                "validation": {"scheme": "rolling-origin, one-week-ahead MAE",
+                               "folds": candidate_folds[selected_key], "selected_mae": candidate_mae[selected_key],
+                               "candidate_mae": candidate_mae},
+                "description_kr": "0~1로 제한된 지역 경보점수는 logit 변환 후 ARIMA 후보를 롤링 검증 MAE로 선택합니다. 이는 질병 발생건수 예측이 아니라 합성 경보점수의 단기 투영입니다.",
             },
-            "diagnostics": {"aic": aic, "bic": bic},
-            "narrative": f"[SARIMAX] {weeks}주 후 예상 score {points[-1]['score']:.3f} "
-                         f"({points[-1]['level']}), 현재 대비 {direction} (Δ {delta:+.3f}). "
-                         f"AIC={aic}, 90% CI: [{points[-1]['low']:.3f}-{points[-1]['high']:.3f}].",
+            "diagnostics": {"aic": round(float(fitted.aic), 1), "bic": round(float(fitted.bic), 1),
+                            "rolling_mae": candidate_mae[selected_key], "validation_folds": candidate_folds[selected_key],
+                            "candidate_mae": candidate_mae},
+            "narrative": (f"[Regional ARIMA walk-forward] {weeks}-week alert-score projection: "
+                          f"{points[-1]['score']:.3f} ({points[-1]['level']}); rolling MAE "
+                          f"{candidate_mae[selected_key]:.3f} across {candidate_folds[selected_key]} folds."),
         }
-
-    except Exception as e:
-        return {"error": f"SARIMAX fitting failed: {type(e).__name__}: {e}",
-                "region_id": region_id}
-
+    except Exception as exc:
+        return {"error": f"Regional ARIMA fitting failed: {type(exc).__name__}: {exc}", "region_id": region_id}
 
 register(FunctionSpec(
     name="forecastRegionSARIMAX",
-    label="Forecast region score (SARIMAX)",
+    label="Forecast region score (walk-forward ARIMA)",
     inputs=[
         {"name": "region_id", "type": "string", "required": True,
          "description": "Region.code"},

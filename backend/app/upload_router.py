@@ -246,6 +246,19 @@ async def refresh_global_signals(_: dict = Depends(require_admin)) -> dict[str, 
             json.dumps(hw_data, ensure_ascii=False, indent=2), encoding="utf-8"
         )
         results["highway"] = {"status": hw_data.get("status"), "regions": len(hw_data.get("regions", {}))}
+        try:
+            mobility_mod = __import_script("fetch_multimodal_mobility")
+            mobility_data = mobility_mod.fetch_multimodal_mobility(hw_data)
+            (PROCESSED_DIR / "multimodal_mobility_by_region.json").write_text(
+                json.dumps(mobility_data, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            results["mobility"] = {
+                "status": mobility_data.get("status"),
+                "corridors": len(mobility_data.get("corridors", [])),
+                "observed_modes": mobility_data.get("observed_modes", []),
+            }
+        except Exception as mobility_exc:
+            results["mobility"] = {"status": "error", "error": str(mobility_exc)}
     except Exception as exc:
         results["highway"] = {"status": "error", "error": str(exc)}
 
@@ -302,7 +315,17 @@ async def refresh_highway_connectivity() -> dict[str, Any]:
         hw_mod = __import_script("fetch_highway_traffic")
         hw_data = hw_mod.fetch_highway_connectivity()
         out_path.write_text(json.dumps(hw_data, ensure_ascii=False, indent=2), encoding="utf-8")
-        return {"status": hw_data.get("status"), "refreshed": True, "data": hw_data}
+        mobility_data = None
+        try:
+            mobility_mod = __import_script("fetch_multimodal_mobility")
+            mobility_data = mobility_mod.fetch_multimodal_mobility(hw_data)
+            (PROCESSED_DIR / "multimodal_mobility_by_region.json").write_text(
+                json.dumps(mobility_data, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+        except Exception as mobility_exc:
+            mobility_data = {"status": "error", "error": str(mobility_exc)}
+        return {"status": (mobility_data or hw_data).get("status"), "refreshed": True,
+                "data": mobility_data or hw_data, "highway_data": hw_data}
     except Exception as exc:
         return {"status": "error", "refreshed": False, "error": str(exc)}
 

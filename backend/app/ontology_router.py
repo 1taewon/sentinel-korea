@@ -16,6 +16,7 @@ Design notes
 
 from __future__ import annotations
 
+import hashlib
 import json
 import threading
 from datetime import date as _date
@@ -33,24 +34,60 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 PROCESSED_DIR = DATA_DIR / "processed"
 SNAPSHOT_DIR = PROCESSED_DIR / "snapshots"
 
-# Public demo — a pre-run H5N1/China scenario so non-admin visitors (competition
-# judges) can see the full Outbreak Scenario output without running it live.
-_SCENARIO_EXAMPLE_FILE = PROCESSED_DIR / "scenario_example_v13.json"  # {combo_key: result}
+# Public demo — pre-generated for non-admin competition reviewers.  A cached result
+# is used only while it matches the current simulator schema and mobility/weather/
+# aviation inputs; refreshed data therefore reaches the example automatically.
+_SCENARIO_EXAMPLE_FILE = PROCESSED_DIR / "scenario_example_v14.json"
+_EXAMPLE_SCHEMA_VERSION = "seir-od-daily-v2"
+_EXAMPLE_INPUT_FILES = (
+    "aviation_passenger_by_country.json",
+    "highway_connectivity_by_region.json",
+    "weather_respiratory_by_region.json",
+    "multimodal_mobility_by_region.json",
+)
 _example_lock = threading.Lock()
+
+
+def _example_input_fingerprint() -> str:
+    """Version the public demo by model schema plus source-data file metadata."""
+    pieces = [_EXAMPLE_SCHEMA_VERSION]
+    for filename in _EXAMPLE_INPUT_FILES:
+        path = PROCESSED_DIR / filename
+        try:
+            stat = path.stat()
+            pieces.append(f"{filename}:{stat.st_mtime_ns}:{stat.st_size}")
+        except FileNotFoundError:
+            pieces.append(f"{filename}:missing")
+    return hashlib.sha256("|".join(pieces).encode("utf-8")).hexdigest()[:16]
+
+
+def _is_current_example(result: Any) -> bool:
+    if not isinstance(result, dict):
+        return False
+    if result.get("_example_fingerprint") != _example_input_fingerprint():
+        return False
+    regions = result.get("regions") or []
+    timeline = (regions[0] if regions else {}).get("timeline") or []
+    return len(timeline) == 29 and isinstance(result.get("transmission_edges"), list)
 
 
 def _generate_scenario_example(use_aviation: bool = True, use_traffic: bool = True,
                                use_weather: bool = True) -> dict:
-    """Run the canonical demo scenario (avian flu H5N1 from China via ICN) for a given
-    toggle combination, at DEFAULT base values (traffic 0.5, weather 0.7). Weather is
-    read from cache (weather_live=False) so this public path never triggers a live fetch."""
+    """Run the canonical H5N1/China demo with the same model and inputs as live runs.
+
+    Weather uses the latest cached forecast rather than an on-demand external call so
+    public example clicks remain quick and deterministic between input refreshes.
+    """
     from .ontology_functions import _what_if_outbreak_national
-    return _what_if_outbreak_national({
+    result = _what_if_outbreak_national({
         "entry_point": "ICN", "disease": "H5N1 Avian Influenza", "country": "China",
         "severity": "high", "weeks": 4,
         "use_aviation": use_aviation, "use_traffic": use_traffic, "use_weather": use_weather,
         "weather_live": False,
     })
+    result["_example_fingerprint"] = _example_input_fingerprint()
+    result["_example_schema_version"] = _EXAMPLE_SCHEMA_VERSION
+    return result
 
 
 def _example_combo_key(a: bool, t: bool, w: bool) -> str:
@@ -82,12 +119,7 @@ def _example_has_ai(result: dict) -> bool:
 
 
 def _warm_example_cache(force: bool = False) -> dict:
-    """Pre-generate all 8 toggle-combo demo scenarios so judges see the AI (Gemini)
-    analysis instantly with no first-load delay. Run at startup in the background; the
-    Railway filesystem is ephemeral, so this re-warms each boot. Gemini is generated
-    per combo OUTSIDE the lock (the call is slow) and saved incrementally, so a
-    concurrent public GET is never blocked for the whole warm. If a key is present and
-    a combo's AI failed transiently, it is retried once before caching."""
+    """Pre-generate all 8 current-model demo scenarios for competition reviewers."""
     import os
     has_key = bool(os.getenv("GEMINI_API_KEY"))
     generated = 0
@@ -97,7 +129,9 @@ def _warm_example_cache(force: bool = False) -> dict:
                 key = _example_combo_key(a, t, wx)
                 with _example_lock:
                     cache = _load_example_cache()
-                    if not force and key in cache and (not has_key or _example_has_ai(cache[key])):
+                    cached = cache.get(key)
+                    if (not force and _is_current_example(cached)
+                            and (not has_key or _example_has_ai(cached))):
                         continue
                 result = _generate_scenario_example(a, t, wx)
                 if has_key and not _example_has_ai(result):
@@ -109,8 +143,7 @@ def _warm_example_cache(force: bool = False) -> dict:
                     cache[key] = result
                     _save_example_cache(cache)
                 generated += 1
-    return {"generated": generated, "ai_key": has_key}
-
+    return {"generated": generated, "ai_key": has_key, "fingerprint": _example_input_fingerprint()}
 
 REPORTS_DIR = DATA_DIR / "reports"
 
@@ -142,7 +175,7 @@ OBJECT_TYPES: list[dict[str, Any]] = [
     },
     {
         "id": "Disease",
-        "label": "Disease",
+        "label": "Disease forecasting",
         "label_kr": "질병",
         "color": "#c084fc",
         "icon": "virus",
@@ -561,24 +594,19 @@ async def invoke_function(
 
 @router.get("/ontology/scenario-example")
 async def scenario_example(a: int = 1, t: int = 1, w: int = 1) -> dict[str, Any]:
-    """Public demo output — a pre-run H5N1/China Outbreak Scenario for the given toggle
-    combination (a=aviation, t=traffic, w=weather; 1/0). Lets non-admin visitors flip
-    the signal toggles and see how the result changes, without the admin-gated live run.
-    Cached per combination; generated lazily on first request. Base values are the
-    defaults (traffic 0.5, weather 0.7)."""
+    """Public current-model H5N1 demo for non-admin competition reviewers."""
     key = _example_combo_key(bool(a), bool(t), bool(w))
     cache = _load_example_cache()
-    if key in cache:
+    if _is_current_example(cache.get(key)):
         return cache[key]
     with _example_lock:
         cache = _load_example_cache()
-        if key in cache:
+        if _is_current_example(cache.get(key)):
             return cache[key]
         result = await run_in_threadpool(_generate_scenario_example, bool(a), bool(t), bool(w))
         cache[key] = result
         _save_example_cache(cache)
         return result
-
 
 @router.post("/ontology/scenario-example/refresh")
 async def scenario_example_refresh(_: dict = Depends(require_admin)) -> dict[str, Any]:

@@ -1,14 +1,14 @@
-"""fetch_highway_traffic.py — Highway arrival-traffic connectivity index by region.
+"""fetch_highway_traffic.py — Highway OD mobility network between Korean regions.
 
 Grounds the Outbreak Scenario's domestic spread in real inter-regional mobility
 (연결성), per the spatiotemporal COVID-19 spread-network research (KCI): COVID-19
 spread from the 수도권 hub along proximity AND connectivity, and high-connectivity
 regions act as spread hubs ("웜홀" = far-but-connected hubs spread despite distance).
 
-We fetch highway ARRIVING traffic per tollgate (한국도로공사 odtraffic API,
-startEndStdTypeCode=2=도착), aggregate to 17 시도, and log-normalize to a 0..1
-connectivity score. The scenario combines this with its existing distance/proximity
-multiplier → spread = proximity × connectivity, which corrects the wormhole effect.
+We fetch tollgate-to-tollgate traffic from the 한국도로공사 odtraffic API, map both
+ends to 시도, and retain the directed origin→destination matrix. Region-level arrival
+connectivity is also emitted for backwards compatibility, but the simulator should use
+the OD corridors whenever they are available.
 
 Data note: the API caps ~100 rows/page and the full hourly set is huge, so we take
 a bounded sample of a peak hour. Regional connectivity ratios are stable, so a
@@ -96,18 +96,26 @@ def _to_int(s: Any) -> int:
         return 0
 
 
-def _dest_region(unit_name: str) -> str | None:
-    """Map an OD unitName ('출발->도착') to the destination 시도 code."""
-    if "->" not in unit_name:
-        return None
-    dest = unit_name.split("->", 1)[1].strip()
-    # exact, then prefix/suffix contains (e.g. '북대구' → '대구' fallback handled by dict)
-    if dest in _TOLLGATE_REGION:
-        return _TOLLGATE_REGION[dest]
-    for name, code in _TOLLGATE_REGION.items():
-        if name and (name in dest or dest in name):
+def _tollgate_region(name: str) -> str | None:
+    """Map one tollgate label to a 시도 code, preferring the longest exact-like match."""
+    label = (name or "").strip()
+    if label in _TOLLGATE_REGION:
+        return _TOLLGATE_REGION[label]
+    for candidate, code in sorted(_TOLLGATE_REGION.items(), key=lambda item: len(item[0]), reverse=True):
+        if candidate and (candidate in label or label in candidate):
             return code
     return None
+
+
+def _od_regions(unit_name: str) -> tuple[str, str] | None:
+    """Map an API unitName ('출발->도착') to a directed (origin, destination) pair."""
+    text = (unit_name or "").replace("→", "->")
+    if "->" not in text:
+        return None
+    origin_name, destination_name = (part.strip() for part in text.split("->", 1))
+    origin = _tollgate_region(origin_name)
+    destination = _tollgate_region(destination_name)
+    return (origin, destination) if origin and destination else None
 
 
 def fetch_highway_connectivity() -> dict[str, Any]:
@@ -117,6 +125,7 @@ def fetch_highway_connectivity() -> dict[str, Any]:
         return {"status": "skipped", "reason": "HIGHWAY_API_KEY not set", "regions": {}}
 
     region_traffic: dict[str, int] = {}
+    corridor_traffic: dict[tuple[str, str], int] = {}
     total_rows = 0
     for page in range(1, MAX_PAGES + 1):
         params = {
@@ -137,9 +146,14 @@ def fetch_highway_connectivity() -> dict[str, Any]:
         if not rows:
             break
         for r in rows:
-            code = _dest_region(r.get("unitName", ""))
-            if code:
-                region_traffic[code] = region_traffic.get(code, 0) + _to_int(r.get("trafficAmout"))
+            pair = _od_regions(r.get("unitName", ""))
+            if not pair:
+                continue
+            origin, destination = pair
+            amount = _to_int(r.get("trafficAmout"))
+            region_traffic[destination] = region_traffic.get(destination, 0) + amount
+            if origin != destination and amount > 0:
+                corridor_traffic[(origin, destination)] = corridor_traffic.get((origin, destination), 0) + amount
         total_rows += len(rows)
 
     if not region_traffic:
@@ -154,14 +168,27 @@ def fetch_highway_connectivity() -> dict[str, Any]:
         }
         for code, t in region_traffic.items()
     }
+    max_corridor = max(corridor_traffic.values(), default=1)
+    corridor_log_max = math.log10(max_corridor + 1) or 1.0
+    corridors = [
+        {
+            "source": source,
+            "target": target,
+            "traffic": traffic,
+            "weight": round(math.log10(traffic + 1) / corridor_log_max, 4),
+        }
+        for (source, target), traffic in sorted(
+            corridor_traffic.items(), key=lambda item: item[1], reverse=True)
+    ]
     return {
         "status": "ok",
-        "source": "한국도로공사 도착 교통량 (data.ex.co.kr odtraffic)",
-        "note": "arrival-traffic connectivity index (sampled peak hour); relative & stable",
+        "source": "한국도로공사 출발-도착 교통량 (data.ex.co.kr odtraffic)",
+        "note": "directed 시도 OD network from a sampled peak hour; region arrivals retained as fallback",
         "sampled_rows": total_rows,
         "peak_hour": PEAK_HOUR,
         "generated_at": datetime.now(KST).isoformat(),
         "regions": regions,
+        "corridors": corridors,
     }
 
 
