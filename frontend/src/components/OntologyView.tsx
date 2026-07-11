@@ -470,14 +470,6 @@ function HotspotsPanel({ data, onPickRegion }: { data: HotspotsResult; onPickReg
 
 // ─── What-If Outbreak panel ─────────────────────────────────────────────────
 
-const WHAT_IF_PRESETS = [
-  { disease: 'H5N1 Avian Influenza', country: 'China' },
-  { disease: 'MERS-CoV', country: 'Saudi Arabia' },
-  { disease: 'Novel Coronavirus', country: 'China' },
-  { disease: 'Measles outbreak', country: 'Japan' },
-  { disease: 'H7N9 Influenza', country: 'Vietnam' },
-];
-
 // WhatIfPanel (single-region) removed — replaced by WhatIfStandalonePanel (national).
 
 // ─── Korea GeoJSON Map for Epidemic simulation ─────────────────────────────
@@ -2250,13 +2242,21 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
         <div className="whatif-epi-hint">알려진 질병은 논문 기반 기본값이 자동 입력됩니다. 신종감염병은 직접 설정하세요. 전파·사망 규모는 전적으로 이 R0·CFR·잠복기·전염기로 결정됩니다.</div>
       </div>
       <div className="whatif-example-box">
-        <button type="button" className={`whatif-example-btn ${exampleMode ? 'is-on' : ''}`}
-          onClick={loadExample} disabled={exampleLoading}>
-          {exampleLoading ? '예시 분석 중…' : '예시 분석 · H5N1 China 조류독감'}
+        <button type="button" className={`whatif-example-btn ${exampleMode && !isAdmin ? 'is-on' : ''}`}
+          onClick={isAdmin ? runNationalScenario : loadExample}
+          disabled={isAdmin ? loading : exampleLoading}>
+          {(isAdmin ? loading : exampleLoading) ? '분석 중…' : '분석 실행'}
         </button>
         <div className="whatif-example-note">
-          예시 분석을 실행합니다. 클릭하면 지도·확산 애니메이션·유행곡선·시도별 역학 지표(모형 감염·사망·28일 사망비)가 표시됩니다. 예시는 H5N1 기본 파라미터로 분석됩니다. 실제 데이터로 직접 실행하려면 상단 (i)의 이메일로 admin 계정을 문의해 주세요.
+          {isAdmin
+            ? '위 입력값(거점·질병·R0·CFR·잠복기·전염기)과 아래 항공·교통·기상 토글로 실제 데이터 SEIR + AI 분석을 실행합니다.'
+            : '예시 분석을 실행합니다(H5N1/China 기준). 아래 항공·교통·기상 토글 조합이 반영되어 지도·애니메이션·유행곡선·시도별 지표가 표시됩니다. admin 계정으로 로그인하면 위 입력값으로 실제 데이터 분석이 가능합니다.'}
         </div>
+        {statusMsg && (
+          <div className={`whatif-status-msg ${statusMsg.ok ? 'whatif-status-success' : 'whatif-status-error'}`}>
+            {statusMsg.text}
+          </div>
+        )}
       </div>
       <label className={`whatif-aviation-toggle ${useAviation ? 'is-on' : ''}`}>
         <input type="checkbox" checked={useAviation} onChange={(e) => setUseAviation(e.target.checked)} />
@@ -2308,23 +2308,6 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
           <input type="range" min={0} max={1} step={0.1} value={weatherIntensity} disabled={exampleMode}
             onChange={(e) => setWeatherIntensity(Number(e.target.value))} className="whatif-traffic-base-slider" />
           <span className="whatif-intensity-hint">β = β × (1 + 강도 × 저온지수) (≤10일). 클수록 계절(추위) 영향↑</span>
-        </div>
-      )}
-      <div className="whatif-presets">
-        {WHAT_IF_PRESETS.map((p, i) => (
-          <button key={i} type="button" className="whatif-preset-btn"
-            onClick={() => { setDisease(p.disease); setCountry(p.country); }}>
-            {p.disease.split(' ')[0]} / {p.country}
-          </button>
-        ))}
-      </div>
-      <button type="button" className="ontology-generate-btn" onClick={runNationalScenario}
-        disabled={!isAdmin || loading}>
-        {loading ? 'Simulating...' : isAdmin ? 'Run National Scenario (Gemini)' : 'Admin only'}
-      </button>
-      {statusMsg && (
-        <div className={`whatif-status-msg ${statusMsg.ok ? 'whatif-status-success' : 'whatif-status-error'}`}>
-          {statusMsg.text}
         </div>
       )}
     </div>
