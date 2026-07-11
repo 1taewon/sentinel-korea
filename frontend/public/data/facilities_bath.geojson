@@ -1,0 +1,16 @@
+{
+  "type": "FeatureCollection",
+  "note": "SAMPLE 목욕장업 (부산) — demo seed. Replace via legionella/scripts/01_prepare_baths.py (행안부 목욕장업 CSV, EPSG:5174→4326).",
+  "features": [
+    { "type": "Feature", "properties": { "name": "서면 대형사우나", "category": "목욕장업", "subtype": "대형목욕탕" }, "geometry": { "type": "Point", "coordinates": [129.0602, 35.1577] } },
+    { "type": "Feature", "properties": { "name": "부산진 찜질방", "category": "목욕장업", "subtype": "찜질방" }, "geometry": { "type": "Point", "coordinates": [129.0498, 35.1631] } },
+    { "type": "Feature", "properties": { "name": "동래 온천", "category": "목욕장업", "subtype": "온천" }, "geometry": { "type": "Point", "coordinates": [129.0839, 35.2129] } },
+    { "type": "Feature", "properties": { "name": "온천장 스파", "category": "목욕장업", "subtype": "온천" }, "geometry": { "type": "Point", "coordinates": [129.0805, 35.2189] } },
+    { "type": "Feature", "properties": { "name": "해운대 찜질방", "category": "목욕장업", "subtype": "찜질방" }, "geometry": { "type": "Point", "coordinates": [129.1603, 35.1631] } },
+    { "type": "Feature", "properties": { "name": "연산동 목욕탕", "category": "목욕장업", "subtype": "대형목욕탕" }, "geometry": { "type": "Point", "coordinates": [129.0836, 35.1846] } },
+    { "type": "Feature", "properties": { "name": "사상 사우나", "category": "목욕장업", "subtype": "대중목욕탕" }, "geometry": { "type": "Point", "coordinates": [128.9915, 35.1524] } },
+    { "type": "Feature", "properties": { "name": "남포동 찜질방", "category": "목욕장업", "subtype": "찜질방" }, "geometry": { "type": "Point", "coordinates": [129.0281, 35.0979] } },
+    { "type": "Feature", "properties": { "name": "광안리 스파", "category": "목욕장업", "subtype": "대형목욕탕" }, "geometry": { "type": "Point", "coordinates": [129.1183, 35.1533] } },
+    { "type": "Feature", "properties": { "name": "덕천 온천사우나", "category": "목욕장업", "subtype": "온천" }, "geometry": { "type": "Point", "coordinates": [129.0119, 35.2098] } }
+  ]
+}

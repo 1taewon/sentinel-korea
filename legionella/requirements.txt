@@ -1,0 +1,10 @@
+# Legionella data-prep + investigation scripts (Python 3).
+pandas
+numpy
+pyproj
+requests
+python-dotenv
+# Survey parsing uses the backend's existing Gemini integration (google-genai);
+# .docx / .pdf extraction (Phase 5) additionally needs:
+python-docx
+pypdf

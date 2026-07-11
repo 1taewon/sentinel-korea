@@ -1,0 +1,15 @@
+{
+  "type": "FeatureCollection",
+  "note": "SAMPLE 고위험 병원 (부산) — demo seed. Replace via legionella/scripts/02_prepare_hospitals.py (심평원 병의원 현황, XPos/YPos WGS84, clCdNm 상급종합/종합병원/요양병원).",
+  "features": [
+    { "type": "Feature", "properties": { "name": "부산대학교병원", "clCdNm": "상급종합" }, "geometry": { "type": "Point", "coordinates": [129.0227, 35.1042] } },
+    { "type": "Feature", "properties": { "name": "동아대학교병원", "clCdNm": "상급종합" }, "geometry": { "type": "Point", "coordinates": [129.0119, 35.1173] } },
+    { "type": "Feature", "properties": { "name": "인제대학교 부산백병원", "clCdNm": "상급종합" }, "geometry": { "type": "Point", "coordinates": [129.0384, 35.1520] } },
+    { "type": "Feature", "properties": { "name": "고신대학교복음병원", "clCdNm": "상급종합" }, "geometry": { "type": "Point", "coordinates": [129.0113, 35.0975] } },
+    { "type": "Feature", "properties": { "name": "해운대백병원", "clCdNm": "종합병원" }, "geometry": { "type": "Point", "coordinates": [129.1420, 35.1699] } },
+    { "type": "Feature", "properties": { "name": "동래봉생병원", "clCdNm": "종합병원" }, "geometry": { "type": "Point", "coordinates": [129.0783, 35.2044] } },
+    { "type": "Feature", "properties": { "name": "부산의료원", "clCdNm": "종합병원" }, "geometry": { "type": "Point", "coordinates": [129.0895, 35.1932] } },
+    { "type": "Feature", "properties": { "name": "연제요양병원", "clCdNm": "요양병원" }, "geometry": { "type": "Point", "coordinates": [129.0812, 35.1789] } },
+    { "type": "Feature", "properties": { "name": "사상요양병원", "clCdNm": "요양병원" }, "geometry": { "type": "Point", "coordinates": [128.9908, 35.1613] } }
+  ]
+}
