@@ -905,6 +905,99 @@ def _build_forecast_beta_section(snapshot: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def _build_aberration_section() -> str:
+    """통계적 이상징후 탐지 섹션 — Farrington Flexible 결과를 최종 리포트에 주입.
+
+    KDCA 국가 단위 주간 전수신고(실데이터, 2016~현재)에 Farrington Flexible을
+    적용해 호흡기 감시대상 감염병의 최신 주차 경보 상태를 표로 제시한다.
+    데이터가 없으면(다년 시계열 미수집) 빈 문자열을 반환해 리포트를 깨지 않는다.
+    """
+    try:
+        from .aberration_router import build_overview
+        overview = build_overview(n_weeks=8, respiratory_only=True)
+    except Exception:
+        return ""
+
+    diseases = overview.get("diseases") or []
+    if not diseases:
+        return ""
+
+    latest_epiweek = overview.get("latest_epiweek") or "최신주"
+    alarm_count = overview.get("alarm_count", 0)
+    yr = ""  # source year range annotation handled in methodology note
+
+    lines: list[str] = [
+        "",
+        "---",
+        "",
+        "## 통계적 이상징후 탐지 (Farrington Flexible)",
+        "",
+        "> **방법론:** Farrington Flexible (Noufaily et al., *Statistics in Medicine* 2013) — "
+        "UKHSA·ECDC 표준 이상징후 탐지 알고리즘. 과거 5년 동일시기 baseline에 준포아송(quasi-Poisson) "
+        "GLM(계절 factor + 추세, 과거 발병 하향가중)을 적합하여 2/3승 예측구간 상한(threshold)을 산출하고, "
+        "관측치가 상한을 초과한 주를 통계적 경보로 판정한다.",
+        "> **데이터:** KDCA 전수신고 **국가 단위** 주간 건수(2016~현재, 실데이터, data.go.kr). "
+        "17개 시도 단위 주간 시계열은 KDCA가 제공하지 않아 국가 단위로만 산출한다(합성 데이터 미사용).",
+        "",
+        f"**최신 주차 `{latest_epiweek}` — 호흡기 감시대상 감염병 (경보 {alarm_count}건)**",
+        "",
+        "| 질병 | 관측 | 기대(expected) | 상한(threshold) | 판정 | exceedance |",
+        "|---|---:|---:|---:|:---:|---:|",
+    ]
+
+    any_flag = False
+    for row in diseases:
+        latest = row.get("latest") or {}
+        obs = latest.get("observed")
+        exp = latest.get("expected")
+        thr = latest.get("threshold")
+        score = latest.get("exceedance_score")
+        alarm = row.get("alarm")
+        flagged = row.get("baseline_elevated")
+        note_txt = latest.get("note")
+
+        def _fmt(v):
+            if v is None:
+                return "—"
+            return f"{v:,.0f}" if abs(v) >= 100 else f"{v:,.1f}"
+
+        _note_label = {
+            "sparse_baseline": "· 정상 (희소)",
+            "insufficient_baseline": "판정불가",
+        }
+        verdict = "🔴 경보" if alarm else (_note_label.get(note_txt, "· 정상"))
+        name = row.get("disease", "")
+        if flagged:
+            name += " †"
+            any_flag = True
+        score_txt = "—" if score is None else f"{score:+.2f}"
+        lines.append(
+            f"| {name} | {_fmt(obs)} | {_fmt(exp)} | {_fmt(thr)} | {verdict} | {score_txt} |"
+        )
+
+    lines.append("")
+    if alarm_count == 0:
+        lines.append(
+            f"이번 주(`{latest_epiweek}`) 호흡기 감시대상 감염병에서 통계적으로 유의한 "
+            "이상징후(경보)는 탐지되지 않았습니다. exceedance ≥ 1.0 일 때 경보로 판정합니다."
+        )
+    else:
+        alarmed = [r["disease"] for r in diseases if r.get("alarm")]
+        lines.append(
+            f"**경보 판정:** {', '.join(alarmed)} — 관측치가 통계적 예측구간 상한을 초과했습니다. "
+            "근거는 위 표의 관측 vs 상한(threshold) 열을 참조하십시오."
+        )
+    if any_flag:
+        lines.append("")
+        lines.append(
+            "> † 기대값이 최근 관측 수준의 3배를 초과: 해당 질병의 baseline(과거 5년)이 "
+            "대규모 다년 유행(예: 2024–2025 백일해 대유행)을 포함해 기대·상한이 상향 적응된 상태입니다. "
+            "이는 Farrington 계열의 알려진 한계로, 유행 종료 후 기대값이 실제보다 높게 유지됩니다. "
+            "판정(경보 여부)에는 영향이 없으며 상세는 `docs/METHODOLOGY_VALIDATION.md` 참조."
+        )
+    return "\n".join(lines)
+
+
 def generate_final_report(target_date: str | None = None) -> dict[str, Any]:
     """FINAL 통합 주간 리포트 — OSINT + KDCA 통합 + Forecasting BETA."""
     client = _get_client()
@@ -993,6 +1086,12 @@ def generate_final_report(target_date: str | None = None) -> dict[str, Any]:
         forecast_section = _build_forecast_beta_section(snapshot)
         if forecast_section:
             report_text = report_text + "\n" + forecast_section
+
+    # 통계적 이상징후 탐지(Farrington Flexible) — 실데이터 기반, 항상 계산해 주입.
+    if "## 통계적 이상징후 탐지" not in report_text:
+        aberration_section = _build_aberration_section()
+        if aberration_section:
+            report_text = report_text + "\n" + aberration_section
 
     stem = epiweek.replace("/", "-")
     path = _save_report("final", stem, report_text)
