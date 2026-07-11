@@ -15,6 +15,14 @@ const ZOOM = 7;
 // national view; digitise per area, or the investigation flies to the surveyed region.
 const SAMPLE_TOWERS: [number, number][] = [];
 const TOWER_WEIGHT = 0.5;
+// Public, de-identified input examples. They intentionally contain no presumed source or
+// conclusion; they are only a transparent view of the survey format used by the demo.
+const EXAMPLE_SURVEYS = [
+  { file: 'case_01.txt', label: '예시 조사서 1' },
+  { file: 'case_02.txt', label: '예시 조사서 2' },
+  { file: 'case_03.txt', label: '예시 조사서 3' },
+  { file: 'case_04.txt', label: '예시 조사서 4' },
+];
 
 function bathWeight(s: string): number {
   s = s || '';
@@ -83,6 +91,7 @@ export default function LegionellaView() {
   const [exLoading, setExLoading] = useState(false);
   const [exResult, setExResult] = useState<any>(null);
   const [stagedFiles, setStagedFiles] = useState<File[]>([]);
+  const [preview, setPreview] = useState<{ title: string; text: string } | null>(null);
   const [vis, setVis] = useState({ satellite: true, hybrid: true, towers: true, baths: true, hospitals: true, heat: true, cases: true, hotspot: true });
   const visRef = useRef(vis); visRef.current = vis;
   const addModeRef = useRef(addMode); addModeRef.current = addMode;
@@ -216,6 +225,16 @@ export default function LegionellaView() {
     } catch { /* */ }
   }
 
+  async function previewExample(survey: { file: string; label: string }) {
+    try {
+      const response = await fetch(`/data/synthetic_surveys/${survey.file}`);
+      if (!response.ok) throw new Error('example survey unavailable');
+      setPreview({ title: survey.label, text: await response.text() });
+    } catch {
+      setPreview({ title: survey.label, text: '예시 조사서를 불러오지 못했습니다.' });
+    }
+  }
+
   useEffect(() => {
     if (isAdmin) void loadState();
     // loadState intentionally runs only when the admin session becomes available.
@@ -343,6 +362,20 @@ export default function LegionellaView() {
             {uploadMsg && <div className="legionella-upmsg">{uploadMsg}</div>}
           </div>
 
+          <details className="legionella-upload-guide">
+            <summary>업로드 양식 · AI 분석 안내</summary>
+            <div className="legionella-upload-guide-body">
+              <p><strong>권장 양식</strong> 질병관리청 레지오넬라증 역학조사서 또는 같은 항목을 담은 비식별 문서</p>
+              <ul>
+                <li><b>파일</b> .txt · .md · .csv · .docx · 텍스트형 PDF</li>
+                <li><b>항목</b> 발병일·증상·검사, 기저질환, 입원/의료기관 이용, 여행·환경 노출</li>
+                <li><b>제외</b> 성명·주민번호·상세주소·연락처 등 직접 식별정보</li>
+              </ul>
+              <p><strong>AI 분석</strong> 사실 항목을 구조화하고, 노출 시기·근접도·시설 가중치를 결합해 추정 감염경로, 특이사항, 종합의견과 환경조사 우선순위 초안을 만듭니다.</p>
+              <p className="legionella-upload-guide-note">이미지로만 된 스캔 PDF는 OCR 후 업로드하세요. AI 결과는 초안이며 확정 감염원 판단은 채수·배양 및 역학조사관 검토가 필요합니다.</p>
+            </div>
+          </details>
+
           {plan.length > 0 && (
             <div className="legionella-group legionella-priority-panel">
               <div className="legionella-group-title">조사 우선순위 (환경조사 우선 대상)</div>
@@ -377,6 +410,18 @@ export default function LegionellaView() {
             </div>
             <div className="legionella-hint warn">초안 보고서이며 최종 판단은 역학조사관이 합니다.</div>
           </div>
+          <section className="legionella-example-surveys" aria-labelledby="example-surveys-title">
+            <div>
+              <div className="legionella-results-kicker">DE-IDENTIFIED INPUT EXAMPLES</div>
+              <h4 id="example-surveys-title">예시 조사서 원문 보기</h4>
+              <p>공개 비식별 데모용 입력 예시입니다. 아래 원문에는 추정 감염원이나 확정 판단을 포함하지 않습니다.</p>
+            </div>
+            <div className="legionella-example-survey-actions">
+              {EXAMPLE_SURVEYS.map((survey) => (
+                <button type="button" key={survey.file} className="legionella-example-survey-btn" onClick={() => previewExample(survey)}>{survey.label}</button>
+              ))}
+            </div>
+          </section>
           {exLoading && <ExampleAnalyzing />}
           {!exLoading && exResult && (<>
             {exResult.narrative?.convergence && (
@@ -452,6 +497,14 @@ export default function LegionellaView() {
           </>)}
           {!exLoading && !exResult && uploadMsg && <div className="legionella-hint">분석 결과를 불러오지 못했습니다.</div>}
         </section>
+      )}
+      {preview && (
+        <div className="leg-modal" onClick={() => setPreview(null)} role="presentation">
+          <div className="leg-modal-box" role="dialog" aria-modal="true" aria-label={`${preview.title} 원문`} onClick={(event) => event.stopPropagation()}>
+            <div className="leg-modal-head"><span>{preview.title} · 비식별 원문</span><button type="button" onClick={() => setPreview(null)}>닫기</button></div>
+            <pre className="leg-modal-body">{preview.text}</pre>
+          </div>
+        </div>
       )}
     </div>
   );
