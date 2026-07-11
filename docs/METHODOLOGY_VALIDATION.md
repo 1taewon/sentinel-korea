@@ -49,16 +49,22 @@ This is compatible with established metapopulation and mobility-network epidemic
 
 ### Mobility data provenance
 
-The collector creates `multimodal_mobility_by_region.json` and preserves each mode's observation type.
+The collector creates `multimodal_mobility_by_region.json` and preserves each mode's observation type. A mode contributes in one of two distinct ways, which the model never conflates:
 
-| Mode | Current public source | Treatment in model |
-| --- | --- | --- |
-| Expressway | Korea Expressway Corporation tollgate OD | observed vehicle OD, aggregated across sampled morning/evening peaks |
-| KORAIL | [KORAIL train transport statistics](https://www.data.go.kr/data/15125733/openapi.do) | observed passenger OD only when the response exposes station-pair passenger counts |
-| SRT | [SR SRT passenger movement type](https://www.data.go.kr/data/15108353/openapi.do) | observed monthly station-pair passenger OD; labelled monthly, not daily |
-| Domestic air | [KAC aircraft operation schedule GW](https://www.data.go.kr/data/15158949/openapi.do) | scheduled-flight count × configurable representative seats; capacity proxy, not observed passengers |
+- **Pairwise OD edges** — measured directed origin→destination flows that seed the observed part of `C(i,j)` (blended with the gravity baseline at `od_blend`≈0.7).
+- **Connectivity marginals** — per-region activity totals (not pairs) that shape each region's gravity connectivity `conn`. Region connectivity is built as `conn = 0.60·road + 0.25·rail + 0.15·air` from each mode's normalized regional activity, so rail/air adjust *how strongly the gravity fill connects a region* even where no station-pair OD exists.
 
-Domestic-flight schedule capacity is automatically down-weighted. Intercity/express buses are not added separately because their road movement is already represented in highway traffic. The output retains mode metadata so a reviewer can see whether a corridor includes observed OD or a proxy. The public-data service key must be registered for each dataset and supplied to Railway as `MOBILITY_API_KEY`; the `data.ex.co.kr` `HIGHWAY_API_KEY` is not used as a substitute. The former KAC daily expected-passenger API is discontinued, so it is not treated as a live passenger source.
+| Mode | Public source | Role | Treatment in model |
+| --- | --- | --- | --- |
+| Expressway | Korea Expressway Corporation tollgate OD | OD edge | observed vehicle OD (`stn` traffic), aggregated across sampled peaks |
+| SRT | [SR SRT passenger movement type](https://www.data.go.kr/data/15108353/openapi.do) | OD edge | observed route corridor (`ROUTE_NM`/`TKCAR_NMPR_CNT`), e.g. 수서↔부산; symmetric |
+| KORAIL | [KORAIL train transport statistics](https://www.data.go.kr/data/15125733/openapi.do) | conn marginal | per-station 승차+하차 (`stn_nm`/`abrd_nope`/`goff_nope`) → regional rail activity |
+| Domestic flight | [KAC aircraft operation schedule GW](https://www.data.go.kr/data/15158949/openapi.do) | OD edge (proxy) | scheduled-flight count × representative seats; capacity proxy, down-weighted |
+| Airport passengers | KAC daily expected-passenger | conn marginal | per-airport forecast (`PCT`) → regional air activity |
+
+**Live status (verified against Railway data.go.kr, 2026-07).** Expressway OD (45 corridors) and SRT (4 route corridors, e.g. 수서↔부산) are reflected as observed edges; KORAIL boardings/alightings (311 rows → 16 regions) are reflected as the rail connectivity marginal. The two **air** modes are currently *not* reflected: `flight-schedule/dom` returns no rows for the queried date and `airport-daily-expect-passenger` returns no rows, so `air` activity is 0 in the connectivity blend. The field names are the ones verified in commit `97fed81`; the failure is empty upstream responses, not a field mismatch, so both air fetchers now scan a small **date window** (today ± a few days, first non-empty wins) instead of today-only — mirroring the recent-window tactic the rail fetchers already use.
+
+Every simulation response carries a runtime-derived `data_sources` block (surfaced in the UI's "데이터 출처 · 반영 방식" panel) reporting, per mode, whether it was collected and actually reflected — so an unavailable mode reads as "미반영" rather than silently appearing as coverage. Intercity/express buses are not added separately because their road movement is already represented in highway traffic. The public-data service key must be registered for each dataset and supplied to Railway as `MOBILITY_API_KEY`; the `data.ex.co.kr` `HIGHWAY_API_KEY` is not used as a substitute.
 ### Aviation and weather
 
 - Aviation uses Incheon arriving-passenger signals to scale the **initial import seed**, not domestic transmission.
