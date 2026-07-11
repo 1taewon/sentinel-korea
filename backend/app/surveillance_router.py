@@ -119,7 +119,10 @@ async def parse_survey(files: list[UploadFile] = File(...),
                 parsed.update({"id": base + idx + 1, "source_file": fname, "location": loc})
                 cases.append(parsed)
             _save_cases(cases)
-            return _pipeline(cases, towers)
+            result = _pipeline(cases, towers)
+            result["narrative"] = _example_narrative(result)
+            result["report_draft"] = LL.build_report_draft(result, use_llm=True)
+            return result
 
     # Read file bytes in the async context, then run the CPU/IO pipeline off-thread.
     _read = [(up.filename or f"survey_{i}.txt", await up.read()) for i, up in enumerate(files)]
@@ -175,6 +178,7 @@ def _compute_example() -> dict:
         cases.append(parsed)
     result = _pipeline(cases, [])          # towers empty (national default)
     result["narrative"] = _example_narrative(result)
+    result["report_draft"] = LL.build_report_draft(result, use_llm=True)  # AI 초안 (템플릿 폴백)
     result["example"] = True
     return result
 
