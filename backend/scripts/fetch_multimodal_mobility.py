@@ -214,14 +214,20 @@ def _fetch_srt_corridors(key: str) -> tuple[dict[tuple[str, str], float], dict[s
 
 
 # ── Air: KAC domestic flight schedule → city-pair flight-count capacity proxy ─────
+def _flight_days() -> list[str]:
+    """Candidate schedule dates. A published schedule is forward-looking, so today can
+    already be past its last departure; try today then the next few days (first non-empty
+    wins). Mirrors the recent-window approach the rail fetchers use for their stats lag."""
+    base = datetime.now(KST)
+    return [(base + timedelta(days=offset)).strftime("%Y%m%d") for offset in (0, 1, 2, -1)]
+
+
 def _fetch_flight_proxy(key: str) -> tuple[dict[tuple[str, str], float], dict[str, Any]]:
     if not key:
         return {}, {"status": "skipped", "reason": "no public-data service key"}
-    day = datetime.now(KST).strftime("%Y%m%d")
-    corridors: dict[tuple[str, str], float] = defaultdict(float)
     seats = int(os.getenv("DOMESTIC_FLIGHT_PROXY_SEATS", "180"))
 
-    def one_pair(pair: tuple[str, str]) -> tuple[tuple[str, str], int]:
+    def one_pair(day: str, pair: tuple[str, str]) -> tuple[tuple[str, str], int]:
         origin, destination = pair
         payload = _get_json(DOMESTIC_FLIGHT, {
             "serviceKey": key, "schDate": day, "schDeptCityCode": origin,
@@ -229,47 +235,60 @@ def _fetch_flight_proxy(key: str) -> tuple[dict[tuple[str, str], float], dict[st
         })
         return pair, len(_items(payload))
 
-    with ThreadPoolExecutor(max_workers=2) as pool:  # gentle: avoid tripping data.go.kr burst throttle
-        futures = [pool.submit(one_pair, pair) for pair in _DOMESTIC_FLIGHT_PAIRS]
-        for future in as_completed(futures):
-            (origin, destination), flights = future.result()
-            source, target = _AIRPORT_REGION[origin], _AIRPORT_REGION[destination]
-            if flights and source != target:
-                corridors[(source, target)] += flights * seats
-                corridors[(target, source)] += flights * seats  # scheduled both ways
-    if corridors:
-        return dict(corridors), {"status": "ok", "observation": "scheduled_capacity_proxy",
-                                 "date": day, "routes": len(corridors), "endpoint": "KAC flight-schedule/dom"}
-    return {}, {"status": "unavailable", "reason": "no domestic schedule rows parsed"}
+    tried: list[str] = []
+    for day in _flight_days():
+        tried.append(day)
+        corridors: dict[tuple[str, str], float] = defaultdict(float)
+        with ThreadPoolExecutor(max_workers=2) as pool:  # gentle: avoid tripping data.go.kr burst throttle
+            futures = [pool.submit(one_pair, day, pair) for pair in _DOMESTIC_FLIGHT_PAIRS]
+            for future in as_completed(futures):
+                (origin, destination), flights = future.result()
+                source, target = _AIRPORT_REGION[origin], _AIRPORT_REGION[destination]
+                if flights and source != target:
+                    corridors[(source, target)] += flights * seats
+                    corridors[(target, source)] += flights * seats  # scheduled both ways
+        if corridors:
+            return dict(corridors), {"status": "ok", "observation": "scheduled_capacity_proxy",
+                                     "date": day, "routes": len(corridors), "endpoint": "KAC flight-schedule/dom"}
+    return {}, {"status": "unavailable", "reason": "no domestic schedule rows parsed",
+                "dates_tried": tried, "endpoint": "KAC flight-schedule/dom"}
 
 
 # ── Air: KAC daily expected passengers → airport regional marginal (3 airports) ───
 def _fetch_air_marginals(key: str) -> tuple[dict[str, float], dict[str, Any]]:
     if not key:
         return {}, {"status": "skipped", "reason": "no public-data service key"}
-    day = datetime.now(KST).strftime("%Y%m%d")
-    activity: dict[str, float] = defaultdict(float)
-    parsed = 0
+    # The expected-passenger forecast is same-day only and can be empty once the day is
+    # over / before it is published, so scan a small window (today + nearby days) and use
+    # the first date that returns rows — the same recent-window tactic the rail fetchers use.
+    base = datetime.now(KST)
+    candidate_days = [(base + timedelta(days=offset)).strftime("%Y%m%d") for offset in (0, 1, -1, 2)]
     sample: list[str] = []
-    for airport, code in _EXPECT_AIRPORTS.items():
-        # Same-day forecast only (future dates return empty); sum all hours + arr/dep.
-        rows = _items(_get_json(AIRPORT_EXPECT_PASSENGER, {
-            "serviceKey": key, "pageNo": 1, "numOfRows": 200, "schDate": day,
-            "schAirport": airport, "schTof": "D", "type": "json",
-        }))
-        if rows and not sample:
-            sample = _sample_keys(rows)
-        for row in rows:
-            passengers = _as_int(_value(row, "PCT", "pct", "예상승객수"))  # 예상 승객수 (시간대별)
-            if passengers > 0:
-                activity[code] += passengers
-                parsed += 1
-    activity = {code: value for code, value in activity.items() if value > 0}
-    if activity:
-        return activity, {"status": "ok", "observation": "observed_airport_marginal",
-                          "date": day, "rows": parsed, "endpoint": "KAC airport-daily-expect-passenger"}
-    return {}, {"status": "unavailable", "reason": "expected-passenger fields not matched",
-                "sample_keys": sample}
+    tried: list[str] = []
+    for day in candidate_days:
+        tried.append(day)
+        activity: dict[str, float] = defaultdict(float)
+        parsed = 0
+        for airport, code in _EXPECT_AIRPORTS.items():
+            rows = _items(_get_json(AIRPORT_EXPECT_PASSENGER, {
+                "serviceKey": key, "pageNo": 1, "numOfRows": 200, "schDate": day,
+                "schAirport": airport, "schTof": "D", "type": "json",
+            }))
+            if rows and not sample:
+                sample = _sample_keys(rows)
+            for row in rows:
+                passengers = _as_int(_value(row, "PCT", "pct", "예상승객수"))  # 예상 승객수 (시간대별)
+                if passengers > 0:
+                    activity[code] += passengers
+                    parsed += 1
+        activity = {c: v for c, v in activity.items() if v > 0}
+        if activity:
+            return activity, {"status": "ok", "observation": "observed_airport_marginal",
+                              "date": day, "rows": parsed, "endpoint": "KAC airport-daily-expect-passenger"}
+    reason = ("expected-passenger API returned no rows for any tried date"
+              if not sample else "expected-passenger fields not matched")
+    return {}, {"status": "unavailable", "reason": reason,
+                "dates_tried": tried, "sample_keys": sample}
 
 
 def _mode_mix(mode: str, observed: bool) -> float:
