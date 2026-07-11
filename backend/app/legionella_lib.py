@@ -2,8 +2,8 @@
 
 Deterministic epidemiology (match + KDE hotspot) + a Gemini parse step for the
 free-text survey. NO patient/personal data leaves the box: PII patterns are stripped
-before the LLM call and dropped from any output. All distances use a local metre
-projection centred on 부산 (pyproj-free); output GeoJSON stays WGS84 [lng,lat].
+before the LLM call and dropped from any output. All distances use a latitude-aware
+local metre projection (pyproj-free, valid nationwide); output GeoJSON stays WGS84 [lng,lat].
 
 Framing (fixed in outputs): the risk map is an environmental-contamination tendency,
 NOT a patient-incidence forecast; a hotspot is a spatiotemporal cluster of exposure
@@ -22,11 +22,9 @@ from typing import Any
 
 import httpx
 
-# 부산 사업장·병원 좌표 소스 (Phase 1-4 산출물).
+# 전국 사업장·병원 좌표 소스 (Phase 1-4 산출물).
 _PUBLIC_DATA = Path(__file__).resolve().parents[2] / "frontend" / "public" / "data"
-_LAT0 = 35.1796  # 부산 기준
-_MPD_LAT = 111_000.0
-_MPD_LNG = 111_000.0 * math.cos(math.radians(_LAT0))
+_MPD_LAT = 111_000.0  # metres per degree latitude (거의 상수)
 
 EXPOSURE_BACK_MAX = 14  # 발병 전 최대일 (노출 시간창 시작)
 EXPOSURE_BACK_MIN = 2   # 발병 전 최소일 (노출 시간창 끝)
@@ -51,9 +49,9 @@ def strip_pii(text: str) -> str:
     return out
 
 
-# ── metre helpers (local projection; fine within one city) ──────────────────
+# ── metre helpers (local equirectangular; latitude-aware so it holds nationwide) ──
 def _xy(lat: float, lng: float) -> tuple[float, float]:
-    return (lng * _MPD_LNG, lat * _MPD_LAT)
+    return (lng * _MPD_LAT * math.cos(math.radians(lat)), lat * _MPD_LAT)
 
 
 def _dist_m(a: tuple[float, float], b: tuple[float, float]) -> float:
@@ -198,7 +196,8 @@ def _sanitize_case(d: dict) -> dict:
 
 # ── geocode (V-World) with a small 부산 fallback for the demo ────────────────
 _BUSAN_FALLBACK = {
-    "온천": (129.0839, 35.2129), "동래": (129.0836, 35.1970), "서면": (129.0602, 35.1577),
+    # 온천 = 동래온천 목욕장 밀집지(허심청·반도온천·대성관 일대) 중심 → 반경 내 실제 시설 다수.
+    "온천": (129.0815, 35.2195), "동래": (129.0836, 35.1970), "서면": (129.0602, 35.1577),
     "부산진": (129.0498, 35.1631), "해운대": (129.1603, 35.1631), "연산": (129.0836, 35.1846),
     "사상": (128.9915, 35.1524), "남포": (129.0281, 35.0979), "광안": (129.1183, 35.1533),
 }
@@ -265,19 +264,26 @@ def match_sources(cases: list[dict], towers: list[tuple[float, float]], faciliti
             "kind": agg["kind"], "name": agg["name"], "sub": agg.get("sub"),
             "lat": agg["lat"], "lng": agg["lng"],
             "linked_cases": sorted(agg["cases"]), "case_count": n,
-            "score": round(n * agg["weight"] * (agg["prox_sum"] / max(1, n)), 4),
+            # case convergence dominates: a source shared by multiple cases outranks any
+            # single-case proximity. score = case_count² · PHWR weight · mean proximity.
+            "score": round(n * agg["weight"] * agg["prox_sum"], 4),
         })
     common.sort(key=lambda x: x["score"], reverse=True)
     return {"case_results": case_results, "common_candidates": common}
 
 
 def _infer_route(case: dict, exposed: list[dict]) -> dict:
-    """Z 감염경로 용어정의 규칙(초안). 확정 아님."""
+    """Z 감염경로 용어정의 규칙(초안). 확정 아님.
+
+    의료기관내감염은 환자가 노출 시간창(발병 전 2~14일)에 '의료기관/요양시설을 이용/입원'했다고
+    조사서에 보고된 경우만 해당한다(치료 목적 입원이나 단순 인근 병원 존재는 제외 — 그래서 위치가
+    아니라 보고된 위험장소(risk_places)로 판정)."""
     days = case.get("hospital_days") or 0
-    if case.get("hospitalized_consecutive_10d") or days >= 10:
-        return {"label": "의료기관내감염(확정)", "reason": "발병 전 10일 연속 입원."}
-    if case.get("hospitalized") and 1 <= days <= 9 and any(e["kind"] == "hospital" for e in exposed):
-        return {"label": "의료기관내감염(가능성 높음)", "reason": f"10일 중 {days}일 입원 + 의료기관 노출."}
+    med_place = any(p.get("type") in ("의료기관", "요양시설") for p in case.get("risk_places", []))
+    if med_place and (case.get("hospitalized_consecutive_10d") or days >= 10):
+        return {"label": "의료기관내감염(확정)", "reason": "발병 전 10일 연속 의료기관 입원력 보고."}
+    if med_place and case.get("hospitalized") and 1 <= days <= 9:
+        return {"label": "의료기관내감염(가능성 높음)", "reason": f"노출 시간창 내 의료기관 이용력 + {days}일 입원."}
     if case.get("travel_overnight_2w"):
         return {"label": "여행관련감염", "reason": "2주 이내 1박 이상 여행."}
     if any(p.get("type") in ("목욕장·온천", "수영장·온천", "대형건물") for p in case.get("risk_places", [])) or exposed:
@@ -292,8 +298,10 @@ def build_hotspots(match: dict, towers: list[tuple[float, float]], facilities: l
     common = match["common_candidates"]
     if not common:
         return {"type": "FeatureCollection", "features": [], "plan": []}
-    # Weighted candidate points = case_count × PHWR weight (proximity already folded into score).
-    pts = [(c["lat"], c["lng"], max(c["score"], 1e-3)) for c in common]
+    # KDE point weight emphasises CASE CONVERGENCE over facility density: a source shared by
+    # multiple cases must out-peak many single-case facilities clustered in a dense area.
+    # weight = score(=case_count·PHWR·Σprox) × case_count → convergence enters cubically.
+    pts = [(c["lat"], c["lng"], max(c["score"] * c["case_count"], 1e-3)) for c in common]
     lats = [p[0] for p in pts]; lngs = [p[1] for p in pts]
     pad = 0.012
     lat_min, lat_max = min(lats) - pad, max(lats) + pad
@@ -313,20 +321,36 @@ def build_hotspots(match: dict, towers: list[tuple[float, float]], facilities: l
             score[i, j] = s
     mx = float(score.max()) or 1.0
     score /= mx
-    # Greedy peak-picking → up to 3 hotspots, suppressing neighbours within ~2*bandwidth.
+    # Greedy peak-picking → candidate hotspots, suppressing neighbours within ~2*bandwidth.
+    # Pick up to 6 peaks; the final rank is decided by case convergence below, not KDE height.
     flat = sorted(((score[i, j], i, j) for i in range(nlat) for j in range(nlng)), reverse=True)
     chosen: list[tuple[float, float, float]] = []  # (score, lat, lng)
     for sc, i, j in flat:
-        if sc < 0.15:  # surface secondary clusters too (weaker = lighter/broader)
+        if sc < 0.12:  # surface secondary clusters too (weaker = lighter/broader)
             break
         lat, lng = float(grid_lat[i]), float(grid_lng[j])
         if all(_dist_m((lat, lng), (c[1], c[2])) > 2 * bandwidth_m for c in chosen):
             chosen.append((sc, lat, lng))
-        if len(chosen) >= 3:
+        if len(chosen) >= 6:
             break
     if not chosen:  # single diffuse case → one broad hotspot at the top cell
         sc, i, j = flat[0]
         chosen = [(float(sc), float(grid_lat[i]), float(grid_lng[j]))]
+
+    # Coverage guarantee: when one cluster dominates the KDE, weaker single-case clusters fall
+    # below threshold and would vanish. Add the strongest shared source per case so every case
+    # gets an investigation lead; the case-set dedupe below folds redundant ones into the peaks.
+    best_per_case: dict[int, dict] = {}
+    for c in common:
+        for cid in c["linked_cases"]:
+            if cid not in best_per_case or c["score"] > best_per_case[cid]["score"]:
+                best_per_case[cid] = c
+    for c in best_per_case.values():
+        lat, lng = c["lat"], c["lng"]
+        if all(_dist_m((lat, lng), (x[1], x[2])) > bandwidth_m for x in chosen):
+            ii = min(max(int(round((lat - lat_min) / (lat_max - lat_min) * (nlat - 1))), 0), nlat - 1)
+            jj = min(max(int(round((lng - lng_min) / (lng_max - lng_min) * (nlng - 1))), 0), nlng - 1)
+            chosen.append((float(score[ii, jj]), lat, lng))
 
     # Build candidate hotspots, keep only those tied to ≥1 case (drop KDE spillover), re-rank.
     kept = []
@@ -340,6 +364,20 @@ def build_hotspots(match: dict, towers: list[tuple[float, float]], facilities: l
         if not linked:
             continue
         kept.append((sc, lat, lng, radius, near_towers, near_fac, linked))
+
+    # Priority = case convergence first (more cases sharing a source = investigate first),
+    # KDE density as tie-breaker. Then drop peaks that only re-surface a case set already
+    # covered (multiple adjacent peaks from the same co-located cases) so each distinct
+    # case cluster gets its own slot. Keep the top 3.
+    kept.sort(key=lambda k: (len(k[6]), k[0]), reverse=True)
+    deduped: list = []
+    covered: list[set] = []
+    for k in kept:
+        s = set(k[6])
+        if any(s <= c for c in covered):  # same/subset case-set already surfaced
+            continue
+        deduped.append(k); covered.append(s)
+    kept = deduped[:3]
 
     feats, plan = [], []
     for rank, (sc, lat, lng, radius, near_towers, near_fac, linked) in enumerate(kept, 1):

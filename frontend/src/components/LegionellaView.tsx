@@ -3,16 +3,16 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 
-// ─── Legionella surveillance (부산) — risk map + investigation hotspots ──────
+// ─── Legionella surveillance (전국) — risk map + investigation hotspots ──────
 // (A) 상시 위험지도: 냉각탑(위성 수동 판독) + 목욕장업 + 고위험 병원 + PHWR 위험 히트맵.
 // (B) 사건 대응: 비식별 조사서 업로드 → Gemini 파싱 → 공통 노출원 → 조사 우선순위 Hotspot.
 // No ML/GPU. 위험 히트맵 = 환경 오염 경향(환자 발생 예측 아님). 합성·비식별 데모.
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const CENTER: [number, number] = [35.1796, 129.0756]; // 부산
-const ZOOM = 12;
-const SAMPLE_TOWERS: [number, number][] = [
-  [35.1580, 129.0595], [35.1846, 129.0836], [35.2129, 129.0839], [35.1533, 129.1183], [35.1042, 129.0227],
-];
+const CENTER: [number, number] = [36.4, 127.9]; // 전국
+const ZOOM = 7;
+// Cooling towers are manual satellite reads (no national registry). Start empty at the
+// national view; digitise per area, or the investigation flies to the surveyed region.
+const SAMPLE_TOWERS: [number, number][] = [];
 const TOWER_WEIGHT = 0.5;
 const SYNTHETIC = ['case_01.txt', 'case_02.txt', 'case_03.txt', 'case_04.txt'];
 
@@ -59,7 +59,7 @@ export default function LegionellaView() {
 
   useEffect(() => {
     if (!mapEl.current || mapRef.current) return;
-    const map = L.map(mapEl.current, { center: CENTER, zoom: ZOOM, minZoom: 7, maxZoom: 19 });
+    const map = L.map(mapEl.current, { center: CENTER, zoom: ZOOM, minZoom: 6, maxZoom: 19, preferCanvas: true });
     mapRef.current = map;
     (async () => {
       let key = '';
@@ -131,9 +131,11 @@ export default function LegionellaView() {
   }
 
   // ── investigation (cases + hotspots) ─────────────────────────────────────
-  function applyInvestigation(d: any) {
+  function applyInvestigation(d: any, focus = true) {
+    const pts: [number, number][] = [];
     const cl = caseLayer.current; cl.clearLayers();
     (d.case_results || []).forEach((cr: any) => {
+      if (cr.location) pts.push([cr.location[1], cr.location[0]]);
       if (!cr.location) return;
       const ll: LL = [cr.location[1], cr.location[0]];
       const cands = (cr.exposure_candidates || []).slice(0, 4).map((x: any) => `${x.name}(${x.dist_m}m)`).join(', ') || '반경 내 없음';
@@ -144,6 +146,7 @@ export default function LegionellaView() {
     const hl = hotspotLayer.current; hl.clearLayers();
     (d.hotspots?.features || []).forEach((f: any) => {
       const pr = f.properties; const c: [number, number] = [f.geometry.coordinates[1], f.geometry.coordinates[0]];
+      pts.push(c);
       const color = pr.rank === 1 ? '#dc2626' : pr.rank === 2 ? '#f97316' : '#f59e0b';
       L.circle(c, { radius: pr.radius_m, color, weight: 2, fillColor: color, fillOpacity: 0.14, dashArray: '4 4' })
         .bindPopup(`<b>조사 우선순위 ${pr.rank}위</b> (점수 ${pr.score})<br/>권장 조사 반경 ${pr.radius_m}m<br/>냉각탑 ${pr.cooling_towers.length} · 고위험시설 ${pr.facilities.length} · 관련 케이스 ${pr.linked_case_count}<br/><small>환경검사 우선순위 제안이며 확정 감염원 아님. 채수·배양 일치로 확정.</small>`)
@@ -152,13 +155,16 @@ export default function LegionellaView() {
     });
     setPlan(d.hotspots?.plan || []);
     setCounts((c) => ({ ...c, cases: (d.cases || []).length }));
+    if (focus && pts.length && mapRef.current) {  // fly to the surveyed region
+      mapRef.current.fitBounds(L.latLngBounds(pts).pad(0.5), { maxZoom: 14 });
+    }
   }
 
   async function loadState() {
     try {
       const q = `?cooling_towers=${encodeURIComponent(JSON.stringify(towers.current))}`;
       const d = await (await fetch(`${API_BASE}/surveillance/state${q}`)).json();
-      if ((d.cases || []).length) applyInvestigation(d);
+      if ((d.cases || []).length) applyInvestigation(d, false);
     } catch { /* */ }
   }
 
@@ -214,8 +220,8 @@ export default function LegionellaView() {
     <div className="legionella-view">
       <div className="legionella-map" ref={mapEl} />
       <div className="legionella-panel">
-        <div className="legionella-title">Legionella surveillance · 부산</div>
-        <div className="legionella-sub">위성 위험지도 + 비식별 조사서 → 조사 우선순위</div>
+        <div className="legionella-title">Legionella surveillance · 전국</div>
+        <div className="legionella-sub">전국 위성 위험지도 + 비식별 조사서 → 지역 조사 우선순위</div>
 
         <div className="legionella-group">
           <div className="legionella-group-title">레이어</div>

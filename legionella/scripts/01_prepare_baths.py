@@ -26,7 +26,7 @@ except Exception:
 BASE = Path(__file__).resolve().parents[1]
 RAW = BASE / "data" / "raw"
 OUT = BASE.parents[0] / "frontend" / "public" / "data" / "facilities_bath.geojson"
-TARGET_SIDO = os.getenv("TARGET_SIDO", "부산")
+TARGET_SIDO = os.getenv("TARGET_SIDO", "").strip()  # 빈 값 = 전국
 TARGET_SGGU = os.getenv("TARGET_SGGU", "").strip()
 
 TF = Transformer.from_crs("EPSG:5174", "EPSG:4326", always_xy=True)
@@ -108,7 +108,7 @@ def main() -> None:
     feats, geocoded, skipped = [], 0, 0
     for _, row in df.iterrows():
         addr = (str(row[c["road"]]).strip() if c["road"] else "") or (str(row[c["jibun"]]).strip() if c["jibun"] else "")
-        if TARGET_SIDO not in addr or (TARGET_SGGU and TARGET_SGGU not in addr):
+        if TARGET_SIDO and (TARGET_SIDO not in addr or (TARGET_SGGU and TARGET_SGGU not in addr)):
             continue
         if c["state"] and not any(s in str(row[c["state"]]) for s in ("영업", "정상")):
             continue
@@ -134,7 +134,7 @@ def main() -> None:
                       "geometry": {"type": "Point", "coordinates": [round(lng, 6), round(lat, 6)]}})
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({"type": "FeatureCollection",
-                               "note": f"{TARGET_SIDO} 목욕장업(영업중) · 행안부 공개데이터 · EPSG:5174→4326",
+                               "note": f"{TARGET_SIDO or '전국'} 목욕장업(영업중) · 행안부 공개데이터 · EPSG:5174→4326",
                                "features": feats}, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"목욕장업 {len(feats)}건 저장 (지오코딩 보완 {geocoded}, 좌표없음 스킵 {skipped}) → {OUT}")
 

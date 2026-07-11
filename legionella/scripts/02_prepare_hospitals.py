@@ -28,9 +28,7 @@ OUT = Path(__file__).resolve().parents[1].parents[0] / "frontend" / "public" / "
 URL = "https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList"
 CL_CODES = {"01": "상급종합", "11": "종합병원", "28": "요양병원"}
 HIGH_RISK = ("상급종합", "종합병원", "요양병원")
-TARGET_SIDO = os.getenv("TARGET_SIDO", "부산")
-# 부산 중심 좌표 + 반경(부산 전역 포함). 반경이 이웃 경남/울산까지 잡으므로 sidoCdNm으로 재필터.
-X, Y, RADIUS = 129.0756, 35.1796, 40000
+TARGET_SIDO = os.getenv("TARGET_SIDO", "").strip()  # 빈 값 = 전국
 
 
 def _key() -> str:
@@ -43,10 +41,10 @@ def _key() -> str:
 
 def _fetch(key: str, cl: str) -> list[dict]:
     rows: list[dict] = []
-    for page in range(1, 8):
+    for page in range(1, 30):  # nationwide: paginate all (요양병원 ~1,400 → ~14 pages)
         try:
             r = requests.get(URL, params={"ServiceKey": key, "pageNo": page, "numOfRows": 100,
-                                          "clCd": cl, "xPos": X, "yPos": Y, "radius": RADIUS}, timeout=25)
+                                          "clCd": cl}, timeout=30)
             root = ET.fromstring(r.text)
             items = root.findall(".//item")
             if not items:
@@ -74,7 +72,7 @@ def main() -> None:
         for row in rows:
             sido = row.get("sidoCdNm", "")
             clnm = row.get("clCdNm", "")
-            if TARGET_SIDO not in sido or not any(h in clnm for h in HIGH_RISK):
+            if (TARGET_SIDO and TARGET_SIDO not in sido) or not any(h in clnm for h in HIGH_RISK):
                 continue
             try:
                 lng, lat = float(row.get("XPos") or 0), float(row.get("YPos") or 0)
@@ -87,13 +85,13 @@ def main() -> None:
                 continue
             seen.add(k)
             feats.append({"type": "Feature",
-                          "properties": {"name": row.get("yadmNm", "병원"), "clCdNm": clnm},
+                          "properties": {"name": row.get("yadmNm", "병원"), "clCdNm": clnm, "sido": sido},
                           "geometry": {"type": "Point", "coordinates": [round(lng, 6), round(lat, 6)]}})
             kept += 1
-        print(f"{name}(clCd={cl}): {len(rows)}건 조회 → 부산 {kept}건")
+        print(f"{name}(clCd={cl}): {len(rows)}건 조회 → {TARGET_SIDO or '전국'} {kept}건")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({"type": "FeatureCollection",
-                               "note": f"{TARGET_SIDO} 고위험 병원(상급종합/종합/요양) · 심평원 병원정보서비스 · WGS84",
+                               "note": f"{TARGET_SIDO or '전국'} 고위험 병원(상급종합/종합/요양) · 심평원 병원정보서비스 · WGS84",
                                "features": feats}, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"고위험 병원 {len(feats)}건 저장 → {OUT}")
 
