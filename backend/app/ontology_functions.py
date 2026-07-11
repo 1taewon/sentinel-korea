@@ -1444,6 +1444,7 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
                        mobility: float = 0.10, weather_intensity: float = 0.3,
                        od_weights: dict[tuple[str, str], float] | None = None,
                        od_observation: dict[tuple[str, str], str] | None = None,
+                       access_prior: dict[str, float] | None = None,
                        observed_only: bool = False,
                        days: int = 28) -> tuple[dict, list, list, list]:
     """Daily discrete-time metapopulation SEIR+D over the 17 시도.
@@ -1462,6 +1463,25 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
     od_weights = od_weights or {}
     od_observation = od_observation or {}
     C = _build_seir_conn(conn_list, od_weights, observed_only=observed_only)
+    # The expressway sample has no outbound row for Incheon Airport's region.
+    # Preserve the observed OD matrix, but add a separately-labelled airport-access
+    # bridge to the adjacent Seoul capital area rather than making a false radial
+    # "observed" route to the whole country. Its weight is a scenario assumption.
+    access_prior = access_prior or {}
+    entry_code = _SEIR_CODES[entry_idx]
+    entry_has_observed_outbound = any(source == entry_code for source, _ in od_weights)
+    access_pairs: set[tuple[str, str]] = set()
+    if observed_only and access_prior and not entry_has_observed_outbound:
+        for target_code, bridge_share in access_prior.items():
+            if target_code not in _SEIR_CODES or target_code == entry_code:
+                continue
+            target_idx = _SEIR_CODES.index(target_code)
+            share = max(0.0, min(0.5, float(bridge_share)))
+            if not share:
+                continue
+            C[target_idx] = [value * (1.0 - share) for value in C[target_idx]]
+            C[target_idx][entry_idx] += share
+            access_pairs.add((entry_code, target_code))
     S = list(Npop); E = [0.0] * n; I = [0.0] * n; R = [0.0] * n; D = [0.0] * n; cum = [0.0] * n
     seed = min(max(1.0, seed_count), S[entry_idx])
     I[entry_idx] += seed; S[entry_idx] -= seed; cum[entry_idx] = seed
@@ -1528,9 +1548,12 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
                         "target": _SEIR_CODES[i],
                         "expected_exposures": round(exposure, 4),
                         "mobility_weight": round(C[i][j], 5),
-                        "mobility_source": od_observation.get(
-                            (_SEIR_CODES[j], _SEIR_CODES[i]),
-                            "observed_od" if od_weights.get((_SEIR_CODES[j], _SEIR_CODES[i])) else "baseline_gravity",
+                        "mobility_source": (
+                            "airport_access_prior" if (_SEIR_CODES[j], _SEIR_CODES[i]) in access_pairs
+                            else od_observation.get(
+                                (_SEIR_CODES[j], _SEIR_CODES[i]),
+                                "observed_od" if od_weights.get((_SEIR_CODES[j], _SEIR_CODES[i])) else "baseline_gravity",
+                            )
                         ),
                         "source_new_cases": round(day_onsets[j], 4),
                         "target_new_cases": round(ni, 4),
@@ -1793,6 +1816,13 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         traffic_source = "baseline_mobility"
     conn_list = [(highway.get(c, 0.5) if (observed_only and highway) else _SEIR_CONN_DEFAULT[c])
                  for c in _SEIR_CODES]
+    # ICN is in Incheon.  The available expressway sample lacks an Incheon-origin
+    # row, so use a narrow, explicitly-labelled airport-access bridge instead of
+    # either blocking all spread or portraying a gravity fallback as observed OD.
+    airport_access_prior = (
+        {"11": 0.28, "41": 0.14}
+        if (observed_only and entry_type == "airport" and entry_region == "28") else {}
+    )
     # m is active in both modes. It is the modeled interregional-mixing share.
     traffic_intensity = max(0.02, min(0.30, _num("traffic_intensity", 0.10)))
     # Weather -> transmissibility boost on days <= 10 (short-term forecast horizon).
@@ -1806,7 +1836,8 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     snaps, daily_new, C, transmission_edges = _simulate_outbreak(
         entry_idx, r0_eff, cfr_eff, inc_days, inf_days, conn_list, seed_count,
         weather_fav, use_weather, mobility=traffic_intensity,
-        weather_intensity=weather_intensity, od_weights=od_weights, od_observation=od_observation, observed_only=observed_only)
+        weather_intensity=weather_intensity, od_weights=od_weights, od_observation=od_observation,
+        access_prior=airport_access_prior, observed_only=observed_only)
     region_results = []
     for i, code in enumerate(_SEIR_CODES):
         tl = [snaps[d][i] for d in range(29)]
@@ -1856,7 +1887,10 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
                 "target": target_code,
                 "weight": round(weight, 5),
                 "traffic_volume": highway_data["od_volume"].get(pair),
-                "mobility_source": (od_observation.get(pair, "observed_od") if observed_only else "baseline_gravity"),
+                "mobility_source": (
+                    "airport_access_prior" if pair in {(entry_region, target) for target in airport_access_prior}
+                    else (od_observation.get(pair, "observed_od") if observed_only else "baseline_gravity")
+                ),
             })
     mobility_edges.sort(key=lambda edge: edge["weight"], reverse=True)
     network_source = highway_data.get("network_source", "highway_od") if observed_only else "baseline_gravity"
@@ -1867,7 +1901,8 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         sn, _dn, _c, _edges = _simulate_outbreak(
             entry_idx, r0_eff, cfr_eff, inc_days, inf_days, conn_list, seed,
             weather_fav, use_weather, mobility=m, weather_intensity=wi,
-            od_weights=od_weights, od_observation=od_observation, observed_only=observed_only)
+            od_weights=od_weights, od_observation=od_observation,
+            access_prior=airport_access_prior, observed_only=observed_only)
         rows = sn[28]
         return sum(r["cumulative_cases"] for r in rows), sum(r["cumulative_deaths"] for r in rows)
 
@@ -1916,6 +1951,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             "incubation_days": inc_days, "infectious_days": inf_days,
             "aviation": aviation_info, "aviation_source": aviation_source,
             "traffic_source": traffic_source, "weather_source": weather_source,
+            "traffic_bridge": "airport_access_prior" if airport_access_prior else None,
             "aviation_intensity": round(aviation_intensity, 2), "traffic_intensity": round(traffic_intensity, 2),
             "weather_intensity": round(weather_intensity, 2), "seed_count": int(round(seed_count)),
         },

@@ -670,6 +670,9 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
           <marker id="spread-arrow-proxy" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
             <path d="M 0 0 L 8 4 L 0 8 z" fill="rgba(96,165,250,0.9)" />
           </marker>
+          <marker id="spread-arrow-prior" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+            <path d="M 0 0 L 8 4 L 0 8 z" fill="rgba(148,163,184,0.9)" />
+          </marker>
         </defs>
         {polys.map((p) => {
           const r = p.code ? regionByCode.get(p.code) : undefined;
@@ -688,14 +691,17 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
           const intensity = Math.max(0.12, Math.sqrt(edge.expected_exposures / maxExposure));
           const duration = (1.8 - intensity * 0.9).toFixed(2);
           const isCapacityProxy = edge.mobility_source === 'scheduled_capacity_proxy';
-          const routeSource = isCapacityProxy ? '운항 일정 수송능력 프록시' : edge.mobility_source === 'baseline_gravity' ? '기본 이동모형' : '관측 OD';
+          const isModelPrior = edge.mobility_source === 'airport_access_prior' || edge.mobility_source === 'baseline_gravity';
+          const routeSource = isCapacityProxy ? '운항 일정 수송능력 프록시' : edge.mobility_source === 'airport_access_prior' ? '공항 접근 모형 보완 경로' : edge.mobility_source === 'baseline_gravity' ? '기본 이동모형' : '관측 OD';
+          const edgeColor = isCapacityProxy ? 'rgba(96,165,250,0.78)' : isModelPrior ? 'rgba(148,163,184,0.85)' : 'rgba(255,120,60,0.84)';
+          const edgeDash = isCapacityProxy ? '2 4' : isModelPrior ? '4 4' : undefined;
+          const marker = isCapacityProxy ? 'url(#spread-arrow-proxy)' : isModelPrior ? 'url(#spread-arrow-prior)' : 'url(#spread-arrow)';
           return (
             <g key={String(edge.day) + '-' + edge.source + '-' + edge.target}>
               <title>{edge.source + ' → ' + edge.target + ': 모델 추정 유입 노출 ' + edge.expected_exposures.toFixed(2) + ' · ' + routeSource}</title>
-              <path d={d} fill="none" stroke={isCapacityProxy ? 'rgba(96,165,250,0.78)' : 'rgba(255,120,60,0.72)'} strokeWidth={0.65 + intensity * 3.2}
-                strokeLinecap="round" strokeDasharray={(2 + intensity * 2).toFixed(1) + ' ' + (7 - intensity * 3).toFixed(1)}
-                markerEnd={isCapacityProxy ? 'url(#spread-arrow-proxy)' : 'url(#spread-arrow)'} className="scenario-spread-edge" />
-              <circle r={1.4 + intensity * 1.6} fill={isCapacityProxy ? '#93c5fd' : '#ffd166'} className="scenario-spread-particle">
+              <path d={d} fill="none" stroke={edgeColor} strokeWidth={0.65 + intensity * 3.2}
+                strokeLinecap="round" strokeDasharray={edgeDash} markerEnd={marker} className="scenario-spread-edge" />
+              <circle r={1.4 + intensity * 1.6} fill={isCapacityProxy ? '#93c5fd' : isModelPrior ? '#cbd5e1' : '#ffd166'} className="scenario-spread-particle">
                 <animateMotion path={d} dur={duration + 's'} repeatCount="indefinite" />
               </circle>
             </g>
@@ -736,7 +742,8 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
       </svg>
       <div className="scenario-spread-legend">
         <span><i className="ssl-origin" /> 유입 거점: {entryLabel}</span>
-        <span><i className="ssl-edge" /> 일별 지역 간 전파 기여(방향·굵기 = 모형 추정 유입 노출)</span>
+        <span><i className="ssl-edge" /> 실선 = 관측 OD 기반 전파 기여</span>
+        <span><i className="ssl-edge" style={{ background: '#94a3b8' }} /> 점선 = 관측 공백 공항 접근/기본 이동 보완</span>
         <span><i className="ssl-edge" style={{ background: '#60a5fa' }} /> 파란 경로 = 항공 운항일정 수송능력 프록시</span>
         <span><i className="ssl-node" /> 시도 감염 규모(색 = 감염 강도, 크기 = 해당 일 상대 규모)</span>
       </div>
