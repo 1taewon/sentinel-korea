@@ -92,19 +92,19 @@ function PipelineStatusBar() {
 
   return (
     <div className="pipeline-status-bar">
-      <div className="pipeline-status-item" title="Vercel Cron: 매주 월요일 07:00 KST 자동 실행 (뉴스·트렌드·해외 outbreak·KDCA API→AI 분석→FINAL 리포트)">
+      <div className="pipeline-status-item pipeline-status-item--cron" title="Vercel Cron: 매주 월요일 07:00 KST 자동 실행 (뉴스·트렌드·해외 outbreak·KDCA API→AI 분석→FINAL 리포트)">
         <span className="pipeline-dot pipeline-dot--cron" />
         <span className="pipeline-label">자동분석</span>
         <span className="pipeline-value">{nextCron}</span>
       </div>
       <span className="pipeline-sep" />
-      <div className="pipeline-status-item" title={`최근 스냅샷: ${info.latestSnapshot || '—'}\n리포트: ${info.lastReportAt || '—'}`}>
+      <div className="pipeline-status-item pipeline-status-item--snapshot" title={`최근 스냅샷: ${info.latestSnapshot || '-'}\n리포트: ${info.lastReportAt || '-'}`}>
         <span className="pipeline-dot pipeline-dot--snapshot" />
         <span className="pipeline-label">최근 분석</span>
         <span className="pipeline-value">{info.latestSnapshot || '—'}</span>
       </div>
       <span className="pipeline-sep" />
-      <div className="pipeline-status-item" title={info.lastUploadLabel || 'KDCA Excel/PDF 업로드 이력'}>
+      <div className="pipeline-status-item pipeline-status-item--upload" title={info.lastUploadLabel || 'KDCA Excel/PDF 업로드 이력'}>
         <span className="pipeline-dot pipeline-dot--upload" />
         <span className="pipeline-label">KDCA 업로드</span>
         <span className="pipeline-value">{info.lastUploadAt || '—'}</span>

@@ -337,7 +337,7 @@ export default function LegionellaView() {
             </div>
             {stagedFiles.length > 0 && <div className="legionella-upmsg">업로드 대기 {stagedFiles.length}건</div>}
             <button type="button" className="legionella-btn legionella-analyze" onClick={runAnalysis} disabled={exLoading}>
-              {exLoading ? '분석 중…' : isAdmin && stagedFiles.length ? `실제 조사서 분석 (${stagedFiles.length}건)` : '예시 분석 실행'}
+              {exLoading ? '분석 중…' : isAdmin && stagedFiles.length ? `실제 조사서 분석 (${stagedFiles.length}건)` : '분석 실행'}
             </button>
             {isAdmin && <button type="button" className="legionella-btn ghost legionella-reset" onClick={resetCases} disabled={exLoading}>분석 결과 초기화</button>}
             {uploadMsg && <div className="legionella-upmsg">{uploadMsg}</div>}
@@ -386,6 +386,35 @@ export default function LegionellaView() {
                   케이스 {exResult.narrative.convergence.linked_case_count}건의 노출후보가 조사 1순위 지점(반경 {exResult.narrative.convergence.radius_m}m · 고위험시설 {exResult.narrative.convergence.high_risk_facility_count}곳)에 수렴 — {(exResult.narrative.convergence.facilities || []).slice(0, 3).join(', ')}. <em>환경조사 우선 대상이며 확정 감염원은 아닙니다.</em>
                 </div>
               </div>
+            )}
+            {plan.length > 0 && (
+              <section className="legionella-priority-results" aria-labelledby="investigation-priority-title">
+                <div className="legionella-priority-results-head">
+                  <div>
+                    <div className="legionella-results-kicker">ENVIRONMENTAL INVESTIGATION</div>
+                    <h4 id="investigation-priority-title">조사 우선순위 (환경조사 우선 대상)</h4>
+                  </div>
+                  <p>케이스 수렴, 시설 가중치, 노출 근접도를 결합한 KDE 피크입니다. 확정 감염원이 아니며 채수·배양 일치 시 확정합니다.</p>
+                </div>
+                <div className="legionella-priority-results-grid">
+                  {plan.map((p) => (
+                    <button key={p.rank} type="button" className="legionella-priority-card" onClick={() => flyTo(p)}>
+                      <span className="legionella-priority-card-head">
+                        <span className="legionella-priority-card-rank">{p.rank}</span>
+                        <span><strong>{p.rank}순위 환경조사 우선 대상</strong><small>클릭하면 지도 조사 반경으로 이동</small></span>
+                      </span>
+                      <span className="legionella-priority-metrics">
+                        <span><b>조사 반경</b>{p.radius_m}m</span>
+                        <span><b>연관 케이스</b>{p.linked_case_count}건</span>
+                        <span><b>냉각탑</b>{p.cooling_tower_count}곳</span>
+                        <span><b>고위험시설</b>{p.high_risk_facility_count}곳</span>
+                      </span>
+                      <span className="legionella-priority-facilities"><b>주변 조사 대상</b>{p.facilities.length ? p.facilities.join(' · ') : '반경 내 등록 고위험시설 확인 필요'}</span>
+                      <span className="legionella-priority-action"><b>권고</b>반경 내 냉각탑·시설의 채수·배양, 운전·소독 이력 및 케이스 노출동선을 우선 확인</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
             )}
             <div className="legionella-results-grid">
               <div>

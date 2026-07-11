@@ -3257,6 +3257,36 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 }
 .top-nav-signout:hover { color: var(--alert-g3); }
 
+/* At browser zoom levels the intelligence modules remain first-class navigation items.
+   Status detail yields space before either Forecasting or Surveillance is clipped. */
+@media (min-width: 769px) and (max-width: 1700px) {
+  .top-nav { gap: 10px; padding: 0 12px; }
+  .top-nav-logo { padding-right: 10px; }
+  .top-nav-tabs { gap: 0; }
+  .top-nav-tab { min-width: 0; padding: 0 10px; }
+  .top-nav-tab-label { font-size: 10px; letter-spacing: 0.7px; }
+  .top-nav-tab-sub { font-size: 9px; }
+  .top-nav-tab--special { margin-left: 6px; padding-left: 12px; }
+  .top-nav-tab--special + .top-nav-tab--special { padding-left: 10px; }
+  .pipeline-status-bar { margin: 0; padding: 3px 7px; }
+  .pipeline-status-item--snapshot,
+  .pipeline-status-item--upload,
+  .pipeline-status-bar .pipeline-sep { display: none; }
+  .top-nav-right { gap: 6px; }
+  .top-nav-role { padding: 5px 8px; letter-spacing: 0.8px; }
+  .top-nav-admin-hint { padding: 6px 9px; font-size: 9px; letter-spacing: 0.8px; }
+}
+@media (min-width: 769px) and (max-width: 1360px) {
+  .pipeline-status-bar { display: none; }
+  .top-nav-logo-sub { display: none; }
+}
+@media (min-width: 769px) and (max-width: 1100px) {
+  .top-nav-role { display: none; }
+  .top-nav-tab { padding: 0 7px; }
+  .top-nav-tab--special { margin-left: 3px; padding-left: 8px; }
+  .top-nav-tab--special + .top-nav-tab--special { padding-left: 7px; }
+}
+
 /* ── Map View (Kaspersky-style) ────────────────────── */
 @media (max-width: 768px) {
   .top-nav {
@@ -9364,6 +9394,24 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .legionella-results .leg-ex-finding { margin-bottom: 16px; padding: 12px 14px; }
 .legionella-results .leg-ex-finding-title { font-size: 12px; }
 .legionella-results .leg-ex-finding-body { font-size: 12px; }
+.legionella-priority-results { margin: 18px 0; padding: 16px; border: 1px solid rgba(220, 38, 38, 0.22); border-radius: 10px; background: linear-gradient(135deg, rgba(254, 242, 242, 0.72), rgba(255, 255, 255, 0.82)); }
+.legionella-priority-results-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.legionella-priority-results h4 { margin: 3px 0 0; font-size: 15px; color: var(--text-primary, #0f172a); }
+.legionella-priority-results-head p { max-width: 520px; margin: 2px 0 0; color: var(--text-secondary, #475569); font-size: 11px; line-height: 1.5; text-align: right; }
+.legionella-priority-results-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.legionella-priority-card { display: flex; flex-direction: column; width: 100%; gap: 10px; padding: 12px; border: 1px solid var(--border, #e2e8f0); border-top: 3px solid #dc2626; border-radius: 8px; background: var(--bg-card, #fff); color: var(--text-primary, #0f172a); text-align: left; cursor: pointer; }
+.legionella-priority-card:hover { border-color: #dc2626; box-shadow: 0 3px 12px rgba(220, 38, 38, 0.14); }
+.legionella-priority-card-head { display: flex; align-items: center; gap: 8px; }
+.legionella-priority-card-head > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.legionella-priority-card-head strong { font-size: 12px; }
+.legionella-priority-card-head small { color: var(--text-muted, #94a3b8); font-size: 10px; }
+.legionella-priority-card-rank { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; flex: 0 0 auto; background: #dc2626; color: #fff; font-size: 13px; font-weight: 800; }
+.legionella-priority-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.legionella-priority-metrics span { display: flex; flex-direction: column; gap: 1px; padding: 5px 6px; border-radius: 5px; background: var(--bg-soft, #f1f5f9); color: var(--text-primary, #0f172a); font-size: 11px; font-weight: 700; }
+.legionella-priority-metrics b, .legionella-priority-facilities b, .legionella-priority-action b { margin-right: 4px; color: var(--text-muted, #94a3b8); font-size: 9px; font-weight: 800; letter-spacing: 0.04em; }
+.legionella-priority-metrics b { margin: 0; font-size: 9px; }
+.legionella-priority-facilities, .legionella-priority-action { color: var(--text-secondary, #475569); font-size: 10.5px; line-height: 1.5; }
+.legionella-priority-action { padding-top: 8px; border-top: 1px dashed var(--border, #e2e8f0); }
 .legionella-results-grid { display: grid; grid-template-columns: minmax(300px, 0.8fr) minmax(440px, 1.2fr); gap: 18px; align-items: start; }
 .legionella-results-grid .leg-ex-case { padding: 9px 10px; }
 .legionella-results-grid .leg-ex-case-meta { font-size: 11px; }
@@ -9378,6 +9426,9 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   .legionella-results { padding: 16px; }
   .legionella-results-head { display: block; }
   .legionella-results-head .legionella-hint { max-width: none; text-align: left; margin-top: 8px; }
+  .legionella-priority-results-head { display: block; }
+  .legionella-priority-results-head p { max-width: none; text-align: left; margin-top: 8px; }
+  .legionella-priority-results-grid { grid-template-columns: 1fr; }
   .legionella-results-grid { grid-template-columns: 1fr; }
 }
 .surveillance-empty { margin: auto; text-align: center; color: var(--text-muted, #94a3b8); padding: 40px; }
