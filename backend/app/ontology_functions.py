@@ -1367,7 +1367,7 @@ _MODE_DISPLAY = {
     "srt":             {"label": "SRT 노선",           "role": "od_edge",  "modal": "rail"},
     "domestic_flight": {"label": "국내선 항공(운항)",   "role": "od_edge",  "modal": "air"},
     "korail_marginal": {"label": "KORAIL 역별 승하차", "role": "conn_marginal", "modal": "rail"},
-    "air_marginal":    {"label": "공항 예상 여객",      "role": "conn_marginal", "modal": "air"},
+    "air_marginal":    {"label": "공항별 여객(수송실적)", "role": "conn_marginal", "modal": "air"},
 }
 
 

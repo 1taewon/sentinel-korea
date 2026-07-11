@@ -43,7 +43,9 @@ KST = timezone(timedelta(hours=9))
 KORAIL_MAIN_LINE = "https://apis.data.go.kr/B551457/carriageStatistics/mainLineTravelerTrain"
 SRT_DAILY_PASSENGERS = "https://apis.data.go.kr/B553912/srt_passenger/v1/daily_passengers"
 DOMESTIC_FLIGHT = "https://apis.data.go.kr/B551178/flight-schedule/dom"
-AIRPORT_EXPECT_PASSENGER = "https://apis.data.go.kr/B551178/airport-daily-expect-passenger/info"
+# KAC 전국공항 수송실적통계 — real monthly per-airport arrival/departure passenger counts
+# (data.go.kr 3034194). Per-airport totals (a regional MARGINAL, not station-pair OD).
+AIRPORT_TRANSPORT_STATS = "https://apis.data.go.kr/B551178/airport-transport-stats/info"
 
 # Station / terminal label → 시도 code (principal stations only; unknown labels skipped).
 _REGION_ALIASES: dict[str, str] = {
@@ -67,8 +69,13 @@ _DOMESTIC_FLIGHT_PAIRS = (
     ("GMP", "CJU"), ("GMP", "PUS"), ("GMP", "TAE"), ("GMP", "KWJ"), ("GMP", "CJJ"),
     ("CJU", "PUS"), ("CJU", "TAE"), ("CJU", "KWJ"), ("CJU", "USN"), ("CJU", "RSU"), ("CJU", "KPO"),
 )
-# KAC "일별 예상승객 정보" only covers three airports.
-_EXPECT_AIRPORTS = {"GMP": "11", "CJU": "50", "PUS": "26"}
+# KAC 수송실적 airport NAME (Korean, as returned in the `Airport` field) → 시도 code.
+# 김해 serves Busan (부산 관문공항) → 26; 포항경주 is the API's label for 포항 → 47.
+_AIRPORT_NAME_REGION = {
+    "김포": "11", "김해": "26", "제주": "50", "청주": "43", "대구": "27",
+    "광주": "29", "울산": "31", "여수": "46", "포항경주": "47", "포항": "47",
+    "사천": "48", "무안": "46", "군산": "45", "원주": "42", "양양": "42",
+}
 # SRT route name → the non-Suseo (11) end of the corridor.
 _SRT_ROUTE_TARGETS = (("부산", "26"), ("경부", "26"), ("목포", "46"), ("호남", "29"),
                       ("광주", "29"), ("송정", "29"))
@@ -255,40 +262,50 @@ def _fetch_flight_proxy(key: str) -> tuple[dict[tuple[str, str], float], dict[st
 
 
 # ── Air: KAC daily expected passengers → airport regional marginal (3 airports) ───
+def _recent_month(offset: int) -> str:
+    """YYYYMM `offset` calendar months before now (KST). The stats API only serves up to
+    the previous month, so the marginal is built from a recent completed-month window."""
+    base = datetime.now(KST)
+    year, month = base.year, base.month - offset
+    while month <= 0:
+        month += 12
+        year -= 1
+    return f"{year}{month:02d}"
+
+
 def _fetch_air_marginals(key: str) -> tuple[dict[str, float], dict[str, Any]]:
+    """Per-airport domestic passenger volume (도착+출발) from KAC 전국공항 수송실적통계 —
+    real monthly counts, not a schedule proxy. Feeds the air connectivity marginal, so
+    island regions (제주) whose only inflow is air get a data-backed connectivity."""
     if not key:
         return {}, {"status": "skipped", "reason": "no public-data service key"}
-    # The expected-passenger forecast is same-day only and can be empty once the day is
-    # over / before it is published, so scan a small window (today + nearby days) and use
-    # the first date that returns rows — the same recent-window tactic the rail fetchers use.
-    base = datetime.now(KST)
-    candidate_days = [(base + timedelta(days=offset)).strftime("%Y%m%d") for offset in (0, 1, -1, 2)]
-    sample: list[str] = []
-    tried: list[str] = []
-    for day in candidate_days:
-        tried.append(day)
-        activity: dict[str, float] = defaultdict(float)
-        parsed = 0
-        for airport, code in _EXPECT_AIRPORTS.items():
-            rows = _items(_get_json(AIRPORT_EXPECT_PASSENGER, {
-                "serviceKey": key, "pageNo": 1, "numOfRows": 200, "schDate": day,
-                "schAirport": airport, "schTof": "D", "type": "json",
-            }))
-            if rows and not sample:
-                sample = _sample_keys(rows)
-            for row in rows:
-                passengers = _as_int(_value(row, "PCT", "pct", "예상승객수"))  # 예상 승객수 (시간대별)
-                if passengers > 0:
-                    activity[code] += passengers
-                    parsed += 1
-        activity = {c: v for c, v in activity.items() if v > 0}
-        if activity:
-            return activity, {"status": "ok", "observation": "observed_airport_marginal",
-                              "date": day, "rows": parsed, "endpoint": "KAC airport-daily-expect-passenger"}
-    reason = ("expected-passenger API returned no rows for any tried date"
-              if not sample else "expected-passenger fields not matched")
-    return {}, {"status": "unavailable", "reason": reason,
-                "dates_tried": tried, "sample_keys": sample}
+    # Aggregate a recent completed-month window (API caps at 전월). One row per airport,
+    # summed over the window server-side; a few months smooths seasonality.
+    start, end = _recent_month(3), _recent_month(1)
+    rows = _items(_get_json(AIRPORT_TRANSPORT_STATS, {
+        "serviceKey": key, "pageNo": 1, "numOfRows": 50,
+        "startDePd": start, "endDePd": end,
+        "routeBe": 0, "nvgBe": 0, "pasngrCargoBe": 0, "pasngrBe": 0, "cargoBe": 0,
+        "type": "json",
+    }))
+    activity: dict[str, float] = defaultdict(float)
+    parsed = 0
+    for row in rows:
+        region = _AIRPORT_NAME_REGION.get(str(_value(row, "Airport", "airport") or "").strip())
+        passengers = _as_int(_value(row, "subpassenger", "Subpassenger"))  # 도착+출발 여객 합
+        if not passengers:  # fall back to arr+dep if the subtotal field is blank
+            passengers = _as_int(_value(row, "Arrpassenger")) + _as_int(_value(row, "Deppassenger"))
+        if region and passengers > 0:
+            activity[region] += passengers
+            parsed += 1
+    activity = {code: value for code, value in activity.items() if value > 0}
+    if activity:
+        return dict(activity), {"status": "ok", "observation": "observed_airport_marginal",
+                                "window": f"{start}~{end}", "rows": parsed,
+                                "endpoint": "KAC airport-transport-stats"}
+    return {}, {"status": "unavailable",
+                "reason": "airport-transport-stats returned no usable passenger rows",
+                "window": f"{start}~{end}", "rows_received": len(rows), "sample_keys": _sample_keys(rows)}
 
 
 def _mode_mix(mode: str, observed: bool) -> float:
