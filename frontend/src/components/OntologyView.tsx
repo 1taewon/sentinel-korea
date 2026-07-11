@@ -93,6 +93,15 @@ interface ComparisonVariant {
   national_curve: { day: number; cumulative_cases: number; cumulative_deaths: number }[];
   regions: { code: string; name: string; cumulative_cases: number; cumulative_deaths: number }[];
 }
+interface SpreadContributionComponent {
+  key: string; label: string; exposures: number; share: number;
+}
+interface SpreadContributions {
+  basis: string;
+  national: { total_exposures: number; components: SpreadContributionComponent[] };
+  regions: { region_id: string; region_name: string; total_exposures: number; components: SpreadContributionComponent[] }[];
+  aviation_seed?: { enabled: boolean; label: string; total_seed: number; baseline_seed: number; passenger_scaled_increment: number; note: string };
+}
 interface NationalOutbreakResult {
   entry_point: { code: string; label: string; primary_zones: string[]; seed_region?: string; seed_region_name?: string };
   scenario: { disease: string; disease_matched?: string; is_novel?: boolean; country: string;
@@ -101,12 +110,14 @@ interface NationalOutbreakResult {
     aviation_source?: string; traffic_source?: string; weather_source?: string; traffic_intensity?: number };
   regions: NationalRegionResult[];
   mobility_network?: { source: string; generated_at?: string | null;
-    edges: { source: string; target: string; weight: number; traffic_volume?: number | null; mobility_source?: string }[] };
+    edges: { source: string; target: string; weight: number; traffic_volume?: number | null; mobility_source?: string; mobility_modal?: string }[] };
   transmission_edges?: { day: number; source: string; target: string;
-    expected_exposures: number; mobility_weight: number; mobility_source?: string; source_new_cases?: number; target_new_cases?: number }[];
+    expected_exposures: number; mobility_weight: number; mobility_source?: string; mobility_modal?: string; source_new_cases?: number; target_new_cases?: number }[];
+  spread_contributions?: SpreadContributions;
   observed_variant?: {
     regions: NationalRegionResult[];
     transmission_edges: NationalOutbreakResult['transmission_edges'];
+    spread_contributions?: SpreadContributions;
     summary: { total_cases: number; total_deaths: number; national_cfr: number; attack_rate: number; affected_regions: number };
   } | null;
   data_sources?: {
@@ -132,7 +143,7 @@ interface NationalOutbreakResult {
     timeline?: { week?: number; description?: string }[];
     response_actions?: { priority?: string; action?: string; timing?: string }[];
     high_risk_regions?: { region?: string; reason?: string }[];
-    risk_factors?: string[]; best_case?: string; worst_case?: string;
+    risk_factors?: string[]; best_case?: string; worst_case?: string; contribution_analysis?: string;
     error?: string; raw?: string; parse_error?: boolean;
   } | null;
   narrative: string;
@@ -654,6 +665,7 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
         expected_exposures: Math.max(0.01, r.timeline?.[idx]?.new_cases ?? 0),
         mobility_weight: r.connectivity ?? r.spread_multiplier ?? 0,
         mobility_source: 'baseline_gravity',
+        mobility_modal: 'baseline_mobility',
       }));
   }, [originPts, hasModelEdges, primaryZones, regions, curDay, idx]);
   const visibleEdges = hasModelEdges ? activeEdges : fallbackEdges;
@@ -698,8 +710,8 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
           <marker id="spread-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
             <path d="M 0 0 L 8 4 L 0 8 z" fill="rgba(255,120,60,0.85)" />
           </marker>
-          <marker id="spread-arrow-proxy" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
-            <path d="M 0 0 L 8 4 L 0 8 z" fill="rgba(96,165,250,0.9)" />
+          <marker id="spread-arrow-rail" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+            <path d="M 0 0 L 8 4 L 0 8 z" fill="rgba(168,85,247,0.9)" />
           </marker>
           <marker id="spread-arrow-prior" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
             <path d="M 0 0 L 8 4 L 0 8 z" fill="rgba(148,163,184,0.9)" />
@@ -721,18 +733,18 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
           const d = edgePath(from, to, edge.source, edge.target);
           const intensity = Math.max(0.12, Math.sqrt(edge.expected_exposures / maxExposure));
           const duration = (1.8 - intensity * 0.9).toFixed(2);
-          const isCapacityProxy = edge.mobility_source === 'scheduled_capacity_proxy';
+          const isRail = edge.mobility_modal === 'rail';
           const isModelPrior = edge.mobility_source === 'airport_access_prior' || edge.mobility_source === 'baseline_gravity';
-          const routeSource = isCapacityProxy ? '운항 일정 수송능력 프록시' : edge.mobility_source === 'airport_access_prior' ? '공항 접근 모형 보완 경로' : edge.mobility_source === 'baseline_gravity' ? '기본 이동모형' : '관측 OD';
-          const edgeColor = isCapacityProxy ? 'rgba(96,165,250,0.78)' : isModelPrior ? 'rgba(148,163,184,0.85)' : 'rgba(255,120,60,0.84)';
-          const edgeDash = isCapacityProxy ? '2 4' : isModelPrior ? '4 4' : undefined;
-          const marker = isCapacityProxy ? 'url(#spread-arrow-proxy)' : isModelPrior ? 'url(#spread-arrow-prior)' : 'url(#spread-arrow)';
+          const routeSource = isRail ? 'SRT 철도 OD' : edge.mobility_source === 'airport_access_prior' ? '공항 접근 모형 보완 경로' : edge.mobility_source === 'baseline_gravity' ? '기본 이동모형' : '고속도로 관측 OD';
+          const edgeColor = isRail ? 'rgba(168,85,247,0.84)' : isModelPrior ? 'rgba(148,163,184,0.85)' : 'rgba(255,120,60,0.84)';
+          const edgeDash = isModelPrior ? '4 4' : undefined;
+          const marker = isRail ? 'url(#spread-arrow-rail)' : isModelPrior ? 'url(#spread-arrow-prior)' : 'url(#spread-arrow)';
           return (
             <g key={String(edge.day) + '-' + edge.source + '-' + edge.target}>
               <title>{edge.source + ' → ' + edge.target + ': 모델 추정 유입 노출 ' + edge.expected_exposures.toFixed(2) + ' · ' + routeSource}</title>
               <path d={d} fill="none" stroke={edgeColor} strokeWidth={0.65 + intensity * 3.2}
                 strokeLinecap="round" strokeDasharray={edgeDash} markerEnd={marker} className="scenario-spread-edge" />
-              <circle r={1.4 + intensity * 1.6} fill={isCapacityProxy ? '#93c5fd' : isModelPrior ? '#cbd5e1' : '#ffd166'} className="scenario-spread-particle">
+              <circle r={1.4 + intensity * 1.6} fill={isRail ? '#d8b4fe' : isModelPrior ? '#cbd5e1' : '#ffd166'} className="scenario-spread-particle">
                 <animateMotion path={d} dur={duration + 's'} repeatCount="indefinite" />
               </circle>
             </g>
@@ -773,9 +785,9 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
       </svg>
       <div className="scenario-spread-legend">
         <span><i className="ssl-origin" /> 유입 거점: {entryLabel}</span>
-        <span><i className="ssl-edge" style={{ borderTopStyle: 'solid', borderTopColor: 'rgba(255,120,60,0.9)' }} /> 실선(주황) — 관측 기종점 통행량(OD) 기반 유입 노출</span>
+        <span><i className="ssl-edge" style={{ borderTopStyle: 'solid', borderTopColor: 'rgba(255,120,60,0.9)' }} /> 실선(주황) — 고속도로 관측 OD 기반 유입 노출</span>
+        <span><i className="ssl-edge" style={{ borderTopStyle: 'solid', borderTopColor: 'rgba(168,85,247,0.95)' }} /> 실선(보라) — SRT 철도 OD 기반 유입 노출</span>
         <span><i className="ssl-edge" style={{ borderTopStyle: 'dashed', borderTopColor: 'rgba(148,163,184,0.95)' }} /> 점선(회색) — 중력장 모형 보간(미관측 구간·공항 접근)</span>
-        <span><i className="ssl-edge" style={{ borderTopStyle: 'dashed', borderTopColor: 'rgba(96,165,250,0.95)' }} /> 점선(파랑) — 항공 운항 스케줄 수송능력 프록시</span>
         <span><i className="ssl-node" style={{ background: '#dc2626' }} /> 시도 노드(색 = 누적 사망: 회색 0 → 붉을수록↑, 크기 = 해당 일 신규 감염)</span>
       </div>
     </div>
@@ -1021,9 +1033,9 @@ function DataSourcePanel({ ds }: { ds: NonNullable<NationalOutbreakResult['data_
           실측 활동량으로 산출됩니다. 위에서 “미반영”으로 표시된 모달은 이 시뮬레이션 계산·애니메이션에 들어가지 않았습니다.
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginTop: 8, fontSize: 11, color: 'var(--text-secondary, #475569)' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 0, borderTop: '2px solid rgba(255,120,60,0.9)' }} />실선 관측 OD</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 0, borderTop: '2px solid rgba(255,120,60,0.9)' }} />실선 고속도로 관측 OD</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 0, borderTop: '2px solid rgba(168,85,247,0.9)' }} />실선 SRT 철도 OD</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 0, borderTop: '2px dashed rgba(148,163,184,0.95)' }} />점선 중력장 추정</span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 0, borderTop: '2px dashed rgba(96,165,250,0.95)' }} />점선(파랑) 수송능력 프록시</span>
         </div>
       </>)}
     </div>
@@ -1051,6 +1063,57 @@ function WhatIfAnalyzing() {
 
 // ─── National Outbreak Analysis Panel (results in analysis area) ──────────
 
+const CONTRIBUTION_COLORS: Record<string, string> = {
+  local: '#2563eb', highway: '#f97316', rail: '#a855f7',
+  baseline_mobility: '#64748b', airport_access: '#06b6d4', weather: '#16a34a',
+};
+
+function SpreadContributionPanel({ data }: { data: SpreadContributions }) {
+  const national = data.national;
+  const components = national.components.filter((c) => c.exposures > 0.001);
+  const regions = [...data.regions]
+    .filter((r) => r.total_exposures > 0.001)
+    .sort((a, b) => b.total_exposures - a.total_exposures)
+    .slice(0, 5);
+  const fmt = (n: number) => n.toLocaleString('ko-KR', { maximumFractionDigits: 0 });
+  const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
+  return (
+    <div className="whatif-contribution-panel">
+      <div className="whatif-section-title">확산 기여도 설명</div>
+      <p className="whatif-contribution-basis">{data.basis}</p>
+      <div className="whatif-contribution-stack" aria-label="전국 확산 기여도">
+        {components.map((c) => <span key={c.key} title={`${c.label} ${pct(c.share)}`}
+          style={{ width: `${Math.max(c.share * 100, 0.7)}%`, background: CONTRIBUTION_COLORS[c.key] || '#94a3b8' }} />)}
+      </div>
+      <div className="whatif-contribution-grid">
+        {components.map((c) => (
+          <div key={c.key} className="whatif-contribution-card">
+            <i style={{ background: CONTRIBUTION_COLORS[c.key] || '#94a3b8' }} />
+            <span>{c.label}</span><strong>{pct(c.share)}</strong><small>{fmt(c.exposures)} 노출</small>
+          </div>
+        ))}
+      </div>
+      {data.aviation_seed?.enabled && (
+        <div className="whatif-aviation-seed">
+          <strong>항공 유입 시드</strong> {fmt(data.aviation_seed.total_seed)}명
+          <span>공항 여객 수송실적 반영 초기 유입 규모이며, 국내선 전파 화살표는 아닙니다.</span>
+        </div>
+      )}
+      {regions.length > 0 && (
+        <div className="whatif-contribution-regions">
+          <strong>지역별 유입·전파 기여 상위</strong>
+          {regions.map((r) => {
+            const top = [...r.components].filter((c) => c.exposures > 0.001)
+              .sort((a, b) => b.exposures - a.exposures).slice(0, 2);
+            return <div key={r.region_id}><b>{r.region_name}</b><span>{top.map((c) => `${c.label} ${pct(c.share)}`).join(' · ')}</span></div>;
+          })}
+        </div>
+      )}
+      <div className="epi-region-caveat">화살표는 고속도로·철도·기본 이동모형의 지역 간 모형 유입 노출만 표시합니다. 지역 내 전파와 기상 보정은 화살표가 아닌 위 분해값으로 설명합니다.</div>
+    </div>
+  );
+}
+
 function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
   const g = result.gemini_scenario;
   const ep = result.entry_point;
@@ -1065,6 +1128,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
   const regions = (showVariant ? ov!.regions : result.regions) || [];
   const hs = showVariant ? ov!.summary : result.summary;   // headline summary for the active variant
   const activeEdges = showVariant ? ov!.transmission_edges : result.transmission_edges;
+  const activeContributions = showVariant ? ov!.spread_contributions : result.spread_contributions;
   const fmt = (n?: number) => (n ?? 0).toLocaleString('ko-KR');
   const prioKr = (p?: string) => ({ high: '높음', medium: '보통', low: '낮음' } as Record<string, string>)[(p || '').toLowerCase()] || p || '';
   const aiActions = g && !g.error && !g.parse_error ? (g.response_actions || []) : [];
@@ -1213,8 +1277,11 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
         <div className="epi-region-caveat">각 시점 칸은 <strong>모형 누적 감염</strong>(위) · <strong className="epi-death-word">누적 사망</strong>(아래, 빨강)이며, 사망비는 28일 사망 ÷ 모형 누적 감염 기준입니다. 개입(백신·거리두기) 없는 자연확산 가정의 예시 시나리오이며 예보가 아닙니다. 인구: 행정안전부 주민등록 2026-06.</div>
       </div>
 
+      {/* The numeric decomposition is deliberately shown before the AI narrative. */}
+      {activeContributions && <SpreadContributionPanel data={activeContributions} />}
+
       {/* 시나리오 분석 (Gemini) — 영향·확산 양상·전개·위험 (대응 방안은 아래 전용 섹션) */}
-      {g && !g.error && !g.parse_error && (g.impact_summary || g.spread_pattern || (g.timeline && g.timeline.length > 0) || (g.high_risk_regions && g.high_risk_regions.length > 0) || g.best_case || g.worst_case || g.risk_factors) && (
+      {g && !g.error && !g.parse_error && (g.impact_summary || g.spread_pattern || g.contribution_analysis || (g.timeline && g.timeline.length > 0) || (g.high_risk_regions && g.high_risk_regions.length > 0) || g.best_case || g.worst_case || g.risk_factors) && (
         <div className="whatif-gemini">
           <div className="whatif-section-title whatif-ai-head">시나리오 분석</div>
           {g.impact_summary && (
@@ -1227,6 +1294,12 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
             <div className="whatif-section">
               <div className="whatif-section-title">확산 양상</div>
               <p>{g.spread_pattern}</p>
+            </div>
+          )}
+          {g.contribution_analysis && (
+            <div className="whatif-section">
+              <div className="whatif-section-title">AI 확산 기여도 해석</div>
+              <p>{g.contribution_analysis}</p>
             </div>
           )}
           {g.timeline && g.timeline.length > 0 && (
@@ -2284,7 +2357,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
             <p className="whatif-method-head">SEIR 모델</p>
             <p>전국 17개 시도를 각각 하나의 인구집단으로 보고, 각 집단을 <strong>S(취약)·E(잠복)·I(감염)·R(회복)·D(사망)</strong> 다섯 구획으로 나눈다. 시뮬레이션은 하루 단위로 28일간 진행되며 매일 다음을 계산한다.</p>
             <p><strong>① 지역 내 감염</strong> — 한 지역의 감염자(I)가 취약자(S)를 감염시키는 힘은 전파율 β에 비례한다. <em>β = R0 ÷ 전염기(일)</em>이므로 R0가 크거나 전염기가 길수록 빠르게 확산한다. 새로 감염된 사람은 잠복(E) → 감염(I) → 회복(R) 또는 사망(D)으로 이행하며, 잠복기·전염기가 그 속도를 정한다.</p>
-            <p><strong>② 지역 간 이동</strong> — 감염자가 다른 시도로 이동해 새 유행을 일으킨다. <strong>실측 교통 OD 보정</strong>을 켜면 고속도로·KORAIL/KTX·SRT·국내선의 출발→도착(OD) 연결성으로 각 도착 지역 i의 유입 비중 <em>Cᵢⱼ</em>를 정규화한다. 이 모드에서는 관측된 OD 경로만 애니메이션에 표시하며, 표본에 없는 경로를 중력모형으로 실제 연결처럼 만들지 않는다. 보정을 끄면 이동이 사라지는 것이 아니라, 인구·거리·허브 연결성을 이용한 기본 중력/허브 이동모형으로 전환한다. 전체 이동 비율 m은 두 모드 모두에서 지역 간 유입 감염력의 비중을 조절한다.</p>
+            <p><strong>② 지역 간 이동</strong> — 감염자가 다른 시도로 이동해 새 유행을 일으킨다. <strong>실측 교통 OD 보정</strong>을 켜면 고속도로와 SRT의 출발→도착(OD) 연결성으로 각 도착 지역 i의 유입 비중 <em>Cᵢⱼ</em>를 정규화한다. KORAIL 역별 승하차와 공항별 여객 수송실적은 OD 화살표가 아니라 지역 연결도 마진으로 반영한다. 이 모드에서는 관측된 OD 경로만 실선으로 표시하며, 표본에 없는 경로를 실제 연결처럼 보이지 않게 점선 모형 보완으로 구분한다. 보정을 끄면 이동이 사라지는 것이 아니라, 인구·거리·허브 연결성을 이용한 기본 중력/허브 이동모형으로 전환한다. 전체 이동 비율 m은 두 모드 모두에서 지역 간 유입 감염력의 비중을 조절한다.</p>
             <p><strong>③ 사망</strong> — 매일 감염 상태를 벗어나는 사람 중 치명률(CFR) 비율이 사망(D)한다. 인구는 보존되며(사망자는 D에 누적), 개입(백신·거리두기)은 없다고 가정한다. Day 0 = 거점만 감염, 나머지 전 지역은 0에서 시작한다.</p>
             <p className="whatif-method-src">Balcan et al. 2009, <em>PNAS</em>(GLEAM) · Chang et al. 2020, <em>Nature</em>(이동 네트워크 SEIR) · Ding et al. 2020(Flight-SEIR). 인구: 행정안전부 주민등록 2026-06(총 5,109만). 질병 파라미터(R0·CFR·잠복기·전염기)는 WHO/CDC 수준 문헌값을 기본으로 하며 신종은 직접 설정한다.</p>
             <p className="whatif-method-head">항공·교통·기상 신호 반영</p>
@@ -2297,8 +2370,8 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
             </ul>
             <ul className="whatif-flow">
               <li><strong>교통 연결성 · 이동 강도</strong> (두 갈래로 반영)</li>
-              <li><span className="wf-k api">실측값 (Open API)</span> 고속도로 OD(도로 내 버스 흐름 포함)·KORAIL·국내선 연결성을 결합. 고속도로·KORAIL/KTX·SRT는 관측 OD가 제공될 때만 사용하고, 국내선은 운항횟수 기반 용량 프록시로 명시</li>
-              <li><span className="wf-k eq">수식·어디로</span> <em>Cᵢⱼ = OD(j→i) ÷ Σⱼ OD(j→i)</em>. 즉 도착 지역 i로 유입되는 감염 압력의 출발지역별 비중이며, 각 행의 합은 1. 실측 OD 보정 ON에서는 관측 OD 경로만 사용하며, 관측 누락을 중력 경로로 표시하지 않는다. OFF에서는 기본 중력/허브 이동모형을 사용한다. 모드별 실측/프록시 표기는 데이터 파일에 보존.</li>
+              <li><span className="wf-k api">실측값 (Open API)</span> 고속도로 OD(도로 내 버스 흐름 포함)와 SRT 노선은 지역 간 OD로 사용한다. KORAIL 역별 승하차와 공항별 여객(수송실적)은 지역 연결도(conn) 마진으로 사용하며, 국내선 운항 스케줄 프록시는 사용하지 않는다.</li>
+              <li><span className="wf-k eq">수식·어디로</span> <em>Cᵢⱼ = OD(j→i) ÷ Σⱼ OD(j→i)</em>. 즉 도착 지역 i로 유입되는 감염 압력의 출발지역별 비중이며, 각 행의 합은 1. 관측 OD는 실선, 미관측 구간의 중력/허브 보완은 점선으로 명확히 구분한다. KORAIL·공항 여객은 이 보완 모형의 지역 연결도에만 반영한다.</li>
               <li><span className="wf-k knob">조절값</span> 교통 이동 강도 m = 0.03~0.25 (기본 0.10)</li>
               <li><span className="wf-k eq">수식·얼마나</span> 감염력 <em>λᵢ = (1−m)·βᵢ·Iᵢ/Nᵢ + m·βᵢ·Σⱼ Cᵢⱼ·Iⱼ/Nⱼ</em>. m은 전체 노출 압력 중 타지역에서 오는 비율 → m↑이면 전국 확산이 빨라진다. 지도 선은 매일의 <em>j→i</em> 모형 추정 유입 노출을 표시한다.</li>
             </ul>
@@ -2381,7 +2454,7 @@ function WhatIfStandalonePanel({ isAdmin, adminHeaders, onResult, onLoading }: {
       <label className={`whatif-aviation-toggle ${useTraffic ? 'is-on' : ''}`}>
         <input type="checkbox" checked={useTraffic} onChange={(e) => setUseTraffic(e.target.checked)} />
         <span className="whatif-aviation-label">실측 교통 OD 보정</span>
-        <span className="whatif-aviation-hint">ON: 고속도로·KORAIL/KTX·SRT·국내선의 관측 출발→도착(OD) 경로만 반영합니다. OFF: 실측값만 제외하며, 기본 중력/허브 이동모형은 계속 적용됩니다. 고속도로에는 도로 내 버스 흐름이 포함됩니다.</span>
+        <span className="whatif-aviation-hint">ON: 고속도로·SRT 관측 출발→도착(OD)을 반영하고, KORAIL 승하차·공항 여객 수송실적은 지역 연결도에 반영합니다. OFF: 실측 OD만 제외하며, 기본 중력/허브 이동모형은 계속 적용됩니다. 고속도로에는 도로 내 버스 흐름이 포함됩니다.</span>
       </label>
       <div className="whatif-traffic-controls">
         <div className="whatif-intensity">

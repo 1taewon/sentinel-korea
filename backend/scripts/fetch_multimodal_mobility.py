@@ -5,14 +5,13 @@ build the network the standard way for a partial OD sample: observed pairwise co
 region-level activity marginals that shape each region's gravity connectivity.
 
   * Korea Expressway tollgate data — real pairwise OD  (the one true OD source).
-  * KAC domestic flight schedule (/dom) — city-pair FLIGHT COUNTS (OD-shaped capacity proxy).
   * SRT daily_passengers — per-ROUTE boarding counts; SRT runs 수서↔부산 / 수서↔호남, so a
     route ≈ a corridor (observed rail corridor, coarse).
   * KORAIL mainLineTravelerTrain — per-STATION 승차/하차 (a regional MARGINAL, not a pair).
   * KAC daily expected passengers (/info) — per-AIRPORT totals (a regional MARGINAL, 3 airports).
 
 So:
-  * pairwise OD EDGES  = highway OD (observed) + flight schedule (proxy) + SRT route (observed corridor)
+  * pairwise OD EDGES  = highway OD (observed) + SRT route (observed corridor)
   * region CONNECTIVITY = road + rail(marginal) + air(marginal) activity → feeds the gravity model
 Every mode keeps its observation/proxy label so nothing is mislabelled as measured passenger OD.
 When a passenger API's JSON field names differ from what we try, the mode metadata records
@@ -24,7 +23,6 @@ import json
 import os
 import time
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -42,7 +40,6 @@ KST = timezone(timedelta(hours=9))
 
 KORAIL_MAIN_LINE = "https://apis.data.go.kr/B551457/carriageStatistics/mainLineTravelerTrain"
 SRT_DAILY_PASSENGERS = "https://apis.data.go.kr/B553912/srt_passenger/v1/daily_passengers"
-DOMESTIC_FLIGHT = "https://apis.data.go.kr/B551178/flight-schedule/dom"
 # KAC 전국공항 수송실적통계 — real monthly per-airport arrival/departure passenger counts
 # (data.go.kr 3034194). Per-airport totals (a regional MARGINAL, not station-pair OD).
 AIRPORT_TRANSPORT_STATS = "https://apis.data.go.kr/B551178/airport-transport-stats/info"
@@ -59,16 +56,6 @@ _REGION_ALIASES: dict[str, str] = {
     "구미": "47", "안동": "47", "김천": "47", "창원": "48", "진주": "48", "김해": "48",
     "마산": "48", "제주": "50",
 }
-# KAC city codes → 시도 code.
-_AIRPORT_REGION = {
-    "GMP": "11", "SEL": "11", "PUS": "26", "TAE": "27", "ICN": "28",
-    "KWJ": "29", "CJJ": "43", "USN": "31", "KUV": "45", "RSU": "46",
-    "KPO": "47", "HIN": "48", "CJU": "50", "YNY": "42",
-}
-_DOMESTIC_FLIGHT_PAIRS = (
-    ("GMP", "CJU"), ("GMP", "PUS"), ("GMP", "TAE"), ("GMP", "KWJ"), ("GMP", "CJJ"),
-    ("CJU", "PUS"), ("CJU", "TAE"), ("CJU", "KWJ"), ("CJU", "USN"), ("CJU", "RSU"), ("CJU", "KPO"),
-)
 # KAC 수송실적 airport NAME (Korean, as returned in the `Airport` field) → 시도 code.
 # 김해 serves Busan (부산 관문공항) → 26; 포항경주 is the API's label for 포항 → 47.
 _AIRPORT_NAME_REGION = {
@@ -220,47 +207,6 @@ def _fetch_srt_corridors(key: str) -> tuple[dict[tuple[str, str], float], dict[s
                 "rows_received": len(rows), "sample_keys": _sample_keys(rows)}
 
 
-# ── Air: KAC domestic flight schedule → city-pair flight-count capacity proxy ─────
-def _flight_days() -> list[str]:
-    """Candidate schedule dates. A published schedule is forward-looking, so today can
-    already be past its last departure; try today then the next few days (first non-empty
-    wins). Mirrors the recent-window approach the rail fetchers use for their stats lag."""
-    base = datetime.now(KST)
-    return [(base + timedelta(days=offset)).strftime("%Y%m%d") for offset in (0, 1, 2, -1)]
-
-
-def _fetch_flight_proxy(key: str) -> tuple[dict[tuple[str, str], float], dict[str, Any]]:
-    if not key:
-        return {}, {"status": "skipped", "reason": "no public-data service key"}
-    seats = int(os.getenv("DOMESTIC_FLIGHT_PROXY_SEATS", "180"))
-
-    def one_pair(day: str, pair: tuple[str, str]) -> tuple[tuple[str, str], int]:
-        origin, destination = pair
-        payload = _get_json(DOMESTIC_FLIGHT, {
-            "serviceKey": key, "schDate": day, "schDeptCityCode": origin,
-            "schArrvCityCode": destination, "numOfRows": 200, "pageNo": 1, "type": "json",
-        })
-        return pair, len(_items(payload))
-
-    tried: list[str] = []
-    for day in _flight_days():
-        tried.append(day)
-        corridors: dict[tuple[str, str], float] = defaultdict(float)
-        with ThreadPoolExecutor(max_workers=2) as pool:  # gentle: avoid tripping data.go.kr burst throttle
-            futures = [pool.submit(one_pair, day, pair) for pair in _DOMESTIC_FLIGHT_PAIRS]
-            for future in as_completed(futures):
-                (origin, destination), flights = future.result()
-                source, target = _AIRPORT_REGION[origin], _AIRPORT_REGION[destination]
-                if flights and source != target:
-                    corridors[(source, target)] += flights * seats
-                    corridors[(target, source)] += flights * seats  # scheduled both ways
-        if corridors:
-            return dict(corridors), {"status": "ok", "observation": "scheduled_capacity_proxy",
-                                     "date": day, "routes": len(corridors), "endpoint": "KAC flight-schedule/dom"}
-    return {}, {"status": "unavailable", "reason": "no domestic schedule rows parsed",
-                "dates_tried": tried, "endpoint": "KAC flight-schedule/dom"}
-
-
 # ── Air: KAC daily expected passengers → airport regional marginal (3 airports) ───
 def _recent_month(offset: int) -> str:
     """YYYYMM `offset` calendar months before now (KST). The stats API only serves up to
@@ -309,7 +255,7 @@ def _fetch_air_marginals(key: str) -> tuple[dict[str, float], dict[str, Any]]:
 
 
 def _mode_mix(mode: str, observed: bool) -> float:
-    defaults = {"highway": 0.62, "srt": 0.12, "domestic_flight": 0.06}
+    defaults = {"highway": 0.62, "srt": 0.12}
     try:
         configured = json.loads(os.getenv("MOBILITY_MODE_WEIGHTS_JSON", "{}"))
         if isinstance(configured, dict) and mode in configured:
@@ -384,7 +330,6 @@ def fetch_multimodal_mobility(highway_data: dict[str, Any] | None = None) -> dic
         for r in highway.get("corridors") or []
         if r.get("source") and r.get("target")
     }
-    flight, flight_meta = _fetch_flight_proxy(key)
     srt, srt_meta = _fetch_srt_corridors(key)
     korail_marginal, korail_meta = _fetch_korail_marginals(key)
     air_marginal, air_meta = _fetch_air_marginals(key)
@@ -394,7 +339,6 @@ def fetch_multimodal_mobility(highway_data: dict[str, Any] | None = None) -> dic
                                         "observation": "observed_traffic_od",
                                         "source": highway.get("source"),
                                         "sampled_rows": highway.get("sampled_rows")}),
-        "domestic_flight": (flight, flight_meta),
         "srt": (srt, srt_meta),
     })
     # Marginal modes shape region connectivity, not pairwise edges — record separately.
@@ -410,9 +354,9 @@ def fetch_multimodal_mobility(highway_data: dict[str, Any] | None = None) -> dic
     status = "ok" if corridors else ("partial" if highway.get("status") == "ok" else "empty")
     return {
         "status": status,
-        "source": "Korea multimodal mobility (road OD + flight proxy + rail corridor/marginals)",
-        "note": "Pairwise edges = highway OD (observed) + flight schedule (capacity proxy) + SRT route "
-                "(observed corridor). Region connectivity = road + rail(마진) + air(마진) activity. "
+        "source": "Korea multimodal mobility (road OD + rail corridor/marginals + airport activity)",
+        "note": "Pairwise edges = highway OD (observed) + SRT route "
+                "(observed corridor). Region connectivity = road + rail(마진) + airport passenger activity. "
                 "Rail/air passenger APIs give per-station/airport totals, not pairwise OD, so they "
                 "inform connectivity and the gravity fill — not fabricated corridors. Mode weights "
                 "are configurable via MOBILITY_MODE_WEIGHTS_JSON.",

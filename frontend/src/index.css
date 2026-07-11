@@ -9032,6 +9032,31 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   color: var(--text-secondary);
   margin: 0;
 }
+.whatif-contribution-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid rgba(14, 165, 233, 0.28);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.055), rgba(99, 102, 241, 0.035));
+}
+.whatif-contribution-basis { margin: 0; color: var(--text-secondary, #475569); font-size: 11px; line-height: 1.45; }
+.whatif-contribution-stack { display: flex; overflow: hidden; height: 10px; border-radius: 999px; background: rgba(148, 163, 184, 0.18); }
+.whatif-contribution-stack span { min-width: 2px; transition: width .3s ease; }
+.whatif-contribution-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 6px; }
+.whatif-contribution-card { display: grid; grid-template-columns: 8px 1fr auto; align-items: center; column-gap: 6px; padding: 6px 7px; border-radius: 6px; background: rgba(255,255,255,.52); font-size: 11px; color: var(--text-secondary, #475569); }
+.whatif-contribution-card i { width: 8px; height: 8px; border-radius: 50%; grid-row: span 2; }
+.whatif-contribution-card strong { color: var(--text-primary, #0f172a); font-variant-numeric: tabular-nums; }
+.whatif-contribution-card small { grid-column: 2 / span 2; color: var(--text-muted, #64748b); font-size: 9.5px; }
+.whatif-aviation-seed { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px; padding: 7px 8px; border-left: 3px solid #0ea5e9; background: rgba(14,165,233,.07); border-radius: 4px; font-size: 11px; color: var(--text-secondary, #475569); }
+.whatif-aviation-seed strong { color: var(--text-primary, #0f172a); }
+.whatif-aviation-seed span { color: var(--text-muted, #64748b); }
+.whatif-contribution-regions { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--text-secondary, #475569); }
+.whatif-contribution-regions > strong { color: var(--text-primary, #0f172a); font-size: 11px; }
+.whatif-contribution-regions > div { display: grid; grid-template-columns: 72px 1fr; gap: 7px; padding-top: 3px; border-top: 1px solid rgba(148,163,184,.14); }
+.whatif-contribution-regions b { color: var(--text-primary, #0f172a); }
 .whatif-timeline-item {
   display: flex;
   align-items: flex-start;

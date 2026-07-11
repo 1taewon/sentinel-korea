@@ -38,7 +38,7 @@ SNAPSHOT_DIR = PROCESSED_DIR / "snapshots"
 # is used only while it matches the current simulator schema and mobility/weather/
 # aviation inputs; refreshed data therefore reaches the example automatically.
 _SCENARIO_EXAMPLE_FILE = PROCESSED_DIR / "scenario_example_v16.json"
-_EXAMPLE_SCHEMA_VERSION = "seir-od-blended-noseverity-v7-r10cfr10-abvariants"
+_EXAMPLE_SCHEMA_VERSION = "seir-od-contribution-v8-airpassenger-abvariants"
 _EXAMPLE_INPUT_FILES = (
     "aviation_passenger_by_country.json",
     "highway_connectivity_by_region.json",
@@ -68,7 +68,8 @@ def _is_current_example(result: Any) -> bool:
         return False
     regions = result.get("regions") or []
     timeline = (regions[0] if regions else {}).get("timeline") or []
-    return len(timeline) == 29 and isinstance(result.get("transmission_edges"), list)
+    return (len(timeline) == 29 and isinstance(result.get("transmission_edges"), list)
+            and isinstance(result.get("spread_contributions"), dict))
 
 
 def _generate_scenario_example(use_aviation: bool = True, use_traffic: bool = True,

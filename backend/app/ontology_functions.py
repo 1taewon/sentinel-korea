@@ -947,16 +947,16 @@ def _aviation_multiplier(country: str) -> dict | None:
 def _highway_mobility() -> dict:
     """Load the best available directed Korean mobility network.
 
-    A multimodal file is used only when it has explicit corridors. Each mode retains
-    its observation type in the source file; the simulator uses the combined OD shape
-    but does not relabel schedule-capacity proxies as observed passenger counts.
+    A multimodal file is used only when it has explicit corridors. Retired domestic
+    flight-schedule proxy rows are ignored even if an older cached data file contains
+    them; airport passenger totals remain regional connectivity marginals only.
     """
     multimodal = _load_json(PROCESSED_DIR / "multimodal_mobility_by_region.json")
     highway = _load_json(PROCESSED_DIR / "highway_connectivity_by_region.json")
     use_multimodal = isinstance(multimodal, dict) and bool(multimodal.get("corridors"))
     data = multimodal if use_multimodal else highway
     if not isinstance(data, dict):
-        return {"connectivity": {}, "od_weights": {}, "od_volume": {}, "od_observation": {},
+        return {"connectivity": {}, "od_weights": {}, "od_volume": {}, "od_observation": {}, "od_modal": {},
                 "generated_at": None, "network_source": "unavailable", "mode_metadata": {}}
 
     regions = data.get("regions") or {}
@@ -968,6 +968,7 @@ def _highway_mobility() -> dict:
     od_weights: dict[tuple[str, str], float] = {}
     od_volume: dict[tuple[str, str], int] = {}
     od_observation: dict[tuple[str, str], str] = {}
+    od_modal: dict[tuple[str, str], str] = {}
     for edge in data.get("corridors") or []:
         if not isinstance(edge, dict):
             continue
@@ -981,24 +982,48 @@ def _highway_mobility() -> dict:
             continue
         if weight <= 0:
             continue
+        edge_modes = edge.get("modes") or {}
+        modal_candidates = [
+            (mode, float(details.get("normalized_contribution") or 0.0))
+            for mode, details in edge_modes.items()
+            if isinstance(details, dict) and mode != "domestic_flight"
+        ] if isinstance(edge_modes, dict) else []
+        # Old cached files may still carry the retired domestic-flight proxy. Do not
+        # let a proxy-only corridor survive until the next mobility refresh.
+        if isinstance(edge_modes, dict) and edge_modes and not modal_candidates:
+            continue
+        if isinstance(edge_modes, dict) and edge_modes:
+            # Old generated files can contain a domestic-flight schedule contribution
+            # in the already-combined edge weight. Remove that share as well, rather
+            # than merely hiding its label in the UI.
+            total_mass = sum(
+                max(0.0, float(details.get("normalized_contribution") or 0.0))
+                for details in edge_modes.values() if isinstance(details, dict)
+            )
+            kept_mass = sum(value for _mode, value in modal_candidates)
+            if total_mass > 0:
+                weight *= kept_mass / total_mass
+            if weight <= 0:
+                continue
         pair = (source, target)
         od_weights[pair] = weight
         od_volume[pair] = volume
-        edge_modes = edge.get("modes") or {}
         observations = [
             str(details.get("observation") or "")
-            for details in edge_modes.values()
-            if isinstance(details, dict)
+            for mode, details in edge_modes.items()
+            if isinstance(details, dict) and mode != "domestic_flight"
         ] if isinstance(edge_modes, dict) else []
         od_observation[pair] = (
             "observed_od" if not observations or any(value.startswith("observed_") for value in observations)
             else observations[0]
         )
+        top_mode = max(modal_candidates, key=lambda item: item[1])[0] if modal_candidates else "highway"
+        od_modal[pair] = "rail" if top_mode == "srt" else "highway" if top_mode == "highway" else "baseline_mobility"
 
     mode_metadata = data.get("modes") or {}
     active_modes = [
         name for name, meta in mode_metadata.items()
-        if isinstance(meta, dict) and bool(meta.get("corridors"))
+        if name in _MODE_DISPLAY and isinstance(meta, dict) and bool(meta.get("corridors"))
     ]
     if use_multimodal and len(active_modes) > 1:
         network_source = "multimodal_od"
@@ -1015,6 +1040,7 @@ def _highway_mobility() -> dict:
         "od_weights": od_weights,
         "od_volume": od_volume,
         "od_observation": od_observation,
+        "od_modal": od_modal,
         "generated_at": data.get("generated_at"),
         "network_source": network_source,
         "mode_metadata": mode_metadata,
@@ -1365,7 +1391,6 @@ CONN_MARGINAL_WEIGHTS = {"road": 0.60, "rail": 0.25, "air": 0.15}
 _MODE_DISPLAY = {
     "highway":         {"label": "고속도로 OD",        "role": "od_edge",  "modal": "road"},
     "srt":             {"label": "SRT 노선",           "role": "od_edge",  "modal": "rail"},
-    "domestic_flight": {"label": "국내선 항공(운항)",   "role": "od_edge",  "modal": "air"},
     "korail_marginal": {"label": "KORAIL 역별 승하차", "role": "conn_marginal", "modal": "rail"},
     "air_marginal":    {"label": "공항별 여객(수송실적)", "role": "conn_marginal", "modal": "air"},
 }
@@ -1519,10 +1544,11 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
                        mobility: float = 0.10, weather_intensity: float = 0.3,
                        od_weights: dict[tuple[str, str], float] | None = None,
                        od_observation: dict[tuple[str, str], str] | None = None,
+                       od_modal: dict[tuple[str, str], str] | None = None,
                        access_prior: dict[str, float] | None = None,
                        observed_only: bool = False,
                        isolate_unobserved: bool = False,
-                       days: int = 28) -> tuple[dict, list, list, list]:
+                       days: int = 28) -> tuple[dict, list, list, list, dict]:
     """Daily discrete-time metapopulation SEIR+D over the 17 시도.
 
     C[i][j] is a normalized incoming mobility mix, so m is the share of exposure
@@ -1538,6 +1564,7 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
     m = max(0.0, min(0.4, mobility))
     od_weights = od_weights or {}
     od_observation = od_observation or {}
+    od_modal = od_modal or {}
     C = _build_seir_conn(conn_list, od_weights, observed_only=observed_only,
                          isolate_unobserved=isolate_unobserved)
     # In the isolate-unobserved variant the expressway sample has no outbound row for
@@ -1568,6 +1595,16 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
     day_onsets[entry_idx] = seed
     daily_new: list = [(0, seed)]
     transmission_edges: list[dict] = []
+    component_labels = {
+        "local": "지역 내 전파",
+        "highway": "고속도로 OD",
+        "rail": "철도 OD(SRT)",
+        "baseline_mobility": "기본 이동모형",
+        "airport_access": "공항 접근 모형",
+        "weather": "기상 보정",
+    }
+    component_totals = {key: 0.0 for key in component_labels}
+    region_component_totals = [{key: 0.0 for key in component_labels} for _ in range(n)]
 
     for d in range(days + 1):
         rows = []
@@ -1595,9 +1632,15 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
         next_onsets = [0.0] * n
         edge_events_today: list[dict] = []
         for i in range(n):
-            beta_i = (beta_base * (1.0 + weather_intensity * weather_fav.get(_SEIR_CODES[i], 0.0))
-                      if (use_weather and d <= weather_window) else beta_base)
+            weather_multiplier = (1.0 + weather_intensity * weather_fav.get(_SEIR_CODES[i], 0.0)) \
+                if (use_weather and d <= weather_window) else 1.0
+            beta_i = beta_base * weather_multiplier
+            base_local_lambda = (1.0 - m) * beta_base * I[i] / Npop[i] if Npop[i] else 0.0
             local_lambda = (1.0 - m) * beta_i * I[i] / Npop[i] if Npop[i] else 0.0
+            base_imported_lambdas = [
+                m * beta_base * C[i][j] * (I[j] / Npop[j] if Npop[j] else 0.0)
+                for j in range(n)
+            ]
             imported_lambdas = [
                 m * beta_i * C[i][j] * (I[j] / Npop[j] if Npop[j] else 0.0)
                 for j in range(n)
@@ -1615,6 +1658,33 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
             nR[i] = R[i] + nr; nD[i] = D[i] + nd
             cum[i] += ni
             next_onsets[i] = ni
+
+            # Attribute S→E model exposures without changing the epidemiological
+            # calculation. Weather is the incremental difference from the same
+            # force of infection under beta_base, so components add to new exposure.
+            component_values = {"local": base_local_lambda * S[i] * scale}
+            for j, base_imported_lambda in enumerate(base_imported_lambdas):
+                if i == j:
+                    # C[i][i] is retained by the normalized mixing matrix but is
+                    # not an interregional route; report it as within-region spread.
+                    component_values["local"] += base_imported_lambda * S[i] * scale
+                    continue
+                pair = (_SEIR_CODES[j], _SEIR_CODES[i])
+                component_key = (
+                    "airport_access" if pair in access_pairs
+                    else od_modal.get(pair, "baseline_mobility")
+                )
+                if component_key not in component_values:
+                    component_values[component_key] = 0.0
+                component_values[component_key] += base_imported_lambda * S[i] * scale
+            weather_exposure = max(0.0, raw_exposed - (
+                base_local_lambda + sum(base_imported_lambdas)
+            ) * S[i]) * scale
+            component_values["weather"] = weather_exposure
+            for key, value in component_values.items():
+                if key in component_totals and value > 0:
+                    component_totals[key] += value
+                    region_component_totals[i][key] += value
 
             for j, imported_lambda in enumerate(imported_lambdas):
                 exposure = imported_lambda * S[i] * scale
@@ -1634,6 +1704,10 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
                                 (_SEIR_CODES[j], _SEIR_CODES[i]),
                                 "observed_od" if od_weights.get((_SEIR_CODES[j], _SEIR_CODES[i])) else "baseline_gravity",
                             )
+                        ),
+                        "mobility_modal": (
+                            "airport_access" if (_SEIR_CODES[j], _SEIR_CODES[i]) in access_pairs
+                            else od_modal.get((_SEIR_CODES[j], _SEIR_CODES[i]), "baseline_mobility")
                         ),
                         "source_new_cases": round(day_onsets[j], 4),
                         "target_new_cases": round(ni, 4),
@@ -1658,7 +1732,28 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
         day_onsets = next_onsets
         daily_new.append((d + 1, sum(next_onsets)))
 
-    return snaps, daily_new, C, transmission_edges
+    component_total = sum(component_totals.values())
+    def _components(values: dict[str, float]) -> list[dict]:
+        total = sum(values.values())
+        return [{
+            "key": key, "label": component_labels[key],
+            "exposures": round(values[key], 3),
+            "share": round(values[key] / total, 6) if total else 0.0,
+        } for key in component_labels]
+    spread_contributions = {
+        "basis": "28일간 모형 신규 노출(S→E)을 전파항별로 분해한 값입니다. 실제 접촉추적 또는 확정 감염경로가 아닙니다.",
+        "national": {
+            "total_exposures": round(component_total, 3),
+            "components": _components(component_totals),
+        },
+        "regions": [{
+            "region_id": code,
+            "region_name": _REGION_COORDS.get(code, {}).get("name", code),
+            "total_exposures": round(sum(region_component_totals[i].values()), 3),
+            "components": _components(region_component_totals[i]),
+        } for i, code in enumerate(_SEIR_CODES)],
+    }
+    return snaps, daily_new, C, transmission_edges, spread_contributions
 
 def _build_response_playbook(peak_day: int, input_cfr: float, r0_eff: float) -> list[dict]:
     """Stage-based public-health response recommendations, adapted to the simulated
@@ -1738,7 +1833,8 @@ def _gemini_national_scenario(*, disease_name: str, canon: str, is_novel: bool, 
                               r0_eff: float, cfr_eff: float, inc_days: float, inf_days: float,
                               total_cases: int, total_deaths: int, national_cfr: float, attack_rate: float,
                               peak_day: int, worst: list, national_curve: list,
-                              use_aviation: bool, use_traffic: bool, use_weather: bool) -> dict | None:
+                              use_aviation: bool, use_traffic: bool, use_weather: bool,
+                              spread_contributions: dict | None = None) -> dict | None:
     """AI (Gemini) interpretation of the SEIR result — impact, spread pattern, week-by-week
     timeline, stage-based response actions, high-risk regions, risk factors, best/worst case.
     Grounded in the actual simulation numbers. Returns None if no API key; an {error}/{parse_error}
@@ -1759,6 +1855,17 @@ def _gemini_national_scenario(*, disease_name: str, canon: str, is_novel: bool, 
             signals.append("기상(예보 기온)")
         curve_txt = ", ".join(f"{p['day']}일 {p['cumulative_cases']:,}명" for p in national_curve)
         worst_txt = ", ".join(f"{w['region_name']} {w['cumulative_cases']:,}명" for w in worst)
+        contribution_rows = ((spread_contributions or {}).get("national") or {}).get("components") or []
+        contribution_txt = ", ".join(
+            f"{row.get('label', row.get('key'))} {float(row.get('share') or 0) * 100:.1f}%"
+            for row in contribution_rows if float(row.get("exposures") or 0) > 0
+        ) or "분해 가능한 모형 노출이 없습니다"
+        aviation_seed = (spread_contributions or {}).get("aviation_seed") or {}
+        aviation_seed_txt = (
+            f"초기 유입 시드 {aviation_seed.get('total_seed', 0):,}명 "
+            f"(여객량 반영 증분 {aviation_seed.get('passenger_scaled_increment', 0):,}명)"
+            if aviation_seed.get("enabled") else "항공 유입 시드 미반영"
+        )
         dtype = "신종 감염병(파라미터 사용자 지정)" if is_novel else f"기지 질병({canon})"
         prompt = f"""당신은 한국 호흡기 감염병 감시 시스템 Sentinel의 시나리오 분석 AI입니다. 아래는 메타population SEIR 역학 모델의 28일 시뮬레이션 결과입니다. 이 수치를 해석해 정책 결정자를 위한 분석을 제공하세요.
 
@@ -1772,6 +1879,11 @@ def _gemini_national_scenario(*, disease_name: str, canon: str, is_novel: bool, 
 - 신규 확진 정점: {peak_day}일차
 - 최다 피해 지역: {worst_txt}
 - 모형 누적 감염 추이: {curve_txt}
+
+## 확산 기여도 분해 (모형 S→E 신규 노출, 접촉추적 아님)
+- 전국 기여도: {contribution_txt}
+- 항공: {aviation_seed_txt}
+- 지도 화살표는 지역 간 모형 유입 노출만 나타냅니다. 화살표를 관측된 이동, 확정 감염경로 또는 접촉추적 증거로 서술하지 마세요.
 
 ## 한국 의료 대응역량 (심각도 보정 기준)
 {_KOREA_HEALTHCARE_CONTEXT}
@@ -1790,6 +1902,7 @@ def _gemini_national_scenario(*, disease_name: str, canon: str, is_novel: bool, 
 6. "risk_factors": 악화 위험 요인 3-4개 (각 문자열은 근거를 담은 1문장)
 7. "best_case": 최선 시나리오 (구체적 개입과 그 결과를 담은 2문장)
 8. "worst_case": 최악 시나리오 (구체적 실패 경로와 그 결과를 담은 2문장)
+9. "contribution_analysis": 지역 내 전파·고속도로·철도·기본 이동·기상 보정의 기여도와 서울→부산 같은 파동의 가능한 모형 기전을 2~4문장으로 해석. 모형 기여도와 실제 감염경로를 명확히 구분하고, 항공은 국내 OD가 아닌 초기 유입 시드로만 설명.
 
 JSON 외 다른 텍스트 금지."""
         resp = client.models.generate_content(model=model, contents=prompt)
@@ -1882,10 +1995,12 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     # interregional movement vanishes; OFF uses the documented gravity/hub baseline.
     use_traffic = bool(inputs.get("use_traffic"))
     highway_data = _highway_mobility() if use_traffic else {
-        "connectivity": {}, "od_weights": {}, "od_volume": {}, "od_observation": {}, "generated_at": None, "network_source": "unavailable", "mode_metadata": {}}
+        "connectivity": {}, "od_weights": {}, "od_volume": {}, "od_observation": {}, "od_modal": {},
+        "generated_at": None, "network_source": "unavailable", "mode_metadata": {}}
     highway = highway_data["connectivity"]
     od_weights = highway_data["od_weights"]
     od_observation = highway_data["od_observation"]
+    od_modal = highway_data.get("od_modal") or {}
     observed_only = bool(use_traffic and od_weights)
     if observed_only:
         traffic_source = highway_data.get("network_source", "highway_od")
@@ -1918,10 +2033,10 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     # 기상 강도 = β 보정 계수 (β = β·(1 + 강도·favorability), 클수록 계절 영향 큼).
     weather_intensity = max(0.0, min(1.0, _num("weather_intensity", 0.3)))
 
-    snaps, daily_new, C, transmission_edges = _simulate_outbreak(
+    snaps, daily_new, C, transmission_edges, spread_contributions = _simulate_outbreak(
         entry_idx, r0_eff, cfr_eff, inc_days, inf_days, conn_list, seed_count,
         weather_fav, use_weather, mobility=traffic_intensity,
-        weather_intensity=weather_intensity, od_weights=od_weights, od_observation=od_observation,
+        weather_intensity=weather_intensity, od_weights=od_weights, od_observation=od_observation, od_modal=od_modal,
         access_prior=airport_access_prior, observed_only=observed_only)
 
     def _build_region_results(snaps_v: dict, C_v: list) -> list:
@@ -1981,6 +2096,10 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
                     "airport_access_prior" if pair in {(entry_region, target) for target in airport_access_prior}
                     else (od_observation.get(pair, "observed_od") if observed_only else "baseline_gravity")
                 ),
+                "mobility_modal": (
+                    "airport_access" if pair in {(entry_region, target) for target in airport_access_prior}
+                    else od_modal.get(pair, "baseline_mobility")
+                ),
             })
     mobility_edges.sort(key=lambda edge: edge["weight"], reverse=True)
     network_source = highway_data.get("network_source", "highway_od") if observed_only else "baseline_gravity"
@@ -1988,10 +2107,10 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     # at each active signal's low/high intensity to show how much each knob drives the
     # 28-day case total. A compact "which factor matters most" figure.
     def _run_total(seed=seed_count, m=traffic_intensity, wi=weather_intensity):
-        sn, _dn, _c, _edges = _simulate_outbreak(
+        sn, _dn, _c, _edges, _contrib = _simulate_outbreak(
             entry_idx, r0_eff, cfr_eff, inc_days, inf_days, conn_list, seed,
             weather_fav, use_weather, mobility=m, weather_intensity=wi,
-            od_weights=od_weights, od_observation=od_observation,
+            od_weights=od_weights, od_observation=od_observation, od_modal=od_modal,
             access_prior=airport_access_prior, observed_only=observed_only)
         rows = sn[28]
         return sum(r["cumulative_cases"] for r in rows), sum(r["cumulative_deaths"] for r in rows)
@@ -2045,15 +2164,16 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
 
     observed_variant = None
     if observed_only:
-        snaps_iso, _di, C_iso, edges_iso = _simulate_outbreak(
+        snaps_iso, _di, C_iso, edges_iso, contributions_iso = _simulate_outbreak(
             entry_idx, r0_eff, cfr_eff, inc_days, inf_days, conn_list, seed_count,
             weather_fav, use_weather, mobility=traffic_intensity, weather_intensity=weather_intensity,
-            od_weights=od_weights, od_observation=od_observation, access_prior=airport_access_prior,
+            od_weights=od_weights, od_observation=od_observation, od_modal=od_modal, access_prior=airport_access_prior,
             observed_only=observed_only, isolate_unobserved=True)
         # Full A-variant run so the map/animation and 시도 table can show it too, not just a summary.
         region_results_iso = _build_region_results(snaps_iso, C_iso)
         iso_summary = _summary_from_snaps(snaps_iso)
-        observed_variant = {"regions": region_results_iso, "transmission_edges": edges_iso, "summary": iso_summary}
+        observed_variant = {"regions": region_results_iso, "transmission_edges": edges_iso,
+                            "spread_contributions": contributions_iso, "summary": iso_summary}
         comparison = {
             "active": True,
             "observed_only": iso_summary,
@@ -2066,6 +2186,18 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
 
     origin_verb = "발생" if entry_type == "domestic" else "유입"
     attack_rate_nat = total_cases / _SEIR_TOTAL_POP if _SEIR_TOTAL_POP else 0.0
+    # Airport passenger volumes inform the *initial import seed* only. They are not
+    # domestic aircraft OD edges and therefore never create a map arrow by themselves.
+    spread_contributions["aviation_seed"] = {
+        "enabled": bool(entry_type == "airport" and inputs.get("use_aviation")),
+        "label": "항공 유입 시드",
+        "total_seed": round(seed_count, 3),
+        "baseline_seed": 5.0,
+        "passenger_scaled_increment": round(max(0.0, seed_count - 5.0), 3),
+        "note": "국제 공항 도착여객 수송실적을 이용한 초기 유입 규모이며, 지역 간 국내선 OD 전파 경로가 아닙니다.",
+    }
+    if observed_variant and isinstance(observed_variant.get("spread_contributions"), dict):
+        observed_variant["spread_contributions"]["aviation_seed"] = spread_contributions["aviation_seed"]
     gemini_scenario = _gemini_national_scenario(
         disease_name=disease_name, canon=canon, is_novel=not canon, country=country,
         entry_label=entry_point["label"], origin_verb=origin_verb,
@@ -2074,7 +2206,8 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         total_cases=total_cases, total_deaths=total_deaths, national_cfr=national_cfr,
         attack_rate=attack_rate_nat, peak_day=peak_day, worst=worst, national_curve=national_curve,
         use_aviation=bool(inputs.get("use_aviation")) and entry_type == "airport",
-        use_traffic=use_traffic, use_weather=use_weather)
+        use_traffic=use_traffic, use_weather=use_weather,
+        spread_contributions=spread_contributions)
     return {
         "entry_point": {
             "code": entry_code, "label": entry_point["label"], "entry_type": entry_type,
@@ -2109,6 +2242,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
             generated_at=highway_data.get("generated_at"), od_pairs=len(od_weights),
         ),
         "transmission_edges": transmission_edges,
+        "spread_contributions": spread_contributions,
         "summary": {
             "total_regions": len(region_results),
             "total_cases": total_cases, "total_deaths": total_deaths,
