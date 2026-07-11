@@ -1,17 +1,22 @@
-"""02_prepare_hospitals.py — 심평원 전국 병의원 현황 CSV → 부산 고위험 병원 → facilities_hospital.geojson
+"""02_prepare_hospitals.py — 심평원 병원정보서비스 API → 부산 고위험 병원 → facilities_hospital.geojson
 
-- data/raw/ 안의 CSV들을 컬럼으로 판별.
-- 시도가 TARGET_SIDO(기본 부산), 종별(clCdNm)이 상급종합/종합병원/요양병원인 행만.
-- 좌표: XPos(경도)/YPos(위도)가 이미 WGS84 → 그대로 사용(지오코딩 불필요).
+건강보험심사평가원 병원정보서비스 v2 (data.go.kr B551182):
+  GET https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList  (XML)
+  종별코드 clCd: 01 상급종합병원 · 11 종합병원 · 28 요양병원 (부산 좌표+반경으로 조회 후
+  sidoCdNm='부산' 및 clCdNm(상급종합/종합병원/요양병원)만 남김).
+  XPos(경도)/YPos(위도)는 이미 WGS84 → 지오코딩 불필요.
+
+키: 환경변수 HIRA_SERVICE_KEY (data.go.kr serviceKey). MOBILITY_API_KEY/DATA_GO_KR_API_KEY도 허용.
 출력: frontend/public/data/facilities_hospital.geojson (WGS84 [lng,lat]).
 """
 from __future__ import annotations
 
 import json
 import os
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
-import pandas as pd
+import requests
 
 try:
     from dotenv import load_dotenv
@@ -19,72 +24,78 @@ try:
 except Exception:
     pass
 
-BASE = Path(__file__).resolve().parents[1]
-RAW = BASE / "data" / "raw"
-OUT = BASE.parents[0] / "frontend" / "public" / "data" / "facilities_hospital.geojson"
-TARGET_SIDO = os.getenv("TARGET_SIDO", "부산")
+OUT = Path(__file__).resolve().parents[1].parents[0] / "frontend" / "public" / "data" / "facilities_hospital.geojson"
+URL = "https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList"
+CL_CODES = {"01": "상급종합", "11": "종합병원", "28": "요양병원"}
 HIGH_RISK = ("상급종합", "종합병원", "요양병원")
+TARGET_SIDO = os.getenv("TARGET_SIDO", "부산")
+# 부산 중심 좌표 + 반경(부산 전역 포함). 반경이 이웃 경남/울산까지 잡으므로 sidoCdNm으로 재필터.
+X, Y, RADIUS = 129.0756, 35.1796, 40000
 
 
-def _read_csv(path: Path) -> pd.DataFrame | None:
-    for enc in ("utf-8-sig", "cp949", "euc-kr", "utf-8"):
+def _key() -> str:
+    for name in ("HIRA_SERVICE_KEY", "MOBILITY_API_KEY", "DATA_GO_KR_API_KEY"):
+        v = os.getenv(name, "").strip()
+        if v:
+            return v
+    return ""
+
+
+def _fetch(key: str, cl: str) -> list[dict]:
+    rows: list[dict] = []
+    for page in range(1, 8):
         try:
-            return pd.read_csv(path, dtype=str, encoding=enc, low_memory=False).fillna("")
-        except Exception:
-            continue
-    return None
-
-
-def _col(df: pd.DataFrame, *keys: str) -> str | None:
-    for c in df.columns:
-        cl = str(c).replace(" ", "").lower()
-        if any(k.lower() in cl for k in keys):
-            return c
-    return None
-
-
-def _find_hospital_csv() -> tuple[pd.DataFrame, dict] | None:
-    for path in sorted(RAW.glob("*.csv")):
-        df = _read_csv(path)
-        if df is None or df.empty:
-            continue
-        name = _col(df, "요양기관명", "기관명", "병원명")
-        cl = _col(df, "종별코드명", "clcdnm", "종별")
-        x = _col(df, "xpos", "x좌표", "경도")
-        y = _col(df, "ypos", "y좌표", "위도")
-        sido = _col(df, "시도코드명", "시도명", "시도")
-        if name and cl and x and y:
-            return df, {"name": name, "cl": cl, "x": x, "y": y, "sido": sido,
-                        "addr": _col(df, "주소", "소재지")}
-    return None
+            r = requests.get(URL, params={"ServiceKey": key, "pageNo": page, "numOfRows": 100,
+                                          "clCd": cl, "xPos": X, "yPos": Y, "radius": RADIUS}, timeout=25)
+            root = ET.fromstring(r.text)
+            items = root.findall(".//item")
+            if not items:
+                break
+            for it in items:
+                rows.append({t.tag: (t.text or "").strip() for t in it})
+            total = int(root.findtext(".//body/totalCount") or 0)
+            if page * 100 >= total:
+                break
+        except Exception as exc:
+            print(f"  clCd={cl} page{page} failed: {exc}")
+            break
+    return rows
 
 
 def main() -> None:
-    found = _find_hospital_csv()
-    if not found:
-        print(f"병의원 현황 CSV를 {RAW} 에서 찾지 못했습니다. (요양기관명·종별코드명·XPos/YPos 확인)")
+    key = _key()
+    if not key:
+        print("HIRA_SERVICE_KEY(또는 data.go.kr 키)가 환경변수에 없습니다.")
         return
-    df, c = found
-    feats = []
-    for _, row in df.iterrows():
-        cl = str(row[c["cl"]])
-        if not any(h in cl for h in HIGH_RISK):
-            continue
-        region = str(row[c["sido"]]) if c["sido"] else (str(row[c["addr"]]) if c["addr"] else "")
-        if TARGET_SIDO not in region:
-            continue
-        try:
-            lng, lat = float(row[c["x"]] or 0), float(row[c["y"]] or 0)
-        except Exception:
-            continue
-        if not (124 < lng < 132 and 33 < lat < 39):
-            continue
-        feats.append({"type": "Feature",
-                      "properties": {"name": str(row[c["name"]]).strip(), "clCdNm": cl.strip()},
-                      "geometry": {"type": "Point", "coordinates": [round(lng, 6), round(lat, 6)]}})
+    feats, seen = [], set()
+    for cl, name in CL_CODES.items():
+        rows = _fetch(key, cl)
+        kept = 0
+        for row in rows:
+            sido = row.get("sidoCdNm", "")
+            clnm = row.get("clCdNm", "")
+            if TARGET_SIDO not in sido or not any(h in clnm for h in HIGH_RISK):
+                continue
+            try:
+                lng, lat = float(row.get("XPos") or 0), float(row.get("YPos") or 0)
+            except Exception:
+                continue
+            if not (124 < lng < 132 and 33 < lat < 39):
+                continue
+            k = (row.get("yadmNm", ""), round(lng, 5), round(lat, 5))
+            if k in seen:
+                continue
+            seen.add(k)
+            feats.append({"type": "Feature",
+                          "properties": {"name": row.get("yadmNm", "병원"), "clCdNm": clnm},
+                          "geometry": {"type": "Point", "coordinates": [round(lng, 6), round(lat, 6)]}})
+            kept += 1
+        print(f"{name}(clCd={cl}): {len(rows)}건 조회 → 부산 {kept}건")
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps({"type": "FeatureCollection", "features": feats}, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"고위험 병원 {len(feats)}건 → {OUT}")
+    OUT.write_text(json.dumps({"type": "FeatureCollection",
+                               "note": f"{TARGET_SIDO} 고위험 병원(상급종합/종합/요양) · 심평원 병원정보서비스 · WGS84",
+                               "features": feats}, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"고위험 병원 {len(feats)}건 저장 → {OUT}")
 
 
 if __name__ == "__main__":

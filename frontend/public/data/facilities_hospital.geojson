@@ -1,15 +1,2540 @@
 {
   "type": "FeatureCollection",
-  "note": "SAMPLE 고위험 병원 (부산) — demo seed. Replace via legionella/scripts/02_prepare_hospitals.py (심평원 병의원 현황, XPos/YPos WGS84, clCdNm 상급종합/종합병원/요양병원).",
+  "note": "부산 고위험 병원(상급종합/종합/요양) · 심평원 병원정보서비스 · WGS84",
   "features": [
-    { "type": "Feature", "properties": { "name": "부산대학교병원", "clCdNm": "상급종합" }, "geometry": { "type": "Point", "coordinates": [129.0227, 35.1042] } },
-    { "type": "Feature", "properties": { "name": "동아대학교병원", "clCdNm": "상급종합" }, "geometry": { "type": "Point", "coordinates": [129.0119, 35.1173] } },
-    { "type": "Feature", "properties": { "name": "인제대학교 부산백병원", "clCdNm": "상급종합" }, "geometry": { "type": "Point", "coordinates": [129.0384, 35.1520] } },
-    { "type": "Feature", "properties": { "name": "고신대학교복음병원", "clCdNm": "상급종합" }, "geometry": { "type": "Point", "coordinates": [129.0113, 35.0975] } },
-    { "type": "Feature", "properties": { "name": "해운대백병원", "clCdNm": "종합병원" }, "geometry": { "type": "Point", "coordinates": [129.1420, 35.1699] } },
-    { "type": "Feature", "properties": { "name": "동래봉생병원", "clCdNm": "종합병원" }, "geometry": { "type": "Point", "coordinates": [129.0783, 35.2044] } },
-    { "type": "Feature", "properties": { "name": "부산의료원", "clCdNm": "종합병원" }, "geometry": { "type": "Point", "coordinates": [129.0895, 35.1932] } },
-    { "type": "Feature", "properties": { "name": "연제요양병원", "clCdNm": "요양병원" }, "geometry": { "type": "Point", "coordinates": [129.0812, 35.1789] } },
-    { "type": "Feature", "properties": { "name": "사상요양병원", "clCdNm": "요양병원" }, "geometry": { "type": "Point", "coordinates": [128.9908, 35.1613] } }
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "고신대학교복음병원",
+        "clCdNm": "상급종합"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.013959,
+          35.080964
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동아대학교병원",
+        "clCdNm": "상급종합"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.017539,
+          35.120168
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부산대학교병원",
+        "clCdNm": "상급종합"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.018803,
+          35.100848
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "인제대학교부산백병원",
+        "clCdNm": "상급종합"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.020893,
+          35.146181
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "구포성심병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.004724,
+          35.209713
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대동병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.080203,
+          35.204254
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동남권원자력의학원원자력병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.243549,
+          35.3214
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동래봉생병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.096136,
+          35.196922
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부산광역시의료원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.059235,
+          35.187282
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부산성모병원(재단법인 천주교부산교구유지재단)",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.109125,
+          35.110457
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "비에스길종합병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.078427,
+          35.182526
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "비에이치에스한서병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.113104,
+          35.16088
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "빌리브세웅병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.10822,
+          35.196014
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "삼육부산병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.011065,
+          35.112767
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "영도병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.040524,
+          35.092242
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 광혜의료재단 광혜병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.071148,
+          35.20701
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 센텀의료재단 센텀종합병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.114419,
+          35.16683
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 온그룹의료재단 온병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.050428,
+          35.157436
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 은성의료재단 좋은강안병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.110622,
+          35.150069
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 은성의료재단 좋은삼선병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.008246,
+          35.150416
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 인당의료재단 부민병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.011212,
+          35.211928
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 인당의료재단 해운대부민병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.155654,
+          35.161421
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 행도의료재단 해동병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.043866,
+          35.091944
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인정화의료재단 봉생기념병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.050191,
+          35.131026
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "인제대학교 해운대백병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.182013,
+          35.173443
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "재단법인일신기독교선교회 일신기독병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.054381,
+          35.135783
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "재단법인천주교부산교구유지재단 메리놀병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.032415,
+          35.107684
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "좋은문화병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.059092,
+          35.140888
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "학교법인 춘해병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.058379,
+          35.14696
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "학교법인)동의병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.076514,
+          35.16982
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한국보훈복지의료공단 부산보훈병원",
+        "clCdNm": "종합병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.006575,
+          35.153382
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(의)영님의료재단 개금중앙요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.024793,
+          35.153763
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(의)피터의료재단새소망요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.226905,
+          35.222826
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "가나안요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.112425,
+          35.156177
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "가족사랑 요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.047306,
+          35.181667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "강림요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.972821,
+          35.13128
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "개금길요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.02322,
+          35.156394
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "경희요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.016432,
+          35.212599
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "곽요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.960718,
+          35.106518
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "광안더힐요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.115859,
+          35.152737
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "광안정다운요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.12559,
+          35.156054
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "그랜드자연요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.097829,
+          35.146859
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금정의료소비자생활협동조합 금송요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.080541,
+          35.183983
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금정형주요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.088895,
+          35.2642
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "기장연세요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.217811,
+          35.250727
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "남산정요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.021961,
+          35.213061
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "노블레스요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.106278,
+          35.196679
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "다사랑요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.040756,
+          35.20914
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "다시봄요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.157347,
+          35.162466
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "다온요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.106936,
+          35.146118
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "달맞이요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.181184,
+          35.158412
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "덕천요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.005472,
+          35.211184
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "라파요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.970978,
+          35.057827
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "미남동의요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.067453,
+          35.205453
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "미소요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.1465,
+          35.224667
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "보람요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.091082,
+          35.259392
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "보생요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.059666,
+          35.140963
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부산노인전문제2병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.059235,
+          35.187282
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부산노인전문제3병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.147369,
+          35.168254
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부산노인전문제4병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.963113,
+          35.102443
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부산시노인전문제1병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.0282,
+          35.206122
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "사단법인청색회 연지그린요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.049688,
+          35.17281
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "사랑요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.089669,
+          35.226584
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "사직요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.071831,
+          35.207347
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "사회복지법인 동남복지재단 부산은빛요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.996615,
+          35.198363
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "삼인요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.977926,
+          35.138496
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "새라새요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.084549,
+          35.121835
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "서동제일요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.105197,
+          35.214387
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "서울우리요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.01269,
+          35.234412
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "선안요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.970505,
+          35.051629
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "선하요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.020337,
+          35.102386
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "성산현대요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.085366,
+          35.217402
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "세원요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.024255,
+          35.092537
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "세인요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.064576,
+          35.195349
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "센텀이루다요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.132431,
+          35.165926
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "센텀파크요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.127073,
+          35.190581
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "센텀해인요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.11448,
+          35.165759
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "송도요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.012138,
+          35.079737
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "심당요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.036887,
+          35.110595
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "아시아드 요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.078628,
+          35.186775
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "아하브요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.04893,
+          35.211716
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "양지요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.089567,
+          35.22108
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "연산관자재요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.107501,
+          35.18289
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "연산인제요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.107449,
+          35.185074
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "용당요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.099126,
+          35.123545
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "우리행복요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.107458,
+          35.183049
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "윌리스요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.086579,
+          35.135321
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "으뜸요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.073481,
+          35.206008
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의)은성의료재단 좋은애인요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.098574,
+          35.198282
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 강혜의료재단 사랑의요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.972754,
+          35.131629
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 강혜의료재단 온천사랑의요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.080212,
+          35.219136
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 굿타임의료재단 타임요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.971297,
+          35.052142
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 나라의료재단 스마트나라요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.972949,
+          35.151652
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 다정의료재단 금산요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.080541,
+          35.183983
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 동일의료재단 금정나라요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.093826,
+          35.24393
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 사랑나눔의료재단 에보스요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.06178,
+          35.158434
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 서원의료재단 감로수요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.992465,
+          35.181702
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 성원의료재단 감천참편한요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.005608,
+          35.087692
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 성원의료재단 영도참편한 요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.068696,
+          35.080855
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 성은의료재단 연산요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.094698,
+          35.178337
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 신암의료재단 제일요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.963122,
+          35.102869
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 영신의료재단 동래유유요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.077549,
+          35.214905
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 영파의료재단 규림요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.075989,
+          35.230726
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 온그룹의료재단 온요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.049957,
+          35.157899
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 온의료재단 신세계요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.07971,
+          35.215678
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 윤재의료재단 금강요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.081093,
+          35.21918
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 윤재의료재단 금정요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.08054,
+          35.221313
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 은빛의료재단 참사랑요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.087308,
+          35.200733
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 은성의료재단 좋은리버뷰요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.013797,
+          35.259598
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 은성의료재단 좋은부산요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.996512,
+          35.133499
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 은성의료재단 좋은주례요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.001473,
+          35.150063
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 일혜의료재단 행복한요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.06374,
+          35.092043
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 장수의료재단 동래요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.081759,
+          35.206939
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 주현의료재단 사상중앙요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.978216,
+          35.178401
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 진연의료재단 감천문화요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.006762,
+          35.090387
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 참사람의료재단 금곡효요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.013294,
+          35.249122
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 천지의료재단 금샘요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.088282,
+          35.276848
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 청송의료재단 해뜨락요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.044691,
+          35.210439
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 패밀리의료재단 만덕힐요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.046649,
+          35.21249
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 한세의료재단 효은요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.180892,
+          35.158238
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 허명의료재단 구포일심요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.995516,
+          35.204638
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 현백의료재단 사상제일요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.982754,
+          35.169777
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 황산의료재단 황산요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.088142,
+          35.181879
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인 희경의료재단 한국요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.980443,
+          35.163309
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인강혜의료재단남천사랑의요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.110324,
+          35.146437
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인건강한사람들의료재단 프리마요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.082687,
+          35.185661
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인나눔의료재단 행림요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.091042,
+          35.254449
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인나라의료재단 부산나라요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.051837,
+          35.132237
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인나라의료재단중앙나라요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.035898,
+          35.103846
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인다평의료재단 센텀휴요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.97897,
+          35.076907
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인대성사랑의료재단 제일요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.100987,
+          35.218296
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인동일의료재단수영나라요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.113297,
+          35.168335
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인백세의료재단백세요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.109241,
+          35.161474
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인뵈뵈의료재단복있는요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.225875,
+          35.2279
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인상봉의료재단 상봉요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.060799,
+          35.147357
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인선우의료재단  BHS동래한서요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.091985,
+          35.238198
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인성진의료재단 동산요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.993158,
+          35.100852
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인세왕의료재단 세왕요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.085948,
+          35.222496
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인안심의료재단 안심요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.103092,
+          35.188217
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인에벤에셀의료재단 아름다운요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.124081,
+          35.193872
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인연송의료재단 신창요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.036108,
+          35.102574
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인연송의료재단 제2신창요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.963039,
+          35.098824
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인은경의료재단 인창대연요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.084594,
+          35.134494
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인은경의료재단 인창요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.042935,
+          35.121867
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인은성의료재단 좋은사랑요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.98348,
+          35.099351
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인은정의료재단 호산기독요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.066416,
+          35.183992
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인인당의료재단 부산혜민요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.056938,
+          35.140007
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인인주의료재단 늘사랑요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.991055,
+          35.085636
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인전일의료재단한가족요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.112426,
+          35.156927
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인제영의료재단 다나사요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.030276,
+          35.173416
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인좋은사람들의료재단 관자재요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.093697,
+          35.2616
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인지석의료재단 효성프라임요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.988688,
+          35.174966
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인청십자의료재단 청십자요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.048334,
+          35.127802
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인청십자의료재단 행복한 요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.070047,
+          35.149785
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인청원의료재단 수요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.06902,
+          35.174268
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인한우리의료재단 한우리요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.005695,
+          35.086278
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인해림의료재단 부산금사요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.115247,
+          35.215526
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인호산나의료재단현대요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.964194,
+          35.079737
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인화인의료재단센텀화인요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.119375,
+          35.19085
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료법인효원의료재단 자연요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.977139,
+          35.068609
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "의료재단 로뎀요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.146931,
+          35.226781
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "이의용밝은길요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.019705,
+          35.112281
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "인제요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.040055,
+          35.092417
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "정요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.039072,
+          35.091709
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "제니스파크요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.074509,
+          35.126601
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "조이효요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.998746,
+          35.09052
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "준요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.099154,
+          35.197362
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "중앙효요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.962671,
+          35.113941
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "참요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.021534,
+          35.153562
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "큰사랑요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.962993,
+          35.094279
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "태종대요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.080382,
+          35.063211
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "평거요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.216138,
+          35.237299
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "푸른숲요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.087994,
+          35.260327
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "학장성심요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.983179,
+          35.141435
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한국보훈복지의료공단 부산요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.006575,
+          35.153382
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한빛요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.993409,
+          35.087217
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한사랑요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.051943,
+          35.166149
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "해운대 한빛요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.126204,
+          35.205137
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "해운대성심요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.171939,
+          35.162249
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "현대요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.210076,
+          35.24866
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "효메디요양병원",
+        "clCdNm": "요양병원"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.112736,
+          35.123759
+        ]
+      }
+    }
   ]
 }

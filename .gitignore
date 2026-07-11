@@ -80,3 +80,6 @@ build-check/
 backend/data/processed/scenario_example_v*.json
 
 backend/data/processed/legionella_cases.json
+
+# Legionella raw source data (large public-data CSVs; not committed)
+legionella/data/raw/

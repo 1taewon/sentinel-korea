@@ -1,16 +1,9621 @@
 {
   "type": "FeatureCollection",
-  "note": "SAMPLE 목욕장업 (부산) — demo seed. Replace via legionella/scripts/01_prepare_baths.py (행안부 목욕장업 CSV, EPSG:5174→4326).",
+  "note": "부산 목욕장업(영업중) · 행안부 공개데이터 · EPSG:5174→4326",
   "features": [
-    { "type": "Feature", "properties": { "name": "서면 대형사우나", "category": "목욕장업", "subtype": "대형목욕탕" }, "geometry": { "type": "Point", "coordinates": [129.0602, 35.1577] } },
-    { "type": "Feature", "properties": { "name": "부산진 찜질방", "category": "목욕장업", "subtype": "찜질방" }, "geometry": { "type": "Point", "coordinates": [129.0498, 35.1631] } },
-    { "type": "Feature", "properties": { "name": "동래 온천", "category": "목욕장업", "subtype": "온천" }, "geometry": { "type": "Point", "coordinates": [129.0839, 35.2129] } },
-    { "type": "Feature", "properties": { "name": "온천장 스파", "category": "목욕장업", "subtype": "온천" }, "geometry": { "type": "Point", "coordinates": [129.0805, 35.2189] } },
-    { "type": "Feature", "properties": { "name": "해운대 찜질방", "category": "목욕장업", "subtype": "찜질방" }, "geometry": { "type": "Point", "coordinates": [129.1603, 35.1631] } },
-    { "type": "Feature", "properties": { "name": "연산동 목욕탕", "category": "목욕장업", "subtype": "대형목욕탕" }, "geometry": { "type": "Point", "coordinates": [129.0836, 35.1846] } },
-    { "type": "Feature", "properties": { "name": "사상 사우나", "category": "목욕장업", "subtype": "대중목욕탕" }, "geometry": { "type": "Point", "coordinates": [128.9915, 35.1524] } },
-    { "type": "Feature", "properties": { "name": "남포동 찜질방", "category": "목욕장업", "subtype": "찜질방" }, "geometry": { "type": "Point", "coordinates": [129.0281, 35.0979] } },
-    { "type": "Feature", "properties": { "name": "광안리 스파", "category": "목욕장업", "subtype": "대형목욕탕" }, "geometry": { "type": "Point", "coordinates": [129.1183, 35.1533] } },
-    { "type": "Feature", "properties": { "name": "덕천 온천사우나", "category": "목욕장업", "subtype": "온천" }, "geometry": { "type": "Point", "coordinates": [129.0119, 35.2098] } }
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금강스파",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.024707,
+          35.102154
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.022919,
+          35.101399
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.035285,
+          35.101439
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "유정탕",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.024553,
+          35.104227
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.025611,
+          35.1011
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "영주목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.032183,
+          35.112003
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "명천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.037492,
+          35.108218
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청호탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.036512,
+          35.110904
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "거북탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.031757,
+          35.109641
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "양신탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.026723,
+          35.101067
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "녹수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.029853,
+          35.100393
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "뉴부산탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.034691,
+          35.106442
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "해림사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.024197,
+          35.100982
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "득일탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.034624,
+          35.102072
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대주탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.02962,
+          35.111106
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "코모도호델팔레로얄사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.035113,
+          35.109026
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "마린목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.038973,
+          35.109801
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "두원베스피아 목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.033417,
+          35.110872
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "자갈치해수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.026655,
+          35.09669
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대림탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.025517,
+          35.105762
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "자갈치효소편백원",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.031119,
+          35.096719
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대청행복탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.031517,
+          35.106607
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "팬스타미라클",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.035916,
+          35.101563
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "창신탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.016933,
+          35.110548
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "하성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.016353,
+          35.108508
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "조일탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.012892,
+          35.117223
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대영탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.022413,
+          35.097233
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "구덕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.01919,
+          35.113831
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "감초탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.015979,
+          35.099582
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "녹수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.015486,
+          35.113776
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천일탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.015723,
+          35.100482
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "성진탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.022543,
+          35.084024
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "새부산탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.012486,
+          35.110072
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부산탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.023494,
+          35.092058
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금강목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.023349,
+          35.095396
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.021898,
+          35.114318
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "산수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.017372,
+          35.083566
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "장수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.018942,
+          35.092576
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "약수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.017455,
+          35.079578
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "삼익탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.018578,
+          35.110684
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "까치탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.01099,
+          35.104241
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대명탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.021695,
+          35.092847
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "송도해모수 찜질사우나",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.016714,
+          35.076629
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한웅레포츠",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.020964,
+          35.105399
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금천사우나",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.016358,
+          35.101271
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "스파해수랑",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.025505,
+          35.082441
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "녹천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.016215,
+          35.105918
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "복지목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.024945,
+          35.092469
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동선탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.019435,
+          35.115939
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "구덕 사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.014523,
+          35.112712
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "윈덤그랜드부산 웰니스 클럽(Wellness Club)",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.023597,
+          35.078127
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "늘푸른스파동광",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.022947,
+          35.093844
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대영탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.020411,
+          35.110631
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부산탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.02143,
+          35.110037
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청신탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.012032,
+          35.112282
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "초장탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.01975,
+          35.098422
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천연탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.022666,
+          35.086277
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "남부탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.022404,
+          35.085347
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "구봉탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.034244,
+          35.120048
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "보건탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.043093,
+          35.125381
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신화탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.049243,
+          35.137237
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "양지탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.049595,
+          35.133419
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "현대탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.04496,
+          35.135475
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천지탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.058584,
+          35.139202
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대원탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.049257,
+          35.14354
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "덕산탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.049343,
+          35.142562
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "양지탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.035341,
+          35.126403
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동신탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.039876,
+          35.124563
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동네탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.041093,
+          35.128603
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "좌천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.053469,
+          35.134356
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "목화탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.048749,
+          35.138744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.039445,
+          35.129983
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "평화탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.04724,
+          35.134405
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "하나탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.039335,
+          35.118156
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동신탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.053162,
+          35.140026
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청하탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.040824,
+          35.129704
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동환목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.04597,
+          35.127932
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "제일탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.058443,
+          35.137437
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "억수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.042748,
+          35.133507
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.033679,
+          35.119317
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "광장사우나",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.041336,
+          35.116169
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.046977,
+          35.136804
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "라메르관광호텔 부산해수랜드(주)",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.062323,
+          35.140604
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "발리아쿠아랜드",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.038,
+          35.11549
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옛고을맑은물목욕터",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.055775,
+          35.139548
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한성해수월드",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.056925,
+          35.138982
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "현대백화점별관 현대휘트니스",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.057966,
+          35.141125
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(주)월드스파",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.039502,
+          35.122059
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "태왕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.0365,
+          35.113042
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "석천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.047781,
+          35.129823
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한일탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.036675,
+          35.119562
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "만수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.040218,
+          35.118469
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "오동탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.057865,
+          35.13321
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "외나무탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.047285,
+          35.088751
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "유성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.044937,
+          35.079414
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대화탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.04243,
+          35.084693
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "장수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.070118,
+          35.081556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천일탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.070375,
+          35.081351
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.080946,
+          35.065938
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "조양탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.070606,
+          35.071617
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "봉래탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.044751,
+          35.093421
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대평탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.035119,
+          35.091357
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대진탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.045149,
+          35.091703
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "풍년탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.059187,
+          35.0973
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금화탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.062878,
+          35.091032
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대광탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.06855,
+          35.085966
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대륙탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.067165,
+          35.079845
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.040934,
+          35.089376
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "홍연탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.049954,
+          35.091433
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "약수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.045011,
+          35.08302
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.071143,
+          35.075052
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "영도해수랜드",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.038295,
+          35.083863
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "황토탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.058306,
+          35.090031
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(주)태종대온천",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.078857,
+          35.06463
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부산항 대중탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.042216,
+          35.090042
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "주)호연사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.041477,
+          35.091197
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥사이드",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.067432,
+          35.07591
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "라발스호텔",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.03914,
+          35.094513
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "김천탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.060316,
+          35.094212
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "억수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.046326,
+          35.087295
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "화천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.046198,
+          35.091499
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "약수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.060273,
+          35.091845
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "양지탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.039319,
+          35.086087
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부산롯데호텔사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.056002,
+          35.156642
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "명성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.023051,
+          35.159032
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "스파피닉스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.038241,
+          35.170904
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "성심탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.057723,
+          35.164662
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "에버스스포렉스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.066138,
+          35.171324
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "LG탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.016445,
+          35.154857
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.026199,
+          35.150154
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "필사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.048676,
+          35.183407
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "조방해수탕",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.062619,
+          35.141899
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "행복한 목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.04626,
+          35.182044
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금강헬씨랜드",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.035548,
+          35.168768
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.025801,
+          35.160229
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "은하탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.049149,
+          35.157616
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한일탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.065865,
+          35.174046
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "백수",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.06735,
+          35.148643
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "중앙",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.043101,
+          35.156249
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "문화",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.053646,
+          35.17594
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "성지곡",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.046969,
+          35.178367
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "성수",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.033386,
+          35.165824
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신평화",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.055491,
+          35.162755
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대영",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.051839,
+          35.170163
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "영진",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.06618,
+          35.16049
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "돌샘탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.041311,
+          35.168281
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동일",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.056744,
+          35.172431
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청수",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.040301,
+          35.162594
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "보성",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.043353,
+          35.167096
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "산호",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.035965,
+          35.162233
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대원",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.061924,
+          35.146325
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "수정",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.061637,
+          35.164215
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "수정",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.061637,
+          35.164215
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "목화사우나",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.067534,
+          35.158811
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "효성해수탕",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.061522,
+          35.141871
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "개금워터캐슬사우나헬스",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.019761,
+          35.148959
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "가야스파벨리24사우나 찜질 헬스",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.030481,
+          35.148909
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "주식회사 와이케이컨트롤",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.06312,
+          35.161785
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "네오스파",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.054061,
+          35.153575
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "현대사우나헬스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.063396,
+          35.174507
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신선 사우나 휘트니스",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.024761,
+          35.153769
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한웅레포츠서면점",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.065901,
+          35.151145
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "양정사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.069271,
+          35.172407
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "백양산한가족사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.029783,
+          35.173121
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "주식회사 윈즈휘트니스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.061888,
+          35.161835
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "우성스마트사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.056703,
+          35.171263
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "약수탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.056042,
+          35.162022
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(주)국제식품 양정점 국제온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.06842,
+          35.174825
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "바덴바덴스파",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.057539,
+          35.153532
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "아주",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.061123,
+          35.164164
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "억수",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.051857,
+          35.17716
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "성암",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.05114,
+          35.160434
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청호",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.050808,
+          35.171084
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "용정탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.022642,
+          35.147918
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "필우탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.051743,
+          35.147957
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동아탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.033629,
+          35.169455
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "영진탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.045117,
+          35.15574
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "수양탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.016825,
+          35.145426
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청석탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.05737,
+          35.179282
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.042093,
+          35.165291
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "양지탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.048206,
+          35.1522
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "초읍탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.053096,
+          35.181714
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "선초탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.039073,
+          35.164875
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.02416,
+          35.152412
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천옥탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.049073,
+          35.176356
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대현탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.02571,
+          35.162397
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.038432,
+          35.156634
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동방온천사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.079596,
+          35.218348
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "만수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.081621,
+          35.220972
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "내성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.08974,
+          35.202576
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "약수온천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.079495,
+          35.218931
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "녹천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.081593,
+          35.220487
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "낙원탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.101327,
+          35.202602
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "조양탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.058122,
+          35.199443
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "석천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.07209,
+          35.203598
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대호탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.107215,
+          35.203596
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "정수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.10264,
+          35.208326
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "극동탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.083418,
+          35.199124
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "유성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.08713,
+          35.20515
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동온탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.085847,
+          35.216334
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청원온천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.073162,
+          35.207378
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "조일탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.071734,
+          35.20194
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대보탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.067081,
+          35.2015
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "유림탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.10416,
+          35.198649
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.065301,
+          35.205452
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신현대탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.07597,
+          35.200879
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "덕수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.087562,
+          35.202554
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "반도온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.080582,
+          35.218473
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "수향탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.102857,
+          35.200756
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "건강탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.087047,
+          35.199568
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "산수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.099695,
+          35.209578
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "수안탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.085771,
+          35.202424
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "산수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.085698,
+          35.196265
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금호탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.099196,
+          35.193883
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "우성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.088564,
+          35.206036
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "현대온천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.081658,
+          35.221573
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대림탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.105975,
+          35.193685
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "허심청",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.082686,
+          35.221138
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.101161,
+          35.210721
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "서원해수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.097989,
+          35.198921
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "산수황토탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.053971,
+          35.20017
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신호해수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.109419,
+          35.196002
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동래헬스해수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.098444,
+          35.194678
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "화신탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.110726,
+          35.198178
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "뉴평화탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.084366,
+          35.205356
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "아쿠아대중탕헬스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.099419,
+          35.204144
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "지원탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.075746,
+          35.20408
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "사직스포렉스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.069956,
+          35.199752
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "성보사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.104372,
+          35.200888
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금천파크온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.080861,
+          35.221105
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "사직레포츠대중탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.061796,
+          35.198875
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "백암레포츠",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.109017,
+          35.196293
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "맑은샘사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.055613,
+          35.196614
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "미남스포렉스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.067106,
+          35.206325
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "벽초온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.080624,
+          35.221783
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "클래스윔 동래점",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.10032,
+          35.202654
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대성관온천",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.081131,
+          35.219586
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "성일 레포츠",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.112617,
+          35.198072
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대우여성목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.102105,
+          35.194044
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금강탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.072646,
+          35.140169
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "용호레포츠",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.113244,
+          35.118059
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신선해수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.095354,
+          35.113443
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대연탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.088316,
+          35.123334
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "화신탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.077207,
+          35.144634
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "현대탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.108476,
+          35.126092
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "현대탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.076392,
+          35.143073
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "못골헬스찜질사우나",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.089315,
+          35.135679
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부경해수탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.101032,
+          35.131402
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "약수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.089189,
+          35.151674
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(주)센츄리스포렉스",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.100935,
+          35.137428
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "극동탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.091231,
+          35.14068
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "베르디사우나",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.093578,
+          35.135713
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(주)중앙해수랜드",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.110604,
+          35.125494
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "용호헬스사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.1167,
+          35.11796
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대림찜질사우나",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.07046,
+          35.136288
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대영온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.106743,
+          35.138068
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "문화불한증막",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.095852,
+          35.126211
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(주)벽승 명성사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.097189,
+          35.123018
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "아바니핏",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.065437,
+          35.148278
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "석포탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.089393,
+          35.126347
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "거북탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.099469,
+          35.132861
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "선녀탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.088028,
+          35.123868
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "복천탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.077655,
+          35.124764
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "평안탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.112127,
+          35.116406
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "용림탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.107804,
+          35.119201
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천지탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.07248,
+          35.138045
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "산수탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.069907,
+          35.13175
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "백암탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.083203,
+          35.138524
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "성지탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.086338,
+          35.122395
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "평화탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.07346,
+          35.143755
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "용천탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.095462,
+          35.124627
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "에메랄드 문현탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.078025,
+          35.142995
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금수탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.11013,
+          35.117806
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "남용탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.11263,
+          35.114511
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥수탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.089899,
+          35.134342
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "양지탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.090108,
+          35.139923
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "억수탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.110065,
+          35.114544
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청암탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.084588,
+          35.127803
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "진흥탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.088954,
+          35.129264
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "석천탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.089265,
+          35.129401
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "남도탕",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.107967,
+          35.124019
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "낙천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.011576,
+          35.235877
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "오아시스사우나",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.010286,
+          35.235636
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부용탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.018114,
+          35.211585
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동민사우나(주)",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.01296,
+          35.21124
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "맑은샘",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.007186,
+          35.198862
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청정탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.993877,
+          35.196983
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "녹천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.003558,
+          35.202359
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동해탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.027022,
+          35.215368
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "화명온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.016146,
+          35.23556
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "삼한탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.018979,
+          35.235873
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "티티호텔 구포 사우나",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.99584,
+          35.204994
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "제일탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.005337,
+          35.206878
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "백양탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.03782,
+          35.208989
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "화목탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.995809,
+          35.203281
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "아주탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.021826,
+          35.214582
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대진탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.029307,
+          35.21309
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.002921,
+          35.208116
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "수용탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.00315,
+          35.205881
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "낙동탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.009994,
+          35.215507
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "반도탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.010176,
+          35.210253
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "만덕동원탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.035133,
+          35.209171
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.996214,
+          35.201402
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "그린타운",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.02989,
+          35.207671
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "코아탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.006509,
+          35.205339
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "수정탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.010838,
+          35.196778
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.011995,
+          35.207358
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청유탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.008884,
+          35.205672
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "백조탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.012841,
+          35.19586
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "생수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.99796,
+          35.198428
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금수사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.010536,
+          35.197713
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "용화목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.017764,
+          35.266174
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥금탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.033749,
+          35.210375
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.013457,
+          35.252892
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "호산사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.024256,
+          35.210272
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "새천년탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.020279,
+          35.264324
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "낙원탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.017727,
+          35.233887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "황토대중탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.014256,
+          35.241835
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "보원목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.999706,
+          35.205753
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "태양탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.005408,
+          35.199434
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청일탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.128253,
+          35.190987
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "억수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.123097,
+          35.207064
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부용탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.126107,
+          35.206513
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "삼호탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.123228,
+          35.189629
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(주)조선호텔앤리조트 부산사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.153968,
+          35.155993
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "정선탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.127565,
+          35.185151
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "에덴탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.132886,
+          35.196358
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "태흥탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.128841,
+          35.187744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "제일탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.150689,
+          35.224438
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "성주탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.151819,
+          35.221884
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청호탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.130734,
+          35.193601
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "그랜드탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.133729,
+          35.19261
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "남향탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.161531,
+          35.228763
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "해운온천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.165835,
+          35.161743
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "성남탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.132071,
+          35.200078
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대하탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.175521,
+          35.178084
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "송도온천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.166084,
+          35.161611
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한창대중탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.18321,
+          35.168538
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "송보탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.118479,
+          35.20584
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "파라다이스스파",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.164096,
+          35.15993
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "장산탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.171542,
+          35.173316
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청운탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.158447,
+          35.234914
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "세동대중사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.115914,
+          35.201665
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한화호텔앤드리조트(주) 사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.145134,
+          35.154385
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대림탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.117094,
+          35.199817
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "거목 사우나 헬스",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.159858,
+          35.227848
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대하가족건강랜드",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.17482,
+          35.171641
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "힐스파",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.175403,
+          35.158291
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "경동 G 사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.17943,
+          35.168409
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(주)해송온천",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.123851,
+          35.186039
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신천지 사우나 헬스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.151439,
+          35.230684
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "아늑 시그니처 부산해운대 루프 사우나",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.157364,
+          35.161069
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "로얄대중탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.127846,
+          35.19201
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "골드 토탈 피트니스",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.176733,
+          35.172558
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천지연사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.167405,
+          35.172704
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "해수락",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.204351,
+          35.181488
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "아르피나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.123608,
+          35.200912
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "글로리탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.129061,
+          35.196156
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "만호탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.161122,
+          35.166265
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "SPAZEN",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.127338,
+          35.188221
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "올림픽 해수 사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.139699,
+          35.167736
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "해운대 온천센터",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.164502,
+          35.163415
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "장산 스파월드",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.135202,
+          35.201475
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대우월드마크해운대",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.146867,
+          35.155974
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신세계 센텀시티 스파랜드",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.129631,
+          35.168922
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신세계 센텀시티 트리니티 스파",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.129631,
+          35.168922
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "수성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.153328,
+          35.231117
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.133256,
+          35.191569
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "베네시티 해수온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.150529,
+          35.158595
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "스파마린 (주)",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.145072,
+          35.156628
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.133063,
+          35.200129
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "루미 스파 피트니스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.141784,
+          35.156481
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "베니키아호텔사우나",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.164825,
+          35.16226
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "할매탕",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.164876,
+          35.163208
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "맑은샘 사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.162447,
+          35.229283
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(주)호텔롯데 시그니엘 부산",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.168787,
+          35.160557
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(주)조선호텔앤리조트 그랜드조선 부산 사우나",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.163096,
+          35.160121
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "클럽디오아시스(CLUBD OASIS)스파&워터파크",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.168787,
+          35.160557
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "송원탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.125231,
+          35.182876
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "장수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.12703,
+          35.195303
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "해운대 켄싱턴리조트 사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.157945,
+          35.159394
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "최신탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.148928,
+          35.224303
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "파라다이스 오션 스파",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.165225,
+          35.160161
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.124459,
+          35.191269
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "해수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.006099,
+          35.08479
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한솔 한증막",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.956762,
+          35.099513
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "씨파크 해수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.971955,
+          35.0551
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "감로탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.963533,
+          35.051064
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "자유 대중탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.989908,
+          35.103164
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "은수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.996128,
+          35.090052
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "범진해수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.981335,
+          35.063741
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "산호목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.966242,
+          35.048328
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천지연",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.978181,
+          35.080361
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "유성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.0073,
+          35.105275
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "보영탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.974614,
+          35.101896
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "보리탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.999254,
+          35.101074
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "해수탕 라브랜드",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.979998,
+          35.060044
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "녹천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.996531,
+          35.091373
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한솔건강랜드",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.975946,
+          35.090187
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "승학대중탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.004035,
+          35.10184
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천사들의 목간",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.005401,
+          35.10527
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "영동힐사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.009628,
+          35.09419
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "스파존",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.979032,
+          35.07614
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "웰빙사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.970138,
+          35.106201
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "다대온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.982652,
+          35.06745
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "서진사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.972528,
+          35.076531
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "해변사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.965114,
+          35.049732
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "만수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.971659,
+          35.078976
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신우탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.983305,
+          35.1036
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "승학온천 스포츠랜드",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.986281,
+          35.100403
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천호탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.008642,
+          35.095515
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동원로얄탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.964851,
+          35.077401
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "우리동네목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.968247,
+          35.107515
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "레이어스호텔 사우나",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.964357,
+          35.106713
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "W사우나",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.97638,
+          35.080122
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "구평 목간",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.986776,
+          35.08557
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "희망온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.98301,
+          35.098604
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.987036,
+          35.096109
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청심탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.978882,
+          35.099172
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "명성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.008782,
+          35.093861
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동양사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.986752,
+          35.098045
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "수원탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.008425,
+          35.083025
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동산탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.961794,
+          35.108467
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "문화탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.975942,
+          35.092789
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "우미탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.997494,
+          35.091397
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "평화탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.004951,
+          35.08826
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "양지탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.998318,
+          35.10436
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "만수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.968491,
+          35.104864
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "장수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.992692,
+          35.100955
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "현대탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.994456,
+          35.098861
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한일탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.965528,
+          35.104333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대림탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.967608,
+          35.054886
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "용수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.99195,
+          35.094192
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "승학탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.970813,
+          35.102946
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "장림탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.969758,
+          35.079776
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "미인탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.972152,
+          35.061294
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "용정탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.01138,
+          35.080529
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금정탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.998952,
+          35.098671
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동아탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.97337,
+          35.093564
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "백남탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.975645,
+          35.090763
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.981689,
+          35.066304
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대원탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.990747,
+          35.094747
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "송학탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.968555,
+          35.058784
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "가락탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.960884,
+          35.113102
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "보림사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.969408,
+          35.054417
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.98376,
+          35.100703
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.977179,
+          35.093399
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "강변탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.965353,
+          35.09739
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "영일대중탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.005825,
+          35.089599
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청옥탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.983007,
+          35.105183
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "승학탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.977297,
+          35.108625
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "하남탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.957839,
+          35.099813
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한솔탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.956762,
+          35.099513
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대림헬스사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.094983,
+          35.219069
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "조약돌 사우나. 탑스핀테니스 아카데미",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.090705,
+          35.274448
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금정산온천레포츠",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.089063,
+          35.253863
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "명곡 대중탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.100744,
+          35.213309
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "주식회사 베스파레포츠",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.090921,
+          35.223845
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "본(Bon)스파 피트니스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.104578,
+          35.214183
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "해성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.088411,
+          35.271248
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "사해탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.091923,
+          35.269498
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "선두구동목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.108008,
+          35.288136
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금정산부곡온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.090724,
+          35.24148
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "벨르",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.08823,
+          35.267198
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "원정탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.099405,
+          35.217927
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대영탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.087771,
+          35.231583
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청룡탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.089148,
+          35.275303
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥천사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.085931,
+          35.241333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "평화탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.101849,
+          35.213726
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금송사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.11576,
+          35.225537
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금강탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.093585,
+          35.230841
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "풍천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.085844,
+          35.242491
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "은하탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.104096,
+          35.21109
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "칠성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.09358,
+          35.224491
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "뉴부산탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.10541,
+          35.214896
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신평화탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.109306,
+          35.21747
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "세광탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.090954,
+          35.225007
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천지탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.089604,
+          35.243693
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "샘물탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.098937,
+          35.217541
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동양탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.091219,
+          35.221746
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "무지개탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.090676,
+          35.219734
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.092559,
+          35.25731
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.105979,
+          35.219012
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.107291,
+          35.210887
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "칠광탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.105406,
+          35.217209
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "명천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.086059,
+          35.260358
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥산탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.111397,
+          35.219354
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "범어탕",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.093146,
+          35.271408
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "현수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.094928,
+          35.228088
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금샘탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.087323,
+          35.273127
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대월탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.090146,
+          35.26851
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "황제탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.087002,
+          35.254733
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "삼한사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.109355,
+          35.213415
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천지연 목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.08894,
+          35.237315
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금정탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.090599,
+          35.234793
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "1인세신샵 목간",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.924918,
+          35.102815
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "명지탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.931667,
+          35.11425
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "강서탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.98104,
+          35.216074
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청옥탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.95753,
+          35.179041
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "강서해수온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.925398,
+          35.198361
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "명지레포츠센터",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.898837,
+          35.090575
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "오션해수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.898445,
+          35.088587
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "킹덤스포렉스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.9018,
+          35.0856
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "지사 광천수 사우나,휘트니스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.831438,
+          35.14951
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신호해수온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.872652,
+          35.081563
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금샘해수온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.918909,
+          35.098489
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금샘웰니스해수온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.918909,
+          35.098489
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "명지스파랜드",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.90327,
+          35.080922
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "연산스포츠센타",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.091753,
+          35.174132
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "올집웰리빙서비스 올짐 휘트니스시청지점",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.082212,
+          35.175698
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "지금이 힐링할 때",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.068695,
+          35.183945
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "하얏트부산연산 사우나",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.080746,
+          35.18772
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "현대대중사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.108235,
+          35.183664
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "삼정탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.089815,
+          35.175781
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.09302,
+          35.188163
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥천대중탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.097268,
+          35.186561
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "엘지탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.10564,
+          35.182162
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "연수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.086478,
+          35.171762
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "나래사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.074875,
+          35.191097
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "발리24시대중사우나",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.079879,
+          35.186978
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동온아쿠아",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.086822,
+          35.181069
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "닥터 메포츠",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.070894,
+          35.183121
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한일레포츠",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.087748,
+          35.181502
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "목림레포츠",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.075138,
+          35.18163
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대영스포렉스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.106804,
+          35.189859
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "연산해수피아",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.085261,
+          35.191563
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "윤결 사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.070625,
+          35.19458
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "럭키랜드",
+        "category": "목욕장업",
+        "subtype": "찜질방"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.103527,
+          35.181695
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대우탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.080855,
+          35.178416
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "소나무헬스목욕장",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.066129,
+          35.181419
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금호탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.081088,
+          35.182394
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "호천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.079969,
+          35.180437
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "원천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.093473,
+          35.174953
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "성원탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.089804,
+          35.19049
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "약수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.083607,
+          35.176296
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "배산 해조탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.095689,
+          35.172306
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "경동탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.073319,
+          35.183579
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "초원탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.091863,
+          35.191107
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "정수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.093256,
+          35.172101
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "만수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.089559,
+          35.178101
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대원탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.099163,
+          35.188771
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "일신탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.070238,
+          35.17823
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천동탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.094558,
+          35.190787
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "뉴옥수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.094536,
+          35.186514
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "부천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.10875,
+          35.18499
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.086218,
+          35.177411
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "현대탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.085771,
+          35.182231
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신금련산온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.102694,
+          35.170283
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "해수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.107797,
+          35.17715
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청해탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.103673,
+          35.179624
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "산수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.12196,
+          35.159592
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "양지탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.106012,
+          35.17752
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "장수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.115782,
+          35.160397
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "뉴남천힐사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.110193,
+          35.140511
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "흰돌실버타운 휘트니스센타",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.099052,
+          35.170491
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "광안해수월드",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.133556,
+          35.155874
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "광안찜질사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.110618,
+          35.154553
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "화신탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.116378,
+          35.173548
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "금은사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.11271,
+          35.162416
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "강남헬스사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.110848,
+          35.164384
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(주)동양레포츠",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.115509,
+          35.171347
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대명화성(주) 호텔아쿠아펠리스지점",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.118805,
+          35.15408
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "리치웰",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.115286,
+          35.152571
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "화림탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.117313,
+          35.171499
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "그린탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.108378,
+          35.161751
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "미주탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.11322,
+          35.151072
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청옥탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.113273,
+          35.166502
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "복천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.108014,
+          35.169989
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "장수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.106005,
+          35.175284
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청암탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.112215,
+          35.146459
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "수정탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.110458,
+          35.172943
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "양지탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.115784,
+          35.163995
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.127201,
+          35.158767
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청아탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.115675,
+          35.168974
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "수목탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.098856,
+          35.171968
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "억수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.097201,
+          35.171498
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "망미탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.115368,
+          35.174333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "신성헬스탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.108644,
+          35.163688
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "천지탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.12031,
+          35.158658
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청송탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.120668,
+          35.16888
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "산수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.106727,
+          35.17147
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "옥천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.105495,
+          35.170743
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "반도탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.979061,
+          35.137576
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "현대탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.981156,
+          35.169215
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "창조탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.98901,
+          35.174935
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대권사상해수온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.984526,
+          35.158769
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "로얄탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.972168,
+          35.124266
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "스파캐슬",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.992803,
+          35.194083
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "우리탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.978756,
+          35.138956
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "냉정온천사우나 찜질방 스포츠",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.014561,
+          35.150927
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "담덕스파",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.973668,
+          35.130955
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "아름스파",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.987209,
+          35.154519
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "학마을 목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.993962,
+          35.13811
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "정수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.004922,
+          35.149038
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "최신탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.98655,
+          35.191804
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "국제목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.981137,
+          35.166634
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대현탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.00364,
+          35.153893
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.986699,
+          35.167584
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "백천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.006942,
+          35.149751
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "석정탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.996361,
+          35.15421
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "중흥사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.983723,
+          35.168832
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "남정탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.015423,
+          35.147968
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "무지개탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.005525,
+          35.145159
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "모라탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.986763,
+          35.189029
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "백양산 신모라 온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.994613,
+          35.185131
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "자유탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.989428,
+          35.180262
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "청수사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.991979,
+          35.183909
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "더좋은탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.988066,
+          35.164081
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "삼영탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.980795,
+          35.171264
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "낙원탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.9797,
+          35.170525
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "형광탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.988625,
+          35.172467
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "백양탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.993637,
+          35.190537
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "명천대중사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.980232,
+          35.153949
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한성탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.98074,
+          35.138088
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "삼정탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.968141,
+          35.130451
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "영일탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.215431,
+          35.246256
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "보드라떼",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.231459,
+          35.267077
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "일광복지목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.232756,
+          35.261939
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "궁전목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.21018,
+          35.242165
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대라탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.21274,
+          35.238649
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "한신탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.214023,
+          35.247437
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "장수마을 대중탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.214728,
+          35.250367
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "달음산목욕장",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.20291,
+          35.324932
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "라이프온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.218803,
+          35.25081
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "광천탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.112624,
+          35.305699
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "철마목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.150109,
+          35.273607
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "길천리발전협의회 길천해수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.285413,
+          35.328899
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "정관온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.177872,
+          35.322562
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "모전愛(애) 사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.16747,
+          35.335515
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "문오성 해수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.256434,
+          35.301476
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대한사우나",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.175878,
+          35.32107
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "사우나(아난티 앳 부산 코브)",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.228365,
+          35.197856
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "워터하우스",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.228365,
+          35.197856
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동부산온천",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.253172,
+          35.343326
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "월내새마을회 월내탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.277015,
+          35.326313
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "(주)오션시티 동부산스포츠센터 하이리페움",
+        "category": "목욕장업",
+        "subtype": "목욕장업"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.221738,
+          35.270993
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "동해탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.228119,
+          35.225142
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "대한탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.241298,
+          35.309593
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "새기장탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.214475,
+          35.241397
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "덕발약수탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.220955,
+          35.239959
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "연지목욕탕",
+        "category": "목욕장업",
+        "subtype": "대중목욕탕"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.839796,
+          35.571757
+        ]
+      }
+    }
   ]
 }
