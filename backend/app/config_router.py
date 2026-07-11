@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
@@ -9,6 +10,14 @@ from .auth import require_admin
 router = APIRouter()
 
 CONFIG_FILE = Path(__file__).resolve().parent.parent / "data" / "keywords_config.json"
+
+
+@router.get("/config/vworld-key")
+def get_vworld_key() -> dict[str, str]:
+    """V-World client tile key. Safe to expose to the browser: V-World client keys
+    are domain-locked (the key only works from registered domains), so this is the
+    normal way to serve WMTS/geocoder tiles from a SPA. Returns "" if unset."""
+    return {"vworld_key": os.getenv("VWORLD_KEY", "").strip()}
 
 
 class ConfigSection(BaseModel):

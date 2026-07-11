@@ -13,6 +13,7 @@ import RegionDetailInline from './components/RegionDetailInline';
 import ReportView from './components/ReportView';
 import StatisticsView from './components/StatisticsView';
 import OntologyView from './components/OntologyView';
+import LegionellaView from './components/LegionellaView';
 import SymptomReportWidget from './components/SymptomReportWidget';
 import Timeline from './components/Timeline';
 import TopNav, { type NavTab } from './components/TopNav';
@@ -2345,6 +2346,13 @@ function AppInner({
       {navTab === 'ontology' && (
         <main className="kas-tab-view">
           <OntologyView />
+        </main>
+      )}
+
+      {/* === SURVEILLANCE INTELLIGENCE TAB === */}
+      {navTab === 'surveillance' && (
+        <main className="kas-tab-view">
+          <LegionellaView />
         </main>
       )}
 

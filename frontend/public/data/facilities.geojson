@@ -1,0 +1,18 @@
+{
+  "type": "FeatureCollection",
+  "note": "SAMPLE 취약시설 (서울 중구) — demo seed. Replace by running legionella/prepare_data.py against LocalData.",
+  "features": [
+    { "type": "Feature", "properties": { "name": "명동 사우나", "category": "목욕장업" }, "geometry": { "type": "Point", "coordinates": [126.9853, 37.5638] } },
+    { "type": "Feature", "properties": { "name": "을지로 찜질방", "category": "목욕장업" }, "geometry": { "type": "Point", "coordinates": [126.9917, 37.5661] } },
+    { "type": "Feature", "properties": { "name": "충무로 호텔", "category": "숙박업" }, "geometry": { "type": "Point", "coordinates": [126.9945, 37.5615] } },
+    { "type": "Feature", "properties": { "name": "명동 게스트하우스", "category": "숙박업" }, "geometry": { "type": "Point", "coordinates": [126.9862, 37.5609] } },
+    { "type": "Feature", "properties": { "name": "중구보건소 인근 의원", "category": "의원" }, "geometry": { "type": "Point", "coordinates": [126.9979, 37.5638] } },
+    { "type": "Feature", "properties": { "name": "동대문 병원", "category": "병원" }, "geometry": { "type": "Point", "coordinates": [127.0092, 37.5665] } },
+    { "type": "Feature", "properties": { "name": "신당동 목욕탕", "category": "목욕장업" }, "geometry": { "type": "Point", "coordinates": [127.0159, 37.5657] } },
+    { "type": "Feature", "properties": { "name": "회현 비즈니스호텔", "category": "숙박업" }, "geometry": { "type": "Point", "coordinates": [126.9799, 37.5588] } },
+    { "type": "Feature", "properties": { "name": "을지로 요양병원", "category": "병원" }, "geometry": { "type": "Point", "coordinates": [126.9995, 37.5669] } },
+    { "type": "Feature", "properties": { "name": "장충동 호텔", "category": "숙박업" }, "geometry": { "type": "Point", "coordinates": [127.0067, 37.5600] } },
+    { "type": "Feature", "properties": { "name": "광희동 사우나", "category": "목욕장업" }, "geometry": { "type": "Point", "coordinates": [127.0100, 37.5648] } },
+    { "type": "Feature", "properties": { "name": "소공동 의원", "category": "의원" }, "geometry": { "type": "Point", "coordinates": [126.9803, 37.5645] } }
+  ]
+}

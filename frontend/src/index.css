@@ -3060,6 +3060,12 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   border-left: 1px solid var(--border);
   color: var(--accent);
 }
+/* Adjacent special tabs form one "intelligence" group — only the first gets the divider. */
+.top-nav-tab--special + .top-nav-tab--special {
+  margin-left: 0;
+  padding-left: 16px;
+  border-left: none;
+}
 .top-nav-tab--special .top-nav-tab-label,
 .top-nav-tab--special .top-nav-tab-sub { color: var(--accent); }
 .top-nav-tab--special:hover { color: var(--accent-hover); background: var(--accent-light); }
@@ -9246,6 +9252,32 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .cmp-totals { display: flex; justify-content: space-between; gap: 6px; margin-top: 4px; font-size: 11px; color: var(--text-secondary, #475569); }
 .cmp-totals strong { color: var(--text-primary, #0f172a); font-variant-numeric: tabular-nums; }
 @media (max-width: 700px) { .cmp-grid { grid-template-columns: 1fr; } }
+
+/* ── Legionella surveillance (SURVEILLANCE INTELLIGENCE tab) ── */
+.legionella-view { position: relative; width: 100%; height: calc(100vh - 62px); min-height: 560px; }
+.legionella-map { position: absolute; inset: 0; z-index: 0; }
+.legionella-map .leaflet-container { width: 100%; height: 100%; background: #0b1220; font: inherit; }
+.legionella-panel {
+  position: absolute; top: 12px; right: 12px; z-index: 500; width: 244px;
+  background: var(--bg-card, #fff); border: 1px solid var(--border, #e2e8f0); border-radius: 10px;
+  padding: 12px; box-shadow: 0 6px 22px rgba(0, 0, 0, 0.22); font-size: 12px;
+  color: var(--text-primary, #0f172a); max-height: calc(100% - 24px); overflow-y: auto;
+}
+.legionella-title { font-size: 14px; font-weight: 800; }
+.legionella-sub { font-size: 10.5px; color: var(--text-muted, #94a3b8); margin-bottom: 8px; }
+.legionella-group { border-top: 1px solid var(--border, #e2e8f0); padding-top: 8px; margin-top: 8px; }
+.legionella-group-title { font-size: 10px; font-weight: 800; letter-spacing: 0.04em; color: var(--text-secondary, #475569); text-transform: uppercase; margin-bottom: 5px; }
+.legionella-check { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; cursor: pointer; }
+.legionella-hint { font-size: 10px; color: var(--text-muted, #94a3b8); margin: 3px 0 6px; line-height: 1.4; }
+.legionella-btn { width: 100%; padding: 6px; border: 1px solid var(--accent, #4361ee); border-radius: 6px; background: var(--accent-light, #e8edfd); color: var(--accent, #4361ee); font-size: 12px; font-weight: 700; cursor: pointer; }
+.legionella-btn:hover { background: var(--accent, #4361ee); color: #fff; }
+.legionella-legend { display: flex; flex-direction: column; gap: 3px; margin-top: 10px; font-size: 11px; color: var(--text-secondary, #475569); }
+.legionella-legend span { display: flex; align-items: center; gap: 6px; }
+.legionella-legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.legionella-legend i.legionella-grad { width: 42px; height: 8px; border-radius: 3px; background: linear-gradient(90deg, #22d3ee, #84cc16, #facc15, #f97316, #dc2626); }
+.legionella-note { margin-top: 10px; font-size: 10px; line-height: 1.5; color: var(--text-muted, #94a3b8); }
+.legionella-note strong { color: #dc2626; }
+.legionella-status { margin-top: 8px; font-size: 11px; color: #d97706; background: rgba(255, 159, 67, 0.12); padding: 6px 8px; border-radius: 6px; line-height: 1.4; }
 .whatif-epi-params { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; background: var(--bg-soft, #f8fafc); display: flex; flex-direction: column; gap: 6px; }
 .whatif-epi-head { font-size: 11px; font-weight: 700; color: var(--text-secondary, #475569); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .whatif-epi-known { font-size: 10px; font-weight: 600; color: #059669; }

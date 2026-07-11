@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-export type NavTab = 'map' | 'statistics' | 'data_sources' | 'pathway' | 'report' | 'ontology';
+export type NavTab = 'map' | 'statistics' | 'data_sources' | 'pathway' | 'report' | 'ontology' | 'surveillance';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -27,6 +27,7 @@ const TABS: { key: NavTab; label: string; labelEn: string; adminOnly?: boolean; 
   { key: 'pathway', label: 'Control', labelEn: 'PIPELINE' },
   { key: 'report', label: '리포트', labelEn: 'REPORT' },
   { key: 'ontology', label: '예측·시뮬레이션', labelEn: 'FORECASTING & SIMULATION', special: true },
+  { key: 'surveillance', label: '감시 인텔리전스', labelEn: 'SURVEILLANCE INTELLIGENCE', special: true },
 ];
 
 /* ── Pipeline Status Bar ────────────────────────────────────── */
