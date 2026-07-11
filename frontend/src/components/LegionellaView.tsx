@@ -74,7 +74,7 @@ export default function LegionellaView() {
 
   const [status, setStatus] = useState('지도를 불러오는 중…');
   const [counts, setCounts] = useState({ towers: 0, baths: 0, hospitals: 0, cases: 0 });
-  const [addMode, setAddMode] = useState(true);
+  const [addMode, setAddMode] = useState(false);  // cooling-tower digitising off by default
   const [plan, setPlan] = useState<Plan[]>([]);
   const [uploadMsg, setUploadMsg] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -257,6 +257,28 @@ export default function LegionellaView() {
   return (
     <div className="legionella-view">
       <div className="legionella-map" ref={mapEl} />
+
+      {mode === 'map' && (
+        <div className="legionella-tools">
+          <button type="button" className={`legionella-tool-btn ${addMode ? 'is-active' : ''}`}
+            onClick={() => {
+              if (!addMode) {  // entering add mode → make sure the 냉각탑 layer is visible
+                if (mapRef.current && !mapRef.current.hasLayer(towerLayer.current)) mapRef.current.addLayer(towerLayer.current);
+                setVis((v) => (v.towers ? v : { ...v, towers: true }));
+              }
+              setAddMode((a) => !a);
+            }}>
+            {addMode ? '냉각탑 추가 모드 · 종료' : '냉각탑 추가'}
+          </button>
+          {addMode && (
+            <div className="legionella-tools-body">
+              <div className="legionella-hint">지도 클릭=추가 · 마커 클릭=삭제</div>
+              <button type="button" className="legionella-btn" onClick={saveGeoJSON}>GeoJSON 저장 ({counts.towers})</button>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="legionella-panel">
         <div className="legionella-title">Legionella surveillance · 전국</div>
         <div className="legionella-sub">전국 위성 위험지도 + 비식별 조사서 → 지역 조사 우선순위</div>
@@ -276,13 +298,6 @@ export default function LegionellaView() {
             ] as [keyof typeof vis, string][]).map(([k, label]) => (
               <label key={k} className="legionella-check"><input type="checkbox" checked={vis[k]} onChange={() => toggle(k)} /> {label}</label>
             ))}
-          </div>
-
-          <div className="legionella-group">
-            <div className="legionella-group-title">냉각탑 디지타이징</div>
-            <label className="legionella-check"><input type="checkbox" checked={addMode} onChange={(e) => setAddMode(e.target.checked)} /> 지도 클릭으로 추가</label>
-            <div className="legionella-hint">마커 클릭=삭제. 지도 클릭=추가.</div>
-            <button type="button" className="legionella-btn" onClick={saveGeoJSON}>GeoJSON 저장 ({counts.towers})</button>
           </div>
 
           <div className="legionella-group" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
@@ -367,11 +382,6 @@ export default function LegionellaView() {
         </div>
         )}
 
-        <div className="legionella-note">
-          냉각탑=위성 판독 좌표(<strong>자동 탐지 아님</strong>). 위험 히트맵=PHWR 가중 <strong>환경 오염 경향</strong>(환자
-          발생 예측 아님). Hotspot=<strong>환경검사 우선순위 제안</strong>이며 채수·배양 병원체 일치로 확정, 최종 판단은
-          조사관. LLM은 초안만 생성. 조사 모듈은 <strong>합성·비식별 데모</strong>(실제 환자정보 미사용).
-        </div>
         {status && <div className="legionella-status">{status}</div>}
       </div>
     </div>
