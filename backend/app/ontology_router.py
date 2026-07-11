@@ -37,8 +37,8 @@ SNAPSHOT_DIR = PROCESSED_DIR / "snapshots"
 # Public demo — pre-generated for non-admin competition reviewers.  A cached result
 # is used only while it matches the current simulator schema and mobility/weather/
 # aviation inputs; refreshed data therefore reaches the example automatically.
-_SCENARIO_EXAMPLE_FILE = PROCESSED_DIR / "scenario_example_v14.json"
-_EXAMPLE_SCHEMA_VERSION = "seir-od-daily-v2"
+_SCENARIO_EXAMPLE_FILE = PROCESSED_DIR / "scenario_example_v15.json"
+_EXAMPLE_SCHEMA_VERSION = "seir-od-observed-v3"
 _EXAMPLE_INPUT_FILES = (
     "aviation_passenger_by_country.json",
     "highway_connectivity_by_region.json",

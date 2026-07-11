@@ -39,8 +39,8 @@ HEADERS = {
     "Referer": "https://data.ex.co.kr/",
     "Accept": "application/json,*/*",
 }
-PEAK_HOUR = "08"   # a representative commute hour
-MAX_PAGES = 25     # bounded sample (API caps ~100 rows/page)
+SAMPLE_HOURS = ("08", "18")  # morning and evening commuting peaks
+MAX_PAGES_PER_HOUR = 25     # bounded sample per hour (API caps ~100 rows/page)
 
 # 도착영업소(톨게이트) 이름 → 시도 코드. Covers the tollgates that appear in the
 # arrival feed; unmapped tollgates are skipped. (제주=고속도로 없음)
@@ -127,34 +127,39 @@ def fetch_highway_connectivity() -> dict[str, Any]:
     region_traffic: dict[str, int] = {}
     corridor_traffic: dict[tuple[str, str], int] = {}
     total_rows = 0
-    for page in range(1, MAX_PAGES + 1):
-        params = {
-            "key": key, "type": "json",
-            "sumTmUnitTypeCode": "3", "startEndStdTypeCode": "2",
-            "stdHour": PEAK_HOUR, "numOfRows": "100", "pageNo": str(page),
-        }
-        try:
-            resp = httpx.get(BASE, params=params, headers=HEADERS, timeout=30)
-            if resp.status_code != 200:
-                print(f"[Highway] page {page} HTTP {resp.status_code}", file=sys.stderr)
+    rows_by_hour: dict[str, int] = {}
+    for hour in SAMPLE_HOURS:
+        hour_rows = 0
+        for page in range(1, MAX_PAGES_PER_HOUR + 1):
+            params = {
+                "key": key, "type": "json",
+                "sumTmUnitTypeCode": "3", "startEndStdTypeCode": "2",
+                "stdHour": hour, "numOfRows": "100", "pageNo": str(page),
+            }
+            try:
+                resp = httpx.get(BASE, params=params, headers=HEADERS, timeout=30)
+                if resp.status_code != 200:
+                    print(f"[Highway] hour {hour}, page {page} HTTP {resp.status_code}", file=sys.stderr)
+                    break
+                data = resp.json()
+            except Exception as exc:
+                print(f"[Highway] hour {hour}, page {page} failed: {exc}", file=sys.stderr)
                 break
-            data = resp.json()
-        except Exception as exc:
-            print(f"[Highway] page {page} failed: {exc}", file=sys.stderr)
-            break
-        rows = data.get("list") or []
-        if not rows:
-            break
-        for r in rows:
-            pair = _od_regions(r.get("unitName", ""))
-            if not pair:
-                continue
-            origin, destination = pair
-            amount = _to_int(r.get("trafficAmout"))
-            region_traffic[destination] = region_traffic.get(destination, 0) + amount
-            if origin != destination and amount > 0:
-                corridor_traffic[(origin, destination)] = corridor_traffic.get((origin, destination), 0) + amount
-        total_rows += len(rows)
+            rows = data.get("list") or []
+            if not rows:
+                break
+            for r in rows:
+                pair = _od_regions(r.get("unitName", ""))
+                if not pair:
+                    continue
+                origin, destination = pair
+                amount = _to_int(r.get("trafficAmout"))
+                region_traffic[destination] = region_traffic.get(destination, 0) + amount
+                if origin != destination and amount > 0:
+                    corridor_traffic[(origin, destination)] = corridor_traffic.get((origin, destination), 0) + amount
+            hour_rows += len(rows)
+            total_rows += len(rows)
+        rows_by_hour[hour] = hour_rows
 
     if not region_traffic:
         return {"status": "error", "reason": "no mapped traffic", "regions": {}}
@@ -183,9 +188,10 @@ def fetch_highway_connectivity() -> dict[str, Any]:
     return {
         "status": "ok",
         "source": "한국도로공사 출발-도착 교통량 (data.ex.co.kr odtraffic)",
-        "note": "directed 시도 OD network from a sampled peak hour; region arrivals retained as fallback",
+        "note": "directed regional OD network aggregated across sampled morning/evening peaks",
         "sampled_rows": total_rows,
-        "peak_hour": PEAK_HOUR,
+        "sampled_hours": list(SAMPLE_HOURS),
+        "rows_by_hour": rows_by_hour,
         "generated_at": datetime.now(KST).isoformat(),
         "regions": regions,
         "corridors": corridors,

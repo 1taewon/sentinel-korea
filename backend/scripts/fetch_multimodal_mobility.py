@@ -36,7 +36,9 @@ OUTPUT_FILE = PROCESSED_DIR / "multimodal_mobility_by_region.json"
 KST = timezone(timedelta(hours=9))
 
 KORAIL_STATS = "https://apis.data.go.kr/B551457/carriageStatistics/mainLineTravelerTrain"
-DOMESTIC_FLIGHT = "http://openapi.airport.co.kr/service/rest/FlightScheduleList/getDflightScheduleList"
+SRT_STATION_PASSENGERS = "https://apis.data.go.kr/B553912/srt_passenger/v1/station_passengers"
+# KAC GW replacement for the discontinued legacy domestic-flight schedule API.
+DOMESTIC_FLIGHT = "https://apis.data.go.kr/B551178/flight-schedule/dom"
 
 # Region resolver deliberately covers principal stations, airports and terminals used
 # by national movement; unknown labels are skipped rather than guessed.
@@ -65,7 +67,7 @@ _DOMESTIC_FLIGHT_PAIRS = (
 
 def _service_key() -> str:
     """Accept the common Railway variable names without exposing their values."""
-    for name in ("MOBILITY_API_KEY", "DATA_GO_KR_API_KEY", "KORAIL_API_KEY", "HIGHWAY_API_KEY"):
+    for name in ("MOBILITY_API_KEY", "DATA_GO_KR_API_KEY", "KORAIL_API_KEY"):
         value = os.getenv(name, "").strip()
         if value:
             return value
@@ -156,6 +158,40 @@ def _fetch_korail_passenger_od(key: str) -> tuple[dict[tuple[str, str], float], 
                 "rows_received": len(rows)}
 
 
+def _fetch_srt_passenger_od(key: str) -> tuple[dict[tuple[str, str], float], dict[str, Any]]:
+    """Read SRT monthly station-pair passenger counts as observed (not daily) OD."""
+    if not key:
+        return {}, {"status": "skipped", "reason": "no public-data service key"}
+    latest_complete_month = (datetime.now(KST).replace(day=1) - timedelta(days=1)).strftime("%Y%m")
+    params = {
+        "serviceKey": key, "page": 1, "perPage": 2000, "returnType": "JSON",
+        "cond[RUN_YM::GTE]": latest_complete_month,
+        "cond[RUN_YM::LTE]": latest_complete_month,
+    }
+    rows = _items(_get_json(SRT_STATION_PASSENGERS, params))
+    corridors: dict[tuple[str, str], float] = defaultdict(float)
+    parsed = 0
+    for row in rows:
+        source = _region_from_label(_value(
+            row, "DPT_STN_NM", "DEP_STN_NM", "DEPT_STN_NM", "START_STN_NM", "STRT_STN_NM", "출발역", "출발역명"))
+        target = _region_from_label(_value(
+            row, "ARV_STN_NM", "ARR_STN_NM", "ARRV_STN_NM", "END_STN_NM", "도착역", "도착역명"))
+        passengers = _as_int(_value(
+            row, "GET_ON_PSNG_CO", "BOARDING_PSNG_CO", "PSNG_CO", "PASSENGER_CNT", "승차인원수"))
+        if source and target and source != target and passengers > 0:
+            corridors[(source, target)] += passengers
+            parsed += 1
+    if corridors:
+        return dict(corridors), {
+            "status": "ok", "observation": "observed_monthly_passenger_od",
+            "month": latest_complete_month, "rows": parsed,
+            "endpoint": "SR srt_passenger/v1/station_passengers",
+        }
+    return {}, {
+        "status": "unavailable", "reason": "SRT response did not expose usable station-pair passenger counts",
+        "month": latest_complete_month, "rows_received": len(rows),
+    }
+
 def _fetch_domestic_flight_proxy(key: str) -> tuple[dict[tuple[str, str], float], dict[str, Any]]:
     """Count current domestic scheduled flights; convert to a labelled seat-capacity proxy."""
     if not key:
@@ -167,7 +203,7 @@ def _fetch_domestic_flight_proxy(key: str) -> tuple[dict[tuple[str, str], float]
         origin, destination = pair
         payload = _get_json(DOMESTIC_FLIGHT, {
             "serviceKey": key, "schDate": day, "schDeptCityCode": origin,
-            "schArrvCityCode": destination, "numOfRows": 200, "pageNo": 1, "_type": "json",
+            "schArrvCityCode": destination, "numOfRows": 200, "pageNo": 1, "type": "json",
         })
         return pair, len(_items(payload))
 
@@ -188,9 +224,10 @@ def _fetch_domestic_flight_proxy(key: str) -> tuple[dict[tuple[str, str], float]
 
 def _mode_mix(mode: str, observed: bool) -> float:
     defaults = {
-        "highway": 0.80,
-        "korail": 0.18,
-        "domestic_flight": 0.02,
+        "highway": 0.65,
+        "korail": 0.20,
+        "srt": 0.12,
+        "domestic_flight": 0.03,
     }
     try:
         configured = json.loads(os.getenv("MOBILITY_MODE_WEIGHTS_JSON", "{}"))
@@ -208,7 +245,7 @@ def _combine(mode_data: dict[str, tuple[dict[tuple[str, str], float], dict[str, 
     summaries: dict[str, dict] = {}
 
     for mode, (corridors, metadata) in mode_data.items():
-        observed = metadata.get("observation") == "observed_passenger_od" or mode == "highway"
+        observed = metadata.get("observation") in ("observed_passenger_od", "observed_monthly_passenger_od") or mode == "highway"
         total = sum(max(0.0, value) for value in corridors.values())
         mix = _mode_mix(mode, observed)
         summaries[mode] = {**metadata, "corridors": len(corridors), "mix_weight": round(mix, 4)}
@@ -247,6 +284,7 @@ def fetch_multimodal_mobility(highway_data: dict[str, Any] | None = None) -> dic
         if row.get("source") and row.get("target")
     }
     korail, korail_meta = _fetch_korail_passenger_od(key)
+    srt, srt_meta = _fetch_srt_passenger_od(key)
     domestic_air, domestic_air_meta = _fetch_domestic_flight_proxy(key)
 
     mode_data = {
@@ -255,6 +293,7 @@ def fetch_multimodal_mobility(highway_data: dict[str, Any] | None = None) -> dic
             "source": highway.get("source"), "sampled_rows": highway.get("sampled_rows"),
         }),
         "korail": (korail, korail_meta),
+        "srt": (srt, srt_meta),
         "domestic_flight": (domestic_air, domestic_air_meta),
     }
     corridors, modes = _combine(mode_data)
@@ -274,8 +313,8 @@ def fetch_multimodal_mobility(highway_data: dict[str, Any] | None = None) -> dic
     return {
         "status": status,
         "source": "Korea multimodal OD mobility network",
-        "note": "Observed highway/KORAIL OD is kept distinct from the domestic-flight schedule-capacity proxy. "
-                "Mode weights are configurable via MOBILITY_MODE_WEIGHTS_JSON.",
+        "note": "Observed highway/KORAIL/SRT OD is kept distinct from the domestic-flight schedule-capacity proxy. "
+                "Mode weights are configurable sensitivity inputs via MOBILITY_MODE_WEIGHTS_JSON.",
         "generated_at": datetime.now(KST).isoformat(),
         "observed_modes": observed_modes,
         "regions": regions,

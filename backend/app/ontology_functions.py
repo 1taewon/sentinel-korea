@@ -956,8 +956,8 @@ def _highway_mobility() -> dict:
     use_multimodal = isinstance(multimodal, dict) and bool(multimodal.get("corridors"))
     data = multimodal if use_multimodal else highway
     if not isinstance(data, dict):
-        return {"connectivity": {}, "od_weights": {}, "od_volume": {}, "generated_at": None,
-                "network_source": "unavailable", "mode_metadata": {}}
+        return {"connectivity": {}, "od_weights": {}, "od_volume": {}, "od_observation": {},
+                "generated_at": None, "network_source": "unavailable", "mode_metadata": {}}
 
     regions = data.get("regions") or {}
     connectivity = {
@@ -967,6 +967,7 @@ def _highway_mobility() -> dict:
     }
     od_weights: dict[tuple[str, str], float] = {}
     od_volume: dict[tuple[str, str], int] = {}
+    od_observation: dict[tuple[str, str], str] = {}
     for edge in data.get("corridors") or []:
         if not isinstance(edge, dict):
             continue
@@ -978,18 +979,46 @@ def _highway_mobility() -> dict:
             volume = max(0, int(edge.get("traffic") or 0))
         except (TypeError, ValueError):
             continue
-        if weight > 0:
-            od_weights[(source, target)] = weight
-            od_volume[(source, target)] = volume
+        if weight <= 0:
+            continue
+        pair = (source, target)
+        od_weights[pair] = weight
+        od_volume[pair] = volume
+        edge_modes = edge.get("modes") or {}
+        observations = [
+            str(details.get("observation") or "")
+            for details in edge_modes.values()
+            if isinstance(details, dict)
+        ] if isinstance(edge_modes, dict) else []
+        od_observation[pair] = (
+            "observed_od" if not observations or any(value.startswith("observed_") for value in observations)
+            else observations[0]
+        )
+
+    mode_metadata = data.get("modes") or {}
+    active_modes = [
+        name for name, meta in mode_metadata.items()
+        if isinstance(meta, dict) and bool(meta.get("corridors"))
+    ]
+    if use_multimodal and len(active_modes) > 1:
+        network_source = "multimodal_od"
+    elif use_multimodal and "highway" in active_modes:
+        network_source = "highway_od"
+    elif use_multimodal and "srt" in active_modes:
+        network_source = "srt_od"
+    elif use_multimodal and "korail" in active_modes:
+        network_source = "korail_od"
+    else:
+        network_source = "highway_od"
     return {
         "connectivity": connectivity,
         "od_weights": od_weights,
         "od_volume": od_volume,
+        "od_observation": od_observation,
         "generated_at": data.get("generated_at"),
-        "network_source": "multimodal_od" if use_multimodal else "highway_od",
-        "mode_metadata": data.get("modes") or {},
+        "network_source": network_source,
+        "mode_metadata": mode_metadata,
     }
-
 
 def _highway_connectivity() -> dict[str, float]:
     """Compatibility wrapper for callers that only need the regional index."""
@@ -1356,14 +1385,16 @@ def _resolve_disease(name: str) -> tuple[str, dict]:
 
 
 def _build_seir_conn(conn_list: list[float],
-                     od_weights: dict[tuple[str, str], float] | None = None) -> list[list[float]]:
+                     od_weights: dict[tuple[str, str], float] | None = None,
+                     observed_only: bool = False) -> list[list[float]]:
     """Incoming mobility matrix C[i][j] (target i, source j), each row summing to 1.
 
-    When sampled Korean Expressway OD corridors are available, they provide 90% of
-    each target's incoming mix. A 10% gravity prior preserves a connected national
-    network when the bounded API sample misses a corridor. Without OD data, the
-    gravity prior is used on its own. This makes m a true mixing proportion in the
-    force of infection rather than a degree-dependent multiplier.
+    With the measured-OD option enabled, a target's observed inbound OD mix is used
+    exactly. If the public sample has no inbound observation for a target, its
+    interregional term is retained locally (C[i][i] = 1) rather than inventing a
+    route with a gravity model. Without measured OD, a documented gravity/hub
+    baseline is used. This makes the UI toggle mean "use measured OD calibration",
+    not "allow or forbid all travel".
     """
     n = len(_SEIR_CODES)
     coords = [(_REGION_COORDS[c]["lat"], _REGION_COORDS[c]["lng"]) for c in _SEIR_CODES]
@@ -1388,6 +1419,10 @@ def _build_seir_conn(conn_list: list[float],
         observed_total = sum(observed)
         if observed_total > 0:
             C[i] = [value / observed_total for value in observed]
+        elif observed_only:
+            # A missing observation is not evidence of a route. Preserve the local
+            # force of infection instead of presenting a synthetic route as actual OD.
+            C[i][i] = 1.0
         else:
             C[i] = gravity
     return C
@@ -1408,6 +1443,8 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
                        conn_list: list[float], seed_count: float, weather_fav: dict, use_weather: bool,
                        mobility: float = 0.10, weather_intensity: float = 0.3,
                        od_weights: dict[tuple[str, str], float] | None = None,
+                       od_observation: dict[tuple[str, str], str] | None = None,
+                       observed_only: bool = False,
                        days: int = 28) -> tuple[dict, list, list, list]:
     """Daily discrete-time metapopulation SEIR+D over the 17 시도.
 
@@ -1422,7 +1459,9 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
     gamma = 1.0 / max(inf_days, 0.5)
     beta_base = r0_eff * gamma
     m = max(0.0, min(0.4, mobility))
-    C = _build_seir_conn(conn_list, od_weights)
+    od_weights = od_weights or {}
+    od_observation = od_observation or {}
+    C = _build_seir_conn(conn_list, od_weights, observed_only=observed_only)
     S = list(Npop); E = [0.0] * n; I = [0.0] * n; R = [0.0] * n; D = [0.0] * n; cum = [0.0] * n
     seed = min(max(1.0, seed_count), S[entry_idx])
     I[entry_idx] += seed; S[entry_idx] -= seed; cum[entry_idx] = seed
@@ -1489,6 +1528,10 @@ def _simulate_outbreak(entry_idx: int, r0_eff: float, cfr: float, inc_days: floa
                         "target": _SEIR_CODES[i],
                         "expected_exposures": round(exposure, 4),
                         "mobility_weight": round(C[i][j], 5),
+                        "mobility_source": od_observation.get(
+                            (_SEIR_CODES[j], _SEIR_CODES[i]),
+                            "observed_od" if od_weights.get((_SEIR_CODES[j], _SEIR_CODES[i])) else "baseline_gravity",
+                        ),
                         "source_new_cases": round(day_onsets[j], 4),
                         "target_new_cases": round(ni, 4),
                     })
@@ -1733,21 +1776,25 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     aviation_intensity = max(0.2, min(5.0, _num("aviation_intensity", 1.0)))
     seed_count = 5.0 * aviation_intensity * aviation_mult
 
-    # Traffic -> measured interregional OD network when available, otherwise a gravity prior.
+    # Traffic: the toggle selects measured OD calibration. It never means that
+    # interregional movement vanishes; OFF uses the documented gravity/hub baseline.
     use_traffic = bool(inputs.get("use_traffic"))
     highway_data = _highway_mobility() if use_traffic else {
-        "connectivity": {}, "od_weights": {}, "od_volume": {}, "generated_at": None, "network_source": "unavailable", "mode_metadata": {}}
+        "connectivity": {}, "od_weights": {}, "od_volume": {}, "od_observation": {}, "generated_at": None, "network_source": "unavailable", "mode_metadata": {}}
     highway = highway_data["connectivity"]
     od_weights = highway_data["od_weights"]
-    traffic_source = (
-        highway_data.get("network_source", "highway_od") if (use_traffic and od_weights)
-        else ("highway_arrival_index" if (use_traffic and highway)
-              else ("unavailable" if use_traffic else "off"))
-    )
-    conn_list = [(highway.get(c, 0.5) if (use_traffic and highway) else _SEIR_CONN_DEFAULT[c])
+    od_observation = highway_data["od_observation"]
+    observed_only = bool(use_traffic and od_weights)
+    if observed_only:
+        traffic_source = highway_data.get("network_source", "highway_od")
+    elif use_traffic:
+        traffic_source = "baseline_mobility_data_unavailable"
+    else:
+        traffic_source = "baseline_mobility"
+    conn_list = [(highway.get(c, 0.5) if (observed_only and highway) else _SEIR_CONN_DEFAULT[c])
                  for c in _SEIR_CODES]
-    # 교통 이동 강도 = 지역 간 결합 비율 m (클수록 전국 확산 빠름).
-    traffic_intensity = (max(0.02, min(0.30, _num("traffic_intensity", 0.10))) if use_traffic else 0.0)
+    # m is active in both modes. It is the modeled interregional-mixing share.
+    traffic_intensity = max(0.02, min(0.30, _num("traffic_intensity", 0.10)))
     # Weather -> transmissibility boost on days <= 10 (short-term forecast horizon).
     use_weather = bool(inputs.get("use_weather"))
     weather_live = bool(inputs.get("weather_live", True))
@@ -1759,7 +1806,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
     snaps, daily_new, C, transmission_edges = _simulate_outbreak(
         entry_idx, r0_eff, cfr_eff, inc_days, inf_days, conn_list, seed_count,
         weather_fav, use_weather, mobility=traffic_intensity,
-        weather_intensity=weather_intensity, od_weights=od_weights)
+        weather_intensity=weather_intensity, od_weights=od_weights, od_observation=od_observation, observed_only=observed_only)
     region_results = []
     for i, code in enumerate(_SEIR_CODES):
         tl = [snaps[d][i] for d in range(29)]
@@ -1809,9 +1856,10 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
                 "target": target_code,
                 "weight": round(weight, 5),
                 "traffic_volume": highway_data["od_volume"].get(pair),
+                "mobility_source": (od_observation.get(pair, "observed_od") if observed_only else "baseline_gravity"),
             })
     mobility_edges.sort(key=lambda edge: edge["weight"], reverse=True)
-    network_source = highway_data.get("network_source", "highway_od") if od_weights else "gravity_prior"
+    network_source = highway_data.get("network_source", "highway_od") if observed_only else "baseline_gravity"
     # Sensitivity summary — re-run the SEIR (reusing already-fetched data, no re-fetch)
     # at each active signal's low/high intensity to show how much each knob drives the
     # 28-day case total. A compact "which factor matters most" figure.
@@ -1819,7 +1867,7 @@ def _what_if_outbreak_national(inputs: dict) -> dict:
         sn, _dn, _c, _edges = _simulate_outbreak(
             entry_idx, r0_eff, cfr_eff, inc_days, inf_days, conn_list, seed,
             weather_fav, use_weather, mobility=m, weather_intensity=wi,
-            od_weights=od_weights)
+            od_weights=od_weights, od_observation=od_observation, observed_only=observed_only)
         rows = sn[28]
         return sum(r["cumulative_cases"] for r in rows), sum(r["cumulative_deaths"] for r in rows)
 

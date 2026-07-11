@@ -39,7 +39,7 @@ The force of infection is:
 
 `lambda_i = (1-m) * beta_i * I_i/N_i + m * beta_i * sum_j C(i,j) * I_j/N_j`.
 
-`m` is the user-selected interregional mixing share. For a destination with observed OD corridors, the model uses those normalized corridors directly. A population-distance gravity kernel is a transparent fallback only for a destination with no observed inbound OD (or when no OD data are available); it is never mixed into observed OD. The map animation shows daily expected imported exposures from this equation, not radial decoration.
+`m` is the user-selected interregional mixing share. With **measured OD calibration ON**, the model uses only normalized observed corridors. If a destination has no observed inbound OD, its interregional term is retained locally (`C(i,i)=1`) instead of inventing a gravity route; the animation therefore never presents an unobserved connection as measured travel. With calibration OFF, the same nonzero `m` is applied through a documented population-distance/hub gravity baseline. The map animation shows daily expected imported exposures from this equation, not radial decoration.
 
 This is compatible with established metapopulation and mobility-network epidemic modelling, including [Balcan et al., PNAS (2009)](https://pmc.ncbi.nlm.nih.gov/articles/PMC2793313/) and [Chang et al., Nature (2020)](https://www.nature.com/articles/s41586-020-2923-3). It is a deliberately compact decision-support model, not an individual-based mobility simulation.
 
@@ -49,12 +49,12 @@ The collector creates `multimodal_mobility_by_region.json` and preserves each mo
 
 | Mode | Current public source | Treatment in model |
 | --- | --- | --- |
-| Expressway | Korea Expressway Corporation tollgate OD | observed traffic OD |
-| KORAIL | [KORAIL main-line passenger transport statistics](https://www.data.go.kr/data/15125733/openapi.do?recommendDataYn=Y) | observed passenger OD only when station-pair passenger counts are returned |
-| Domestic air | [KAC domestic flight schedule API](https://www.data.go.kr/data/15160195/openapi.do) | current schedule count × configurable representative seats; capacity proxy, not observed passengers |
+| Expressway | Korea Expressway Corporation tollgate OD | observed vehicle OD, aggregated across sampled morning/evening peaks |
+| KORAIL | [KORAIL train transport statistics](https://www.data.go.kr/data/15125733/openapi.do) | observed passenger OD only when the response exposes station-pair passenger counts |
+| SRT | [SR SRT passenger movement type](https://www.data.go.kr/data/15108353/openapi.do) | observed monthly station-pair passenger OD; labelled monthly, not daily |
+| Domestic air | [KAC aircraft operation schedule GW](https://www.data.go.kr/data/15158949/openapi.do) | scheduled-flight count × configurable representative seats; capacity proxy, not observed passengers |
 
-Domestic-flight schedule-capacity proxies are automatically down-weighted. Intercity/express buses are not added separately because their road movement is already represented in highway traffic. The output retains mode metadata so a reviewer can see whether a corridor includes observed OD or a proxy. Railway may provide the data.go.kr key as `MOBILITY_API_KEY`, `DATA_GO_KR_API_KEY`, `KORAIL_API_KEY`, or the existing `HIGHWAY_API_KEY`; no key is stored in source.
-
+Domestic-flight schedule capacity is automatically down-weighted. Intercity/express buses are not added separately because their road movement is already represented in highway traffic. The output retains mode metadata so a reviewer can see whether a corridor includes observed OD or a proxy. The public-data service key must be registered for each dataset and supplied to Railway as `MOBILITY_API_KEY`; the `data.ex.co.kr` `HIGHWAY_API_KEY` is not used as a substitute. The former KAC daily expected-passenger API is discontinued, so it is not treated as a live passenger source.
 ### Aviation and weather
 
 - Aviation uses Incheon arriving-passenger signals to scale the **initial import seed**, not domestic transmission.
