@@ -2064,7 +2064,7 @@ function AppInner({
           <section className="data-source-command-board">
             <div>
               <span className="data-source-kicker">데이터 소스 운영 현황</span>
-              <h2>Respiratory surveillance intelligence data inputs</h2>
+              <h2>Surveillance data input</h2>
               <p>
                 Data를 해석할때 중요한 것은 데이터가 어디서 왔고, 어떤 역할이며, 최종 경보의 어느 부분에
                 쓰이는가입니다. 아래 보드는 각 source lane의 목적, 갱신 주기, 산출물을 먼저 보여줍니다.

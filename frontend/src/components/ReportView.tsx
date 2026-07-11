@@ -812,7 +812,7 @@ export default function ReportView() {
     <div className="report-view report-view--control-room">
       <div className="report-sidebar">
         <div className="report-sidebar-header">
-          <span className="report-kicker">Korea-first respiratory intelligence</span>
+          <span className="report-kicker">Infectious disease intelligence</span>
           <h3>Intelligence archive</h3>
           <p>Reports are organized as evidence for regional respiratory watch decisions, not as standalone prediction outputs.</p>
         </div>
@@ -963,7 +963,7 @@ export default function ReportView() {
 
             <div className="report-positioning-card">
               <span>Product frame</span>
-              <strong>Sentinel is a Korea-first respiratory intelligence control room.</strong>
+              <strong>SENTINEL is infectious disease intelligence control room.</strong>
               <p>
                 The report explains which Korean regions look unusual, why the system believes that,
                 and how much confidence the available evidence deserves.
