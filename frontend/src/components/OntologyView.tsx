@@ -773,9 +773,9 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
       </svg>
       <div className="scenario-spread-legend">
         <span><i className="ssl-origin" /> 유입 거점: {entryLabel}</span>
-        <span><i className="ssl-edge" /> 실선 — 관측 기종점 통행량(OD) 기반 유입 노출</span>
-        <span><i className="ssl-edge" style={{ background: '#94a3b8' }} /> 점선 — 중력모형 보간(미관측 구간·공항 접근)</span>
-        <span><i className="ssl-edge" style={{ background: '#60a5fa' }} /> 파란선 — 항공 운항 스케줄 수송능력 프록시</span>
+        <span><i className="ssl-edge" style={{ borderTopStyle: 'solid', borderTopColor: 'rgba(255,120,60,0.9)' }} /> 실선(주황) — 관측 기종점 통행량(OD) 기반 유입 노출</span>
+        <span><i className="ssl-edge" style={{ borderTopStyle: 'dashed', borderTopColor: 'rgba(148,163,184,0.95)' }} /> 점선(회색) — 중력장 모형 보간(미관측 구간·공항 접근)</span>
+        <span><i className="ssl-edge" style={{ borderTopStyle: 'dashed', borderTopColor: 'rgba(96,165,250,0.95)' }} /> 점선(파랑) — 항공 운항 스케줄 수송능력 프록시</span>
         <span><i className="ssl-node" style={{ background: '#dc2626' }} /> 시도 노드(색 = 누적 사망: 회색 0 → 붉을수록↑, 크기 = 해당 일 신규 감염)</span>
       </div>
     </div>
@@ -848,20 +848,23 @@ function SensitivityChart({ items }: {
         {items.map((s, i) => {
           const top = padT + i * rowH;
           const cyC = top + 15, cyD = top + 35;
-          const ld = s.low_deaths ?? 0, cd = s.cur_deaths ?? 0, hd = s.high_deaths ?? 0;
+          // Order lo≤hi so the left/right labels never cross (some knobs invert lo/hi).
+          const cd = s.cur_deaths ?? 0;
+          const loC = Math.min(s.low_cases, s.high_cases), hiC = Math.max(s.low_cases, s.high_cases);
+          const loD = Math.min(s.low_deaths ?? 0, s.high_deaths ?? 0), hiD = Math.max(s.low_deaths ?? 0, s.high_deaths ?? 0);
           return (
             <g key={s.key}>
               <text x={2} y={top + 19} fontSize={10} fontWeight={700} fill="var(--text-primary, #0f172a)">{s.label}</text>
               <text x={2} y={top + 31} fontSize={8} fill="var(--text-muted, #94a3b8)">{s.low_val}{s.unit} → {s.high_val}{s.unit}</text>
               {/* 모형 감염 범위 */}
-              <line x1={xC(s.low_cases)} y1={cyC} x2={xC(s.high_cases)} y2={cyC} stroke="#ff9f43" strokeWidth={7} strokeLinecap="round" opacity={0.5} />
-              <text x={xC(s.low_cases) - 4} y={cyC + 3} fontSize={8} textAnchor="end" fill="var(--text-muted, #94a3b8)">{n(s.low_cases)}</text>
-              <text x={xC(s.high_cases) + 4} y={cyC + 3} fontSize={9} textAnchor="start" fontWeight={700} fill="var(--text-secondary, #475569)">{n(s.high_cases)}</text>
+              <line x1={xC(loC)} y1={cyC} x2={xC(hiC)} y2={cyC} stroke="#ff9f43" strokeWidth={7} strokeLinecap="round" opacity={0.5} />
+              <text x={xC(loC) - 5} y={cyC + 3} fontSize={8} textAnchor="end" fill="var(--text-muted, #94a3b8)">{n(loC)}</text>
+              <text x={xC(hiC) + 5} y={cyC + 3} fontSize={9} textAnchor="start" fontWeight={700} fill="var(--text-secondary, #475569)">{n(hiC)}</text>
               <circle cx={xC(s.cur_cases)} cy={cyC} r={3} fill="#e11d48" fillOpacity={0.5} stroke="#fff" strokeWidth={1.1} />
               {/* 사망 범위 */}
-              <line x1={xD(ld)} y1={cyD} x2={xD(hd)} y2={cyD} stroke="#fb7185" strokeWidth={7} strokeLinecap="round" opacity={0.5} />
-              <text x={xD(ld) - 4} y={cyD + 3} fontSize={8} textAnchor="end" fill="var(--text-muted, #94a3b8)">{n(ld)}</text>
-              <text x={xD(hd) + 4} y={cyD + 3} fontSize={9} textAnchor="start" fontWeight={700} fill="#be123c">{n(hd)}</text>
+              <line x1={xD(loD)} y1={cyD} x2={xD(hiD)} y2={cyD} stroke="#fb7185" strokeWidth={7} strokeLinecap="round" opacity={0.5} />
+              <text x={xD(loD) - 5} y={cyD + 3} fontSize={8} textAnchor="end" fill="var(--text-muted, #94a3b8)">{n(loD)}</text>
+              <text x={xD(hiD) + 5} y={cyD + 3} fontSize={9} textAnchor="start" fontWeight={700} fill="#be123c">{n(hiD)}</text>
               <circle cx={xD(cd)} cy={cyD} r={3} fill="#e11d48" fillOpacity={0.5} stroke="#fff" strokeWidth={1.1} />
             </g>
           );
@@ -922,12 +925,12 @@ function ComparisonPanel({ comparison }: { comparison: NonNullable<NationalOutbr
   const maxRegion = Math.max(1, ...a.regions.map((r) => r.cumulative_cases), ...b.regions.map((r) => r.cumulative_cases));
   const maxCurve = Math.max(1, ...a.national_curve.map((c) => c.cumulative_cases), ...b.national_curve.map((c) => c.cumulative_cases));
   const cols = [
-    { title: 'A · 실측값만', sub: '측정 OD 경로만 · 미관측 지역 고립', data: a },
-    { title: 'B · 실측값 + 중력장 모형 (기본)', sub: '측정 OD 우선 + 나머지 중력장 보정', data: b },
+    { title: 'A · 실측값 + 중력장 모형 (기본)', sub: '측정 OD 우선 + 나머지 중력장 보정', data: b },
+    { title: 'B · 실측값만', sub: '측정 OD 경로만 · 미관측 지역 고립', data: a },
   ];
   return (
     <div className="whatif-section">
-      <div className="whatif-section-title">이동구조 비교 · A 실측값만 ↔ B 실측값+중력장 모형 (같은 파라미터)</div>
+      <div className="whatif-section-title">이동구조 비교 · A 실측값+중력장 모형(기본) ↔ B 실측값만 (같은 파라미터)</div>
       <div className="cmp-grid">
         {cols.map((c) => (
           <div key={c.title} className="cmp-col">
@@ -972,45 +975,57 @@ function DataSourcePanel({ ds }: { ds: NonNullable<NationalOutbreakResult['data_
     if (m.role === 'od_edge') return m.reflected ? `corridor ${m.corridors}개` : (m.reason || '미수집');
     return m.reflected ? `${m.regions}개 지역 · conn ${pct(m.conn_weight || 0)}` : (m.reason || '미수집');
   };
+  const [open, setOpen] = useState(false);
+  const reflectedCount = ds.modes.filter((m) => m.reflected).length;
   return (
     <div className="whatif-section">
-      <div className="whatif-section-title">데이터 출처 · 반영 방식 (이 시뮬레이션 기준)</div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 10 }}>
-        <span style={{ fontSize: 12, color: '#94a3b8' }}>이동 네트워크:</span>
-        <strong style={{ fontSize: 13, color: '#e2e8f0' }}>{netLabel}</strong>
-        {ds.observed_only && (
-          <span style={{ fontSize: 11, color: '#cbd5e1' }}>
-            · 관측 구간 = 관측 {pct(ds.od_blend_observed)} + 중력 {pct(1 - ds.od_blend_observed)} 혼합 ({ds.od_pairs}개 OD쌍)
-          </span>
-        )}
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 8 }}>
-        {ds.modes.map((m) => {
-          const c = chip(m);
-          return (
-            <div key={m.key} style={{ border: '1px solid rgba(148,163,184,0.2)', borderRadius: 8, padding: '8px 10px', background: 'rgba(15,23,42,0.4)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 }}>
-                <strong style={{ fontSize: 12.5, color: '#e2e8f0' }}>{m.label}</strong>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: c.color, background: c.bg, padding: '1px 7px', borderRadius: 10 }}>{c.text}</span>
+      <button type="button" onClick={() => setOpen((o) => !o)}
+        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', background: 'none', border: 'none',
+          cursor: 'pointer', padding: 0, textAlign: 'left', font: 'inherit' }}>
+        <span style={{ fontSize: 11, color: 'var(--text-muted, #64748b)' }}>{open ? '▾' : '▸'}</span>
+        <span className="whatif-section-title" style={{ margin: 0 }}>데이터 출처 · 반영 방식 (이 시뮬레이션 기준)</span>
+        <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-secondary, #475569)' }}>
+          {netLabel} · <b style={{ color: '#16a34a' }}>{reflectedCount}개 반영</b>{open ? '' : ' · 클릭해 상세'}
+        </span>
+      </button>
+      {open && (<>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', margin: '10px 0' }}>
+          <span style={{ fontSize: 12, color: 'var(--text-muted, #64748b)' }}>이동 네트워크:</span>
+          <strong style={{ fontSize: 13, color: 'var(--text-primary, #1a202c)' }}>{netLabel}</strong>
+          {ds.observed_only && (
+            <span style={{ fontSize: 11, color: 'var(--text-secondary, #475569)' }}>
+              · 관측 구간 = 관측 {pct(ds.od_blend_observed)} + 중력 {pct(1 - ds.od_blend_observed)} 혼합 ({ds.od_pairs}개 OD쌍)
+            </span>
+          )}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 8 }}>
+          {ds.modes.map((m) => {
+            const c = chip(m);
+            return (
+              <div key={m.key} style={{ border: '1px solid var(--border, rgba(148,163,184,0.3))', borderRadius: 8, padding: '8px 10px', background: 'var(--bg-soft, #f1f3f8)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 }}>
+                  <strong style={{ fontSize: 12.5, color: 'var(--text-primary, #1a202c)' }}>{m.label}</strong>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: c.color, background: c.bg, padding: '1px 7px', borderRadius: 10, whiteSpace: 'nowrap' }}>{c.text}</span>
+                </div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-muted, #64748b)', marginTop: 3 }}>
+                  {m.role === 'od_edge' ? '지역 간 OD 엣지' : '연결도(conn) 마진'} · {detail(m)}
+                </div>
               </div>
-              <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 3 }}>
-                {m.role === 'od_edge' ? '지역 간 OD 엣지' : '연결도(conn) 마진'} · {detail(m)}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      <div className="epi-region-caveat">
-        반영 방식: 실측 OD가 있는 구간은 <b>관측 {pct(ds.od_blend_observed)} + 중력모형 {pct(1 - ds.od_blend_observed)}</b>로 혼합하고,
-        관측이 없는 구간은 <b>중력모형(인구 / 거리² × 연결도)</b>으로 보간합니다.
-        연결도(conn)는 <b>고속도로 {pct(w.road)} + 철도(KORAIL 승하차) {pct(w.rail)} + 항공(공항 여객) {pct(w.air)}</b>의
-        실측 활동량으로 산출됩니다. 위에서 “미반영”으로 표시된 모달은 이 시뮬레이션 계산·애니메이션에 들어가지 않았습니다.
-      </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginTop: 8, fontSize: 11, color: '#cbd5e1' }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 3, background: 'rgba(255,120,60,0.9)', borderRadius: 2 }} />관측 OD</span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 3, background: 'rgba(96,165,250,0.9)', borderRadius: 2, borderTop: '1px dashed #60a5fa' }} />수송능력 프록시</span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 3, background: 'rgba(148,163,184,0.9)', borderRadius: 2 }} />중력 추정</span>
-      </div>
+            );
+          })}
+        </div>
+        <div className="epi-region-caveat">
+          반영 방식: 실측 OD가 있는 구간은 <b>관측 {pct(ds.od_blend_observed)} + 중력장 모형 {pct(1 - ds.od_blend_observed)}</b>로 혼합하고,
+          관측이 없는 구간은 <b>중력장 모형(인구 / 거리² × 연결도)</b>으로 보간합니다.
+          연결도(conn)는 <b>고속도로 {pct(w.road)} + 철도(KORAIL 승하차) {pct(w.rail)} + 항공(공항 여객) {pct(w.air)}</b>의
+          실측 활동량으로 산출됩니다. 위에서 “미반영”으로 표시된 모달은 이 시뮬레이션 계산·애니메이션에 들어가지 않았습니다.
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginTop: 8, fontSize: 11, color: 'var(--text-secondary, #475569)' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 0, borderTop: '2px solid rgba(255,120,60,0.9)' }} />실선 관측 OD</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 0, borderTop: '2px dashed rgba(148,163,184,0.95)' }} />점선 중력장 추정</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><i style={{ width: 14, height: 0, borderTop: '2px dashed rgba(96,165,250,0.95)' }} />점선(파랑) 수송능력 프록시</span>
+        </div>
+      </>)}
     </div>
   );
 }
@@ -1078,8 +1093,8 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
       {/* A/B variant switch — the map/animation, headline and 시도 table follow it */}
       {ov && (
         <div className="whatif-variant-switch" style={{ display: 'flex', gap: 6, alignItems: 'center', margin: '2px 0 10px' }}>
-          <span style={{ fontSize: 11, color: '#94a3b8' }}>이동구조:</span>
-          {([['blended', 'B · 실측값 + 중력장 모형 (기본)'], ['observed', 'A · 실측값만']] as const).map(([key, label]) => (
+          <span style={{ fontSize: 11, color: 'var(--text-muted, #94a3b8)' }}>이동구조:</span>
+          {([['blended', 'A · 실측값 + 중력장 모형 (기본)'], ['observed', 'B · 실측값만']] as const).map(([key, label]) => (
             <button key={key} type="button" onClick={() => setVariant(key)}
               style={{ fontSize: 11, padding: '3px 10px', borderRadius: 12, cursor: 'pointer',
                 border: '1px solid rgba(148,163,184,0.35)',
@@ -1117,7 +1132,7 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
       {/* Hero figure: animated spatial spread across the 시도 map */}
       {regions.length > 0 && (
         <div className="whatif-section">
-          <div className="whatif-section-title">일별 전파 애니메이션 · 지역 간 유입 기여(노드 크기 = 모델 감염 강도){ov ? (showVariant ? ' · A 실측값만' : ' · B 실측+중력장(기본)') : ''}</div>
+          <div className="whatif-section-title">일별 전파 애니메이션 · 지역 간 유입 기여(노드 크기 = 모델 감염 강도){ov ? (showVariant ? ' · B 실측값만' : ' · A 실측+중력장(기본)') : ''}</div>
           <ScenarioSpreadMap regions={regions}
             primaryZones={ep?.seed_region ? [ep.seed_region] : (ep?.primary_zones || [])}
             entryLabel={ep?.seed_region_name || ep?.label || '유입 거점'}
