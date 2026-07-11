@@ -289,70 +289,70 @@ export default function LegionellaView() {
       <div className="legionella-map-stage">
         <div className="legionella-map" ref={mapEl} />
 
-        {mode === 'map' && (
-          <div className="legionella-tools">
-            <button type="button" className={`legionella-tool-btn ${addMode ? 'is-active' : ''}`}
-              onClick={() => {
-                if (!addMode) {
-                  if (mapRef.current && !mapRef.current.hasLayer(towerLayer.current)) mapRef.current.addLayer(towerLayer.current);
-                  setVis((v) => (v.towers ? v : { ...v, towers: true }));
-                }
-                setAddMode((a) => !a);
-              }}>
-              {addMode ? '냉각탑 추가 모드 · 종료' : '냉각탑 추가'}
-            </button>
-            {addMode && (
-              <div className="legionella-tools-body">
-                <div className="legionella-hint">지도 클릭=추가 · 마커 클릭=삭제</div>
-                <button type="button" className="legionella-btn" onClick={saveGeoJSON}>GeoJSON 저장 ({counts.towers})</button>
-              </div>
-            )}
-          </div>
-        )}
+        <div className="legionella-tools">
+          <button type="button" className={`legionella-tool-btn ${addMode ? 'is-active' : ''}`}
+            onClick={() => {
+              if (!addMode) {
+                if (mapRef.current && !mapRef.current.hasLayer(towerLayer.current)) mapRef.current.addLayer(towerLayer.current);
+                setVis((v) => (v.towers ? v : { ...v, towers: true }));
+              }
+              setAddMode((a) => !a);
+            }}>
+            {addMode ? '냉각탑 추가 모드 · 종료' : '냉각탑 추가'}
+          </button>
+          {addMode && (
+            <div className="legionella-tools-body">
+              <div className="legionella-hint">지도 클릭=추가 · 마커 클릭=삭제</div>
+              <button type="button" className="legionella-btn" onClick={saveGeoJSON}>GeoJSON 저장 ({counts.towers})</button>
+            </div>
+          )}
+        </div>
 
         <div className="legionella-panel">
           <div className="legionella-title">Legionella surveillance</div>
-          <div className="legionella-modes">
-            <button type="button" className={mode === 'map' ? 'is-active' : ''} onClick={() => setMode('map')}>위험지도</button>
-            <button type="button" className={mode === 'analysis' ? 'is-active' : ''} onClick={() => setMode('analysis')}>분석</button>
+          <div className="legionella-sub">위험지도 · 역학조사서 분석</div>
+
+          <div className="legionella-group">
+            <div className="legionella-group-title">레이어</div>
+            {([
+              ['satellite', '위성영상'], ['hybrid', '라벨'], ['towers', `냉각탑 (${counts.towers})`],
+              ['baths', `목욕장업 (${counts.baths})`], ['hospitals', `고위험 병원 (${counts.hospitals})`],
+              ['heat', '위험 히트맵'], ['cases', `역학조사 케이스 (${counts.cases})`], ['hotspot', '조사 우선순위 (환경조사 우선 대상)'],
+            ] as [keyof typeof vis, string][]).map(([k, label]) => (
+              <label key={k} className="legionella-check"><input type="checkbox" checked={vis[k]} onChange={() => toggle(k)} /> {label}</label>
+            ))}
           </div>
 
-          {mode === 'map' ? (
-            <div className="legionella-group">
-              <div className="legionella-group-title">레이어</div>
-              {([
-                ['satellite', '위성영상'], ['hybrid', '라벨'], ['towers', `냉각탑 (${counts.towers})`],
-                ['baths', `목욕장업 (${counts.baths})`], ['hospitals', `고위험 병원 (${counts.hospitals})`],
-                ['heat', '위험 히트맵'], ['cases', `역학조사 케이스 (${counts.cases})`], ['hotspot', '조사 우선순위 (환경조사 우선 대상)'],
-              ] as [keyof typeof vis, string][]).map(([k, label]) => (
-                <label key={k} className="legionella-check"><input type="checkbox" checked={vis[k]} onChange={() => toggle(k)} /> {label}</label>
-              ))}
+          <div className="legionella-group" onDragOver={(e) => isAdmin && e.preventDefault()} onDrop={isAdmin ? onDrop : undefined}>
+            <div className="legionella-group-title">역학조사서 분석</div>
+            <div className="legionella-hint">
+              {isAdmin
+                ? '비식별 역학조사서를 올려 실제 데이터 분석을 실행합니다.'
+                : '예시 분석을 실행합니다. 실제 조사서 업로드·분석은 admin 로그인 후 사용할 수 있습니다.'}
             </div>
-          ) : (
-            <div className="legionella-group">
-              <div className="legionella-group-title">분석 입력</div>
-              <div className="legionella-hint">
-                {isAdmin
-                  ? '비식별 역학조사서를 입력해 실제 데이터 분석을 실행합니다.'
-                  : '예시 분석을 실행합니다. 실제 분석을 위해 admin 계정으로 로그인하면 입력한 조사서로 실제 데이터 분석이 가능합니다.'}
-              </div>
-              {isAdmin && (
-                <div className="legionella-admin-input" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
-                  <div className="legionella-dropzone">
-                    <input type="file" multiple accept=".txt,.md,.csv,.docx,.pdf" disabled={exLoading}
-                      onChange={(e) => setStagedFiles(Array.from(e.target.files || []))} />
-                    <span>비식별 조사서 업로드 · 드래그앤드롭 (.txt/.csv/.docx/.pdf)</span>
-                  </div>
-                  {stagedFiles.length > 0 && <div className="legionella-upmsg">업로드 대기 {stagedFiles.length}건</div>}
-                  <button type="button" className="legionella-btn ghost" onClick={resetCases} disabled={exLoading}>케이스 초기화</button>
-                </div>
-              )}
-              {!exLoading && !exResult && (
-                <button type="button" className="legionella-btn legionella-analyze" onClick={runAnalysis}>
-                  {isAdmin && stagedFiles.length ? `실제 조사서 분석 (${stagedFiles.length}건)` : '예시 분석 실행'}
+            <div className={`legionella-dropzone ${!isAdmin ? 'is-locked' : ''}`}>
+              <input type="file" multiple accept=".txt,.md,.csv,.docx,.pdf" disabled={exLoading || !isAdmin}
+                onChange={(e) => setStagedFiles(Array.from(e.target.files || []))} />
+              <span>{isAdmin ? '비식별 조사서 업로드 · 드래그앤드롭 (.txt/.csv/.docx/.pdf)' : '실제 조사서 업로드는 admin 로그인 후 활성화됩니다.'}</span>
+            </div>
+            {stagedFiles.length > 0 && <div className="legionella-upmsg">업로드 대기 {stagedFiles.length}건</div>}
+            <button type="button" className="legionella-btn legionella-analyze" onClick={runAnalysis} disabled={exLoading}>
+              {exLoading ? '분석 중…' : isAdmin && stagedFiles.length ? `실제 조사서 분석 (${stagedFiles.length}건)` : '예시 분석 실행'}
+            </button>
+            {isAdmin && <button type="button" className="legionella-btn ghost legionella-reset" onClick={resetCases} disabled={exLoading}>분석 결과 초기화</button>}
+            {uploadMsg && <div className="legionella-upmsg">{uploadMsg}</div>}
+          </div>
+
+          {plan.length > 0 && (
+            <div className="legionella-group legionella-priority-panel">
+              <div className="legionella-group-title">조사 우선순위 (환경조사 우선 대상)</div>
+              <div className="legionella-hint">순위를 누르면 해당 조사 반경으로 지도를 이동합니다.</div>
+              {plan.map((p) => (
+                <button key={p.rank} type="button" className="legionella-plan" onClick={() => flyTo(p)}>
+                  <span className="legionella-plan-rank">{p.rank}</span>
+                  <span className="legionella-plan-body"><strong>환경조사 우선 대상</strong> · 반경 {p.radius_m}m<br />고위험 {p.high_risk_facility_count} · 관련 케이스 {p.linked_case_count}</span>
                 </button>
-              )}
-              {uploadMsg && <div className="legionella-upmsg">{uploadMsg}</div>}
+              ))}
             </div>
           )}
           {status && <div className="legionella-status">{status}</div>}
@@ -411,15 +411,6 @@ export default function LegionellaView() {
                     );
                   })}
                 </div>
-                {plan.length > 0 && <>
-                  <div className="leg-ex-caption">조사 우선순위 (환경조사 우선 대상)</div>
-                  {plan.map((p) => (
-                    <button key={p.rank} type="button" className="legionella-plan" onClick={() => flyTo(p)}>
-                      <span className="legionella-plan-rank">{p.rank}</span>
-                      <span className="legionella-plan-body">반경 {p.radius_m}m · 고위험 {p.high_risk_facility_count} · 관련 케이스 {p.linked_case_count}{p.facilities.length ? <em> · {p.facilities.slice(0, 2).join(', ')}</em> : null}</span>
-                    </button>
-                  ))}
-                </>}
               </div>
               {exResult.report_draft && (
                 <div className="leg-report">
