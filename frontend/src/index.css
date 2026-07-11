@@ -9278,6 +9278,14 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .legionella-note { margin-top: 10px; font-size: 10px; line-height: 1.5; color: var(--text-muted, #94a3b8); }
 .legionella-note strong { color: #dc2626; }
 .legionella-status { margin-top: 8px; font-size: 11px; color: #d97706; background: rgba(255, 159, 67, 0.12); padding: 6px 8px; border-radius: 6px; line-height: 1.4; }
+
+/* Surveillance Intelligence container (methodology selector → tool) */
+.ontology-main.surveillance-main { display: flex; position: relative; }
+.surveillance-main > .legionella-view { height: 100%; flex: 1; min-height: 0; }
+.surveillance-empty { margin: auto; text-align: center; color: var(--text-muted, #94a3b8); padding: 40px; }
+.surveillance-empty-title { font-size: 16px; font-weight: 800; color: var(--text-secondary, #475569); }
+.surveillance-empty-sub { font-size: 12px; margin-top: 6px; }
+.surveillance-more { font-size: 10.5px; color: var(--text-muted, #94a3b8); padding: 10px 6px 2px; line-height: 1.5; border-top: 1px dashed var(--border, #e2e8f0); margin-top: 4px; }
 .whatif-epi-params { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; background: var(--bg-soft, #f8fafc); display: flex; flex-direction: column; gap: 6px; }
 .whatif-epi-head { font-size: 11px; font-weight: 700; color: var(--text-secondary, #475569); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .whatif-epi-known { font-size: 10px; font-weight: 600; color: #059669; }
