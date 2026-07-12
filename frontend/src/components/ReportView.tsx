@@ -412,8 +412,8 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
       const fg = fgRef.current;
       const charge = fg.d3Force('charge');
       if (charge) {
-        charge.strength(-240);   // stronger repulsion → nodes spread so links are readable
-        if (typeof charge.distanceMax === 'function') charge.distanceMax(560);
+        charge.strength(-360);   // stronger repulsion → nodes spread so links are readable
+        if (typeof charge.distanceMax === 'function') charge.distanceMax(760);
       }
       const link = fg.d3Force('link');
       if (link) { link.distance(95); if (typeof link.strength === 'function') link.strength(0.15); }
@@ -585,7 +585,6 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
               const s = l.source?.id ?? l.source; const t = l.target?.id ?? l.target;
               return (s === active || t === active) ? base + 1.6 : base;
             }}
-            linkLineDash={[5, 4]}
             linkDirectionalArrowLength={0}
             linkDirectionalParticles={2}
             linkDirectionalParticleWidth={(l: any) => 1.4 + (l.strength || 0.4) * 1.4}
