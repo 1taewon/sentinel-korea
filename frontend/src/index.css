@@ -5999,6 +5999,9 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   overflow: hidden;
   background: var(--bg-secondary, #f8fafc);
 }
+/* the shared KoreaMap svg keeps a fixed intrinsic size; scale it to fit this box
+   (its viewBox preserves the Korea aspect ratio, so nothing is clipped) */
+.stats-mini-map svg { width: 100% !important; height: 100% !important; display: block; }
 /* Pipeline bottom box: relocated 가중치 설정 / signal sources */
 .pipeline-scoring-box {
   margin-top: 14px;
