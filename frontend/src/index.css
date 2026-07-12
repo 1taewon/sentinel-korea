@@ -6630,8 +6630,8 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   border: 1px solid var(--border);
   border-radius: 12px;
   background:
-    linear-gradient(90deg, rgba(52, 211, 153, 0.05), transparent 35%, rgba(192, 132, 252, 0.05) 100%),
-    radial-gradient(circle at 50% 50%, rgba(56, 216, 255, 0.06), transparent 50%),
+    linear-gradient(90deg, rgba(52, 211, 153, 0.06) 0 33.3%, rgba(192, 132, 252, 0.045) 33.3% 66.6%, rgba(251, 191, 36, 0.055) 66.6% 100%),
+    repeating-linear-gradient(0deg, transparent 0 47px, rgba(148, 163, 184, 0.045) 48px),
     var(--bg-card);
   padding: 8px;
   margin-bottom: 16px;
@@ -6641,6 +6641,26 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
 .report-relationship-stage canvas {
   display: block;
   background: transparent !important;
+}
+.report-relationship-lanes {
+  position: absolute;
+  inset: 13px 18px auto;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  pointer-events: none;
+}
+.report-relationship-lanes span {
+  justify-self: center;
+  padding: 4px 9px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-card) 86%, transparent);
+  color: var(--text-secondary);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .7px;
 }
 
 /* Cliverad-style ontology detail panel (slides in from right when a node is clicked) */

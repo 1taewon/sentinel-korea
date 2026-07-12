@@ -5,12 +5,12 @@ import { useAuth } from '../contexts/AuthContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-// Triangle clustering for the report ontology: 신호원 top-left, 질병/키워드 top-right,
-// 지역 bottom-centre. Centred on the origin so the force-graph's own centering stays happy.
+// Three-stage evidence flow: signal sources → diseases/keywords → regional mentions.
+// The fixed lanes keep the reading order stable instead of exposing a dense force mesh.
 const CLUSTER_CENTERS: Record<string, { x: number; y: number }> = {
-  signal: { x: -430, y: -240 },
-  topic: { x: 430, y: -240 },
-  region: { x: 0, y: 380 },
+  signal: { x: -390, y: 0 },
+  topic: { x: 0, y: 0 },
+  region: { x: 390, y: 0 },
 };
 
 type ReportType = 'osint' | 'kdca' | 'final';
@@ -205,9 +205,9 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
     list.map((e) => ({ ...e, kind, count: termCount(text, e.terms) }))
       .filter((e) => e.count > 0)
       .sort((a, b) => b.count - a.count);
-  const detectedSignals = detect(SIGNAL_TERMS, 'signal');
-  const detectedTopics = detect(TOPIC_TERMS, 'topic');
-  const detectedRegions = detect(REGION_TERMS, 'region');
+  const detectedSignals = detect(SIGNAL_TERMS, 'signal').slice(0, 5);
+  const detectedTopics = detect(TOPIC_TERMS, 'topic').slice(0, 6);
+  const detectedRegions = detect(REGION_TERMS, 'region').slice(0, 7);
   const entities: Ent[] = [...detectedSignals, ...detectedTopics, ...detectedRegions];
 
   const maxMentions = Math.max(1, ...entities.map((e) => e.count));
@@ -222,14 +222,13 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
     const c = CLUSTER_CENTERS[e.kind] || { x: 0, y: 0 };
     const n = Math.max(1, kindCount[e.kind] || 1);
     const i = kindSeen[e.kind]++;
-    const angle = (i / n) * Math.PI * 2;
-    const rr = 55 + n * 6 + (1 - e.count / maxMentions) * 35;   // heavier → nearer cluster centre
+    const rowGap = 86;
     nodes.push({
       id: e.id,
       label: e.label,
       kind: e.kind,
-      x: c.x + Math.cos(angle) * rr,
-      y: c.y + Math.sin(angle) * rr,
+      x: c.x,
+      y: c.y + (i - (n - 1) / 2) * rowGap,
       weight: Math.max(0.18, e.count / maxMentions),
       subtitle: `${e.count}회 언급`,
     });
@@ -247,14 +246,15 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
       for (let p = 0; p < paragraphs.length; p += 1) {
         if (presence[a][p] && presence[b][p]) coOccur += 1;
       }
-      if (coOccur > 0) {
-        const cross = entities[a].kind !== entities[b].kind;
+      const validLane = (entities[a].kind === 'signal' && entities[b].kind === 'topic')
+        || (entities[a].kind === 'topic' && entities[b].kind === 'region');
+      if (coOccur > 0 && validLane) {
         edges.push({
           from: entities[a].id,
           to: entities[b].id,
           label: `${coOccur}회 동시 등장`,
           strength: Math.min(1, 0.22 + coOccur * 0.16),
-          tone: cross ? 'primary' : (entities[a].kind as RelationshipEdge['tone']),
+          tone: entities[a].kind === 'signal' ? 'signal' : 'region',
         });
       }
     }
@@ -264,7 +264,7 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
   const linked = new Set<string>();
   edges.forEach((e) => { linked.add(e.from); linked.add(e.to); });
   const hub = entities[0];
-  if (hub) {
+  if (hub && edges.length === 0) {
     entities.forEach((e) => {
       if (e.id !== hub.id && !linked.has(e.id)) {
         edges.push({ from: e.id, to: hub.id, label: 'association', strength: 0.3, tone: 'signal' });
@@ -284,11 +284,11 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
   }
   const topRegion = detectedRegions[0];
   if (topRegion) {
-    insight.push(`가장 자주 언급된 지역: ${topRegion.label} (${topRegion.count}회) — 지역 시도(노랑)가 신호원·질병을 잇는 허브로 나타납니다.`);
+    insight.push(`가장 자주 언급된 지역: ${topRegion.label} (${topRegion.count}회).`);
   }
   if (entities.length) {
     insight.push(`노드가 클수록 보고서에서 더 자주 언급된 신호원·질병·지역입니다.`);
-    insight.push(`연결선이 굵을수록 같은 문단 안에서 함께 등장한 빈도가 높다는 뜻이며(모든 유형 간), 촘촘할수록 신호가 여러 지역·질병에 걸쳐 있다는 의미입니다.`);
+    insight.push(`연결선은 같은 문단 안 동시 언급이며, 굵을수록 반복 빈도가 높습니다. 인과관계나 확정 발생 경로를 뜻하지는 않습니다.`);
   }
   if (!detectedTopics.length) insight.push('질병/키워드: 명시적 언급이 적게 감지되었습니다.');
   if (!detectedSignals.length) insight.push('신호원: 명시된 source 용어가 부족합니다.');
@@ -356,7 +356,7 @@ function buildReportBrief(item: ReportItem | null, markdown: string): Intelligen
   ];
 }
 
-/** Cliverad-style force-directed ontology graph (matches RadAssist OntologyGraph). */
+/** Three-stage evidence relationship map with a stable left-to-right reading order. */
 function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
   const fgRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -412,16 +412,16 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
       const fg = fgRef.current;
       const charge = fg.d3Force('charge');
       if (charge) {
-        charge.strength(-360);   // stronger repulsion → nodes spread so links are readable
+        charge.strength(-210);
         if (typeof charge.distanceMax === 'function') charge.distanceMax(760);
       }
       const link = fg.d3Force('link');
-      if (link) { link.distance(95); if (typeof link.strength === 'function') link.strength(0.15); }
-      // Triangle clustering: pull each node toward its type's cluster centre so 신호원 /
-      // 질병 / 지역 form three separate groups instead of one scattered ring.
-      fg.d3Force('cluster-x', d3ForceX((n: any) => CLUSTER_CENTERS[n.kind]?.x ?? 0).strength(0.5));
-      fg.d3Force('cluster-y', d3ForceY((n: any) => CLUSTER_CENTERS[n.kind]?.y ?? 0).strength(0.5));
-      fg.d3Force('collide', d3ForceCollide((n: any) => Math.sqrt(n.val) * 3 + 18));
+      if (link) { link.distance(165); if (typeof link.strength === 'function') link.strength(0.08); }
+      // Keep the three evidence lanes fixed horizontally; a very light Y force lets
+      // cards distribute vertically without turning the figure into a dense web.
+      fg.d3Force('cluster-x', d3ForceX((n: any) => CLUSTER_CENTERS[n.kind]?.x ?? 0).strength(0.72));
+      fg.d3Force('cluster-y', d3ForceY(0).strength(0.03));
+      fg.d3Force('collide', d3ForceCollide((n: any) => Math.sqrt(n.val) * 3 + 34));
       if (typeof fg.d3ReheatSimulation === 'function') fg.d3ReheatSimulation();
     } catch { /* ignore */ }
     const t = setTimeout(() => { try { fgRef.current?.zoomToFit(400, 70); } catch { /* ignore */ } }, 900);
@@ -448,13 +448,15 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
   const nodeCanvasObject = useCallback((node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
     if (typeof node.x !== 'number' || typeof node.y !== 'number') return;
     const r = Math.sqrt(node.val) * 3;
+    const cardW = Math.max(76 / globalScale, Math.min(154 / globalScale, (node.label.length * 7 + 38) / globalScale));
+    const cardH = Math.max(30 / globalScale, r * 2.35);
     const fontSize = Math.max(11 / globalScale, 3);
     const isSelected = selectedId === node.id;
 
     // Outer ring on selected node + multi-mention badge
     if (isSelected) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, r * 1.45, 0, 2 * Math.PI);
+      ctx.roundRect(node.x - cardW / 2 - 4 / globalScale, node.y - cardH / 2 - 4 / globalScale, cardW + 8 / globalScale, cardH + 8 / globalScale, 7 / globalScale);
       ctx.strokeStyle = node.color;
       ctx.lineWidth = 1.5 / globalScale;
       ctx.stroke();
@@ -462,7 +464,7 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
 
     // Filled circle (color tinted, scaled by mention count)
     ctx.beginPath();
-    ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
+    ctx.roundRect(node.x - cardW / 2, node.y - cardH / 2, cardW, cardH, 5 / globalScale);
     ctx.fillStyle = node.color + '38';
     ctx.fill();
     ctx.strokeStyle = node.color;
@@ -526,18 +528,23 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
     <section className="report-relationship-card report-relationship-card--wide">
       <div className="report-relationship-header">
         <div>
-          <span>Report relationship figure</span>
-          <h3>신호원 ↔ 질병/키워드 ↔ 지역 ontology</h3>
+          <span>Evidence relationship map</span>
+          <h3>신호원 · 질병/키워드 · 지역 관계도</h3>
           <p>
             보고서 본문에서 추출한 <strong>신호원(녹색)</strong>·<strong>질병/키워드(보라)</strong>·
-            <strong>지역 시도(노랑)</strong>를 세 그룹으로 묶어(삼각 배치) 표시합니다. 노드 크기는 언급횟수,
-            연결선은 같은 문단 안 동시 등장(모든 유형 간). 노드를 클릭하면 연결된 항목이 우측 패널에 나타납니다.
+            <strong>지역 시도(노랑)</strong>를 왼쪽에서 오른쪽으로 읽는 세 단계 관계도로 표시합니다. 노드 크기는 언급횟수,
+            연결선은 신호원→질병/키워드 또는 질병/키워드→지역의 같은 문단 동시 언급입니다. 노드를 클릭하면 연결된 항목이 나타납니다.
           </p>
         </div>
-        <strong>force-directed ontology</strong>
+        <strong>3단계 증거 흐름</strong>
       </div>
 
       <div className="report-relationship-stage" ref={containerRef} style={{ position: 'relative', minHeight: 480 }}>
+        <div className="report-relationship-lanes" aria-hidden="true">
+          <span>01 · 신호원</span>
+          <span>02 · 질병/키워드</span>
+          <span>03 · 지역</span>
+        </div>
         {dims.width > 0 && dims.height > 0 ? (
           <ForceGraph2D
             ref={fgRef}
@@ -546,8 +553,10 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
             nodePointerAreaPaint={(node: any, color: string, ctx: CanvasRenderingContext2D) => {
               if (typeof node.x !== 'number' || typeof node.y !== 'number') return;
               const r = Math.sqrt(node.val) * 3;
+              const cardW = Math.max(76, Math.min(154, node.label.length * 7 + 38));
+              const cardH = Math.max(30, r * 2.35);
               ctx.beginPath();
-              ctx.arc(node.x, node.y, r + 6, 0, 2 * Math.PI);
+              ctx.roundRect(node.x - cardW / 2 - 6, node.y - cardH / 2 - 6, cardW + 12, cardH + 12, 8);
               ctx.fillStyle = color;
               ctx.fill();
             }}
@@ -586,10 +595,10 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
               return (s === active || t === active) ? base + 1.6 : base;
             }}
             linkDirectionalArrowLength={0}
-            linkDirectionalParticles={2}
-            linkDirectionalParticleWidth={(l: any) => 1.4 + (l.strength || 0.4) * 1.4}
-            linkDirectionalParticleSpeed={0.006}
-            linkDirectionalParticleColor={() => '#38bdf8'}
+            linkDirectionalParticles={0}
+            linkDirectionalParticleWidth={0}
+            linkDirectionalParticleSpeed={0}
+            linkDirectionalParticleColor={() => 'transparent'}
             linkHoverPrecision={6}
             backgroundColor="rgba(0,0,0,0)"
             width={dims.width}
@@ -601,7 +610,7 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
           />
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
-            Loading ontology...
+            관계도를 준비하고 있습니다...
           </div>
         )}
 
@@ -616,7 +625,7 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
               <button onClick={() => setSelectedId(null)} aria-label="Close" type="button">×</button>
             </div>
             <div className="ontology-detail-body">
-              <div className="ontology-detail-section-title">Connected ({selectedDetail.related.length})</div>
+              <div className="ontology-detail-section-title">연결 항목 ({selectedDetail.related.length})</div>
               <ul>
                 {selectedDetail.related.map((r: any) => (
                   <li key={r.other.id} onClick={() => setSelectedId(r.other.id)} role="button" tabIndex={0}>
@@ -634,8 +643,10 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
       <div className="report-relationship-belowfig">
         <div className="report-relationship-insights-row">
           <div>
-            <span>Figure interpretation</span>
+            <span>Figure interpretation · 읽는 법</span>
             <h4>무엇을 읽어야 하나?</h4>
+            <p><strong>읽는 순서:</strong> 왼쪽 신호원이 어떤 질병/키워드와 함께 언급됐는지, 이어서 어느 지역 맥락에서 나타났는지를 왼쪽에서 오른쪽으로 확인합니다.</p>
+            <p><strong>연결선:</strong> 같은 보고서 문단에 함께 나온 항목의 관계이며, 선이 굵을수록 반복 언급이 많습니다. 인과관계나 확정 발생 경로를 뜻하지 않습니다.</p>
             {figure.insight.length === 0 ? (
               <p>아직 분석 가능한 키워드가 부족합니다. 보고서가 충분히 길어지면 관계도가 채워집니다.</p>
             ) : (
@@ -647,7 +658,7 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
             <span><i className="rel-dot topic" /> 질병/키워드 (보라)</span>
             <span><i className="rel-dot region" /> 지역 시도 (노랑)</span>
             <span><i className="rel-dot size" /> 노드 크기 = 언급횟수</span>
-            <span><i className="rel-edge-sample" /> 동시 등장 빈도</span>
+            <span><i className="rel-edge-sample" /> 선 굵기 = 같은 문단 반복 언급</span>
           </div>
         </div>
       </div>
