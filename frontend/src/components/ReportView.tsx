@@ -453,24 +453,35 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
     ctx.stroke();
 
     // Mention count badge inside the node when meaningful (>=2)
+    // Theme-aware text: the tinted node color was too faint on the light card, so draw
+    // neutral high-contrast text with a halo stroke (readable over links + either theme).
+    const dark = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'dark';
+    const halo = dark ? 'rgba(2,6,23,0.85)' : 'rgba(255,255,255,0.92)';
     if (node.mentions >= 2) {
-      ctx.font = `bold ${Math.max(fontSize * 0.95, 5)}px Inter, sans-serif`;
+      ctx.font = `bold ${Math.max(fontSize * 1.05, 6)}px Inter, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#0f172a';
+      ctx.lineWidth = 3 / globalScale;
+      ctx.strokeStyle = halo;
+      ctx.strokeText(String(node.mentions), node.x, node.y);
+      ctx.fillStyle = dark ? '#f8fafc' : '#0f172a';
       ctx.fillText(String(node.mentions), node.x, node.y);
     }
 
-    // Label outside the node (does not collide with circle)
-    ctx.font = `${fontSize * 0.95}px Inter, sans-serif`;
+    // Label outside the node (neutral colour + halo so it stays legible over the web)
+    ctx.font = `600 ${Math.max(fontSize, 4)}px Inter, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillStyle = node.color;
     const labelStartY = node.y + r + 4 / globalScale;
     const lines = wrapText(ctx, node.label, 130);
-    const lineH = fontSize * 0.95 * 1.25;
+    const lineH = Math.max(fontSize, 4) * 1.25;
+    ctx.lineWidth = 3 / globalScale;
+    ctx.strokeStyle = halo;
+    ctx.fillStyle = dark ? '#e2e8f0' : '#1e293b';
     lines.forEach((line, i) => {
-      ctx.fillText(line, node.x, labelStartY + i * lineH);
+      const ly = labelStartY + i * lineH;
+      ctx.strokeText(line, node.x, ly);
+      ctx.fillText(line, node.x, ly);
     });
   }, [selectedId]);
 
@@ -541,11 +552,12 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
               node.fx = node.x;
               node.fy = node.y;
             }}
-            linkColor={() => 'rgba(56, 189, 248, 0.45)'}
-            linkWidth={(l: any) => 0.8 + (l.strength || 0.4) * 2.4}
+            linkColor={() => 'rgba(56, 189, 248, 0.5)'}
+            linkWidth={(l: any) => 0.6 + (l.strength || 0.4) * 2}
+            linkLineDash={[5, 4]}
             linkDirectionalArrowLength={0}
             linkDirectionalParticles={2}
-            linkDirectionalParticleWidth={(l: any) => 1.5 + (l.strength || 0.4) * 1.5}
+            linkDirectionalParticleWidth={(l: any) => 1.4 + (l.strength || 0.4) * 1.4}
             linkDirectionalParticleSpeed={0.006}
             linkDirectionalParticleColor={() => '#38bdf8'}
             linkHoverPrecision={6}
