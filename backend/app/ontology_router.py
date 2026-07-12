@@ -657,7 +657,7 @@ async def generate_all_disease_forecast_reports() -> dict[str, Any]:
     """Generate integrated forecast reports for ALL diseases and cache to disk.
 
     Called by the weekly cron pipeline after Sentinel analysis completes.
-    Each disease runs: EMA + SARIMAX + Lead-Lag → Gemini synthesis.
+    Each disease runs: EMA + ARIMA + Lead-Lag → Gemini synthesis.
     """
     from datetime import datetime as _dt
 

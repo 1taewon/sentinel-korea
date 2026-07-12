@@ -2639,7 +2639,7 @@ register(FunctionSpec(
     output="object<{history, forecast: list<{date,score,level,low,high}>, method, diagnostics, narrative}>",
     affects_objects=["Region"],
     requires_admin=False,
-    description="SARIMAX(1,1,1) forecast for Region composite score with 90% confidence interval. "
+    description="ARIMA(1,1,1) forecast for Region composite score with 90% confidence interval. "
                 "Compare against EMA+momentum model for dual-model decision support.",
     fn=_forecast_region_sarimax,
 ))
@@ -2652,7 +2652,7 @@ register(FunctionSpec(
 def _generate_forecast_report(inputs: dict) -> dict:
     """Generate an integrated forecasting report combining all analyses.
 
-    Runs: decomposition + EMA forecast + SARIMAX forecast + hotspots for
+    Runs: decomposition + EMA forecast + ARIMA forecast + hotspots for
     a region, then asks Gemini to synthesize a comprehensive Korean-language
     executive briefing for policy decision-makers.
     """
@@ -2689,7 +2689,7 @@ def _generate_forecast_report(inputs: dict) -> dict:
 {json.dumps(forecast_ema.get('forecast', []) if 'error' not in forecast_ema else [], ensure_ascii=False)}
 - narrative: {forecast_ema.get('narrative', '')}
 
-## 3. SARIMAX 예측 (4주)
+## 3. ARIMA 예측 (4주)
 {json.dumps(forecast_sarimax.get('forecast', []) if 'error' not in forecast_sarimax else [], ensure_ascii=False)}
 - narrative: {forecast_sarimax.get('narrative', '')}
 
@@ -2756,7 +2756,7 @@ register(FunctionSpec(
     affects_objects=["Region"],
     requires_admin=True,
     description="Generate an integrated forecasting report combining all analyses (decomposition, "
-                "EMA, SARIMAX, hotspots, lead-lag) into a Gemini-synthesized executive briefing "
+                "EMA, ARIMA, hotspots, lead-lag) into a Gemini-synthesized executive briefing "
                 "for policy decision-makers. Korean-language output.",
     fn=_generate_forecast_report,
 ))
@@ -2769,7 +2769,7 @@ register(FunctionSpec(
 def _generate_disease_forecast_report(inputs: dict) -> dict:
     """Generate an integrated forecasting report for a specific disease.
 
-    Runs: EMA forecast + SARIMAX forecast + lead-lag analysis,
+    Runs: EMA forecast + ARIMA forecast + lead-lag analysis,
     then asks Gemini to synthesize a comprehensive Korean-language
     executive briefing for epidemiologists and policy decision-makers.
     """
@@ -2807,7 +2807,7 @@ def _generate_disease_forecast_report(inputs: dict) -> dict:
 - 모멘텀: {forecast_ema.get('momentum', 'N/A')}
 - narrative: {forecast_ema.get('narrative', '')}
 
-## 2. SARIMAX 예측 (4주)
+## 2. ARIMA 예측 (4주)
 {json.dumps(forecast_sarimax.get('forecast', []) if 'error' not in forecast_sarimax else [], ensure_ascii=False)}
 - AIC: {forecast_sarimax.get('diagnostics', {}).get('aic', 'N/A') if 'error' not in forecast_sarimax else 'N/A'}
 - narrative: {forecast_sarimax.get('narrative', '')}
@@ -2870,7 +2870,7 @@ register(FunctionSpec(
     affects_objects=["Disease"],
     requires_admin=True,
     description="Generate an integrated forecasting report for a specific disease "
-                "combining EMA, SARIMAX, and lead-lag analyses into a Gemini-synthesized "
+                "combining EMA, ARIMA, and lead-lag analyses into a Gemini-synthesized "
                 "executive briefing. Korean-language output.",
     fn=_generate_disease_forecast_report,
 ))
