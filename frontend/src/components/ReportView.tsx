@@ -87,20 +87,47 @@ const TYPE_META: Record<ReportType, { label: string; color: string; cadence: str
 const TYPE_ORDER: Array<'all' | ReportType> = ['all', 'final', 'kdca', 'osint'];
 
 const SIGNAL_TERMS = [
-  { id: 'signal-kdca', label: 'KDCA official surveillance', terms: ['KDCA', '공식 감시', 'baseline', '감시자료'] },
-  { id: 'signal-trends', label: '검색 트렌드', terms: ['Google Trends', '검색 트렌드', 'pneumonia', 'flu', '검색량'] },
+  { id: 'signal-kdca', label: 'KDCA 공식 감시', terms: ['KDCA', '공식 감시', 'baseline', '감시자료', '질병관리청'] },
+  { id: 'signal-ilisari', label: '표본감시 ILI/SARI', terms: ['ILI', 'SARI', 'ARI', '표본감시', '외래환자'] },
+  { id: 'signal-trends', label: '검색 트렌드', terms: ['Google Trends', '검색 트렌드', '검색량', 'DataLab', '트렌드'] },
   { id: 'signal-news', label: '국내 뉴스', terms: ['뉴스', '보도', '언론', '기사'] },
-  { id: 'signal-global', label: '국제/WHO 맥락', terms: ['글로벌', '국제', 'WHO', '해외', '유입'] },
-  { id: 'signal-wastewater', label: '폐하수 보조', terms: ['폐하수', '폐수', 'wastewater'] },
+  { id: 'signal-global', label: '국제/WHO 맥락', terms: ['글로벌', '국제', 'WHO', '해외', '유입', 'outbreak'] },
+  { id: 'signal-wastewater', label: '폐하수 감시', terms: ['폐하수', '폐수', 'wastewater', '하수'] },
+  { id: 'signal-weather', label: '기상 위험도', terms: ['기상', '기온', '한파', '건조', 'favorability'] },
 ];
 
 const TOPIC_TERMS = [
-  { id: 'topic-covid', label: 'COVID-19/변이', terms: ['COVID-19', '코로나', '변이', 'coronavirus'] },
-  { id: 'topic-flu', label: 'Influenza/flu', terms: ['influenza', 'flu', '인플루엔자', '독감'] },
+  { id: 'topic-covid', label: 'COVID-19/변이', terms: ['COVID-19', '코로나', '변이', 'coronavirus', 'covid'] },
+  { id: 'topic-flu', label: 'Influenza/독감', terms: ['influenza', 'flu', '인플루엔자', '독감'] },
   { id: 'topic-pneumonia', label: '폐렴/pneumonia', terms: ['폐렴', 'pneumonia'] },
   { id: 'topic-rsv', label: 'RSV', terms: ['RSV', '호흡기세포융합'] },
+  { id: 'topic-adeno', label: '아데노/hMPV', terms: ['아데노', 'adenovirus', 'hMPV', '메타뉴모'] },
   { id: 'topic-measles', label: '홍역/measles', terms: ['홍역', 'measles'] },
-  { id: 'topic-quality', label: 'freshness/coverage', terms: ['freshness', 'coverage', 'data quality', '신뢰도'] },
+  { id: 'topic-pertussis', label: '백일해/pertussis', terms: ['백일해', 'pertussis'] },
+  { id: 'topic-mpox', label: 'mpox/엠폭스', terms: ['mpox', '엠폭스', '원숭이두창'] },
+  { id: 'topic-symptom', label: '발열·호흡기증상', terms: ['발열', '기침', '인후통', '호흡기 증상', '증상'] },
+  { id: 'topic-quality', label: 'freshness/coverage', terms: ['freshness', 'coverage', 'data quality', '신뢰도', '최신성'] },
+];
+
+// 17 시도 — regions become hub nodes so the report ontology reads like a dense mesh.
+const REGION_TERMS = [
+  { id: 'region-seoul', label: '서울', terms: ['서울', 'seoul'] },
+  { id: 'region-busan', label: '부산', terms: ['부산', 'busan'] },
+  { id: 'region-daegu', label: '대구', terms: ['대구', 'daegu'] },
+  { id: 'region-incheon', label: '인천', terms: ['인천', 'incheon'] },
+  { id: 'region-gwangju', label: '광주', terms: ['광주', 'gwangju'] },
+  { id: 'region-daejeon', label: '대전', terms: ['대전', 'daejeon'] },
+  { id: 'region-ulsan', label: '울산', terms: ['울산', 'ulsan'] },
+  { id: 'region-sejong', label: '세종', terms: ['세종', 'sejong'] },
+  { id: 'region-gyeonggi', label: '경기', terms: ['경기', 'gyeonggi'] },
+  { id: 'region-gangwon', label: '강원', terms: ['강원', 'gangwon'] },
+  { id: 'region-chungbuk', label: '충북', terms: ['충북', '충청북', 'chungbuk'] },
+  { id: 'region-chungnam', label: '충남', terms: ['충남', '충청남', 'chungnam'] },
+  { id: 'region-jeonbuk', label: '전북', terms: ['전북', '전라북', 'jeonbuk'] },
+  { id: 'region-jeonnam', label: '전남', terms: ['전남', '전라남', 'jeonnam'] },
+  { id: 'region-gyeongbuk', label: '경북', terms: ['경북', '경상북', 'gyeongbuk'] },
+  { id: 'region-gyeongnam', label: '경남', terms: ['경남', '경상남', 'gyeongnam'] },
+  { id: 'region-jeju', label: '제주', terms: ['제주', 'jeju'] },
 ];
 
 function titleForReport(item: ReportItem) {
@@ -168,103 +195,71 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
   const nodes: RelationshipNode[] = [];
   const edges: RelationshipEdge[] = [];
 
-  // ── Detect signals (sources)
-  const detectedSignals = SIGNAL_TERMS
-    .map((signal) => ({ ...signal, count: termCount(text, signal.terms) }))
-    .filter((signal) => signal.count > 0)
-    .sort((a, b) => b.count - a.count);
+  // ── Unified entity detection: signals (sources) + topics (diseases) + 시도 regions.
+  // Regions act as hubs, so the report ontology reads like a dense Obsidian-style mesh
+  // rather than a sparse bipartite fan.
+  type Ent = { id: string; label: string; terms: string[]; kind: RelationshipKind; count: number };
+  const detect = (list: { id: string; label: string; terms: string[] }[], kind: RelationshipKind): Ent[] =>
+    list.map((e) => ({ ...e, kind, count: termCount(text, e.terms) }))
+      .filter((e) => e.count > 0)
+      .sort((a, b) => b.count - a.count);
+  const detectedSignals = detect(SIGNAL_TERMS, 'signal');
+  const detectedTopics = detect(TOPIC_TERMS, 'topic');
+  const detectedRegions = detect(REGION_TERMS, 'region');
+  const entities: Ent[] = [...detectedSignals, ...detectedTopics, ...detectedRegions];
 
-  // ── Detect topics (diseases/keywords)
-  const detectedTopics = TOPIC_TERMS
-    .map((topic) => ({ ...topic, count: termCount(text, topic.terms) }))
-    .filter((topic) => topic.count > 0)
-    .sort((a, b) => b.count - a.count);
+  const maxMentions = Math.max(1, ...entities.map((e) => e.count));
 
-  const maxMentions = Math.max(
-    1,
-    ...detectedSignals.map((s) => s.count),
-    ...detectedTopics.map((t) => t.count),
-  );
-
-  /** Place nodes on a half-circle arc.
-   *  side: 'left'   → angles from 110° to 250° (counter-clockwise around left)
-   *  side: 'right'  → angles from -70° to  70° (right hemisphere)
-   *  Heaviest mention count gets the largest arc radius (pushed slightly inward
-   *  toward the empty center so important nodes cluster). Light nodes pushed
-   *  further out so the arc fans like a sunburst. */
-  function arcCoord(side: 'left' | 'right', index: number, total: number, weight: number) {
-    const baseRadius = 285;
-    const radiusJitter = 18 - weight * 22;       // heavier → slightly smaller r → closer to centre
-    const r = baseRadius + radiusJitter;
-    const startDeg = side === 'left' ? 110 : -70;
-    const endDeg = side === 'left' ? 250 : 70;
-    const span = endDeg - startDeg;
-    const t = total <= 1 ? 0.5 : index / (total - 1);
-    const angle = ((startDeg + span * t) * Math.PI) / 180;
-    const x = CX + Math.cos(angle) * r;
-    const y = CY + Math.sin(angle) * (r * 0.95);  // slight vertical compression so it fits 720px
-    return { x: Math.max(120, Math.min(1080, x)), y: Math.max(70, Math.min(VIEW_H - 70, y)) };
-  }
-
-  detectedSignals.forEach((signal, index) => {
-    const weight = Math.max(0.18, signal.count / maxMentions);
-    const { x, y } = arcCoord('left', index, detectedSignals.length, weight);
+  // Seed positions on a ring (heavier → nearer the centre so hubs cluster); the force
+  // simulation then re-lays everything into the web.
+  entities.forEach((e, index) => {
+    const angle = (index / Math.max(1, entities.length)) * Math.PI * 2;
+    const r = 210 + (1 - e.count / maxMentions) * 95;
     nodes.push({
-      id: signal.id,
-      label: signal.label,
-      kind: 'signal',
-      x,
-      y,
-      weight,
-      subtitle: `${signal.count}회 언급`,
+      id: e.id,
+      label: e.label,
+      kind: e.kind,
+      x: Math.max(120, Math.min(1080, CX + Math.cos(angle) * r)),
+      y: Math.max(70, Math.min(VIEW_H - 70, CY + Math.sin(angle) * r * 0.9)),
+      weight: Math.max(0.18, e.count / maxMentions),
+      subtitle: `${e.count}회 언급`,
     });
   });
 
-  detectedTopics.forEach((topic, index) => {
-    const weight = Math.max(0.18, topic.count / maxMentions);
-    const { x, y } = arcCoord('right', index, detectedTopics.length, weight);
-    nodes.push({
-      id: topic.id,
-      label: topic.label,
-      kind: 'topic',
-      x,
-      y,
-      weight,
-      subtitle: `${topic.count}회 언급`,
-    });
+  // ── Dense co-occurrence mesh: link ANY two entities that share a paragraph.
+  // Precompute per-entity paragraph presence, then connect every co-occurring pair.
+  const presence = entities.map((e) => {
+    const lower = e.terms.map((t) => t.toLowerCase());
+    return paragraphs.map((p) => lower.some((t) => p.includes(t)));
   });
-
-  // ── Co-occurrence: signal × topic edges (which signal mentions which disease)
-  // Edge strength = number of paragraphs containing both terms.
-  detectedSignals.forEach((signal) => {
-    const sigTerms = signal.terms.map((t) => t.toLowerCase());
-    detectedTopics.forEach((topic) => {
-      const topicTerms = topic.terms.map((t) => t.toLowerCase());
+  for (let a = 0; a < entities.length; a += 1) {
+    for (let b = a + 1; b < entities.length; b += 1) {
       let coOccur = 0;
-      for (const para of paragraphs) {
-        const hasSig = sigTerms.some((t) => para.includes(t));
-        const hasTopic = topicTerms.some((t) => para.includes(t));
-        if (hasSig && hasTopic) coOccur += 1;
+      for (let p = 0; p < paragraphs.length; p += 1) {
+        if (presence[a][p] && presence[b][p]) coOccur += 1;
       }
       if (coOccur > 0) {
+        const cross = entities[a].kind !== entities[b].kind;
         edges.push({
-          from: signal.id,
-          to: topic.id,
+          from: entities[a].id,
+          to: entities[b].id,
           label: `${coOccur}회 동시 등장`,
-          strength: Math.min(1, 0.3 + coOccur * 0.18),
-          tone: 'primary',
+          strength: Math.min(1, 0.22 + coOccur * 0.16),
+          tone: cross ? 'primary' : (entities[a].kind as RelationshipEdge['tone']),
         });
       }
-    });
-  });
+    }
+  }
 
-  // Fallback edges so isolated signals/topics still reach the other side
-  // (use a thin "association" edge between every detected signal and the
-  // strongest topic, and vice versa).
-  if (edges.length === 0 && detectedSignals.length && detectedTopics.length) {
-    const topTopicId = detectedTopics[0].id;
-    detectedSignals.forEach((signal) => {
-      edges.push({ from: signal.id, to: topTopicId, label: 'association', strength: 0.35, tone: 'signal' });
+  // Attach any isolated node to the strongest entity so nothing floats free.
+  const linked = new Set<string>();
+  edges.forEach((e) => { linked.add(e.from); linked.add(e.to); });
+  const hub = entities[0];
+  if (hub) {
+    entities.forEach((e) => {
+      if (e.id !== hub.id && !linked.has(e.id)) {
+        edges.push({ from: e.id, to: hub.id, label: 'association', strength: 0.3, tone: 'signal' });
+      }
     });
   }
 
@@ -278,9 +273,13 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
   if (topSignal) {
     insight.push(`주요 신호원: ${topSignal.label} (${topSignal.count}회 등장).`);
   }
-  if (detectedTopics.length && detectedSignals.length) {
-    insight.push(`노드가 클수록 보고서에서 더 자주 언급된 신호원 또는 질병/키워드입니다.`);
-    insight.push(`신호원-질병 연결선이 굵을수록 같은 문단 안에서 함께 등장한 빈도가 높다는 뜻입니다.`);
+  const topRegion = detectedRegions[0];
+  if (topRegion) {
+    insight.push(`가장 자주 언급된 지역: ${topRegion.label} (${topRegion.count}회) — 지역 시도(노랑)가 신호원·질병을 잇는 허브로 나타납니다.`);
+  }
+  if (entities.length) {
+    insight.push(`노드가 클수록 보고서에서 더 자주 언급된 신호원·질병·지역입니다.`);
+    insight.push(`연결선이 굵을수록 같은 문단 안에서 함께 등장한 빈도가 높다는 뜻이며(모든 유형 간), 촘촘할수록 신호가 여러 지역·질병에 걸쳐 있다는 의미입니다.`);
   }
   if (!detectedTopics.length) insight.push('질병/키워드: 명시적 언급이 적게 감지되었습니다.');
   if (!detectedSignals.length) insight.push('신호원: 명시된 source 용어가 부족합니다.');
@@ -377,8 +376,8 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
     const maxMentions = Math.max(1, ...figure.nodes.map((n) => Number(n.subtitle?.match(/(\d+)/)?.[1]) || 1));
     const nodes = figure.nodes.map((n) => {
       const mentions = Number(n.subtitle?.match(/(\d+)/)?.[1]) || 1;
-      const val = 4 + (mentions / maxMentions) * 26;       // 4..30
-      const color = n.kind === 'signal' ? '#34d399' : '#c084fc';
+      const val = 3 + (mentions / maxMentions) * 21;       // 3..24 — smaller for the denser mesh
+      const color = n.kind === 'signal' ? '#34d399' : n.kind === 'region' ? '#fbbf24' : '#c084fc';
       return {
         id: n.id,
         label: n.label,
@@ -402,11 +401,11 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
     try {
       const charge = fgRef.current.d3Force('charge');
       if (charge) {
-        charge.strength(-160);
-        if (typeof charge.distanceMax === 'function') charge.distanceMax(220);
+        charge.strength(-135);
+        if (typeof charge.distanceMax === 'function') charge.distanceMax(280);
       }
       const link = fgRef.current.d3Force('link');
-      if (link) link.distance(80);
+      if (link) link.distance(58);  // tighter links → denser web
     } catch { /* ignore */ }
     const t = setTimeout(() => { try { fgRef.current?.zoomToFit(400, 60); } catch { /* ignore */ } }, 700);
     return () => clearTimeout(t);
@@ -500,11 +499,11 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
       <div className="report-relationship-header">
         <div>
           <span>Report relationship figure</span>
-          <h3>신호원 ↔ 질병/키워드 ontology</h3>
+          <h3>신호원 ↔ 질병/키워드 ↔ 지역 ontology</h3>
           <p>
-            보고서 본문에서 추출한 <strong>신호원(녹색)</strong>과 <strong>질병/키워드(보라)</strong> 를
-            force-directed graph로 표시합니다. 노드 크기는 언급횟수, 연결선은 같은 문단 안 동시 등장.
-            노드를 클릭하면 연결된 항목이 우측 패널에 나타납니다.
+            보고서 본문에서 추출한 <strong>신호원(녹색)</strong>·<strong>질병/키워드(보라)</strong>·
+            <strong>지역 시도(노랑)</strong> 를 force-directed graph로 표시합니다. 노드 크기는 언급횟수,
+            연결선은 같은 문단 안 동시 등장(모든 유형 간). 노드를 클릭하면 연결된 항목이 우측 패널에 나타납니다.
           </p>
         </div>
         <strong>force-directed ontology</strong>
@@ -568,7 +567,7 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
           <div className="ontology-detail-panel">
             <div className="ontology-detail-header">
               <div>
-                <span className="ontology-detail-kicker">{selectedDetail.node.kind === 'signal' ? 'SIGNAL SOURCE · 신호원' : 'DISEASE / KEYWORD · 질병/키워드'}</span>
+                <span className="ontology-detail-kicker">{selectedDetail.node.kind === 'signal' ? 'SIGNAL SOURCE · 신호원' : selectedDetail.node.kind === 'region' ? 'REGION · 지역 시도' : 'DISEASE / KEYWORD · 질병/키워드'}</span>
                 <h4>{selectedDetail.node.label}</h4>
                 <span className="ontology-detail-mentions">{selectedDetail.node.mentions}회 언급</span>
               </div>
@@ -604,6 +603,7 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
           <div className="report-relationship-legend">
             <span><i className="rel-dot signal" /> 신호원 (녹색)</span>
             <span><i className="rel-dot topic" /> 질병/키워드 (보라)</span>
+            <span><i className="rel-dot region" /> 지역 시도 (노랑)</span>
             <span><i className="rel-dot size" /> 노드 크기 = 언급횟수</span>
             <span><i className="rel-edge-sample" /> 동시 등장 빈도</span>
           </div>

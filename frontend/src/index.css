@@ -6964,7 +6964,7 @@ a.news-title:hover { color: var(--accent); text-decoration: underline; }
   display: inline-block;
 }
 
-.rel-dot.region { background: #ff7a5c; }
+.rel-dot.region { background: #fbbf24; }
 .rel-dot.signal { background: #34d399; }
 .rel-dot.topic { background: #c084fc; }
 .rel-dot.action { background: #f59e42; }
