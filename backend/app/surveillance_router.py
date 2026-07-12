@@ -105,29 +105,36 @@ async def parse_survey(files: list[UploadFile] = File(...),
     towers = _parse_towers(cooling_towers)
 
     def work() -> dict:
+        # Parse + geocode (slow, network) OUTSIDE the lock; hold _lock only for the
+        # read-append-save of the shared case file so concurrent admin ops don't serialize
+        # behind Gemini/geocoder calls.
+        parsed_new: list[tuple[str, dict]] = []
+        unreadable_files: list[str] = []
+        for up in _read:
+            fname, content = up
+            text = _extract_text(fname, content)
+            if not text.strip():
+                unreadable_files.append(fname)
+                continue
+            parsed = LL.parse_survey_text(text)
+            g = LL.geocode(parsed.get("presumed_area") or "")
+            parsed["_loc"] = [round(g[0], 6), round(g[1], 6)] if g else None
+            parsed["_fname"] = fname
+            parsed_new.append((fname, parsed))
         with _lock:
             cases = _load_cases()
             base = len(cases)
-            unreadable_files: list[str] = []
-            for idx, up in enumerate(_read):
-                fname, content = up
-                text = _extract_text(fname, content)
-                if not text.strip():
-                    unreadable_files.append(fname)
-                    continue
-                parsed = LL.parse_survey_text(text)
-                loc = None
-                g = LL.geocode(parsed.get("presumed_area") or "")
-                if g:
-                    loc = [round(g[0], 6), round(g[1], 6)]
-                parsed.update({"id": base + idx + 1, "source_file": fname, "location": loc})
+            for idx, (_fn, parsed) in enumerate(parsed_new):
+                parsed.update({"id": base + idx + 1, "source_file": parsed.pop("_fname"),
+                               "location": parsed.pop("_loc")})
                 cases.append(parsed)
             _save_cases(cases)
-            result = _pipeline(cases, towers)
-            result["narrative"] = _example_narrative(result)
-            result["report_draft"] = LL.build_report_draft(result, use_llm=True)
-            result["unreadable_files"] = unreadable_files
-            return result
+            snapshot = list(cases)
+        result = _pipeline(snapshot, towers)          # heavy compute outside the lock
+        result["narrative"] = _example_narrative(result)
+        result["report_draft"] = LL.build_report_draft(result, use_llm=True)  # Gemini outside the lock
+        result["unreadable_files"] = unreadable_files
+        return result
 
     # Read file bytes in the async context, then run the CPU/IO pipeline off-thread.
     _read = [(up.filename or f"survey_{i}.txt", await up.read()) for i, up in enumerate(files)]

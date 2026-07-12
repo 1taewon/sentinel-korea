@@ -87,8 +87,7 @@ export default function SurveillanceView() {
             <div className="surveillance-detail-h">참고 · References</div>
             <ul className="surveillance-refs">
               <li>
-                냉각탑 = 위성 판독 좌표(공개 등록부 없음, <strong>자동 탐지 아님</strong>). 자동 탐지 참고:
-                <em> TowerScout</em> — 항공·위성 영상 기반 냉각탑 탐지 오픈소스(CC BY-NC-SA 4.0), 미국
+                <em>TowerScout</em> 항공·위성 영상 기반 냉각탑 탐지 오픈소스(CC BY-NC-SA 4.0), 미국 CDC
                 레지오넬라 발생 조사 활용.
               </li>
               <li>

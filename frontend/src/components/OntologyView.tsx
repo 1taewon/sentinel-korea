@@ -785,9 +785,9 @@ function ScenarioSpreadMap({ regions, primaryZones, entryLabel, transmissionEdge
       </svg>
       <div className="scenario-spread-legend">
         <span><i className="ssl-origin" /> 유입 거점: {entryLabel}</span>
-        <span><i className="ssl-edge" style={{ borderTopStyle: 'solid', borderTopColor: 'rgba(255,120,60,0.9)' }} /> 실선(주황) — 고속도로 관측 OD 기반 유입 노출</span>
-        <span><i className="ssl-edge" style={{ borderTopStyle: 'solid', borderTopColor: 'rgba(168,85,247,0.95)' }} /> 실선(보라) — SRT 철도 OD 기반 유입 노출</span>
-        <span><i className="ssl-edge" style={{ borderTopStyle: 'dashed', borderTopColor: 'rgba(148,163,184,0.95)' }} /> 점선(회색) — 중력장 모형 보간(미관측 구간·공항 접근)</span>
+        <span><i className="ssl-edge" style={{ borderTopStyle: 'solid', borderTopColor: 'rgba(255,120,60,0.9)' }} /> 실선(주황) — 실측 이동량(교통) 기반 유입</span>
+        <span><i className="ssl-edge" style={{ borderTopStyle: 'solid', borderTopColor: 'rgba(168,85,247,0.95)' }} /> 실선(보라) — 실측 이동량(철도) 기반 유입</span>
+        <span><i className="ssl-edge" style={{ borderTopStyle: 'dashed', borderTopColor: 'rgba(148,163,184,0.95)' }} /> 점선(회색) — 중력장 모델 기반 유입</span>
         <span><i className="ssl-node" style={{ background: '#dc2626' }} /> 시도 노드(색 = 누적 사망: 회색 0 → 붉을수록↑, 크기 = 해당 일 신규 감염)</span>
       </div>
     </div>
@@ -1205,8 +1205,8 @@ function NationalAnalysisPanel({ result }: { result: NationalOutbreakResult }) {
         </div>
       )}
 
-      {/* Data-source & reflection panel — runtime-derived modal status for this run */}
-      {result.data_sources && <DataSourcePanel ds={result.data_sources} />}
+      {/* Data-source & reflection panel — hidden for now (user request) */}
+      {result.data_sources && <div style={{ display: 'none' }}><DataSourcePanel ds={result.data_sources} /></div>}
 
       {/* Epidemic curve + sensitivity — side by side on wide screens */}
       {((s?.national_curve && s.national_curve.length > 0) || (s?.sensitivity && s.sensitivity.length > 0)) && (

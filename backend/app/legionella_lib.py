@@ -130,7 +130,10 @@ def parse_survey_text(text: str, use_llm: bool = True) -> dict:
     """Extract G-6/Z fields. Gemini if GEMINI_API_KEY set, else regex fallback.
     Never extracts/returns 성명·주민번호·연락처. Pass use_llm=False for a deterministic,
     offline parse (used by the 예시 분석 demo so it is reproducible across deploys)."""
-    clean = strip_pii(text or "")
+    # Normalise newlines first: uploaded files decode to CRLF, which would break the
+    # line-anchored regexes (the example path works only because read_text() normalises).
+    text = (text or "").replace("\r\n", "\n").replace("\r", "\n")
+    clean = strip_pii(text)
     key = os.getenv("GEMINI_API_KEY", "").strip()
     if use_llm and key:
         try:

@@ -254,12 +254,16 @@ export default function LegionellaView() {
         const fd = new FormData();
         stagedFiles.forEach((f) => fd.append('files', f));
         fd.append('cooling_towers', JSON.stringify(towers.current));
-        d = await (await fetch(`${API_BASE}/surveillance/parse-survey`, {
+        const r = await fetch(`${API_BASE}/surveillance/parse-survey`, {
           method: 'POST', headers: await adminHeaders(), body: fd,
-        })).json();
+        });
+        if (!r.ok) throw new Error(`parse-survey ${r.status}`);  // don't render an error body as a result
+        d = await r.json();
         setStagedFiles([]);  // consumed — avoid re-uploading (which would append duplicates)
       } else {
-        d = await (await fetch(`${API_BASE}/surveillance/example`)).json();
+        const r = await fetch(`${API_BASE}/surveillance/example`);
+        if (!r.ok) throw new Error(`example ${r.status}`);
+        d = await r.json();
       }
       setExResult(d);
       if (d.unreadable_files?.length) {
@@ -267,6 +271,9 @@ export default function LegionellaView() {
       }
       applyInvestigation(d, true);
     } catch {
+      // Failed run: don't leave a stale/empty 분석 결과 tab or prior-run markers on the map.
+      caseLayer.current.clearLayers(); hotspotLayer.current.clearLayers();
+      setPlan([]); setExResult(null); setMode('map');
       setUploadMsg('분석 결과를 불러오지 못했습니다. 파일 형식과 관리자 로그인 상태를 확인해 주세요.');
     }
     setExLoading(false);
