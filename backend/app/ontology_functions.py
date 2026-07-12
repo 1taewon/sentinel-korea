@@ -866,7 +866,7 @@ def _forecast_disease_sarimax(inputs: dict) -> dict:
                     "selected_mae": candidate_mae[selected_key],
                     "candidate_mae": candidate_mae,
                 },
-                "description_kr": "짧은 주간 시계열에는 계절 SARIMAX를 과적합하지 않고, log1p 변환 ARIMA 후보를 최근 시점 롤링 검증 MAE로 선택합니다.",
+                "description_kr": "짧은 주간 시계열에는 무거운 계절 모형을 과적합하지 않고, log1p 변환 ARIMA 후보를 최근 시점 롤링 검증 MAE로 선택합니다.",
             },
             "diagnostics": {
                 "aic": round(float(fitted.aic), 1), "bic": round(float(fitted.bic), 1),
@@ -2703,7 +2703,7 @@ def _generate_forecast_report(inputs: dict) -> dict:
 하나의 JSON object로 응답하세요:
 - "executive_summary": 2-3문장 요약 (정책결정자용, 현재 등급 + 향후 전망)
 - "risk_assessment": 현재 위험 수준 평가 (1-2문장)
-- "forecast_consensus": EMA와 SARIMAX 결과 비교 해석 (1-2문장, 두 모델이 일치하는지 발산하는지)
+- "forecast_consensus": EMA와 ARIMA 결과 비교 해석 (1-2문장, 두 모델이 일치하는지 발산하는지)
 - "early_warning": 조기경보 신호 해석 (1문장)
 - "action_items": 즉시 조치사항 3개 (각 1문장, 배열)
 - "outlook": 향후 4주 전망 한 줄
@@ -2819,7 +2819,7 @@ def _generate_disease_forecast_report(inputs: dict) -> dict:
 하나의 JSON object로 응답하세요:
 - "executive_summary": 2-3문장 요약 (질병 현재 추세 + 향후 4주 전망)
 - "risk_assessment": 현재 위험 수준 평가 (1-2문장, 이전 대비 증감 포함)
-- "forecast_consensus": EMA와 SARIMAX 결과 비교 해석 (두 모델이 일치/발산 여부 + 어떤 모델을 더 신뢰할지)
+- "forecast_consensus": EMA와 ARIMA 결과 비교 해석 (두 모델이 일치/발산 여부 + 어떤 모델을 더 신뢰할지)
 - "early_warning": 조기경보 신호 해석 (1문장)
 - "action_items": 해당 질병 관련 권장 조치사항 3개 (각 1문장, 배열)
 - "outlook": 향후 4주 전망 한 줄

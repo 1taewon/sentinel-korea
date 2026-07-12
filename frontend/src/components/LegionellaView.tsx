@@ -363,14 +363,24 @@ export default function LegionellaView() {
             </div>
             {stagedFiles.length > 0 && <div className="legionella-upmsg">업로드 대기 {stagedFiles.length}건</div>}
             <button type="button" className="legionella-btn legionella-analyze" onClick={runAnalysis} disabled={exLoading}>
-              {exLoading ? '분석 중…' : isAdmin && stagedFiles.length ? `실제 조사서 분석 (${stagedFiles.length}건)` : '분석 실행'}
+              {exLoading ? '분석 중…' : isAdmin && stagedFiles.length ? `실제 조사서 분석 (${stagedFiles.length}건)` : '분석 실행 (예시 역학조사서 4건)'}
             </button>
+            {!stagedFiles.length && (
+              <div className="legionella-preload">
+                <div className="legionella-hint">아래 예시 역학조사서 4건이 업로드되어 있습니다 · '분석 실행'을 누르면 분석됩니다 (클릭해 원문 보기)</div>
+                <div className="legionella-example-survey-actions">
+                  {EXAMPLE_SURVEYS.map((survey) => (
+                    <button type="button" key={survey.file} className="legionella-example-survey-btn" onClick={() => previewExample(survey)}>{survey.label}</button>
+                  ))}
+                </div>
+              </div>
+            )}
             {isAdmin && <button type="button" className="legionella-btn ghost legionella-reset" onClick={resetCases} disabled={exLoading}>분석 결과 초기화</button>}
             {uploadMsg && <div className="legionella-upmsg">{uploadMsg}</div>}
           </div>
 
-          <details className="legionella-upload-guide">
-            <summary>업로드 양식 · AI 분석 안내</summary>
+          <div className="legionella-upload-guide is-open">
+            <div className="legionella-upload-guide-title">업로드 양식 · AI 분석 안내</div>
             <div className="legionella-upload-guide-body">
               <p><strong>권장 양식</strong> 질병관리청 레지오넬라증 역학조사서 또는 같은 항목을 담은 비식별 문서</p>
               <ul>
@@ -381,7 +391,7 @@ export default function LegionellaView() {
               <p><strong>AI 분석</strong> 사실 항목을 구조화하고, 노출 시기·근접도·시설 가중치를 결합해 추정 감염경로, 특이사항, 종합의견과 환경조사 우선순위 초안을 만듭니다.</p>
               <p className="legionella-upload-guide-note">이미지로만 된 스캔 PDF는 OCR 후 업로드하세요. AI 결과는 초안이며 확정 감염원 판단은 채수·배양 및 역학조사관 검토가 필요합니다.</p>
             </div>
-          </details>
+          </div>
 
           {plan.length > 0 && (
             <div className="legionella-group legionella-priority-panel">

@@ -41,6 +41,9 @@ export default function StatisticsView({ koreaAlerts, onScoringApply, onRegionCl
         <p className="stats-regional-note">
           시/도별 지도 위험도는 하수감시 호흡기 병원체(COVID-19, Influenza) 데이터에 기반합니다. 다른 표본감시 지표(ARI, ILI, SARI)는 전국 수준 종합 신호로만 활용됩니다.
         </p>
+        <p className="stats-regional-note">
+          아래에는 전수감시 감염병의 <strong>통계적 이상징후 탐지(Farrington Flexible)</strong>도 함께 제공합니다 — 과거 같은 시기의 기저선과 계절성을 반영한 기대범위를 넘어서는 관측값(급증·aberration)을 질환별로 표시합니다.
+        </p>
       </section>
 
       <div className="stats-grid">
