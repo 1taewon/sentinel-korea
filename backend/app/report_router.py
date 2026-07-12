@@ -240,7 +240,7 @@ def _build_prompt(snapshot, prev_snapshot, korea_news, global_signals, trends, t
 ### Google Trends
 {chr(10).join(trend_lines) if trend_lines else '없음'}
 
-**형식(필수):** 마크다운 표(파이프 `|`로 구분하는 table)를 사용하지 마세요 — 뷰어가 표를 렌더링하지 못해 깨져 보입니다. `- ` 개조식 목록이나 문장으로 작성하세요.
+**형식(필수):** 마크다운 표(파이프 `|`)나 ASCII 다이어그램(화살표 ▼▲→, 선·박스 그리기)을 절대 사용하지 마세요 — 뷰어가 렌더링하지 못해 깨져 보입니다. 나열은 `- ` 개조식이나 문장으로 작성하고, "Signal relationship figure" 섹션은 그림을 그리지 말고 신호·질병·지역 관계를 2~3문장 산문으로만 설명하세요(관계 시각화는 별도 그래프로 표시됩니다).
 다음 구조를 반드시 지켜 한국어 보고서를 작성하세요. 첫 네 섹션 제목은 영어 그대로 사용하세요:
 
 # Sentinel Korea 주간 호흡기 감시 보고서
@@ -297,7 +297,7 @@ def _build_osint_prompt(korea_news, global_signals, trends, target_date) -> str:
 ### Google Trends (한국)
 {chr(10).join(trend_lines) if trend_lines else '없음'}
 
-**형식(필수):** 마크다운 표(파이프 `|`로 구분하는 table)를 사용하지 마세요 — 뷰어가 표를 렌더링하지 못해 깨져 보입니다. `- ` 개조식 목록이나 문장으로 작성하세요.
+**형식(필수):** 마크다운 표(파이프 `|`)나 ASCII 다이어그램(화살표 ▼▲→, 선·박스 그리기)을 절대 사용하지 마세요 — 뷰어가 렌더링하지 못해 깨져 보입니다. 나열은 `- ` 개조식이나 문장으로 작성하고, "Signal relationship figure" 섹션은 그림을 그리지 말고 신호·질병·지역 관계를 2~3문장 산문으로만 설명하세요(관계 시각화는 별도 그래프로 표시됩니다).
 다음 구조로 한국어 리포트를 작성하세요:
 
 # Sentinel Korea — OSINT 일간 리포트
@@ -643,7 +643,7 @@ def _build_final_prompt(snapshot, prev_snapshot, korea_news, global_signals, tre
 다음 구조를 반드시 지켜 한국어 **통합 리포트**를 작성하세요. 첫 네 섹션 제목은 영어 그대로 사용하고, OSINT와 KDCA 신호가 수렴하는지/충돌하는지 명시하세요.
 **중요:** 위 "한국 관련성 ≥70% outbreak" 섹션은 모든 outbreak source(WHO DON / CDC / ECDC / HealthMap / Gemini / Google News)에서 자동 점수화로 선정된 high-tier imported-risk 후보입니다. **"Why it matters"** 섹션에서 이 항목들을 반드시 언급하고, 한국 입국 가능성·항공 노선·환자 표현형 측면에서 의미를 풀어 쓰세요. 항목이 비어 있으면 "이번 주 한국 관련성 70%를 넘는 해외 신호 없음"이라고 명시하세요.
 **중요:** 위 "Forecasting 분석 결과"가 있을 경우, **"## Forecasting Outlook (BETA)"** 섹션을 반드시 포함하세요. 각 지역의 EMA/ARIMA 4주 전망을 해석하고, 향후 위험이 상승/하강/유지 추세인지 설명하세요. Lead-Lag 결과가 있으면 어떤 신호가 선행 지표인지 해석하세요. 이 예측은 실험적(BETA)임을 반드시 고지하세요.
-**형식(필수):** 마크다운 표(파이프 `|`로 구분하는 table)를 절대 사용하지 마세요 — 리포트 뷰어가 표를 렌더링하지 못해 `|` 문자가 그대로 나와 깨져 보입니다. 나열이 필요하면 `- ` 개조식 목록이나 문장으로 작성하세요.
+**형식(필수):** 마크다운 표(파이프 `|`)나 ASCII 다이어그램(화살표 ▼▲→, 선·박스 그리기)을 절대 사용하지 마세요 — 리포트 뷰어가 렌더링하지 못해 문자가 그대로 나와 깨져 보입니다. 나열은 `- ` 개조식이나 문장으로 작성하고, "Signal relationship figure" 섹션은 그림을 그리지 말고 신호·질병·지역 관계를 2~3문장 산문으로만 설명하세요(관계 시각화는 별도 그래프로 표시됩니다).
 
 # Sentinel Korea — 통합 최종 리포트 (FINAL)
 ## Period: {epiweek} ({target_date})
@@ -995,8 +995,7 @@ def _build_aberration_section() -> str:
         lines.append(
             "> † 기대값이 최근 관측 수준의 3배를 초과: 해당 질병의 baseline(과거 5년)이 "
             "대규모 다년 유행(예: 2024–2025 백일해 대유행)을 포함해 기대·상한이 상향 적응된 상태입니다. "
-            "이는 Farrington 계열의 알려진 한계로, 유행 종료 후 기대값이 실제보다 높게 유지됩니다. "
-            "판정(경보 여부)에는 영향이 없으며 상세는 `docs/METHODOLOGY_VALIDATION.md` 참조."
+            "이는 Farrington 계열의 알려진 한계로, 유행 종료 후 기대값이 실제보다 높게 유지됩니다."
         )
     return "\n".join(lines)
 
