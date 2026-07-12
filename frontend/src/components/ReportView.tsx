@@ -1,8 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
+import { forceX as d3ForceX, forceY as d3ForceY, forceCollide as d3ForceCollide } from 'd3-force';
 import { useAuth } from '../contexts/AuthContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+// Triangle clustering for the report ontology: 신호원 top-left, 질병/키워드 top-right,
+// 지역 bottom-centre. Centred on the origin so the force-graph's own centering stays happy.
+const CLUSTER_CENTERS: Record<string, { x: number; y: number }> = {
+  signal: { x: -300, y: -150 },
+  topic: { x: 300, y: -150 },
+  region: { x: 0, y: 250 },
+};
 
 type ReportType = 'osint' | 'kdca' | 'final';
 
@@ -182,16 +191,9 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
   const text = markdown || '';
   const paragraphs = text.split(/\n{2,}/).map((p) => p.toLowerCase());
 
-  // Cliverad-style interactive ontology — no central hub, no rigid left/right
-  // columns. Signals occupy the left half-circle and topics the right half-circle
-  // around an empty negative-space center, with stronger nodes pulled toward the
-  // middle so the heaviest signal-disease relationships visually cluster. Edges
-  // are curved bezier paths that cross the empty middle, producing the web-like
-  // ontology look.
-  const CX = 600;
-  const CY = 360;
-  const VIEW_H = 720;
-
+  // Triangle-clustered ontology: signals / diseases / regions each form their own group
+  // (see CLUSTER_CENTERS + the clustering forces), so the web reads as three linked
+  // clusters rather than one scattered ring.
   const nodes: RelationshipNode[] = [];
   const edges: RelationshipEdge[] = [];
 
@@ -210,17 +212,24 @@ function buildRelationshipFigure(item: ReportItem | null, markdown: string, _sec
 
   const maxMentions = Math.max(1, ...entities.map((e) => e.count));
 
-  // Seed positions on a ring (heavier → nearer the centre so hubs cluster); the force
-  // simulation then re-lays everything into the web.
-  entities.forEach((e, index) => {
-    const angle = (index / Math.max(1, entities.length)) * Math.PI * 2;
-    const r = 210 + (1 - e.count / maxMentions) * 95;
+  // Seed each type inside its own cluster (small circle around the cluster centre); the
+  // clustering forces below hold the three groups in a triangle.
+  const kindCount: Record<string, number> = {
+    signal: detectedSignals.length, topic: detectedTopics.length, region: detectedRegions.length,
+  };
+  const kindSeen: Record<string, number> = { signal: 0, topic: 0, region: 0 };
+  entities.forEach((e) => {
+    const c = CLUSTER_CENTERS[e.kind] || { x: 0, y: 0 };
+    const n = Math.max(1, kindCount[e.kind] || 1);
+    const i = kindSeen[e.kind]++;
+    const angle = (i / n) * Math.PI * 2;
+    const rr = 55 + n * 6 + (1 - e.count / maxMentions) * 35;   // heavier → nearer cluster centre
     nodes.push({
       id: e.id,
       label: e.label,
       kind: e.kind,
-      x: Math.max(120, Math.min(1080, CX + Math.cos(angle) * r)),
-      y: Math.max(70, Math.min(VIEW_H - 70, CY + Math.sin(angle) * r * 0.9)),
+      x: c.x + Math.cos(angle) * rr,
+      y: c.y + Math.sin(angle) * rr,
       weight: Math.max(0.18, e.count / maxMentions),
       subtitle: `${e.count}회 언급`,
     });
@@ -399,15 +408,22 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
   useEffect(() => {
     if (!fgRef.current || dims.width === 0) return;
     try {
-      const charge = fgRef.current.d3Force('charge');
+      const fg = fgRef.current;
+      const charge = fg.d3Force('charge');
       if (charge) {
-        charge.strength(-135);
-        if (typeof charge.distanceMax === 'function') charge.distanceMax(280);
+        charge.strength(-90);
+        if (typeof charge.distanceMax === 'function') charge.distanceMax(260);
       }
-      const link = fgRef.current.d3Force('link');
-      if (link) link.distance(58);  // tighter links → denser web
+      const link = fg.d3Force('link');
+      if (link) { link.distance(46); if (typeof link.strength === 'function') link.strength(0.22); }
+      // Triangle clustering: pull each node toward its type's cluster centre so 신호원 /
+      // 질병 / 지역 form three separate groups instead of one scattered ring.
+      fg.d3Force('cluster-x', d3ForceX((n: any) => CLUSTER_CENTERS[n.kind]?.x ?? 0).strength(0.42));
+      fg.d3Force('cluster-y', d3ForceY((n: any) => CLUSTER_CENTERS[n.kind]?.y ?? 0).strength(0.42));
+      fg.d3Force('collide', d3ForceCollide((n: any) => Math.sqrt(n.val) * 3 + 5));
+      if (typeof fg.d3ReheatSimulation === 'function') fg.d3ReheatSimulation();
     } catch { /* ignore */ }
-    const t = setTimeout(() => { try { fgRef.current?.zoomToFit(400, 60); } catch { /* ignore */ } }, 700);
+    const t = setTimeout(() => { try { fgRef.current?.zoomToFit(400, 70); } catch { /* ignore */ } }, 900);
     return () => clearTimeout(t);
   }, [graphData, dims.width, dims.height]);
 
@@ -513,7 +529,7 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
           <h3>신호원 ↔ 질병/키워드 ↔ 지역 ontology</h3>
           <p>
             보고서 본문에서 추출한 <strong>신호원(녹색)</strong>·<strong>질병/키워드(보라)</strong>·
-            <strong>지역 시도(노랑)</strong> 를 force-directed graph로 표시합니다. 노드 크기는 언급횟수,
+            <strong>지역 시도(노랑)</strong>를 세 그룹으로 묶어(삼각 배치) 표시합니다. 노드 크기는 언급횟수,
             연결선은 같은 문단 안 동시 등장(모든 유형 간). 노드를 클릭하면 연결된 항목이 우측 패널에 나타납니다.
           </p>
         </div>

@@ -91,10 +91,7 @@ export default function StatisticsView({ koreaAlerts, onRegionClick }: Statistic
 
         <div className="stats-mini-map-panel">
           <h3 className="stats-section-title">지역 위험 지도</h3>
-          <p className="stats-section-copy">
-            순위표와 나란히 보는 시·도 위험도(호흡기 종합). 지역을 누르면 상세가 아래에 열립니다.
-            (가중치 설정은 PIPELINE 탭 하단으로 이동했습니다.)
-          </p>
+          <p className="stats-section-copy">지역을 누르면 상세가 아래에 열립니다.</p>
           <div className="stats-mini-map">
             <KoreaMap koreaAlerts={koreaAlerts} onRegionClick={handleRowClick} activeLayers={['respiratory']} />
           </div>
