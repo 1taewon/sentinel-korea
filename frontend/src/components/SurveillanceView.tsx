@@ -87,7 +87,7 @@ export default function SurveillanceView() {
             <div className="surveillance-detail-h">참고 · References</div>
             <ul className="surveillance-refs">
               <li>
-                <em>TowerScout</em> 항공·위성 영상 기반 냉각탑 탐지 오픈소스(CC BY-NC-SA 4.0), 미국 CDC
+                <em>TowerScout</em> 항공·위성 영상 기반 냉각탑 탐지 오픈소스(CC BY-NC-SA 4.0), 미국
                 레지오넬라 발생 조사 활용.
               </li>
               <li>
