@@ -12,6 +12,7 @@ import RegionPanel from './components/RegionPanel';
 import RegionDetailInline from './components/RegionDetailInline';
 import ReportView from './components/ReportView';
 import StatisticsView from './components/StatisticsView';
+import ScoringPanel from './components/ScoringPanel';
 import OntologyView from './components/OntologyView';
 import SurveillanceView from './components/SurveillanceView';
 import SymptomReportWidget from './components/SymptomReportWidget';
@@ -2104,7 +2105,6 @@ function AppInner({
         <main className="kas-tab-view">
           <StatisticsView
             koreaAlerts={koreaAlerts}
-            onScoringApply={handleScoringApply}
           />
         </main>
       )}
@@ -2380,6 +2380,15 @@ function AppInner({
                   );
                 })}
               </div>
+            </div>
+
+            <div className="pipeline-scoring-box">
+              <div className="pipeline-flow-modal-detail-title">가중치 설정 · 신호 소스 (Apply and re-score)</div>
+              <p className="pipeline-scoring-copy">
+                같은 raw signal이라도 freshness·coverage·baseline 대비 z-score가 반영된 뒤 가중치가 적용됩니다.
+                “어떤 소스를 더 믿을지”가 아니라 “현재 분석에서 어떤 lane의 영향도를 더 크게 볼지”를 조정합니다.
+              </p>
+              <ScoringPanel onApply={handleScoringApply} />
             </div>
           </div>
         </main>

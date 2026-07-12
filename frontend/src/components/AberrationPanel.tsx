@@ -192,6 +192,11 @@ export default function AberrationPanel() {
     }
   }, []);
 
+  // Open the first disease by default so it's obvious that a row expands into a chart.
+  useEffect(() => {
+    if (!selected && overview?.diseases?.length) openDetail(overview.diseases[0].disease);
+  }, [overview, selected, openDetail]);
+
   const rows = overview?.diseases ?? [];
   const alarmCount = overview?.alarm_count ?? 0;
   const isSynthetic = overview?.is_synthetic ?? false;

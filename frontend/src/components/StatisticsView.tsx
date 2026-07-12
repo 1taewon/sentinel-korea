@@ -1,19 +1,18 @@
 import { useState } from 'react';
 import type { KoreaAlert } from '../types';
-import ScoringPanel from './ScoringPanel';
+import KoreaMap from './KoreaMap';
 import RegionDetailInline from './RegionDetailInline';
 import AberrationPanel from './AberrationPanel';
 
 interface StatisticsViewProps {
   koreaAlerts: KoreaAlert[];
-  onScoringApply: (config: any) => void;
   // `onRegionClick` is still exposed so the parent can observe selections,
   // but by default Statistics now shows the detail inline instead of
   // navigating to the map tab.
   onRegionClick?: (alert: KoreaAlert) => void;
 }
 
-export default function StatisticsView({ koreaAlerts, onScoringApply, onRegionClick }: StatisticsViewProps) {
+export default function StatisticsView({ koreaAlerts, onRegionClick }: StatisticsViewProps) {
   const [selected, setSelected] = useState<KoreaAlert | null>(null);
 
   const sorted = [...koreaAlerts].sort((a, b) => b.score - a.score);
@@ -34,9 +33,9 @@ export default function StatisticsView({ koreaAlerts, onScoringApply, onRegionCl
         <span>Statistics guide</span>
         <h2>지역별 경보 분포와 점수 민감도를 확인하는 화면</h2>
         <p>
-          왼쪽 지표는 현재 snapshot에서 G0-G3가 몇 개 지역에 분포하는지 보여주고,
-          아래 순위표는 어느 시·도가 상대적으로 더 이상한지 비교합니다. 오른쪽 가중치 설정은
-          공식 감시자료, 폐하수, 뉴스/트렌드 같은 신호가 최종 경보에 미치는 영향도를 조정하는 실험 도구입니다.
+          위 지표는 현재 snapshot에서 G0-G3가 몇 개 지역에 분포하는지 보여주고, 아래 순위표와
+          오른쪽 지도로 어느 시·도가 상대적으로 더 이상한지 나란히 비교합니다.
+          (경보 가중치·신호 소스 설정은 PIPELINE 탭 하단으로 이동했습니다.)
         </p>
         <p className="stats-regional-note">
           시/도별 지도 위험도는 하수감시 호흡기 병원체(COVID-19, Influenza) 데이터에 기반합니다. 다른 표본감시 지표(ARI, ILI, SARI)는 전국 수준 종합 신호로만 활용됩니다.
@@ -90,13 +89,15 @@ export default function StatisticsView({ koreaAlerts, onScoringApply, onRegionCl
           </div>
         </div>
 
-        <div className="stats-scoring-panel">
-          <h3 className="stats-section-title">가중치 설정</h3>
+        <div className="stats-mini-map-panel">
+          <h3 className="stats-section-title">지역 위험 지도</h3>
           <p className="stats-section-copy">
-            같은 raw signal이라도 freshness, coverage, baseline 대비 z-score가 반영된 뒤 가중치가 적용됩니다.
-            따라서 이 설정은 “어떤 소스를 더 믿을지”가 아니라 “현재 분석에서 어떤 lane의 영향도를 더 크게 볼지”를 조정합니다.
+            순위표와 나란히 보는 시·도 위험도(호흡기 종합). 지역을 누르면 상세가 아래에 열립니다.
+            (가중치 설정은 PIPELINE 탭 하단으로 이동했습니다.)
           </p>
-          <ScoringPanel onApply={onScoringApply} />
+          <div className="stats-mini-map">
+            <KoreaMap koreaAlerts={koreaAlerts} onRegionClick={handleRowClick} activeLayers={['respiratory']} />
+          </div>
         </div>
       </div>
 
