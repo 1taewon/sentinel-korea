@@ -8,9 +8,9 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 // Triangle clustering for the report ontology: 신호원 top-left, 질병/키워드 top-right,
 // 지역 bottom-centre. Centred on the origin so the force-graph's own centering stays happy.
 const CLUSTER_CENTERS: Record<string, { x: number; y: number }> = {
-  signal: { x: -300, y: -150 },
-  topic: { x: 300, y: -150 },
-  region: { x: 0, y: 250 },
+  signal: { x: -430, y: -240 },
+  topic: { x: 430, y: -240 },
+  region: { x: 0, y: 380 },
 };
 
 type ReportType = 'osint' | 'kdca' | 'final';
@@ -362,6 +362,7 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 0, height: 0 });
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hoverId, setHoverId] = useState<string | null>(null);
 
   // Track stage size with ResizeObserver so the graph fills available area.
   useEffect(() => {
@@ -411,16 +412,16 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
       const fg = fgRef.current;
       const charge = fg.d3Force('charge');
       if (charge) {
-        charge.strength(-90);
-        if (typeof charge.distanceMax === 'function') charge.distanceMax(260);
+        charge.strength(-240);   // stronger repulsion → nodes spread so links are readable
+        if (typeof charge.distanceMax === 'function') charge.distanceMax(560);
       }
       const link = fg.d3Force('link');
-      if (link) { link.distance(46); if (typeof link.strength === 'function') link.strength(0.22); }
+      if (link) { link.distance(95); if (typeof link.strength === 'function') link.strength(0.15); }
       // Triangle clustering: pull each node toward its type's cluster centre so 신호원 /
       // 질병 / 지역 form three separate groups instead of one scattered ring.
-      fg.d3Force('cluster-x', d3ForceX((n: any) => CLUSTER_CENTERS[n.kind]?.x ?? 0).strength(0.42));
-      fg.d3Force('cluster-y', d3ForceY((n: any) => CLUSTER_CENTERS[n.kind]?.y ?? 0).strength(0.42));
-      fg.d3Force('collide', d3ForceCollide((n: any) => Math.sqrt(n.val) * 3 + 5));
+      fg.d3Force('cluster-x', d3ForceX((n: any) => CLUSTER_CENTERS[n.kind]?.x ?? 0).strength(0.5));
+      fg.d3Force('cluster-y', d3ForceY((n: any) => CLUSTER_CENTERS[n.kind]?.y ?? 0).strength(0.5));
+      fg.d3Force('collide', d3ForceCollide((n: any) => Math.sqrt(n.val) * 3 + 18));
       if (typeof fg.d3ReheatSimulation === 'function') fg.d3ReheatSimulation();
     } catch { /* ignore */ }
     const t = setTimeout(() => { try { fgRef.current?.zoomToFit(400, 70); } catch { /* ignore */ } }, 900);
@@ -551,6 +552,7 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
               ctx.fill();
             }}
             onNodeClick={handleNodeClick}
+            onNodeHover={(n: any) => setHoverId(n ? n.id : null)}
             onBackgroundClick={() => setSelectedId(null)}
             onEngineStop={() => {
               // Pin every node at its settled position so future drags only
@@ -568,8 +570,21 @@ function ReportRelationshipFigure({ figure }: { figure: RelationshipFigure }) {
               node.fx = node.x;
               node.fy = node.y;
             }}
-            linkColor={() => 'rgba(56, 189, 248, 0.5)'}
-            linkWidth={(l: any) => 0.6 + (l.strength || 0.4) * 2}
+            linkColor={(l: any) => {
+              // Obsidian-style: hovering (or selecting) a node lights up its links and
+              // dims the rest so connectivity is obvious.
+              const active = hoverId || selectedId;
+              if (!active) return 'rgba(56, 189, 248, 0.5)';
+              const s = l.source?.id ?? l.source; const t = l.target?.id ?? l.target;
+              return (s === active || t === active) ? 'rgba(56, 189, 248, 0.95)' : 'rgba(148, 163, 184, 0.1)';
+            }}
+            linkWidth={(l: any) => {
+              const base = 0.7 + (l.strength || 0.4) * 2.2;
+              const active = hoverId || selectedId;
+              if (!active) return base;
+              const s = l.source?.id ?? l.source; const t = l.target?.id ?? l.target;
+              return (s === active || t === active) ? base + 1.6 : base;
+            }}
             linkLineDash={[5, 4]}
             linkDirectionalArrowLength={0}
             linkDirectionalParticles={2}
