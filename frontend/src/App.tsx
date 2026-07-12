@@ -35,6 +35,8 @@ type OperationKey =
   | 'trends'
   | 'global'
   | 'weather'
+  | 'traffic'
+  | 'aviation'
   | 'kdca_upload'
   | 'kdca_api'
   | 'kdca_digest'
@@ -59,6 +61,8 @@ const createEmptyPipelineRuns = (): Record<OperationKey, string | undefined> => 
   trends: undefined,
   global: undefined,
   weather: undefined,
+  traffic: undefined,
+  aviation: undefined,
   kdca_upload: undefined,
   kdca_api: undefined,
   kdca_digest: undefined,
@@ -203,6 +207,7 @@ function AppInner({
   const [showFlowDiagram, setShowFlowDiagram] = useState(false);
   const [activeLayers, setActiveLayers] = useState<Layer[]>(['respiratory']);
   const [weatherScores, setWeatherScores] = useState<Record<string, number>>({});
+  const [mobilityMeta, setMobilityMeta] = useState<{ generated_at?: string; modes?: Record<string, unknown>; corridors?: number } | null>(null);
   const [aggregationMode, setAggregationMode] = useState<AggregationMode>('max');
   const [showLayerPanel, setShowLayerPanel] = useState(false);
 
@@ -348,6 +353,23 @@ function AppInner({
       })
       .catch(() => {});
   }, []);
+
+  // Load multimodal mobility metadata (highway/rail/air) so the pipeline can show the
+  // 교통·항공 데이터 수집 nodes with when they last ran.
+  const loadMobilityMeta = useCallback(() => {
+    fetch(`${API_BASE}/signals/highway-connectivity`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: any) => {
+        if (!d || d.status === 'empty') return;
+        setMobilityMeta({
+          generated_at: d.generated_at,
+          modes: (d.modes || d.mode_metadata || {}) as Record<string, unknown>,
+          corridors: Array.isArray(d.corridors) ? d.corridors.length : undefined,
+        });
+      })
+      .catch(() => {});
+  }, []);
+  useEffect(() => { loadMobilityMeta(); }, [loadMobilityMeta]);
 
   // Load real per-step last-updated timestamps (file mtimes) from the backend so the
   // PIPELINE cards show when each step last ran. Persists across reloads, unlike the
@@ -641,6 +663,14 @@ function AppInner({
             setWeatherScores(scores);
           }
         } catch { /* ignore */ }
+      } else if (key === 'traffic' || key === 'aviation') {
+        // Both 교통·항공 come from the same multimodal mobility collector (cooldown-guarded).
+        const res = await fetch(`${API_BASE}/refresh-highway`, { method: 'POST', headers: await getAdminHeaders(false) });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || data?.status === 'error') {
+          throw new Error(data?.detail || '이동(교통·항공) 데이터 갱신 실패');
+        }
+        loadMobilityMeta();
       } else if (key === 'kdca_api') {
         await handleRefreshKdcaNotifiable({ rethrow: true });
       } else if (key === 'kdca_digest') {
@@ -975,6 +1005,24 @@ function AppInner({
       primaryAction: '수집',
     },
     {
+      key: 'traffic',
+      lane: 'SOURCE',
+      title: '교통 데이터 수집',
+      detail: `고속도로 톨게이트 OD·철도(KORAIL/SRT) 실측 이동량으로 시도 간 연결도를 산출합니다. Outbreak Scenario '실측 교통 OD 보정'에 사용.${mobilityMeta?.corridors ? ` 현재 corridor ${mobilityMeta.corridors}개 로드됨.` : ''}`,
+      status: runningPipeline === 'traffic' ? 'running' : (mobilityMeta?.generated_at || lastPipelineRun.traffic) ? 'ready' : 'needs-run',
+      updatedAt: mobilityMeta?.generated_at || lastPipelineRun.traffic,
+      primaryAction: '수집',
+    },
+    {
+      key: 'aviation',
+      lane: 'SOURCE',
+      title: '항공 데이터 수집',
+      detail: `국내선 도시쌍 운항편수·공항 일별 예상승객으로 항공 이동량 프록시를 산출해 다중모드 이동모형에 반영합니다.${mobilityMeta?.generated_at ? ' 다중모드 이동 데이터에 포함됨.' : ''}`,
+      status: runningPipeline === 'aviation' ? 'running' : (mobilityMeta?.generated_at || lastPipelineRun.aviation) ? 'ready' : 'needs-run',
+      updatedAt: mobilityMeta?.generated_at || lastPipelineRun.aviation,
+      primaryAction: '수집',
+    },
+    {
       key: 'kdca_digest',
       lane: 'AI',
       title: 'KDCA 감시자료 요약',
@@ -1061,6 +1109,8 @@ function AppInner({
     kdca_api:    { x: 720, y:  80 },
     global:      { x: 890, y:  80 },
     weather:     { x: 1035, y: 80 },   // ★ standalone domestic met signal (no report edge)
+    traffic:     { x: 1035, y: 230 },  // ★ 교통·철도 이동 데이터 (기상 아래 우측 열)
+    aviation:    { x: 1035, y: 380 },  // ★ 항공 이동 데이터
     osint:       { x: 200, y: 230 },
     kdca_digest: { x: 630, y: 230 },
     sentinel:    { x: 415, y: 380 },
