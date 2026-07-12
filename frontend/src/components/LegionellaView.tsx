@@ -351,11 +351,7 @@ export default function LegionellaView() {
 
           <div className="legionella-group" onDragOver={(e) => isAdmin && e.preventDefault()} onDrop={isAdmin ? onDrop : undefined}>
             <div className="legionella-group-title">역학조사서 분석</div>
-            <div className="legionella-hint">
-              {isAdmin
-                ? '비식별 역학조사서를 올려 실제 데이터 분석을 실행합니다.'
-                : '예시 분석을 실행합니다. 실제 조사서 업로드·분석은 admin 로그인 후 사용할 수 있습니다.'}
-            </div>
+            <div className="legionella-hint">업로드된 역학조사서를 바탕으로 AI 분석을 실행합니다.</div>
             <div className={`legionella-dropzone ${!isAdmin ? 'is-locked' : ''}`}>
               <input type="file" multiple accept=".txt,.md,.csv,.docx,.pdf" disabled={exLoading || !isAdmin}
                 onChange={(e) => setStagedFiles(Array.from(e.target.files || []))} />
@@ -367,12 +363,7 @@ export default function LegionellaView() {
             </button>
             {!stagedFiles.length && (
               <div className="legionella-preload">
-                <div className="legionella-hint">아래 예시 역학조사서 4건이 업로드되어 있습니다 · '분석 실행'을 누르면 분석됩니다 (클릭해 원문 보기)</div>
-                <div className="legionella-example-survey-actions">
-                  {EXAMPLE_SURVEYS.map((survey) => (
-                    <button type="button" key={survey.file} className="legionella-example-survey-btn" onClick={() => previewExample(survey)}>{survey.label}</button>
-                  ))}
-                </div>
+                <div className="legionella-hint">예시 역학조사서가 업로드되어 있습니다. '분석 실행'을 누르면 분석됩니다.</div>
               </div>
             )}
             {isAdmin && <button type="button" className="legionella-btn ghost legionella-reset" onClick={resetCases} disabled={exLoading}>분석 결과 초기화</button>}
@@ -425,7 +416,7 @@ export default function LegionellaView() {
               <div className="legionella-results-kicker">EPIDEMIOLOGICAL INVESTIGATION</div>
               <h3>분석 결과</h3>
             </div>
-            <div className="legionella-hint warn">초안 보고서이며 최종 판단은 역학조사관이 합니다.</div>
+            <div className="legionella-draft-notice">초안 보고서이며 최종 판단은 역학조사관이 합니다.</div>
           </div>
           <section className="legionella-example-surveys" aria-labelledby="example-surveys-title">
             <div>
@@ -456,7 +447,7 @@ export default function LegionellaView() {
                     <div className="legionella-results-kicker">ENVIRONMENTAL INVESTIGATION</div>
                     <h4 id="investigation-priority-title">조사 우선순위 (환경조사 우선 대상)</h4>
                   </div>
-                  <p>케이스 수렴, 시설 가중치, 노출 근접도를 결합한 KDE 피크입니다. 확정 감염원이 아니며 채수·배양 일치 시 확정합니다.</p>
+                  <p>케이스 수렴, 시설 가중치, 노출 근접도를 결합한 결과입니다.</p>
                 </div>
                 <div className="legionella-priority-results-grid">
                   {plan.map((p) => (
